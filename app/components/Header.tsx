@@ -7,6 +7,7 @@ import {
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
+import { Button } from './ui/button';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -68,6 +69,9 @@ export function HeaderMenu({
         </NavLink>
       )}
       {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+       
+        console.log(menu, '2222');
+        
         if (!item.url) return null;
 
         // if the url is internal, we strip the domain
@@ -78,10 +82,10 @@ export function HeaderMenu({
             ? new URL(item.url).pathname
             : item.url;
         return (
+          <Button key={item.id} variant="link">
           <NavLink
             className="header-menu-item"
             end
-            key={item.id}
             onClick={close}
             prefetch="intent"
             style={activeLinkStyle}
@@ -89,6 +93,15 @@ export function HeaderMenu({
           >
             {item.title}
           </NavLink>
+          {item.items.map(subItem => {
+            const url =
+          subItem.url.includes('myshopify.com') ||
+          subItem.url.includes(publicStoreDomain) ||
+          subItem.url.includes(primaryDomainUrl)
+            ? new URL(subItem.url).pathname
+            : item.url;
+            return (<NavLink to = {url}>{subItem.title}</NavLink>)})}
+          </Button>
         );
       })}
     </nav>

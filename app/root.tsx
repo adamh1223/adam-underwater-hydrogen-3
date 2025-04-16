@@ -1,4 +1,4 @@
-import {getShopAnalytics} from '@shopify/hydrogen';
+import {CacheNone, getShopAnalytics} from '@shopify/hydrogen';
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {
   Outlet,
@@ -94,7 +94,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
 
   const [header] = await Promise.all([
     storefront.query(HEADER_QUERY, {
-      cache: storefront.CacheLong(),
+      cache: CacheNone(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },

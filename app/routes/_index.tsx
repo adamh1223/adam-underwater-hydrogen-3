@@ -6,6 +6,7 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
+import { Button } from '~/components/ui/button';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -73,6 +74,8 @@ function FeaturedCollection({
   if (!collection) return null;
   const image = collection?.image;
   return (
+    <>
+    <Button>Hello</Button>
     <Link
       className="featured-collection"
       to={`/collections/${collection.handle}`}
@@ -84,6 +87,7 @@ function FeaturedCollection({
       )}
       <h1>{collection.title}</h1>
     </Link>
+    </>
   );
 }
 
