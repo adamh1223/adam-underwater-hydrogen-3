@@ -8,6 +8,7 @@ import {
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import { Button } from './ui/button';
+import AboutDropdown from './navbar/AboutDropdown';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -82,7 +83,9 @@ export function HeaderMenu({
             ? new URL(item.url).pathname
             : item.url;
         return (
-          <Button key={item.id} variant="link">
+          <>
+          {item.title === "About" && <AboutDropdown menuItems={item} publicStoreDomain = {publicStoreDomain} primaryDomainUrl = {primaryDomainUrl}></AboutDropdown>}
+          {/* <Button key={item.id} variant="link">
           <NavLink
             className="header-menu-item"
             end
@@ -93,15 +96,9 @@ export function HeaderMenu({
           >
             {item.title}
           </NavLink>
-          {item.items.map(subItem => {
-            const url =
-          subItem.url.includes('myshopify.com') ||
-          subItem.url.includes(publicStoreDomain) ||
-          subItem.url.includes(primaryDomainUrl)
-            ? new URL(subItem.url).pathname
-            : item.url;
-            return (<NavLink to = {url}>{subItem.title}</NavLink>)})}
-          </Button>
+          
+          </Button> */}
+          </>
         );
       })}
     </nav>
