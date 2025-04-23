@@ -23,17 +23,18 @@ const triggerUrl =
       </HoverCardTrigger>
       <HoverCardContent className="w-40">
       {menuItems.items.map((subItem: any) => {
-        console.log(subItem, '333333');
+        console.log(new URL(subItem.url), '333333');
         
             const url =
           subItem.url.includes('myshopify.com') ||
           subItem.url.includes(publicStoreDomain) ||
           subItem.url.includes(primaryDomainUrl)
-            ? new URL(subItem.url).pathname
+            ? `${new URL(subItem.url).pathname}${new URL(subItem.url).hash}`
             : menuItems.url;
+            console.log(url, '777');
             return (
           <>
-
+          
         <Button variant="link" key={url}>
 
         {/* <NavLink to = {url}>{subItem.title}</NavLink> */}

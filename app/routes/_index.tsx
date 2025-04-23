@@ -75,7 +75,9 @@ function FeaturedCollection({
   const image = collection?.image;
   return (
     <>
+    <Link to={'/about'}>
     <Button>Hello</Button>
+    </Link>
     <Link
       className="featured-collection"
       to={`/collections/${collection.handle}`}
