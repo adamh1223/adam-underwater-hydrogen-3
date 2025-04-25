@@ -4,6 +4,7 @@ import Submenu from "./Submenu";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
 import { NavLink } from "@remix-run/react";
 import { Link } from "react-router-dom";
+import React from "react";
 
 
 function AboutDropdown({menuItems, publicStoreDomain, primaryDomainUrl}:{menuItems: any, publicStoreDomain: string, primaryDomainUrl: string}) {
@@ -33,7 +34,7 @@ const triggerUrl =
             : menuItems.url;
             console.log(url, '777');
             return (
-          <>
+          <React.Fragment key={url}>
           
         <Button variant="link" key={url}>
 
@@ -41,7 +42,7 @@ const triggerUrl =
         <Link to ={url}>{subItem.title}</Link>
         
         </Button>
-      </>
+      </React.Fragment>
     )})}
     </HoverCardContent>
     </HoverCard>

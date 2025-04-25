@@ -2,7 +2,7 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
 import { Separator } from "~/components/ui/separator";
-import '../../styles/routeStyles/about.css'
+import '../styles/routeStyles/about.css'
 
 
 function AboutPage() {
@@ -30,7 +30,7 @@ function AboutPage() {
             gridTemplateColumns: "1fr 1fr 1fr",
           }}
         >
-          <Button variant="outline" className="anchor">
+          <Button variant="outline" className="anchor class-name">
             <a onClick={(evt) => handleClick("about", evt)}>About Me</a>
           </Button>
           <Button variant="outline" className="anchor">

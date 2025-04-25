@@ -12,6 +12,7 @@ import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {RootLoader} from './root';
+import './styles/app.css'
 
 export default function Layout() {
   const nonce = useNonce();
@@ -25,10 +26,13 @@ export default function Layout() {
         <link rel="stylesheet" href={tailwindCss}></link>
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
+        <link rel="preconnect" href="https://fonts.googleapis.com"></link>
+<link rel="preconnect" href="https://fonts.gstatic.com" ></link>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"></link>
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className={`antialiased`}>
         {data ? (
           <Analytics.Provider
             cart={data.cart}

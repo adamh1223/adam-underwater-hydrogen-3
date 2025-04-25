@@ -9,46 +9,40 @@
 ---break---
 */
 @custom-variant dark (&:is(.dark *));
-@layer base {
-  :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 198.6 88.7% 48.4%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --radius: 0.5rem;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar: oklch(0.985 0.002 247.839);
-    --sidebar-foreground: oklch(0.13 0.028 261.692);
-    --sidebar-primary: oklch(0.21 0.034 264.665);
-    --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
-    --sidebar-accent: oklch(0.967 0.003 264.542);
-    --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
-    --sidebar-border: oklch(0.928 0.006 264.531);
-    --sidebar-ring: oklch(0.707 0.022 261.325);
-  }
-}
 
-img {
-  border-radius: 4px;
+:root {
+  --background: rgba(2, 8, 23, 1);
+  --foreground: rgba(247, 249, 251, 1);
+  --card: rgba(1, 8, 22, 1);
+  --card-foreground: rgba(247, 249, 251, 1);
+  --popover: rgba(1, 8, 22, 1);
+  --popover-foreground: rgba(247, 249, 251, 1);
+  --primary: rgba(13, 165, 232, 1);
+  --primary-foreground: rgba(15, 23, 42, 1);
+  --secondary: rgba(30, 41, 59, 1);
+  --secondary-foreground: rgba(247, 249, 251, 1);
+  --muted: rgba(30, 41, 59, 1);
+  --muted-foreground: rgba(148, 163, 183, 1);
+  --accent: rgba(30, 41, 59, 1);
+  --accent-foreground: rgba(247, 249, 251, 1);
+  --destructive: rgba(127, 29, 29, 1);
+  --destructive-foreground: rgba(247, 249, 251, 1);
+  --border: rgba(30, 41, 59, 1);
+  --input: rgba(30, 41, 59, 1);
+  --ring: rgba(29, 77, 215, 1);
+  --chart-1: rgba(38, 97, 216, 1);
+  --chart-2: rgba(45, 183, 137, 1);
+  --chart-3: rgba(232, 140, 48, 1);
+  --chart-4: rgba(175, 86, 219, 1);
+  --chart-5: rgba(226, 54, 111, 1);
+  --sidebar: rgba(251, 0, 247, 1);
+  --sidebar-foreground: rgba(33, 7, 6, 1);
+  --sidebar-primary: rgba(53, 8, 9, 1);
+  --sidebar-primary-foreground: rgba(251, 0, 247, 1);
+  --sidebar-accent: rgba(246, 0, 9, 1);
+  --sidebar-accent-foreground: rgba(53, 8, 9, 1);
+  --sidebar-border: rgba(236, 1, 9, 1);
+  --sidebar-ring: rgba(180, 5, 6, 1);
 }
 
 /*
@@ -593,3 +587,12 @@ button.reset:hover:not(:has(> *)) {
 /*
 ---break---
 */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
