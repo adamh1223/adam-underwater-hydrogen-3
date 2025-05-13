@@ -4,6 +4,7 @@ import {oxygen} from '@shopify/mini-oxygen/vite';
 import {vitePlugin as remix} from '@remix-run/dev';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 declare module '@remix-run/server-runtime' {
   interface Future {
@@ -29,6 +30,7 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  clearScreen: false,
   build: {
     // Allow a strict Content-Security-Policy
     // withtout inlining assets as base64:
@@ -49,4 +51,9 @@ export default defineConfig({
       include: [],
     },
   },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./app")
+    }
+  }
 });

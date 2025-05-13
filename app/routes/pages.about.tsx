@@ -1,25 +1,29 @@
-import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
-import { Separator } from "~/components/ui/separator";
+
+import { Button } from '~/components/ui/button';
 import '../styles/routeStyles/about.css'
+import { Card } from '~/components/ui/card';
+import { Separator } from '~/components/ui/separator';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
+import photo1 from '~/assets/1.png'
+import photo2 from '~/assets/2.5.jpg'
+import photo3 from '~/assets/2.png'
 
 
 function AboutPage() {
   const handleClick = (
-    sectionId: string,
+    section: string,
     event: React.MouseEvent<HTMLAnchorElement>
   ) => {
-    let section = document.getElementById(sectionId);
+    let sectionId = document.getElementById(section);
     event.preventDefault();
-    section && section.scrollIntoView({ behavior: "smooth" });
+    sectionId && sectionId.scrollIntoView({ behavior: "smooth" });
   };
   return (
     <>
       <section id="about">
         <div className="flex justify-center img-container">
           <img
-            src={"/images/about2.png"}
+            src={photo1}
             style={{ height: "100px" }}
             className="pt-5 mb-5"
           />
@@ -30,7 +34,7 @@ function AboutPage() {
             gridTemplateColumns: "1fr 1fr 1fr",
           }}
         >
-          <Button variant="outline" className="anchor class-name">
+          <Button variant="ghost" className="anchor class-name px-3">
             <a onClick={(evt) => handleClick("about", evt)}>About Me</a>
           </Button>
           <Button variant="outline" className="anchor">
@@ -39,24 +43,24 @@ function AboutPage() {
         </div>
 
         <div className="about-container">
-          <img src={"/images/headshot3.png"} className="pt-5 headshot" />
+          <img src={photo1} className="pt-5 headshot" />
 
           <div className="about-icon-wrapper">
             <div className="about-icon-container">
-              <img src={"/images/padi-logo2.png"} className="padi-icon" />
+              <img src={photo2} className="padi-icon" />
               <p className="padi-description text-lg">
                 PADI Open Water Scuba Instructor
               </p>
             </div>
 
             <div className="about-icon-container">
-              <img src={"/images/aaus-logo.png"} className="about-icon" />
+              <img src={photo3} className="about-icon" />
               <p className="text-lg description sci-description">
                 AAUS Scientific Diver
               </p>
             </div>
             <div className="about-icon-container">
-              <img src={"/images/faa-logo.png"} className="about-icon" />
+              <img src={photo1} className="about-icon" />
               <p className="text-lg description faa-description">
                 FAA Part 107 Drone Operator
               </p>
@@ -172,7 +176,6 @@ function AboutPage() {
       <Separator />
     </div>
         <div className="gear-layout px-8 py-8">
-  {/* First Gear Card */}
   <Card className="gear-card">
     <h1 className="subheader">
       Canon EOS R5C + Nauticam NA-R5C Underwater Housing
@@ -183,17 +186,17 @@ function AboutPage() {
         <CarouselContent>
           <CarouselItem>
             <div className="p-4 flex items-center justify-center">
-              <img src={"/images/gear1.png"} alt="Gear 1" />
+              <img src={photo1} alt="Gear 1" />
             </div>
           </CarouselItem>
           <CarouselItem>
             <div className="p-4 flex items-center justify-center">
-              <img src={"/images/gear2.png"} alt="Gear 2" />
+              <img src={photo2} alt="Gear 2" />
             </div>
           </CarouselItem>
           <CarouselItem>
             <div className="p-4 flex items-center justify-center">
-              <img src={"/images/gear3.png"} alt="Gear 3" />
+              <img src={photo3} alt="Gear 3" />
             </div>
           </CarouselItem>
         </CarouselContent>
@@ -202,7 +205,7 @@ function AboutPage() {
       </Carousel>
     </div>
 
-    {/* Inner Description Card */}
+
     <Card className="description-card p-4">
       <p>
         The Canon EOS R5C is a hybrid powerhouse, capable of 8K video recording and excellent still photography, making it perfect for underwater shooting.
@@ -210,7 +213,6 @@ function AboutPage() {
     </Card>
   </Card>
 
-  {/* Second Gear Card */}
   <Card className="gear-card">
     <h1 className="subheader">Keldan Video Lights</h1>
 
@@ -219,12 +221,12 @@ function AboutPage() {
         <CarouselContent>
           <CarouselItem>
             <div className="p-4 flex items-center justify-center">
-              <img src={"/images/keldan2.jpg"} alt="Keldan Light 1" />
+              <img src={photo1} alt="Keldan Light 1" />
             </div>
           </CarouselItem>
           <CarouselItem>
             <div className="p-4 flex items-center justify-center">
-              <img src={"/images/keldan1.png"} alt="Keldan Light 2" />
+              <img src={photo2} alt="Keldan Light 2" />
             </div>
           </CarouselItem>
         </CarouselContent>
@@ -233,17 +235,18 @@ function AboutPage() {
       </Carousel>
     </div>
 
-    {/* Inner Description Card */}
+    
     <Card className="description-card p-4">
       <p>
         Keldan video lights provide high-output, natural-looking illumination underwater, essential for capturing vibrant colors at depth.
       </p>
     </Card>
-  </Card>
+  </Card> 
 </div>
 
 
       </section>
+   
     </>
   );
 }

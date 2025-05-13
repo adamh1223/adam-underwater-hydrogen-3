@@ -7,7 +7,7 @@ import {
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
-import { Button } from './ui/button';
+
 import AboutDropdown from './navbar/AboutDropdown';
 
 interface HeaderProps {

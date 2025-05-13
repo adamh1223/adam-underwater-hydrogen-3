@@ -1,7 +1,7 @@
 
-import { Button } from "../ui/button";
+
 import Submenu from "./Submenu";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
+
 import { NavLink } from "@remix-run/react";
 import { Link } from "react-router-dom";
 import React from "react";
@@ -15,37 +15,38 @@ const triggerUrl =
             ? new URL(menuItems.url).pathname
             : menuItems.url;
   return (
-    <HoverCard openDelay={100} closeDelay={100}>
-        <HoverCardTrigger>
-          <Button variant="link">
-            {/* <NavLink to = {triggerUrl}>{menuItems.title}</NavLink> */}
-            <Link to={triggerUrl}>{menuItems.title}</Link>
-          </Button>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-40">
-      {menuItems.items.map((subItem: any) => {
-        console.log(new URL(subItem.url), '333333');
+    // <HoverCard openDelay={100} closeDelay={100}>
+    //     <HoverCardTrigger>
+    //       <Button variant="link">
+    //         {/* <NavLink to = {triggerUrl}>{menuItems.title}</NavLink> */}
+    //         <Link to={triggerUrl}>{menuItems.title}</Link>
+    //       </Button>
+    //   </HoverCardTrigger>
+    //   <HoverCardContent className="w-40">
+    //   {menuItems.items.map((subItem: any) => {
+    //     console.log(new URL(subItem.url), '333333');
         
-            const url =
-          subItem.url.includes('myshopify.com') ||
-          subItem.url.includes(publicStoreDomain) ||
-          subItem.url.includes(primaryDomainUrl)
-            ? `${new URL(subItem.url).pathname}${new URL(subItem.url).hash}`
-            : menuItems.url;
-            console.log(url, '777');
-            return (
-          <React.Fragment key={url}>
+    //         const url =
+    //       subItem.url.includes('myshopify.com') ||
+    //       subItem.url.includes(publicStoreDomain) ||
+    //       subItem.url.includes(primaryDomainUrl)
+    //         ? `${new URL(subItem.url).pathname}${new URL(subItem.url).hash}`
+    //         : menuItems.url;
+    //         console.log(url, '777');
+    //         return (
+    //       <React.Fragment key={url}>
           
-        <Button variant="link" key={url}>
+    //     <Button variant="link" key={url}>
 
-        {/* <NavLink to = {url}>{subItem.title}</NavLink> */}
-        <Link to ={url}>{subItem.title}</Link>
+    //     {/* <NavLink to = {url}>{subItem.title}</NavLink> */}
+    //     <Link to ={url}>{subItem.title}</Link>
         
-        </Button>
-      </React.Fragment>
-    )})}
-    </HoverCardContent>
-    </HoverCard>
+    //     </Button>
+    //   </React.Fragment>
+    // )})}
+    // </HoverCardContent>
+    // </HoverCard>
+    <></>
   );
 }
 
