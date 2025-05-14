@@ -1,6 +1,7 @@
 import {Suspense} from 'react';
-import {Await, NavLink} from '@remix-run/react';
+import {Await, Link, NavLink} from '@remix-run/react';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
+import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -43,6 +44,32 @@ function FooterMenu({
 }) {
   return (
     <nav className="footer-menu" role="navigation">
+      {/* Socials */}
+      <div className="footer-container px-5">
+        <div className="flex items-center justify-center w-full my-8">
+          <div className="flex-1 h-px bg-muted" />
+          <span className="px-4 text-muted-foreground">
+            <div className="social-icons">
+              <Link
+                to="https://www.instagram.com/adamunderwater/"
+                target="_blank"
+              >
+                <FaInstagram className="social-icon" />
+              </Link>
+              <Link to="https://www.youtube.com/@Seaforestation" target="_blank">
+                <FaYoutube className="social-icon" />
+              </Link>
+              <Link
+                to="https://www.linkedin.com/in/adam-hussain-2baa31178/"
+                target="_blank"
+              >
+                <FaLinkedin className="social-icon" />
+              </Link>
+            </div>
+          </span>
+          <div className="flex-1 h-px bg-muted" />
+        </div>
+      </div>
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain

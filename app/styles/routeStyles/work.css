@@ -1,0 +1,59 @@
+.clip-wrapper {
+  display: flex;
+  margin: 50px 0 50px 0;
+}
+
+.clip {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 599px) {
+  .clip {
+    width: 360px;
+    height: 210px;
+  }
+}
+@media (min-width: 600px) and (max-width: 799px) {
+  .clip {
+    width: 490px;
+    height: 280px;
+  }
+}
+@media (min-width: 800px) and (max-width: 1023px) {
+  .clip {
+    width: 600px;
+    height: 340px;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1270px) {
+  .clip {
+    width: 800px;
+    height: 450px;
+  }
+}
+@media (min-width: 1271px) and (max-width: 1461px) {
+  .clip {
+    width: 1000px;
+    height: 570px;
+  }
+}
+@media (min-width: 1462px) and (max-width: 1650px) {
+  .clip {
+    width: 1200px;
+    height: 670px;
+  }
+}
+@media (min-width: 1651px) {
+  .clip {
+    width: 1350px;
+    height: 760px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .clip-wrapper {
+    display: flex;
+    align-items: center;
+  }
+}

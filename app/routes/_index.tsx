@@ -6,6 +6,7 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
+import VideoPreview from '~/components/video/VideoPreview';
 
 
 export const meta: MetaFunction = () => {
@@ -106,23 +107,30 @@ function RecommendedProducts({
           {(response) => (
             <div className="recommended-products-grid">
               {response
-                ? response.products.nodes.map((product) => (
+                ? response.products.nodes.map((product) => {
+                  console.log(product, '111111');
+                  const isVideo = product.tags?.includes('Video')
+                  return (
                     <Link
                       key={product.id}
                       className="recommended-product"
                       to={`/products/${product.handle}`}
                     >
-                      <Image
+                      
+                      {isVideo? <VideoPreview handle={product.handle}
+                      thumbnail = {product.images.nodes[0]}
+                      >
+                    </VideoPreview>:<Image
                         data={product.images.nodes[0]}
                         aspectRatio="1/1"
                         sizes="(min-width: 45em) 20vw, 50vw"
-                      />
+                      />}
                       <h4>{product.title}</h4>
                       <small>
                         <Money data={product.priceRange.minVariantPrice} />
                       </small>
                     </Link>
-                  ))
+                  )})
                 : null}
             </div>
           )}
@@ -167,6 +175,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
         currencyCode
       }
     }
+    tags
     images(first: 1) {
       nodes {
         id
