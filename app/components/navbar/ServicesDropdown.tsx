@@ -9,7 +9,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card"
 import { Button } from "../ui/button";
 
 
-function AboutDropdown({menuItems, publicStoreDomain, primaryDomainUrl}:{menuItems: any, publicStoreDomain: string, primaryDomainUrl: string}) {
+function ServicesDropdown({menuItems, publicStoreDomain, primaryDomainUrl}:{menuItems: any, publicStoreDomain: string, primaryDomainUrl: string}) {
 const triggerUrl =
           menuItems.url.includes('myshopify.com') ||
           menuItems.url.includes(publicStoreDomain) ||
@@ -28,8 +28,9 @@ const triggerUrl =
          <Button variant="link">
 
         {/* <NavLink to = {url}>{subItem.title}</NavLink> */}
-        <Link to={'/pages/about'}>About Me</Link>
-        <Link to={'/pages/about#gear'}>My Gear</Link>
+        <Link to={'/pages/services#video'}>Underwater Video</Link>
+        <Link to={'/pages/services#photo'}>Underwater Photo</Link>
+        <Link to={'/pages/services#drone'}>Underwater Photo</Link>
         
         </Button>
       {/* {menuItems.items.map((subItem: any) => {
@@ -60,4 +61,4 @@ const triggerUrl =
 }
 
 
-export default AboutDropdown;
+export default ServicesDropdown;

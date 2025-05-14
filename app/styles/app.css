@@ -158,7 +158,9 @@ button.reset:hover:not(:has(> *)) {
 */
 .header {
   align-items: center;
-  background: var(--color-background);
+  /* background: var(--color-background); */
+  background: white;
+  color: black;
   display: flex;
   height: var(--header-height);
   padding: 0 1rem;

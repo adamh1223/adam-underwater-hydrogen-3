@@ -9,6 +9,8 @@ import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 
 import AboutDropdown from './navbar/AboutDropdown';
+import { Button } from './ui/button';
+import ServicesDropdown from './navbar/ServicesDropdown';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -82,11 +84,20 @@ export function HeaderMenu({
           item.url.includes(primaryDomainUrl)
             ? new URL(item.url).pathname
             : item.url;
-        return (
-          <>
-          {item.title === "About" && <AboutDropdown menuItems={item} publicStoreDomain = {publicStoreDomain} primaryDomainUrl = {primaryDomainUrl}></AboutDropdown>}
-          {/* <Button key={item.id} variant="link">
-          <NavLink
+        
+        let renderContent;
+        switch (item.title) {
+          case 'About':
+            renderContent = <AboutDropdown menuItems={item} publicStoreDomain = {publicStoreDomain} primaryDomainUrl = {primaryDomainUrl}></AboutDropdown>
+            break;
+          case 'Services':
+            renderContent = <ServicesDropdown menuItems={item} publicStoreDomain = {publicStoreDomain} primaryDomainUrl = {primaryDomainUrl}></ServicesDropdown>
+            break;
+        
+          default: 
+          renderContent = (
+            <Button variant='link'>
+              <NavLink
             className="header-menu-item"
             end
             onClick={close}
@@ -96,8 +107,13 @@ export function HeaderMenu({
           >
             {item.title}
           </NavLink>
-          
-          </Button> */}
+            </Button>
+          )
+            break;
+        }
+        return (
+          <>
+         {renderContent}
           </>
         );
       })}
