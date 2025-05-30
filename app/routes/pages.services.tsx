@@ -92,17 +92,16 @@ function ServicesPage() {
         <div className="media-container">
           <img
             src="/images/print1.jpg"
-            alt="Loading video..."
             className={`placeholder ${isVideoReady ? "hidden" : ""}`}
           />
-          {/* <iframe
+          <iframe
             src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
             frameBorder="0"
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
             className={`video ${isVideoReady ? "visible" : ""}`}
             title="Background Video"
-          ></iframe> */}
+          ></iframe>
           
 
           
@@ -162,7 +161,7 @@ function ServicesPage() {
           </Carousel>
         </div>
       </section>
-      {/* <section id="dives">
+      <section id="dives">
         <Sectiontitle text="Guided Dives" />
         <ul className="subheader">
           <h1>San Diego, CA</h1>
@@ -201,7 +200,7 @@ function ServicesPage() {
             </Card>
           </div>
         </div>
-      </section> */}
+      </section>
       <section id="drone">
         <Sectiontitle text="Drone Video & Photo" />
         <br />
@@ -216,8 +215,8 @@ function ServicesPage() {
           }}
           className="drone-titles"
         >
-          {/* <div className="drone-title">DJI Inspire 3</div>
-          <div className="drone-title">RED Komodo X FPV</div> */}
+          <div className="drone-title">DJI Inspire 3</div>
+          <div className="drone-title">RED Komodo X FPV</div>
           <Card className=" group overflow-hidden px-8 pb-8 mx-5">
             <CardHeader className="text-center drone-title">
               <CardTitle>DJI Inspire 3</CardTitle>
@@ -267,7 +266,7 @@ function ServicesPage() {
           </a>
         </div>
       </section>
-      {/* <section id="coaching">
+      <section id="coaching">
         <Sectiontitle text="1 on 1 Coaching" />
         <ul className="subheader">
           <h1>Zoom coaching sessions</h1>
@@ -285,7 +284,7 @@ function ServicesPage() {
           </li>
           <li>The first coaching session is 50% off.</li>
         </ul>
-      </section> */}
+      </section>
     </>
   );
 }

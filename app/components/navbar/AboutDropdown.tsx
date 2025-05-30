@@ -24,14 +24,20 @@ const triggerUrl =
             <Link to={triggerUrl}>{menuItems.title}</Link>
           </Button>
       </HoverCardTrigger>
-      <HoverCardContent className="w-40">
-         <Button variant="link">
+      <HoverCardContent className="w-36">
+        
 
         {/* <NavLink to = {url}>{subItem.title}</NavLink> */}
+        <Button variant="ghost">
         <Link to={'/pages/about'}>About Me</Link>
-        <Link to={'/pages/about#gear'}>My Gear</Link>
-        
+
         </Button>
+        <Button variant="ghost">
+        <Link to={'/pages/about#gear'}>My Gear</Link>
+
+        </Button>
+        
+        
       {/* {menuItems.items.map((subItem: any) => {
         console.log(new URL(subItem.url), '333333');
         

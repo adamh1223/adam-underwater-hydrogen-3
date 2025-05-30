@@ -1,0 +1,41 @@
+/* Container for the footer layout */
+.footer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  gap: 16px; /* Adds spacing between lines and icons */
+}
+
+/* Line containers ensure the lines stay aligned */
+.line-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* Styling for the horizontal lines */
+.horizontal-line {
+  width: 100%; /* Line fills the available space */
+  border: none;
+  border-top: 2px solid black; /* Makes the line visible */
+  margin: 0; /* Remove default margins */
+}
+
+/* Styling for the social icons */
+.social-icons {
+  display: flex;
+  gap: 16px; /* Spacing between icons */
+  align-items: center;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+}
+
+@media (max-width: 768px) {
+  .horizontal-line {
+    width: 80%; /* Adjust line width for smaller screens */
+  }
+}

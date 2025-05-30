@@ -2,6 +2,7 @@ import {Suspense} from 'react';
 import {Await, Link, NavLink} from '@remix-run/react';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
+import '../styles/components/Footer.css'
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -43,8 +44,9 @@ function FooterMenu({
   publicStoreDomain: string;
 }) {
   return (
-    <nav className="footer-menu" role="navigation">
-      {/* Socials */}
+    // <nav className="" role="navigation">
+      
+      <>
       <div className="footer-container px-5">
         <div className="flex items-center justify-center w-full my-8">
           <div className="flex-1 h-px bg-muted" />
@@ -96,7 +98,8 @@ function FooterMenu({
           </NavLink>
         );
       })}
-    </nav>
+    {/* // </nav> */}
+    </>
   );
 }
 
