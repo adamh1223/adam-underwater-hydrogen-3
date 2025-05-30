@@ -204,6 +204,11 @@ export const HEADER_QUERY = `#graphql
       }
     }
   }
+  fragment MultipleImageRefs on MediaImage {
+    image {url}
+  }
+    
+
   query Header(
     $country: CountryCode
     $headerMenuHandle: String!
@@ -214,6 +219,19 @@ export const HEADER_QUERY = `#graphql
     }
     menu(handle: $headerMenuHandle) {
       ...Menu
+    }
+    collection(handle: "multiple_images") {
+      id
+      title
+      metafield(namespace: "custom", key: "multiple_images") {
+        references(first: 10) {
+          nodes {
+            ... on MediaImage {
+              ...MultipleImageRefs
+            }
+          }
+        }
+      }
     }
   }
   ${MENU_FRAGMENT}

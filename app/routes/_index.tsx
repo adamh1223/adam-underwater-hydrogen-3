@@ -33,6 +33,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     // Add other queries here, so that they are loaded in parallel
   ]);
 
+
   return {
     featuredCollection: collections.nodes[0],
   };
@@ -59,6 +60,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
+  
   return (
     <div className="home">
       <FeaturedCollection collection={data.featuredCollection} />
@@ -153,6 +155,15 @@ const FEATURED_COLLECTION_QUERY = `#graphql
       height
     }
     handle
+    metafield(namespace: "custom", key: "multiple_images"){
+      references(first: 10) {
+        nodes {
+          ... on MediaImage {
+            image {url}
+          }
+        }
+      }
+    }
   }
   query FeaturedCollection($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {

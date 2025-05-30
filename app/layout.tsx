@@ -15,6 +15,7 @@ import {RootLoader} from './root';
 export default function Layout() {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
+console.log(data, '404040');
 
   return (
     <html lang="en">

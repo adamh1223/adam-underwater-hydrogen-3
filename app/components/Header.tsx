@@ -1,5 +1,5 @@
 import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from '@remix-run/react';
+import {Await, NavLink, useAsyncValue, useLoaderData} from '@remix-run/react';
 import {
   type CartViewPayload,
   useAnalytics,
@@ -11,12 +11,24 @@ import {useAside} from '~/components/Aside';
 import AboutDropdown from './navbar/AboutDropdown';
 import { Button } from './ui/button';
 import ServicesDropdown from './navbar/ServicesDropdown';
+import { loader } from '~/routes/_index';
 
 interface HeaderProps {
-  header: HeaderQuery;
+  header: HeaderQuery & {
+    collection?: {
+      metafield?: {
+        references?: {
+          nodes?: Array<{
+            image: {url: string}
+          }>
+        }
+      }
+    }
+  };
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+
 }
 
 type Viewport = 'desktop' | 'mobile';
@@ -27,13 +39,17 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {shop, menu} = header;
+  const {shop, menu, collection} = header;
+const imageURL = collection?.metafield?.references?.nodes?.[0].image.url
+  console.log(collection, '707070');
+  
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/"  end>
+      {/* <NavLink prefetch="intent" to="/"  end>
         <strong>{shop.name}</strong>
-      </NavLink>
+      </NavLink> */}
       <HeaderMenu
+        imageURL={imageURL}
         menu={menu}
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
@@ -45,11 +61,13 @@ export function Header({
 }
 
 export function HeaderMenu({
+  imageURL,
   menu,
   primaryDomainUrl,
   viewport,
   publicStoreDomain,
 }: {
+  imageURL: string | undefined
   menu: HeaderProps['header']['menu'];
   primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
   viewport: Viewport;
@@ -57,6 +75,8 @@ export function HeaderMenu({
 }) {
   const className = `header-menu-${viewport}`;
   const {close} = useAside();
+
+  
 
   return (
     <nav className={className} role="navigation">
@@ -68,7 +88,7 @@ export function HeaderMenu({
           
           to="/"
         >
-          Home
+          <img src={imageURL} style={{ height: "4rem" }}></img>
         </NavLink>
       )}
       {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
@@ -112,6 +132,15 @@ export function HeaderMenu({
         }
         return (
           <>
+          <NavLink
+          end
+          onClick={close}
+          prefetch="intent"
+          
+          to="/"
+        >
+          <img src={imageURL}></img>
+        </NavLink>
          {renderContent}
           </>
         );
