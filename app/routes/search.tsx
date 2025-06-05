@@ -11,6 +11,7 @@ import {
   type PredictiveSearchReturn,
   getEmptyPredictiveSearchResult,
 } from '~/lib/search';
+import {Button} from '~/components/ui/button';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Search`}];
@@ -53,7 +54,9 @@ export default function SearchPage() {
               type="search"
             />
             &nbsp;
-            <button type="submit">Search</button>
+            <Button size="icon" variant="outline" type="submit">
+              ;lskdjfa
+            </Button>
           </>
         )}
       </SearchForm>

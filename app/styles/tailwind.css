@@ -4,6 +4,9 @@
  */
 
 @import 'tailwindcss';
+image {
+  width: 20%;
+}
 
 /* ===================== Utilities ======================== */
 @layer components {

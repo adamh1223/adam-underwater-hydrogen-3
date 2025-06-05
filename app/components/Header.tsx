@@ -9,9 +9,11 @@ import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 
 import AboutDropdown from './navbar/AboutDropdown';
-import { Button } from './ui/button';
+import {Button} from './ui/button';
 import ServicesDropdown from './navbar/ServicesDropdown';
-import { loader } from '~/routes/_index';
+import {loader} from '~/routes/_index';
+import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
+import '../components/navbar/styles/Navbar.css';
 
 interface HeaderProps {
   header: HeaderQuery & {
@@ -19,16 +21,15 @@ interface HeaderProps {
       metafield?: {
         references?: {
           nodes?: Array<{
-            image: {url: string}
-          }>
-        }
-      }
-    }
+            image: {url: string};
+          }>;
+        };
+      };
+    };
   };
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
-
 }
 
 type Viewport = 'desktop' | 'mobile';
@@ -40,11 +41,11 @@ export function Header({
   publicStoreDomain,
 }: HeaderProps) {
   const {shop, menu, collection} = header;
-const imageURL = collection?.metafield?.references?.nodes?.[0].image.url
+  const imageURL = collection?.metafield?.references?.nodes?.[0].image.url;
   console.log(collection, '707070');
-  
+
   return (
-    <header className="header">
+    <header className="header border-b">
       {/* <NavLink prefetch="intent" to="/"  end>
         <strong>{shop.name}</strong>
       </NavLink> */}
@@ -54,8 +55,9 @@ const imageURL = collection?.metafield?.references?.nodes?.[0].image.url
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
+        isLoggedIn={isLoggedIn}
+        cart={cart}
       />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
     </header>
   );
 }
@@ -66,85 +68,152 @@ export function HeaderMenu({
   primaryDomainUrl,
   viewport,
   publicStoreDomain,
+  isLoggedIn,
+  cart,
 }: {
-  imageURL: string | undefined
+  imageURL: string | undefined;
   menu: HeaderProps['header']['menu'];
   primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
   viewport: Viewport;
   publicStoreDomain: HeaderProps['publicStoreDomain'];
+  isLoggedIn: HeaderProps['isLoggedIn'];
+  cart: HeaderProps['cart'];
 }) {
-  const className = `header-menu-${viewport}`;
+  const className = `header-menu-${viewport} flex flex-col xl:flex-row sm:justify-between sm:items-center lg:justify-between flex-wrap py-4 gap-4 navbar`;
   const {close} = useAside();
+  // IF the order ever changes in shopify admin, we may have to update these two variables as well
+  // If we remove a menu item it might look off
 
-  
+  const middle = Math.ceil((menu || FALLBACK_HEADER_MENU).items.length / 2);
+  const menuFirstHalf = (menu || FALLBACK_HEADER_MENU).items.slice(0, middle);
+  const menuSecondHalf = (menu || FALLBACK_HEADER_MENU).items.slice(middle);
 
   return (
     <nav className={className} role="navigation">
-      {viewport === 'mobile' && (
+      <div className="1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2">
         <NavLink
           end
           onClick={close}
           prefetch="intent"
-          
           to="/"
+          className="logo-container"
         >
-          <img src={imageURL} style={{ height: "4rem" }}></img>
+          <img src={imageURL} className="logo" style={{height: '4rem'}}></img>
         </NavLink>
-      )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
-       
-        console.log(menu, '2222');
-        
-        if (!item.url) return null;
+      </div>
+      <div className="2 flex items-center nav-links">
+        <div className="2.1 flex justify-center w-full">
+          {menuFirstHalf.map((item) => {
+            console.log(menu, '2222');
 
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        
-        let renderContent;
-        switch (item.title) {
-          case 'About':
-            renderContent = <AboutDropdown menuItems={item} publicStoreDomain = {publicStoreDomain} primaryDomainUrl = {primaryDomainUrl}></AboutDropdown>
-            break;
-          case 'Services':
-            renderContent = <ServicesDropdown menuItems={item} publicStoreDomain = {publicStoreDomain} primaryDomainUrl = {primaryDomainUrl}></ServicesDropdown>
-            break;
-        
-          default: 
-          renderContent = (
-            <Button variant='link'>
-              <NavLink
-            className=""
-            end
-            onClick={close}
-            prefetch="intent"
-            to={url}
-          >
-            {item.title}
-          </NavLink>
-            </Button>
-          )
-            break;
-        }
-        return (
-          <>
-          <NavLink
-          end
-          onClick={close}
-          prefetch="intent"
-          
-          to="/"
-        >
-          <img src={imageURL}></img>
-        </NavLink>
-         {renderContent}
-          </>
-        );
-      })}
+            if (!item.url) return null;
+
+            // if the url is internal, we strip the domain
+            const url =
+              item.url.includes('myshopify.com') ||
+              item.url.includes(publicStoreDomain) ||
+              item.url.includes(primaryDomainUrl)
+                ? new URL(item.url).pathname
+                : item.url;
+
+            let renderContent;
+            switch (item.title) {
+              case 'About':
+                renderContent = (
+                  <AboutDropdown
+                    menuItems={item}
+                    publicStoreDomain={publicStoreDomain}
+                    primaryDomainUrl={primaryDomainUrl}
+                  ></AboutDropdown>
+                );
+                break;
+              case 'Services':
+                renderContent = (
+                  <ServicesDropdown
+                    menuItems={item}
+                    publicStoreDomain={publicStoreDomain}
+                    primaryDomainUrl={primaryDomainUrl}
+                  ></ServicesDropdown>
+                );
+                break;
+
+              default:
+                renderContent = (
+                  <Button variant="link">
+                    <NavLink
+                      className=""
+                      end
+                      onClick={close}
+                      prefetch="intent"
+                      to={url}
+                    >
+                      {item.title}
+                    </NavLink>
+                  </Button>
+                );
+                break;
+            }
+            return <>{renderContent}</>;
+          })}
+        </div>
+        <div className="2.2 flex justify-center w-full">
+          {menuSecondHalf.map((item) => {
+            console.log(menu, '2222');
+
+            if (!item.url) return null;
+
+            // if the url is internal, we strip the domain
+            const url =
+              item.url.includes('myshopify.com') ||
+              item.url.includes(publicStoreDomain) ||
+              item.url.includes(primaryDomainUrl)
+                ? new URL(item.url).pathname
+                : item.url;
+
+            let renderContent;
+            switch (item.title) {
+              case 'About':
+                renderContent = (
+                  <AboutDropdown
+                    menuItems={item}
+                    publicStoreDomain={publicStoreDomain}
+                    primaryDomainUrl={primaryDomainUrl}
+                  ></AboutDropdown>
+                );
+                break;
+              case 'Services':
+                renderContent = (
+                  <ServicesDropdown
+                    menuItems={item}
+                    publicStoreDomain={publicStoreDomain}
+                    primaryDomainUrl={primaryDomainUrl}
+                  ></ServicesDropdown>
+                );
+                break;
+
+              default:
+                renderContent = (
+                  <Button variant="link">
+                    <NavLink
+                      className=""
+                      end
+                      onClick={close}
+                      prefetch="intent"
+                      to={url}
+                    >
+                      {item.title}
+                    </NavLink>
+                  </Button>
+                );
+                break;
+            }
+            return <>{renderContent}</>;
+          })}
+        </div>
+      </div>
+      <div className="3 flex gap-4 items-center">
+        <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      </div>
     </nav>
   );
 }
@@ -155,16 +224,23 @@ function HeaderCtas({
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
     <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" >
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-          </Await>
-        </Suspense>
+      {/* <HeaderMenuMobileToggle /> */}
+      <CartToggle cart={cart} />
+      <NavLink prefetch="intent" to="/account">
+        <Button
+          variant="outline"
+          className="flex gap-4 max-w-[100px] cursor-pointer"
+        >
+          <LuAlignLeft className="w-6 h-6" />
+          <LuUser className="w-6 h-6 bg-primary rounded-full text-white" />
+          {/* <Suspense fallback="Sign in">
+            <Await resolve={isLoggedIn} errorElement="Sign in">
+              {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
+            </Await>
+          </Suspense> */}
+        </Button>
       </NavLink>
       <SearchToggle />
-      <CartToggle cart={cart} />
     </nav>
   );
 }
@@ -184,9 +260,13 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button className="reset" onClick={() => open('search')}>
-      Search
-    </button>
+    <Button
+      variant="outline"
+      className="reset cursor-pointer"
+      onClick={() => open('search')}
+    >
+      <LuSearch></LuSearch>
+    </Button>
   );
 }
 
@@ -195,8 +275,10 @@ function CartBadge({count}: {count: number | null}) {
   const {publish, shop, cart, prevCart} = useAnalytics();
 
   return (
-    <a
-      href="/cart"
+    <Button
+      // href="/cart"
+      size="icon"
+      variant="outline"
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -208,8 +290,13 @@ function CartBadge({count}: {count: number | null}) {
         } as CartViewPayload);
       }}
     >
-      Cart {count === null ? <span>&nbsp;</span> : count}
-    </a>
+      <NavLink to="/cart">
+        <LuShoppingCart className="relative -bottom-3 -right-1" />
+        <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
+          {count}
+        </span>
+      </NavLink>
+    </Button>
   );
 }
 

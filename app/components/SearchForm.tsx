@@ -1,5 +1,6 @@
 import {useRef, useEffect} from 'react';
 import {Form, type FormProps} from '@remix-run/react';
+import {Button} from './ui/button';
 
 type SearchFormProps = Omit<FormProps, 'children'> & {
   children: (args: {
@@ -31,9 +32,9 @@ export function SearchForm({children, ...props}: SearchFormProps) {
 
   useFocusOnCmdK(inputRef);
 
-  if (typeof children !== 'function') {
-    return null;
-  }
+  // if (typeof children !== 'function') {
+  //   return null;
+  // }
 
   return (
     <Form method="get" {...props}>

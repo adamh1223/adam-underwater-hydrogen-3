@@ -27,7 +27,7 @@ img {
 * --------------------------------------------------
 */
 aside {
-  /* background: var(--color-light); */
+  background: var(--color-background);
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
   height: 100vh;
   max-width: var(--aside-width);
@@ -157,40 +157,36 @@ button.reset:hover:not(:has(> *)) {
 * --------------------------------------------------
 */
 .header {
-  align-items: center;
   background: var(--color-background);
-
-  color: black;
-  display: flex;
-  height: var(--header-height);
-  padding: 0 1rem;
+  /* height: var(--header-height); */
   position: sticky;
   color: white;
   top: 0;
   z-index: 1;
 }
 
-.header-menu-mobile-toggle {
+/* .header-menu-mobile-toggle {
   @media (min-width: 48em) {
     display: none;
   }
-}
+} */
 
-.header-menu-mobile {
+/* .header-menu-mobile {
   display: flex;
   flex-direction: column;
   grid-gap: 1rem;
-}
+} */
 
-.header-menu-desktop {
+/* .header-menu-desktop {
   display: none;
   grid-gap: 1rem;
   @media (min-width: 45em) {
     display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     grid-gap: 1rem;
-    margin-left: 3rem;
   }
-}
+} */
 
 .header-menu-item {
   cursor: pointer;
@@ -511,3 +507,11 @@ button.reset:hover:not(:has(> *)) {
 .account-logout {
   display: inline-block;
 }
+
+/* .logo {
+  width: 95%;
+}
+
+.logo-container {
+  width: 30%;
+} */
