@@ -7,7 +7,7 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import VideoPreview from '~/components/video/VideoPreview';
-
+import Hero from '~/components/hero/Hero';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -32,7 +32,6 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     context.storefront.query(FEATURED_COLLECTION_QUERY),
     // Add other queries here, so that they are loaded in parallel
   ]);
-
 
   return {
     featuredCollection: collections.nodes[0],
@@ -60,9 +59,15 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
-  
+
   return (
     <div className="home">
+      <Hero></Hero>
+      <section className="pt-24">
+        <div className="flex justify-center">
+          <img src={'/featured.png'} style={{height: '90px'}}></img>
+        </div>
+      </section>
       <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
@@ -78,20 +83,16 @@ function FeaturedCollection({
   const image = collection?.image;
   return (
     <>
-    <Link to={'/about'}>
-    {/* <Button>Hello</Button> */}
-    </Link>
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
+      <Link
+        className="featured-collection"
+        to={`/collections/${collection.handle}`}
+      >
+        {image && (
+          <div className="featured-collection-image">
+            <Image data={image} sizes="100vw" />
+          </div>
+        )}
+      </Link>
     </>
   );
 }
@@ -103,36 +104,39 @@ function RecommendedProducts({
 }) {
   return (
     <div className="recommended-products">
-      <h2>Recommended Products</h2>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => (
             <div className="recommended-products-grid">
               {response
                 ? response.products.nodes.map((product) => {
-                  console.log(product, '111111');
-                  const isVideo = product.tags?.includes('Video')
-                  return (
-                    <Link
-                      key={product.id}
-                      className="recommended-product"
-                      to={`/products/${product.handle}`}
-                    >
-                      
-                      {isVideo? <VideoPreview handle={product.handle}
-                      thumbnail = {product.images.nodes[0]}
+                    console.log(product, '111111');
+                    const isVideo = product.tags?.includes('Video');
+                    return (
+                      <Link
+                        key={product.id}
+                        className="recommended-product"
+                        to={`/products/${product.handle}`}
                       >
-                    </VideoPreview>:<Image
-                        data={product.images.nodes[0]}
-                        aspectRatio="1/1"
-                        sizes="(min-width: 45em) 20vw, 50vw"
-                      />}
-                      <h4>{product.title}</h4>
-                      <small>
-                        <Money data={product.priceRange.minVariantPrice} />
-                      </small>
-                    </Link>
-                  )})
+                        {isVideo ? (
+                          <VideoPreview
+                            handle={product.handle}
+                            thumbnail={product.images.nodes[0]}
+                          ></VideoPreview>
+                        ) : (
+                          <Image
+                            data={product.images.nodes[0]}
+                            aspectRatio="1/1"
+                            sizes="(min-width: 45em) 20vw, 50vw"
+                          />
+                        )}
+                        <h4>{product.title}</h4>
+                        <small>
+                          <Money data={product.priceRange.minVariantPrice} />
+                        </small>
+                      </Link>
+                    );
+                  })
                 : null}
             </div>
           )}

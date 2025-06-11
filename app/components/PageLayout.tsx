@@ -19,7 +19,17 @@ import {Button} from './ui/button';
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
   footer: Promise<FooterQuery | null>;
-  header: HeaderQuery;
+  header: HeaderQuery & {
+    collection?: {
+      metafield?: {
+        references?: {
+          nodes?: Array<{
+            image: {url: string};
+          }>;
+        };
+      };
+    };
+  };
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
   children?: React.ReactNode;

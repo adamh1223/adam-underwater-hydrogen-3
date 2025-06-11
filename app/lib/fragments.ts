@@ -34,12 +34,14 @@ export const CART_QUERY_FRAGMENT = `#graphql
         }
         requiresShipping
         title
-        image {
-          id
-          url
-          altText
-          width
-          height
+        images(first: 3) {
+          nodes {
+            id
+            url
+            altText
+            width
+            height
+          }
 
         }
         product {
@@ -85,12 +87,14 @@ export const CART_QUERY_FRAGMENT = `#graphql
         }
         requiresShipping
         title
-        image {
-          id
-          url
-          altText
-          width
-          height
+        images(first: 3) {
+          nodes {
+            id
+            url
+            altText
+            width
+            height
+          }
         }
         product {
           handle

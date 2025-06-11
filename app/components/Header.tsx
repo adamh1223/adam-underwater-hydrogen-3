@@ -76,8 +76,8 @@ export function HeaderMenu({
   primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
   viewport: Viewport;
   publicStoreDomain: HeaderProps['publicStoreDomain'];
-  isLoggedIn: HeaderProps['isLoggedIn'];
-  cart: HeaderProps['cart'];
+  isLoggedIn?: HeaderProps['isLoggedIn'];
+  cart?: HeaderProps['cart'];
 }) {
   const className = `header-menu-${viewport} flex flex-col xl:flex-row sm:justify-between sm:items-center lg:justify-between flex-wrap py-4 gap-4 navbar`;
   const {close} = useAside();
@@ -212,16 +212,13 @@ export function HeaderMenu({
         </div>
       </div>
       <div className="3 flex gap-4 items-center">
-        <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+        <HeaderCtas cart={cart} />
       </div>
     </nav>
   );
 }
 
-function HeaderCtas({
-  isLoggedIn,
-  cart,
-}: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
+function HeaderCtas({cart}: Partial<Pick<HeaderProps, 'cart'>>) {
   return (
     <nav className="header-ctas" role="navigation">
       {/* <HeaderMenuMobileToggle /> */}
@@ -300,7 +297,7 @@ function CartBadge({count}: {count: number | null}) {
   );
 }
 
-function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
+function CartToggle({cart}: Partial<Pick<HeaderProps, 'cart'>>) {
   return (
     <Suspense fallback={<CartBadge count={null} />}>
       <Await resolve={cart}>

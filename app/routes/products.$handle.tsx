@@ -11,6 +11,7 @@ import {
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
+import IndividualProduct from '~/components/products/individualProduct';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -95,10 +96,25 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
+  const {title, descriptionHtml, images} = product;
+  const imageURLs = images.nodes.map((item: {url: string}) => item.url);
+  console.log(product, '12121212');
+  console.log(selectedVariant, '131313');
+  const imagesToUse = images.nodes.map(
+    (item: {url: string; altText: string}) => {
+      if (selectedVariant.title.toLowerCase() === item.altText.split('_')[0]) {
+        return item.url;
+      }
+    },
+  );
+  console.log(imagesToUse, '131313');
 
   return (
     <div className="product">
+      {/* <IndividualProduct
+        productName={title}
+        productImages={imageURLs}
+      ></IndividualProduct> */}
       <ProductImage image={selectedVariant?.image} />
       <div className="product-main">
         <h1>{title}</h1>
@@ -186,6 +202,12 @@ const PRODUCT_FRAGMENT = `#graphql
     description
     encodedVariantExistence
     encodedVariantAvailability
+    images(first: 3) {
+      nodes {
+        url
+        altText
+      }
+    }
     options {
       name
       optionValues {
@@ -198,6 +220,7 @@ const PRODUCT_FRAGMENT = `#graphql
           image {
             previewImage {
               url
+              altText
             }
           }
         }
