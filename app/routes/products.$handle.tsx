@@ -99,7 +99,6 @@ export default function Product() {
   const {title, descriptionHtml, images} = product;
   const imageURLs = images.nodes.map((item: {url: string}) => item.url);
   console.log(product, '12121212');
-  console.log(selectedVariant, '131313');
   const imagesToUse = images.nodes.map(
     (item: {url: string; altText: string}) => {
       if (selectedVariant.title.toLowerCase() === item.altText.split('_')[0]) {
@@ -107,7 +106,7 @@ export default function Product() {
       }
     },
   );
-  console.log(imagesToUse, '131313');
+  console.log(product, '131313');
 
   return (
     <div className="product">
@@ -200,6 +199,15 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
+    collection(handle: "multiple_images") {
+      id
+      title
+      metafield(namespace: "custom", key: "multiple_images") {
+        value
+        type
+      }
+
+    }
     encodedVariantExistence
     encodedVariantAvailability
     images(first: 3) {

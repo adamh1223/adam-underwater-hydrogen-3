@@ -17,6 +17,8 @@ export function ProductForm({
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
+  console.log(productOptions, '232323');
+
   return (
     <div className="product-form">
       {productOptions.map((option) => {
@@ -45,22 +47,24 @@ export function ProductForm({
                   // that leads to a different url, we need to render it
                   // as an anchor tag
                   return (
-                    <Link
-                      className="product-options-item"
-                      key={option.name + name}
-                      prefetch="intent"
-                      preventScrollReset
-                      replace
-                      to={`/products/${handle}?${variantUriQuery}`}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </Link>
+                    <>
+                      <Link
+                        className="product-options-item"
+                        key={option.name + name}
+                        prefetch="intent"
+                        preventScrollReset
+                        replace
+                        to={`/products/${handle}?${variantUriQuery}`}
+                        style={{
+                          border: selected
+                            ? '1px solid black'
+                            : '1px solid transparent',
+                          opacity: available ? 1 : 0.3,
+                        }}
+                      >
+                        <ProductOptionSwatch swatch={swatch} name={name} />
+                      </Link>
+                    </>
                   );
                 } else {
                   // SEO
