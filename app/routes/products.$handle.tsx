@@ -96,17 +96,62 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml, images} = product;
-  const imageURLs = images.nodes.map((item: {url: string}) => item.url);
-  console.log(product, '12121212');
-  const imagesToUse = images.nodes.map(
-    (item: {url: string; altText: string}) => {
-      if (selectedVariant.title.toLowerCase() === item.altText.split('_')[0]) {
-        return item.url;
-      }
-    },
-  );
-  console.log(product, '131313');
+  const {title, descriptionHtml, collections} = product;
+  const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
+  const {references} = productSizeMetafields || {};
+  const threeColumnImages = references?.nodes?.filter((item: any) => {
+    if (item.image.altText?.includes('3')) {
+      return {
+        image: {
+          url: item.image.url,
+          altText: item.image.altText,
+        },
+      };
+    }
+  });
+  const twoColumnImages = references?.nodes?.filter((item: any) => {
+    if (item.image.altText?.includes('2')) {
+      return {
+        image: {
+          url: item.image.url,
+          altText: item.image.altText,
+        },
+      };
+    }
+  });
+  const standardImages = references?.nodes?.filter((item: any) => {
+    if (item.image.altText?.includes('1')) {
+      return {
+        image: {
+          url: item.image.url,
+          altText: item.image.altText,
+        },
+      };
+    }
+  });
+
+  const determineLayoutImages = (variant: any) => {
+    const layout = variant.title.split(' / ')[0];
+    if (layout === 'Standard') {
+      return standardImages;
+    } else if (layout === 'two columns') {
+      return twoColumnImages;
+    } else if (layout === 'three columns') {
+      return threeColumnImages;
+    }
+  };
+
+  let layoutImagesToUse = determineLayoutImages(selectedVariant);
+  // const imageURLs = images.nodes.map((item: {url: string}) => item.url);
+  // console.log(product, '12121212');
+  // const imagesToUse = images.nodes.map(
+  //   (item: {url: string; altText: string}) => {
+  //     if (selectedVariant.title.toLowerCase() === item.altText.split('_')[0]) {
+  //       return item.url;
+  //     }
+  //   },
+  // );
+  // console.log(product, '131313');
 
   return (
     <div className="product">
@@ -125,6 +170,7 @@ export default function Product() {
         <ProductForm
           productOptions={productOptions}
           selectedVariant={selectedVariant}
+          imagesToShow={layoutImagesToUse}
         />
         <br />
         <br />
@@ -199,15 +245,6 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
-    collection(handle: "multiple_images") {
-      id
-      title
-      metafield(namespace: "custom", key: "multiple_images") {
-        value
-        type
-      }
-
-    }
     encodedVariantExistence
     encodedVariantAvailability
     images(first: 3) {
@@ -257,6 +294,29 @@ const PRODUCT_QUERY = `#graphql
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product
+      collections(first: 10) {
+        edges {
+          node {
+            title
+            metafield(namespace: "custom", key: "multiple_images") {
+              namespace
+              key
+              value
+              references(first: 10) {
+                nodes {
+                  ... on MediaImage {
+                    id
+                    image {
+                      url
+                      altText
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
   ${PRODUCT_FRAGMENT}

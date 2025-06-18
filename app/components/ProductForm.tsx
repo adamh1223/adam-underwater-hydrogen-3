@@ -7,17 +7,26 @@ import type {
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
+import {sanitizeErrors} from '@remix-run/server-runtime/dist/errors';
 
+interface ProductImages {
+  id: string;
+  image: {
+    url: string;
+    altText: string;
+  };
+}
 export function ProductForm({
   productOptions,
   selectedVariant,
+  imagesToShow,
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
+  imagesToShow: ProductImages[];
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
-  console.log(productOptions, '232323');
 
   return (
     <div className="product-form">
@@ -40,6 +49,17 @@ export function ProductForm({
                   isDifferentProduct,
                   swatch,
                 } = value;
+                const determineLayout = (name: string) => {
+                  if (name === 'three columns') {
+                    return '3';
+                  }
+                  return '';
+                };
+                const layoutToCheck = determineLayout(name);
+                const variantImagesToShow = imagesToShow?.filter((image) =>
+                  image?.image.altText?.includes(layoutToCheck),
+                );
+                console.log(variantImagesToShow, '181818');
 
                 if (isDifferentProduct) {
                   // SEO
@@ -81,7 +101,7 @@ export function ProductForm({
                       key={option.name + name}
                       style={{
                         border: selected
-                          ? '1px solid black'
+                          ? '1px solid #0EA5E9'
                           : '1px solid transparent',
                         opacity: available ? 1 : 0.3,
                       }}
@@ -95,7 +115,11 @@ export function ProductForm({
                         }
                       }}
                     >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
+                      <ProductOptionSwatch
+                        swatch={swatch}
+                        name={name}
+                        variantImagesToShow={variantImagesToShow}
+                      />
                     </button>
                   );
                 }
@@ -131,12 +155,36 @@ export function ProductForm({
 function ProductOptionSwatch({
   swatch,
   name,
+  variantImagesToShow,
 }: {
   swatch?: Maybe<ProductOptionValueSwatch> | undefined;
   name: string;
+  variantImagesToShow?: ProductImages[];
 }) {
+  const sizes = ['Small', 'Medium', 'Large'];
+  // Add sizes here in future
   const image = swatch?.image?.previewImage?.url;
   const color = swatch?.color;
+
+  if (variantImagesToShow && sizes.includes(name)) {
+    const specificSize = variantImagesToShow.find((image) =>
+      image.image.altText.includes(name.toLowerCase()),
+    );
+    return (
+      <div
+        aria-label={name}
+        className="product-option-label-swatch"
+        style={{
+          backgroundColor: color || 'transparent',
+        }}
+      >
+        <img
+          src={specificSize?.image?.url}
+          alt={specificSize?.image?.altText}
+        />
+      </div>
+    );
+  }
 
   if (!image && !color) return name;
 
