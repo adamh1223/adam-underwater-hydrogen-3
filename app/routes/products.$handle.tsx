@@ -96,7 +96,7 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml, collections} = product;
+  const {title, descriptionHtml, collections, images} = product;
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
   const {references} = productSizeMetafields || {};
   const threeColumnImages = references?.nodes?.filter((item: any) => {
@@ -152,14 +152,21 @@ export default function Product() {
   //   },
   // );
   // console.log(product, '131313');
+  const standardCarouselImages = images.nodes.map((image: any) => {
+    if (image.altText?.includes('carousel')) {
+      return image;
+    }
+  }).filter(Boolean);
+  console.log(standardCarouselImages, '12341234');
+  standardCarouselImages.unshift(selectedVariant?.image);
 
   return (
     <div className="product">
-      {/* <IndividualProduct
+      <IndividualProduct
         productName={title}
-        productImages={imageURLs}
-      ></IndividualProduct> */}
-      <ProductImage image={selectedVariant?.image} />
+        productImages={standardCarouselImages}
+      ></IndividualProduct>
+      {/* <ProductImage image={selectedVariant?.image} /> */}
       <div className="product-main">
         <h1>{title}</h1>
         <ProductPrice
@@ -247,7 +254,7 @@ const PRODUCT_FRAGMENT = `#graphql
     description
     encodedVariantExistence
     encodedVariantAvailability
-    images(first: 3) {
+    images(first: 10) {
       nodes {
         url
         altText

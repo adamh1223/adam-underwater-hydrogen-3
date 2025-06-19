@@ -7,14 +7,34 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel';
+import {useEffect, useRef, useState} from 'react';
+import {count} from 'console';
 
 function IndividualProduct({
   productName,
   productImages,
 }: {
   productName: string;
-  productImages: string[];
+  productImages: {
+    url: string;
+    altText: string;
+  }[];
 }) {
+  const carouselRef = useRef(null);
+  const resetCarousel = () => {
+    if (carouselRef.current) {
+      // @ts-expect-error testing
+      carouselRef.current.scrollToIndex(0);
+    }
+  };
+
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    resetCarousel();
+    setCount(0);
+    console.log('hello world', count, '1357');
+  }, [productImages]);
   return (
     <>
       <section className="px-[60px] pt-[40px]">
@@ -24,44 +44,52 @@ function IndividualProduct({
           <Link to="/">{productName}</Link>
         </div>
         {/* <Breadcrumb name="INdividual product name" /> */}
-        <div className="mt-6 grid gap-y-8 xl:grid-cols-2 xl:gap-x-16 me-7">
+        <div className="mt-6 grid gap-y-8 xl:gap-x-16 me-7">
           <Carousel
+            // ref={carouselRef}
+            // opts={{
+            //   align: 'start',
+            //   startIndex: count,
+            // }}
             className="w-full max-w-m mx-3 flex items-center justify-center sm: mx-[31px]
           md: mx-[20px]"
+            key={JSON.stringify(productImages)}
           >
             <CarouselContent className="flex">
-              {/* First item */}
-              <CarouselItem className="flex items-center justify-center">
+              {productImages.map((url, idx) => (
+                <CarouselItem
+                  className="flex items-center justify-center"
+                  key={idx}
+                >
+                  <div className="p-4 flex items-center justify-center">
+                    <img
+                      src={url.url}
+                      alt=""
+                      className="max-h-full object-contain"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+
+              {/* <CarouselItem className="flex items-center justify-center">
                 <div className="p-4 flex items-center justify-center">
                   <img
-                    src={productImages[0]}
+                    src={productImages[1]?.url}
                     alt=""
                     className="max-h-full object-contain"
                   />
                 </div>
               </CarouselItem>
 
-              {/* Second item */}
               <CarouselItem className="flex items-center justify-center">
                 <div className="p-4 flex items-center justify-center">
                   <img
-                    src={productImages[1]}
+                    src={productImages[2]?.url}
                     alt=""
                     className="max-h-full object-contain"
                   />
                 </div>
-              </CarouselItem>
-
-              {/* Third item */}
-              <CarouselItem className="flex items-center justify-center">
-                <div className="p-4 flex items-center justify-center">
-                  <img
-                    src={productImages[2]}
-                    alt=""
-                    className="max-h-full object-contain"
-                  />
-                </div>
-              </CarouselItem>
+              </CarouselItem> */}
             </CarouselContent>
 
             <CarouselPrevious />
