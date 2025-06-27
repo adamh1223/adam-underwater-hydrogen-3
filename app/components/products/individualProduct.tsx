@@ -37,14 +37,14 @@ function IndividualProduct({
   }, [productImages]);
   return (
     <>
-      <section className="px-[60px] pt-[40px]">
+      <div className="pe-[60px]">
         <div className="breadcrumbs">
           <Link to="/">Home</Link>
           <Link to="/products">Products</Link>
           <Link to="/">{productName}</Link>
         </div>
         {/* <Breadcrumb name="INdividual product name" /> */}
-        <div className="mt-6 grid gap-y-8 xl:gap-x-16 me-7">
+        <div>
           <Carousel
             // ref={carouselRef}
             // opts={{
@@ -123,7 +123,7 @@ function IndividualProduct({
 
         {reviewDoesNotExist && <SubmitReview productId={params.id} />} */}
         </div>
-      </section>
+      </div>
     </>
   );
 }

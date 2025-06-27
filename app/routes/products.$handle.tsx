@@ -152,41 +152,47 @@ export default function Product() {
   //   },
   // );
   // console.log(product, '131313');
-  const standardCarouselImages = images.nodes.map((image: any) => {
-    if (image.altText?.includes('carousel')) {
-      return image;
-    }
-  }).filter(Boolean);
+  const standardCarouselImages = images.nodes
+    .map((image: any) => {
+      if (image.altText?.includes('carousel')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
   console.log(standardCarouselImages, '12341234');
   standardCarouselImages.unshift(selectedVariant?.image);
 
   return (
-    <div className="product">
-      <IndividualProduct
-        productName={title}
-        productImages={standardCarouselImages}
-      ></IndividualProduct>
-      {/* <ProductImage image={selectedVariant?.image} /> */}
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-          imagesToShow={layoutImagesToUse}
-        />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
+    <section className="product px-[60px] pt-[40px]">
+      <div className="mt-6 grid gap-y-8 xl:grid-cols-2 xl:gap-x-16 me-7">
+        <div className="productCarousel">
+          <IndividualProduct
+            productName={title}
+            productImages={standardCarouselImages}
+          ></IndividualProduct>
+          {/* <ProductImage image={selectedVariant?.image} /> */}
+        </div>
+        <div className="product-main">
+          <h1 className="capitalize text-3xl font-bold">{title}</h1>
+          <ProductPrice
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+          <br />
+          <ProductForm
+            productOptions={productOptions}
+            selectedVariant={selectedVariant}
+            imagesToShow={layoutImagesToUse}
+          />
+          <br />
+          <br />
+          <p>
+            <strong>Description</strong>
+          </p>
+          <br />
+          <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+          <br />
+        </div>
       </div>
       <Analytics.ProductView
         data={{
@@ -203,7 +209,7 @@ export default function Product() {
           ],
         }}
       />
-    </div>
+    </section>
   );
 }
 
