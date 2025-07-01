@@ -9,6 +9,7 @@ import {
 } from '../ui/carousel';
 import {useEffect, useRef, useState} from 'react';
 import {count} from 'console';
+import {ChevronRightIcon} from 'lucide-react';
 
 function IndividualProduct({
   productName,
@@ -38,11 +39,32 @@ function IndividualProduct({
   return (
     <>
       <div className="pe-[60px]">
-        <div className="breadcrumbs">
-          <Link to="/">Home</Link>
-          <Link to="/products">Products</Link>
-          <Link to="/">{productName}</Link>
-        </div>
+        {/* may need to be made into a component if more pages are made */}
+        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/">Home</Link>
+          </li>
+          <li
+            role="presentation"
+            aria-hidden="true"
+            className="[&>svg]:size-3.5"
+          >
+            {<ChevronRightIcon />}
+          </li>
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/collections/all">Products</Link>
+          </li>
+          <li
+            role="presentation"
+            aria-hidden="true"
+            className="[&>svg]:size-3.5"
+          >
+            {<ChevronRightIcon />}
+          </li>
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/">{productName}</Link>
+          </li>
+        </ol>
         {/* <Breadcrumb name="INdividual product name" /> */}
         <div>
           <Carousel

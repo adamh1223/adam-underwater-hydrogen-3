@@ -151,7 +151,7 @@ export default function Product() {
   //     }
   //   },
   // );
-  // console.log(product, '131313');
+  console.log(product, '131313');
   const standardCarouselImages = images.nodes
     .map((image: any) => {
       if (image.altText?.includes('carousel')) {
@@ -159,8 +159,21 @@ export default function Product() {
       }
     })
     .filter(Boolean);
-  console.log(standardCarouselImages, '12341234');
   standardCarouselImages.unshift(selectedVariant?.image);
+  const locationTag = product.tags
+    .find((word: string) => word.includes('loc'))
+    ?.split('_');
+  const locationName = locationTag
+    ?.slice(1, locationTag.length - 2)
+    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+  const locationState = locationTag
+    ?.slice(locationTag.length - 2, locationTag.length - 1)
+    .map((word: string) => word.toUpperCase());
+  const locationCountry = locationTag
+    ?.slice(locationTag.length - 1, locationTag.length)
+    .map((word: string) => word.toUpperCase());
+  console.log(locationTag, '171717');
 
   return (
     <section className="product px-[60px] pt-[40px]">
@@ -179,6 +192,7 @@ export default function Product() {
             compareAtPrice={selectedVariant?.compareAtPrice}
           />
           <br />
+          <h4 className="text-xl mt-2">{`${locationName}, ${locationState}, ${locationCountry}`}</h4>
           <ProductForm
             productOptions={productOptions}
             selectedVariant={selectedVariant}
@@ -254,6 +268,7 @@ const PRODUCT_FRAGMENT = `#graphql
   fragment Product on Product {
     id
     title
+    tags
     vendor
     handle
     descriptionHtml

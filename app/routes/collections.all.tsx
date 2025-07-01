@@ -4,6 +4,18 @@ import {getPaginationVariables, Image, Money} from '@shopify/hydrogen';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {
+  Carousel,
+  CarouselApi,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '~/components/ui/carousel';
+import {Card, CardContent} from '~/components/ui/card';
+import {Button} from '~/components/ui/button';
+import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
+import {useEffect, useState} from 'react';
 
 export const meta: MetaFunction<typeof loader> = () => {
   return [{title: `Hydrogen | Products`}];
@@ -49,10 +61,10 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Collection() {
   const {products} = useLoaderData<typeof loader>();
+  console.log(products, '292929');
 
   return (
-    <div className="collection">
-      <h1>Products</h1>
+    <div className="pt-12 mx-8 grid gap-4 md:grid-cols-2 px-5 pb-5">
       <PaginatedResourceSection
         connection={products}
         resourcesClassName="products-grid"
@@ -68,36 +80,112 @@ export default function Collection() {
     </div>
   );
 }
-
+type shopifyImage = {url: string; altText: string};
 function ProductItem({
   product,
   loading,
 }: {
-  product: ProductItemFragment;
+  product: ProductItemFragment & {images: {nodes: shopifyImage[]}};
   loading?: 'eager' | 'lazy';
 }) {
   const variantUrl = useVariantUrl(product.handle);
+  const standardImages = product.images.nodes.filter((item) =>
+    item.altText?.includes('standard'),
+  );
+  console.log(standardImages, '202020');
+  const [carouselApi, setcarouselApi] = useState<CarouselApi | null>(null);
+  const [currentIndex, setcurrentIndex] = useState(0);
+  const [totalItems, settotalItems] = useState(0);
+  useEffect(() => {
+    if (!carouselApi) return;
+
+    const updateCarouselState = () => {
+      setcurrentIndex(carouselApi.selectedScrollSnap());
+      settotalItems(carouselApi.scrollSnapList().length);
+    };
+
+    updateCarouselState();
+
+    carouselApi.on('select', updateCarouselState);
+
+    return () => {
+      carouselApi.off('select', updateCarouselState); // Clean up on unmount
+    };
+  }, [carouselApi]);
+  const scrollToIndex = (index: number) => {
+    carouselApi?.scrollTo(index);
+  };
+  const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.stopPropagation();
+    scrollToIndex(currentIndex + 1);
+  };
+  const decreaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.stopPropagation();
+    scrollToIndex(currentIndex - 1);
+  };
+
   return (
-    <Link
-      className="product-item"
-      key={product.id}
-      prefetch="intent"
-      to={variantUrl}
-    >
-      {product.featuredImage && (
-        <Image
-          alt={product.featuredImage.altText || product.title}
-          aspectRatio="1/1"
-          data={product.featuredImage}
-          loading={loading}
-          sizes="(min-width: 45em) 400px, 100vw"
-        />
-      )}
-      <h4>{product.title}</h4>
-      <small>
-        <Money data={product.priceRange.minVariantPrice} />
-      </small>
-    </Link>
+    <article className="group relative">
+      <Card className="group-hover:shadow-xl transition-shadow duration-500">
+        <CardContent className="p-4">
+          <div className="relative h-full w-full rounded">
+            <Carousel
+              // ref={carouselRef}
+              // opts={{
+              //   align: 'start',
+              //   startIndex: count,
+              // }}
+              setApi={setcarouselApi}
+              className="w-full max-w-7xl transform-none me-4"
+            >
+              <Link
+                className="product-item"
+                key={product.id}
+                prefetch="intent"
+                to={variantUrl}
+              >
+                <CarouselContent>
+                  {standardImages.map((url, idx) => (
+                    <CarouselItem
+                      className="flex items-center justify-center"
+                      key={idx}
+                    >
+                      <div className="w-[90%] p-4 flex items-center justify-center">
+                        <img
+                          src={url.url}
+                          alt=""
+                          className="max-h-full object-contain"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Link>
+            </Carousel>
+            <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+              <Button
+                onClick={decreaseIndex}
+                className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-8px] shadow-none"
+                variant="secondary"
+              >
+                <ChevronLeftIcon className="h-6 w-6 text-white"></ChevronLeftIcon>
+              </Button>
+              <Button
+                onClick={increaseIndex}
+                className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-8px] shadow-none"
+                variant="secondary"
+              >
+                <ChevronRightIcon className="h-6 w-6 text-white"></ChevronRightIcon>
+              </Button>
+            </div>
+            <h4>{product.title}</h4>
+            <small>
+              <Money data={product.priceRange.minVariantPrice} />
+            </small>
+          </div>
+        </CardContent>
+      </Card>
+    </article>
   );
 }
 
@@ -116,6 +204,12 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       url
       width
       height
+    }
+    images(first: 20) {
+      nodes {
+        url
+        altText
+      }
     }
     priceRange {
       minVariantPrice {

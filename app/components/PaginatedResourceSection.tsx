@@ -21,19 +21,15 @@ export function PaginatedResourceSection<NodesType>({
         );
 
         return (
-          <div>
+          <>
             <PreviousLink>
               {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
             </PreviousLink>
-            {resourcesClassName ? (
-              <div className={resourcesClassName}>{resourcesMarkup}</div>
-            ) : (
-              resourcesMarkup
-            )}
+            {resourcesClassName ? <>{resourcesMarkup}</> : resourcesMarkup}
             <NextLink>
               {isLoading ? 'Loading...' : <span>Load more ↓</span>}
             </NextLink>
-          </div>
+          </>
         );
       }}
     </Pagination>
