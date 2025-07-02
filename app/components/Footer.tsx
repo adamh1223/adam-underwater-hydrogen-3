@@ -1,8 +1,9 @@
 import {Suspense} from 'react';
 import {Await, Link, NavLink} from '@remix-run/react';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
-import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import '../styles/components/Footer.css'
+import {FaFacebook, FaInstagram, FaLinkedin, FaYoutube} from 'react-icons/fa';
+import '../styles/components/Footer.css';
+import {Button} from './ui/button';
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -45,8 +46,8 @@ function FooterMenu({
 }) {
   return (
     // <nav className="" role="navigation">
-      
-      <>
+
+    <>
       <div className="footer-container px-5">
         <div className="flex items-center justify-center w-full my-8">
           <div className="flex-1 h-px bg-muted" />
@@ -58,7 +59,10 @@ function FooterMenu({
               >
                 <FaInstagram className="social-icon" />
               </Link>
-              <Link to="https://www.youtube.com/@Seaforestation" target="_blank">
+              <Link
+                to="https://www.youtube.com/@Seaforestation"
+                target="_blank"
+              >
                 <FaYoutube className="social-icon" />
               </Link>
               <Link
@@ -72,6 +76,58 @@ function FooterMenu({
           <div className="flex-1 h-px bg-muted" />
         </div>
       </div>
+
+      <div className="flex justify-evenly w-full pb-[100px] text-muted-foreground pt-5 mx-5">
+        <div className="help">
+          <div className="footer-title flex justify-center text-3xl mb-2">
+            Help
+          </div>
+          <div className="my-[-10px]">
+            <Button variant="link">
+              <Link to="/pages/faq">FAQ</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="policies">
+          <div className="footer-title flex justify-center mb-2 text-3xl">
+            Policies
+          </div>
+          <div className="my-[-10px]">
+            <Button variant="link">
+              <Link to="/policies/privacy-policy">Privacy Policy</Link>
+            </Button>
+          </div>
+          <div className="my-[-10px]">
+            <Button variant="link">
+              <Link to="/policies/refund-policy">Refund Policy</Link>
+            </Button>
+          </div>
+          <div className="my-[-10px]">
+            <Button variant="link">
+              <Link to="/policies/terms-of-service">Terms of Service</Link>
+            </Button>
+          </div>
+          <div className="my-[-10px]">
+            <Button variant="link">
+              <Link to="/policies/shipping-policy">Shipping Policy</Link>
+            </Button>
+          </div>
+        </div>
+        {/* <NewsLetter /> */}
+      </div>
+
+      {/* Very Bottom */}
+      <div className="flex justify-center ms-[-5px] mb-3">
+        <Button variant="link" asChild>
+          <Link to="/">
+            <img src={'/colorlogo.svg'} style={{height: '4rem'}}></img>
+          </Link>
+        </Button>
+      </div>
+      <div className="flex justify-center my-5 text-muted-foreground">
+        <p>Copyright 2024 Adam Underwater, All rights reserved.</p>
+      </div>
+
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
@@ -98,7 +154,7 @@ function FooterMenu({
           </NavLink>
         );
       })}
-    {/* // </nav> */}
+      {/* // </nav> */}
     </>
   );
 }

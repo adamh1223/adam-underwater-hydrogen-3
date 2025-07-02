@@ -1,5 +1,5 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
 import {
   getSelectedProductOptions,
   Analytics,
@@ -12,6 +12,7 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import IndividualProduct from '~/components/products/individualProduct';
+import {ChevronRightIcon} from 'lucide-react';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -177,14 +178,29 @@ export default function Product() {
 
   return (
     <section className="product px-[60px] pt-[40px]">
-      <div className="mt-6 grid gap-y-8 xl:grid-cols-2 xl:gap-x-16 me-7">
-        <div className="productCarousel">
-          <IndividualProduct
-            productName={title}
-            productImages={standardCarouselImages}
-          ></IndividualProduct>
-          {/* <ProductImage image={selectedVariant?.image} /> */}
-        </div>
+      <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
+        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+          <Link to="/">Home</Link>
+        </li>
+        <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
+          {<ChevronRightIcon />}
+        </li>
+        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+          <Link to="/collections/all">Products</Link>
+        </li>
+        <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
+          {<ChevronRightIcon />}
+        </li>
+        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+          <Link to="/">{title}</Link>
+        </li>
+      </ol>
+      <div className="xl:grid xl:grid-cols-2 xl:gap-x-24">
+        <IndividualProduct
+          productName={title}
+          productImages={standardCarouselImages}
+        ></IndividualProduct>
+        {/* <ProductImage image={selectedVariant?.image} /> */}
         <div className="product-main">
           <h1 className="capitalize text-3xl font-bold">{title}</h1>
           <ProductPrice

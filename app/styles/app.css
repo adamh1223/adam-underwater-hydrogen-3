@@ -432,10 +432,6 @@ button.reset:hover:not(:has(> *)) {
 * routes/blog.$articlehandle.tsx
 * --------------------------------------------------
 */
-.article img {
-  height: auto;
-  width: 100%;
-}
 
 /*
 * --------------------------------------------------

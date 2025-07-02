@@ -69,9 +69,15 @@ export default function Collection() {
         connection={products}
         resourcesClassName="products-grid"
       >
-        {({node: product, index}) => (
+        {({
+          node: product,
+          index,
+        }: {
+          node: ProductItemFragment & {images: {nodes: shopifyImage[]}};
+          index: number;
+        }) => (
           <ProductItem
-            key={product.id}
+            key={index}
             product={product}
             loading={index < 8 ? 'eager' : undefined}
           />
@@ -123,11 +129,12 @@ function ProductItem({
     evt.stopPropagation();
     scrollToIndex(currentIndex - 1);
   };
+  console.log(product.priceRange, '1010101');
 
   return (
     <article className="group relative">
       <Card className="group-hover:shadow-xl transition-shadow duration-500">
-        <CardContent className="p-4">
+        <CardContent>
           <div className="relative h-full w-full rounded">
             <Carousel
               // ref={carouselRef}
@@ -178,10 +185,15 @@ function ProductItem({
                 <ChevronRightIcon className="h-6 w-6 text-white"></ChevronRightIcon>
               </Button>
             </div>
-            <h4>{product.title}</h4>
-            <small>
-              <Money data={product.priceRange.minVariantPrice} />
-            </small>
+            <div className="flex justify-center">
+              <h5>{product.title}</h5>
+            </div>
+            <div className="flex justify-center">
+              <span className="text-md flex flex-row gap-2">
+                From
+                <Money data={product.priceRange.minVariantPrice} />
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>

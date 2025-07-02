@@ -38,62 +38,37 @@ function IndividualProduct({
   }, [productImages]);
   return (
     <>
-      <div className="pe-[60px]">
-        {/* may need to be made into a component if more pages are made */}
-        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
-          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-            <Link to="/">Home</Link>
-          </li>
-          <li
-            role="presentation"
-            aria-hidden="true"
-            className="[&>svg]:size-3.5"
-          >
-            {<ChevronRightIcon />}
-          </li>
-          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-            <Link to="/collections/all">Products</Link>
-          </li>
-          <li
-            role="presentation"
-            aria-hidden="true"
-            className="[&>svg]:size-3.5"
-          >
-            {<ChevronRightIcon />}
-          </li>
-          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-            <Link to="/">{productName}</Link>
-          </li>
-        </ol>
-        {/* <Breadcrumb name="INdividual product name" /> */}
-        <div>
-          <Carousel
-            // ref={carouselRef}
-            // opts={{
-            //   align: 'start',
-            //   startIndex: count,
-            // }}
-            className="w-full max-w-m mx-3 flex items-center justify-center sm: mx-[31px]
-          md: mx-[20px]"
-            key={JSON.stringify(productImages)}
-          >
-            <CarouselContent className="flex">
-              {productImages.map((url, idx) => (
-                <CarouselItem
-                  className="flex items-center justify-center"
-                  key={idx}
-                >
-                  <div className="p-4 flex items-center justify-center">
-                    <img
-                      src={url.url}
-                      alt=""
-                      className="max-h-full object-contain"
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
+      {/* // <div className="pe-[60px]"> */}
+      {/* may need to be made into a component if more pages are made */}
+      
+      {/* <Breadcrumb name="INdividual product name" /> */}
 
-              {/* <CarouselItem className="flex items-center justify-center">
+      <Carousel
+        // ref={carouselRef}
+        // opts={{
+        //   align: 'start',
+        //   startIndex: count,
+        // }}
+        className="w-full max-w-m mx-3 flex items-center justify-center "
+        key={JSON.stringify(productImages)}
+      >
+        <CarouselContent className="flex">
+          {productImages.map((url, idx) => (
+            <CarouselItem
+              className="flex items-center justify-center"
+              key={idx}
+            >
+              <div className="p-4 flex items-center justify-center">
+                <img
+                  src={url.url}
+                  alt=""
+                  className="max-h-full object-contain"
+                />
+              </div>
+            </CarouselItem>
+          ))}
+
+          {/* <CarouselItem className="flex items-center justify-center">
                 <div className="p-4 flex items-center justify-center">
                   <img
                     src={productImages[1]?.url}
@@ -112,14 +87,14 @@ function IndividualProduct({
                   />
                 </div>
               </CarouselItem> */}
-            </CarouselContent>
+        </CarouselContent>
 
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
 
-          {/* PRODUCT INFO SECOND COL */}
-          {/* <div className="lg:ps-3 md:ps-3 sm:ps-3 xl:ps-8">
+      {/* PRODUCT INFO SECOND COL */}
+      {/* <div className="lg:ps-3 md:ps-3 sm:ps-3 xl:ps-8">
             <div className="flex gap-x-8 items-center">
               <h1 className="capitalize text-3xl font-bold">{name}</h1>
               <FavoriteToggleButton productId={params.id} EProductId={null} />
@@ -144,8 +119,7 @@ function IndividualProduct({
         <ProductReviews productId={params.id} />
 
         {reviewDoesNotExist && <SubmitReview productId={params.id} />} */}
-        </div>
-      </div>
+      {/* // </div> */}
     </>
   );
 }

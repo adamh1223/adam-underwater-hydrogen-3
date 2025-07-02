@@ -4,20 +4,25 @@
 }
 
 .clip {
-  display: flex;
-  justify-content: center;
+  width: 80vw;
+  height: 30vh;
 }
 
-@media (max-width: 599px) {
+.vp-center {
+  display: flex;
+  align-items: top;
+}
+
+@media (min-width: 829px) {
+  .clip {
+    width: 80vw;
+    height: 50vh;
+  }
+}
+/* @media (max-width: 599px) {
   .clip {
     width: 360px;
     height: 210px;
-  }
-}
-@media (min-width: 600px) and (max-width: 799px) {
-  .clip {
-    width: 490px;
-    height: 280px;
   }
 }
 @media (min-width: 800px) and (max-width: 1023px) {
@@ -56,4 +61,4 @@
     display: flex;
     align-items: center;
   }
-}
+} */
