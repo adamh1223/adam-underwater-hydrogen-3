@@ -5,11 +5,7 @@ function WorkPage() {
   return (
     <>
       <div className="flex justify-center pb-5 ps-5">
-        <img
-          src={'/images/work2.png'}
-          style={{height: '115px'}}
-          className="pt-3"
-        />
+        <img src={'/work2.png'} style={{height: '115px'}} className="pt-3" />
       </div>
       <div>
         <Sectiontitle text="Seaforestation (Trailer)" />

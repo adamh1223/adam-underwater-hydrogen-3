@@ -38,8 +38,8 @@
 }
 
 .drone-title div {
-  font-size: 2rem; /* Adjust title size */
-  font-weight: 800;
+  font-size: 1.5rem; /* Adjust title size */
+  font-weight: 600;
   margin-bottom: 10px; /* Space between title and image */
 }
 

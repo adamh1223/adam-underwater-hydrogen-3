@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { Label } from "~/components/ui/label";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
-import "./styles/Contact.css";
+import {useState} from 'react';
+import {Label} from '~/components/ui/label';
+import {Input} from '~/components/ui/input';
+import {Button} from '~/components/ui/button';
+import './styles/Contact.css';
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
+    name: '',
+    email: '',
+    message: '',
   });
 
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState('');
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -25,33 +25,33 @@ export default function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus("Sending...");
+    setStatus('Sending...');
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        setStatus("Message sent successfully!");
+        setStatus('Message sent successfully!');
         setFormData({
-          name: "",
-          email: "",
-          message: "",
+          name: '',
+          email: '',
+          message: '',
         });
       } else {
-        setStatus("Failed to send message. Please try again.");
+        setStatus('Failed to send message. Please try again.');
       }
     } catch (error) {
-      console.error("Error:", error);
-      setStatus("An error occurred. Please try again later.");
+      console.error('Error:', error);
+      setStatus('An error occurred. Please try again later.');
     }
   };
 
   return (
-    <div className="container">
+    <div className="container px-7">
       <form
         onSubmit={handleSubmit}
         className="border-2 border-gray-600 dark:border-gray-700 p-8 rounded-md shadow-md space-y-8"

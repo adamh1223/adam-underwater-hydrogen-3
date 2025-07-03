@@ -1,8 +1,7 @@
-
-import Sectiontitle from "~/components/global/Sectiontitle";
-import "../styles/routeStyles/services.css";
-import { Button } from "~/components/ui/button";
-import { useEffect, useState } from "react";
+import Sectiontitle from '~/components/global/Sectiontitle';
+import '../styles/routeStyles/services.css';
+import {Button} from '~/components/ui/button';
+import {useEffect, useState} from 'react';
 import {
   Card,
   CardContent,
@@ -10,24 +9,24 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card";
+} from '~/components/ui/card';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "~/components/ui/carousel";
-import { servicesImages1, servicesImages2 } from '~/utils/constants';
+} from '~/components/ui/carousel';
+import {servicesImages1, servicesImages2} from '~/utils/constants';
 
 function ServicesPage() {
   const handleClick = (
     sectionId: string,
-    event: React.MouseEvent<HTMLAnchorElement>
+    event: React.MouseEvent<HTMLAnchorElement>,
   ) => {
     let section = document.getElementById(sectionId);
     event.preventDefault();
-    section && section.scrollIntoView({ behavior: "smooth" });
+    section && section.scrollIntoView({behavior: 'smooth'});
   };
 
   const [isVideoReady, setIsVideoReady] = useState(false);
@@ -39,13 +38,13 @@ function ServicesPage() {
   };
 
   useEffect(() => {
-    const iframe = document.querySelector("iframe");
+    const iframe = document.querySelector('iframe');
     if (iframe) {
-      iframe.addEventListener("load", handleVideoLoad);
+      iframe.addEventListener('load', handleVideoLoad);
     }
     return () => {
       if (iframe) {
-        iframe.removeEventListener("load", handleVideoLoad);
+        iframe.removeEventListener('load', handleVideoLoad);
       }
     };
   }, []);
@@ -54,8 +53,8 @@ function ServicesPage() {
     <>
       <div className="flex justify-center pb-5">
         <img
-          src={"/images/services2.png"}
-          style={{ height: "110px" }}
+          src={'/services2.png'}
+          style={{height: '110px'}}
           className="pt-3"
         />
       </div>
@@ -63,25 +62,25 @@ function ServicesPage() {
       <div
         className="anchors"
         style={{
-          gridTemplateColumns: "1fr 1fr 1fr",
+          gridTemplateColumns: '1fr 1fr 1fr',
         }}
       >
         <Button variant="outline" className="anchor">
-          <a onClick={(evt) => handleClick("video", evt)}>Underwater Video</a>
+          <a onClick={(evt) => handleClick('video', evt)}>Underwater Video</a>
         </Button>
         <Button variant="outline" className="anchor">
-          <a onClick={(evt) => handleClick("photo", evt)}>Underwater Photo</a>
+          <a onClick={(evt) => handleClick('photo', evt)}>Underwater Photo</a>
         </Button>
         <Button variant="outline" className="anchor">
-          <a onClick={(evt) => handleClick("drone", evt)}>
+          <a onClick={(evt) => handleClick('drone', evt)}>
             Drone Video & Photo
           </a>
         </Button>
         <Button variant="outline" className="anchor">
-          <a onClick={(evt) => handleClick("dives", evt)}>Guided Dives</a>
+          <a onClick={(evt) => handleClick('dives', evt)}>Guided Dives</a>
         </Button>
         <Button variant="outline" className="anchor">
-          <a onClick={(evt) => handleClick("coaching", evt)}>1 on 1 Coaching</a>
+          <a onClick={(evt) => handleClick('coaching', evt)}>1 on 1 Coaching</a>
         </Button>
       </div>
       <Sectiontitle text="Underwater 8K Video" />
@@ -91,20 +90,17 @@ function ServicesPage() {
       >
         <div className="media-container">
           <img
-            src="/images/print1.jpg"
-            className={`placeholder ${isVideoReady ? "hidden" : ""}`}
+            src="/print3.jpg"
+            className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
           />
           <iframe
             src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
             frameBorder="0"
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
-            className={`video ${isVideoReady ? "visible" : ""}`}
+            className={`video ${isVideoReady ? 'visible' : ''}`}
             title="Background Video"
           ></iframe>
-          
-
-          
         </div>
       </section>
       <section id="photo" className="pt-3">
@@ -151,7 +147,7 @@ function ServicesPage() {
               {/* Third item */}
               <CarouselItem>
                 <div className="p-4 flex items-center justify-center">
-                  <img src={"/images/gear3.png"} alt="" />
+                  <img src={'/images/gear3.png'} alt="" />
                 </div>
               </CarouselItem>
             </CarouselContent>
@@ -211,12 +207,10 @@ function ServicesPage() {
         <br />
         <div
           style={{
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: '1fr 1fr',
           }}
           className="drone-titles"
         >
-          <div className="drone-title">DJI Inspire 3</div>
-          <div className="drone-title">RED Komodo X FPV</div>
           <Card className=" group overflow-hidden px-8 pb-8 mx-5">
             <CardHeader className="text-center drone-title">
               <CardTitle>DJI Inspire 3</CardTitle>
@@ -226,7 +220,7 @@ function ServicesPage() {
             </p>
             <CardContent className="p-0">
               <img
-                src={"/images/inspire3.jpg"}
+                src={'/inspire3.jpg'}
                 alt="DJI Inspire 3"
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
               />
@@ -243,7 +237,7 @@ function ServicesPage() {
             </p>
             <CardContent className="p-0">
               <img
-                src={"/images/inspire3.jpg"}
+                src={'/inspire3.jpg'}
                 alt="DJI Inspire 3"
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
               />
@@ -253,7 +247,7 @@ function ServicesPage() {
         </div>
         <br />
         <div className="subheader flex justify-center">
-          Check out my drone website at{" "}
+          Check out my drone website at{' '}
         </div>
         <div className="subheader flex justify-center">
           <a

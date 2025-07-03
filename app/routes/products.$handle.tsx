@@ -13,6 +13,7 @@ import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import IndividualProduct from '~/components/products/individualProduct';
 import {ChevronRightIcon} from 'lucide-react';
+import {Card} from '~/components/ui/card';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -177,69 +178,77 @@ export default function Product() {
   console.log(locationTag, '171717');
 
   return (
-    <section className="product px-[60px] pt-[40px]">
-      <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
-        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-          <Link to="/">Home</Link>
-        </li>
-        <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
-          {<ChevronRightIcon />}
-        </li>
-        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-          <Link to="/collections/all">Products</Link>
-        </li>
-        <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
-          {<ChevronRightIcon />}
-        </li>
-        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-          <Link to="/">{title}</Link>
-        </li>
-      </ol>
-      <div className="xl:grid xl:grid-cols-2 xl:gap-x-24">
-        <IndividualProduct
-          productName={title}
-          productImages={standardCarouselImages}
-        ></IndividualProduct>
-        {/* <ProductImage image={selectedVariant?.image} /> */}
-        <div className="product-main">
-          <h1 className="capitalize text-3xl font-bold">{title}</h1>
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <br />
-          <h4 className="text-xl mt-2">{`${locationName}, ${locationState}, ${locationCountry}`}</h4>
-          <ProductForm
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-            imagesToShow={layoutImagesToUse}
-          />
-          <br />
-          <br />
-          <p>
-            <strong>Description</strong>
-          </p>
-          <br />
-          <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-          <br />
+      <section className="product px-[60px] pt-[40px]">
+        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/">Home</Link>
+          </li>
+          <li
+            role="presentation"
+            aria-hidden="true"
+            className="[&>svg]:size-3.5"
+          >
+            {<ChevronRightIcon />}
+          </li>
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/collections/all">Products</Link>
+          </li>
+          <li
+            role="presentation"
+            aria-hidden="true"
+            className="[&>svg]:size-3.5"
+          >
+            {<ChevronRightIcon />}
+          </li>
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/">{title}</Link>
+          </li>
+        </ol>
+        <div className="xl:grid xl:grid-cols-2 xl:gap-x-24">
+          <IndividualProduct
+            productName={title}
+            productImages={standardCarouselImages}
+          ></IndividualProduct>
+          {/* <ProductImage image={selectedVariant?.image} /> */}
+          <div className="product-main">
+            <h1 className="capitalize text-3xl font-bold">{title}</h1>
+            <ProductPrice
+              price={selectedVariant?.price}
+              compareAtPrice={selectedVariant?.compareAtPrice}
+            />
+            <br />
+            <h4 className="text-xl mt-2">{`${locationName}, ${locationState}, ${locationCountry}`}</h4>
+            <ProductForm
+              productOptions={productOptions}
+              selectedVariant={selectedVariant}
+              imagesToShow={layoutImagesToUse}
+            />
+            <br />
+            <br />
+            <p>
+              <strong>Description</strong>
+            </p>
+            <br />
+            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+            <br />
+          </div>
         </div>
-      </div>
-      <Analytics.ProductView
-        data={{
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              price: selectedVariant?.price.amount || '0',
-              vendor: product.vendor,
-              variantId: selectedVariant?.id || '',
-              variantTitle: selectedVariant?.title || '',
-              quantity: 1,
-            },
-          ],
-        }}
-      />
-    </section>
+        <Analytics.ProductView
+          data={{
+            products: [
+              {
+                id: product.id,
+                title: product.title,
+                price: selectedVariant?.price.amount || '0',
+                vendor: product.vendor,
+                variantId: selectedVariant?.id || '',
+                variantTitle: selectedVariant?.title || '',
+                quantity: 1,
+              },
+            ],
+          }}
+        />
+      </section>
   );
 }
 
