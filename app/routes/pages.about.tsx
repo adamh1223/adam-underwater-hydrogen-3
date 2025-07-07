@@ -190,17 +190,17 @@ function AboutPage() {
                 <CarouselContent>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={photo1} alt="Gear 1" />
+                      <img src={'/gear1.png'} alt="Gear 1" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={photo2} alt="Gear 2" />
+                      <img src={'/gear2.png'} alt="Gear 2" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={photo3} alt="Gear 3" />
+                      <img src={'/gear3.png'} alt="Gear 3" />
                     </div>
                   </CarouselItem>
                 </CarouselContent>
@@ -226,12 +226,12 @@ function AboutPage() {
                 <CarouselContent>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={photo1} alt="Keldan Light 1" />
+                      <img src={'/keldan2.jpg'} alt="Keldan Light 1" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={photo2} alt="Keldan Light 2" />
+                      <img src={'/keldan1.png'} alt="Keldan Light 2" />
                     </div>
                   </CarouselItem>
                 </CarouselContent>
@@ -245,6 +245,83 @@ function AboutPage() {
                 Keldan video lights provide high-output, natural-looking
                 illumination underwater, essential for capturing vibrant colors
                 at depth.
+              </p>
+            </Card>
+          </Card>
+        </div>
+        <div className="gear-layout px-8 pb-8">
+          <Card className="gear-card">
+            <h1 className="subheader">
+              RED Komodo X Cinema Rig with Tilta Ring
+            </h1>
+
+            <div className="gear-container">
+              <Carousel className="w-full max-w-sm">
+                <CarouselContent>
+                  <CarouselItem>
+                    <div className="p-4 flex items-center justify-center">
+                      <img src={'/gear1.png'} alt="Gear 1" />
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="p-4 flex items-center justify-center">
+                      <img src={'/gear2.png'} alt="Gear 2" />
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="p-4 flex items-center justify-center">
+                      <img src={'/gear3.png'} alt="Gear 3" />
+                    </div>
+                  </CarouselItem>
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </div>
+
+            <Card className="description-card p-4">
+              <p>
+                The Canon EOS R5C is a hybrid powerhouse, capable of 8K video
+                recording and excellent still photography, making it perfect for
+                underwater shooting.
+              </p>
+            </Card>
+          </Card>
+
+          <Card className="gear-card">
+            <h1 className="subheader">Odyssey Freediving Fins</h1>
+
+            <div className="gear-container">
+              <Carousel className="w-full max-w-sm">
+                <CarouselContent>
+                  <CarouselItem>
+                    <div className="p-4 flex items-center justify-center">
+                      <img src={'/neptune.png'} alt="Keldan Light 1" />
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="p-4 flex items-center justify-center">
+                      <img src={'/keldan1.png'} alt="Keldan Light 2" />
+                    </div>
+                  </CarouselItem>
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </div>
+
+            <Card className="description-card p-4">
+              <p>
+                I use{' '}
+                <a
+                  href="https://odysseyfreediving.com/products/neptune-long-blade-fins"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  Neptune Long Blade Freediving Fins
+                </a>{' '}
+                from Odyssey Freediving
               </p>
             </Card>
           </Card>

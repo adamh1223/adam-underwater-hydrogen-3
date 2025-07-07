@@ -76,12 +76,12 @@ function ServicesPage() {
             Drone Video & Photo
           </a>
         </Button>
-        <Button variant="outline" className="anchor">
+        {/* <Button variant="outline" className="anchor">
           <a onClick={(evt) => handleClick('dives', evt)}>Guided Dives</a>
-        </Button>
-        <Button variant="outline" className="anchor">
+        </Button> */}
+        {/* <Button variant="outline" className="anchor">
           <a onClick={(evt) => handleClick('coaching', evt)}>1 on 1 Coaching</a>
-        </Button>
+        </Button> */}
       </div>
       <Sectiontitle text="Underwater 8K Video" />
       <section
@@ -157,7 +157,7 @@ function ServicesPage() {
           </Carousel>
         </div>
       </section>
-      <section id="dives">
+      {/* <section id="dives">
         <Sectiontitle text="Guided Dives" />
         <ul className="subheader">
           <h1>San Diego, CA</h1>
@@ -196,7 +196,7 @@ function ServicesPage() {
             </Card>
           </div>
         </div>
-      </section>
+      </section> */}
       <section id="drone">
         <Sectiontitle text="Drone Video & Photo" />
         <br />
@@ -260,7 +260,7 @@ function ServicesPage() {
           </a>
         </div>
       </section>
-      <section id="coaching">
+      {/* <section id="coaching">
         <Sectiontitle text="1 on 1 Coaching" />
         <ul className="subheader">
           <h1>Zoom coaching sessions</h1>
@@ -278,7 +278,7 @@ function ServicesPage() {
           </li>
           <li>The first coaching session is 50% off.</li>
         </ul>
-      </section>
+      </section> */}
     </>
   );
 }
