@@ -13,6 +13,9 @@ declare module '@remix-run/server-runtime' {
 }
 
 export default defineConfig({
+  server: {
+    allowedHosts: ['intellectual-rss-breathing-baskets.tryhydrogen.dev'],
+  },
   plugins: [
     tailwindcss(),
     hydrogen(),
@@ -53,7 +56,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./app")
-    }
-  }
+      '@': path.resolve(__dirname, './app'),
+    },
+  },
 });
