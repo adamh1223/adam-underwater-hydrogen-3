@@ -1,0 +1,147 @@
+.statement {
+  text-align: left; /* Align the text to the start of its parent */
+  margin: 0; /* Reset margin if needed */
+  position: relative; /* Required for positioning the pseudo-element */
+  padding: 0 0 0;
+}
+
+.statement::before {
+  content: "•"; /* Adds a bullet point */
+  margin-right: 8px; /* Space between bullet and text */
+  font-size: 1.2em; /* Adjust bullet size as needed */
+  color: inherit; /* Matches the text color */
+  display: inline-block;
+}
+
+.subheader {
+  font-size: 22px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 15px 0px;
+  padding: 0 30px 0 30px;
+}
+.details-wrapper {
+  padding: 0 30px 20px 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.clip-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.clip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* Vertical */
+
+/* @media (max-width: 1023px) {
+  .details-wrapper {
+    padding: 20px 20px 0 60px;
+  }
+}
+@media (max-width: 1023px) {
+  .clip-wrapper {
+    display: flex;
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}
+
+@media (max-width: 1023px) and (min-width: 1250px) {
+  .clip {
+    width: 400px;
+    height: 253px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 1023px) and (min-width: 901px) {
+  .clip {
+    width: 790px;
+    height: 420px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 750px) {
+  .clip {
+    width: 650px;
+    height: 340px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 749px) and (min-width: 650px) {
+  .clip {
+    width: 500px;
+    height: 270px;
+    display: flex;
+    justify-content: center;
+  }
+}
+@media (max-width: 649px) {
+  .clip {
+    width: 400px;
+    height: 215px;
+    display: flex;
+    justify-content: center;
+  }
+} */
+
+/* Horizontal */
+/* @media (min-width: 1024px) and (max-width: 1270px) {
+  .clip {
+    width: 490px;
+    height: 255px;
+  }
+}
+@media (min-width: 1271px) and (max-width: 1461px) {
+  .clip {
+    width: 600px;
+    height: 320px;
+  }
+}
+@media (min-width: 1462px) and (max-width: 1650px) {
+  .clip {
+    width: 700px;
+    height: 370px;
+  }
+}
+@media (min-width: 1651px) and (max-width: 1850px) {
+  .clip {
+    width: 780px;
+    height: 410px;
+  }
+}
+@media (min-width: 1851px) and (max-width: 2100px) {
+  .clip {
+    width: 850px;
+    height: 450px;
+  }
+}
+@media (min-width: 2101px) {
+  .clip {
+    width: 1000px;
+    height: 535px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .clip-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 40px;
+  }
+} */
+
+.breadcrumbs {
+  padding: 20px 0 0 50px;
+}

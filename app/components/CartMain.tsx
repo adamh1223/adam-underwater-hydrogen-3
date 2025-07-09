@@ -20,6 +20,7 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   // The useOptimisticCart hook applies pending actions to the cart
   // so the user immediately sees feedback when they modify the cart.
   const cart = useOptimisticCart(originalCart);
+  console.log(cart, '373737');
 
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
   const withDiscount =

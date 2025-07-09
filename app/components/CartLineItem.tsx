@@ -24,6 +24,7 @@ export function CartLineItem({
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
+  console.log(product, '484848');
 
   return (
     <li key={id} className="cart-line">

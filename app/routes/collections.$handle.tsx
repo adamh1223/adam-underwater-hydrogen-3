@@ -9,6 +9,10 @@ import {
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {Card} from '~/components/ui/card';
+import ProductsHeader from '~/components/products/productsHeader';
+import EProductsHeader from '~/components/eproducts/EProductsHeader';
+import ProductCarousel from '~/components/products/productCarousel';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -72,21 +76,29 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
-
+  type shopifyImage = {url: string; altText: string};
   return (
     <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
+      {collection.handle === 'prints' && <ProductsHeader />}
+      {collection.handle === 'eproducts' && <EProductsHeader />}
       <PaginatedResourceSection
         connection={collection.products}
         resourcesClassName="products-grid"
       >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
+        {({
+          node: product,
+          index,
+        }: {
+          node: ProductItemFragment & {
+            images: {nodes: shopifyImage[]};
+          };
+          index: number;
+        }) => (
+          <>
+            {collection.handle === 'prints' && (
+              <ProductCarousel product={product} />
+            )}
+          </>
         )}
       </PaginatedResourceSection>
       <Analytics.CollectionView
@@ -104,32 +116,35 @@ export default function Collection() {
 function ProductItem({
   product,
   loading,
+  collectionName,
 }: {
   product: ProductItemFragment;
   loading?: 'eager' | 'lazy';
+  collectionName?: string;
 }) {
   const variantUrl = useVariantUrl(product.handle);
   return (
-    <Link
-      className="product-item"
-      key={product.id}
-      prefetch="intent"
-      to={variantUrl}
-    >
-      {product.featuredImage && (
-        <Image
-          alt={product.featuredImage.altText || product.title}
-          aspectRatio="1/1"
-          data={product.featuredImage}
-          loading={loading}
-          sizes="(min-width: 45em) 400px, 100vw"
-        />
-      )}
-      <h4>{product.title}</h4>
-      <small>
-        <Money data={product.priceRange.minVariantPrice} />
-      </small>
-    </Link>
+    <>{collectionName === 'prints' && <h1>prints</h1>}</>
+    // <Link
+    //   className="product-item"
+    //   key={product.id}
+    //   prefetch="intent"
+    //   to={variantUrl}
+    // >
+    //   {product.featuredImage && (
+    //     <Image
+    //       alt={product.featuredImage.altText || product.title}
+    //       aspectRatio="1/1"
+    //       data={product.featuredImage}
+    //       loading={loading}
+    //       sizes="(min-width: 45em) 400px, 100vw"
+    //     />
+    //   )}
+    //   <h4>{product.title}</h4>
+    //   <small>
+    //     <Money data={product.priceRange.minVariantPrice} />
+    //   </small>
+    // </Link>
   );
 }
 
@@ -148,6 +163,12 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       url
       width
       height
+    }
+    images(first: 20) {
+      nodes {
+        url
+        altText
+      }
     }
     priceRange {
       minVariantPrice {
