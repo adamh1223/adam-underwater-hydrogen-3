@@ -13,6 +13,10 @@ import {Card} from '~/components/ui/card';
 import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
+import {Separator} from '~/components/ui/separator';
+import {useState} from 'react';
+import {Button} from '~/components/ui/button';
+import {LuLayoutGrid, LuList} from 'react-icons/lu';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -76,39 +80,96 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
+  console.log(collection, '434343');
+  const [searchText, setSearchText] = useState<string | undefined>();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+    if (searchText && searchText?.length > 4) {
+      console.log('searched');
+    }
+  };
+  const totalProductCount = collection.products?.length;
+  const [layout, setLayout] = useState('grid');
+  const handleLayoutChange = () => {
+    if (layout === 'grid') {
+      setLayout('list');
+    } else {
+      setLayout('grid');
+    }
+  };
+
+  const layoutClassName =
+    layout === 'grid'
+      ? 'pt-12 mx-8 grid gap-4 md:grid-cols-2 px-5 pb-5'
+      : 'mt-12 grid gap-y-8';
+
   type shopifyImage = {url: string; altText: string};
   return (
-    <div className="collection">
+    <div>
       {collection.handle === 'prints' && <ProductsHeader />}
-      {collection.handle === 'eproducts' && <EProductsHeader />}
-      <PaginatedResourceSection
-        connection={collection.products}
-        resourcesClassName="products-grid"
-      >
-        {({
-          node: product,
-          index,
-        }: {
-          node: ProductItemFragment & {
-            images: {nodes: shopifyImage[]};
-          };
-          index: number;
-        }) => (
-          <>
-            {collection.handle === 'prints' && (
-              <ProductCarousel product={product} />
-            )}
-          </>
-        )}
-      </PaginatedResourceSection>
-      <Analytics.CollectionView
-        data={{
-          collection: {
-            id: collection.id,
-            handle: collection.handle,
-          },
-        }}
-      />
+      {collection.handle === 'stock' && <EProductsHeader />}
+      <form action="">
+        <input
+          type="text"
+          onChange={handleInputChange}
+          name="q"
+          placeholder="Search Product"
+        />
+      </form>
+      <div className="flex justify-between items-center pt-5 px-9">
+        <h4 className="font-medium text-xl p-5">
+          {totalProductCount} product{totalProductCount > 1 && 's'}
+        </h4>
+        <div className="flex gap-x-4 p-5">
+          <Button
+            variant={layout === 'grid' ? 'default' : 'ghost'}
+            size="icon"
+            onClick={handleLayoutChange}
+          >
+            <LuLayoutGrid />
+          </Button>
+          <Button
+            variant={layout === 'list' ? 'default' : 'ghost'}
+            size="icon"
+            onClick={handleLayoutChange}
+          >
+            <LuList />
+          </Button>
+        </div>
+      </div>
+      <Separator className="mt-4" />
+      <div className={layoutClassName}>
+        <PaginatedResourceSection
+          connection={collection.products}
+          resourcesClassName="products-grid"
+        >
+          {({
+            node: product,
+            index,
+          }: {
+            node: ProductItemFragment & {
+              images: {nodes: shopifyImage[]};
+            };
+            index: number;
+          }) => {
+            return (
+              <>
+                {collection.handle === 'prints' && (
+                  <ProductCarousel product={product} layout={layout}/>
+                )}
+              </>
+            );
+          }}
+        </PaginatedResourceSection>
+        <Analytics.CollectionView
+          data={{
+            collection: {
+              id: collection.id,
+              handle: collection.handle,
+            },
+          }}
+        />
+      </div>
     </div>
   );
 }

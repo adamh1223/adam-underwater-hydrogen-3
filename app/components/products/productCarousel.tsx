@@ -18,10 +18,17 @@ type shopifyImage = {url: string; altText: string};
 const ProductCarousel = ({
   product,
   loading,
+  layout,
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}};
   loading?: 'eager' | 'lazy';
+  layout: string;
 }) => {
+  console.log(product, '656565');
+  const cardClassName =
+    layout === 'grid'
+      ? 'group-hover:shadow-xl transition-shadow duration-500'
+      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3';
   const variantUrl = useVariantUrl(product.handle);
   const standardImages = product.images.nodes.filter((item) =>
     item.altText?.includes('standard'),
@@ -61,7 +68,7 @@ const ProductCarousel = ({
 
   return (
     <article className="group relative">
-      <Card className="group-hover:shadow-xl transition-shadow duration-500">
+      <Card className={cardClassName}>
         <CardContent>
           <div className="relative h-full w-full rounded">
             <Carousel
