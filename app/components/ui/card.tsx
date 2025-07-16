@@ -29,10 +29,7 @@ function CardTitle({className, ...props}: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-title"
-      className={cn(
-        'font-semibold leading-none tracking-tight',
-        className,
-      )}
+      className={cn('font-semibold leading-none tracking-tight', className)}
       {...props}
     />
   );
@@ -63,11 +60,7 @@ function CardAction({className, ...props}: React.ComponentProps<'div'>) {
 
 function CardContent({className, ...props}: React.ComponentProps<'div'>) {
   return (
-    <div
-      data-slot="card-content"
-      className={cn('p-6 pt-0', className)}
-      {...props}
-    />
+    <div data-slot="card-content" className={cn('p-3', className)} {...props} />
   );
 }
 

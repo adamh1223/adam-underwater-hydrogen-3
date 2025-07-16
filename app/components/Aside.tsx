@@ -60,11 +60,23 @@ export function Aside({
     >
       <button className="close-outside" onClick={close} />
       <aside className="border-l">
-        <header>
-          <h3>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
+        <div className="flex justify-end pe-4 pt-1">
+          <button
+            className="close reset cursor-pointer"
+            onClick={close}
+            aria-label="Close"
+          >
             &times;
           </button>
+        </div>
+        <header>
+          <div className="flex justify-center">
+            <img
+              src={'/cart.png'}
+              style={{height: '80px'}}
+              className="pt-3"
+            ></img>
+          </div>
         </header>
         <main>{children}</main>
       </aside>

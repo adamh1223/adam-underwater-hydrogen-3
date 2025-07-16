@@ -110,7 +110,11 @@ export default function Cart() {
 
   return (
     <div className="cart">
-      <h1>Cart</h1>
+      <img
+        src={'/cart.png'}
+        style={{height: '80px'}}
+        className="pt-3"
+      ></img>
       <CartMain layout="page" cart={cart} />
     </div>
   );

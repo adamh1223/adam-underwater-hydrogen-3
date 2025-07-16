@@ -6,6 +6,7 @@ import {Link} from '@remix-run/react';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
+import {Card, CardContent, CardDescription} from './ui/card';
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
@@ -27,45 +28,49 @@ export function CartLineItem({
   console.log(product, '484848');
 
   return (
-    <li key={id} className="cart-line">
-      {image && (
-        <Image
-          alt={title}
-          aspectRatio="1/1"
-          data={image}
-          height={100}
-          loading="lazy"
-          width={100}
-        />
-      )}
+    <Card className="my-4">
+      <CardContent>
+        <li key={id} className="cart-line">
+          {image && (
+            <Image
+              alt={title}
+              aspectRatio="1/1"
+              data={image}
+              height={120}
+              loading="lazy"
+              width={120}
+            />
+          )}
 
-      <div>
-        <Link
-          prefetch="intent"
-          to={lineItemUrl}
-          onClick={() => {
-            if (layout === 'aside') {
-              close();
-            }
-          }}
-        >
-          <p>
-            <strong>{product.title}</strong>
-          </p>
-        </Link>
-        <ProductPrice price={line?.cost?.totalAmount} />
-        <ul>
-          {selectedOptions.map((option) => (
-            <li key={option.name}>
-              <small>
-                {option.name}: {option.value}
-              </small>
-            </li>
-          ))}
-        </ul>
-        <CartLineQuantity line={line} />
-      </div>
-    </li>
+          <div>
+            <Link
+              prefetch="intent"
+              to={lineItemUrl}
+              onClick={() => {
+                if (layout === 'aside') {
+                  close();
+                }
+              }}
+            >
+              <p>
+                <strong>{product.title}</strong>
+              </p>
+            </Link>
+            <ProductPrice price={line?.cost?.totalAmount} />
+            <ul>
+              {selectedOptions.map((option) => (
+                <li key={option.name}>
+                  <p className="cart-subheader">
+                    {option.name}: {option.value}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <CartLineQuantity line={line} />
+          </div>
+        </li>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -82,7 +87,7 @@ function CartLineQuantity({line}: {line: CartLine}) {
 
   return (
     <div className="cart-line-quantity">
-      <small>Quantity: {quantity} &nbsp;&nbsp;</small>
+      <p className="cart-subheader">Quantity: {quantity} &nbsp;&nbsp;</p>
       <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
         <button
           aria-label="Decrease quantity"
