@@ -1,5 +1,11 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
+import {
+  useLoaderData,
+  Link,
+  type MetaFunction,
+  useSearchParams,
+  Form,
+} from '@remix-run/react';
 import {
   getPaginationVariables,
   Image,
@@ -17,6 +23,7 @@ import {Separator} from '~/components/ui/separator';
 import {useState} from 'react';
 import {Button} from '~/components/ui/button';
 import {LuLayoutGrid, LuList} from 'react-icons/lu';
+import {Input} from '~/components/ui/input';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -43,6 +50,8 @@ async function loadCriticalData({
 }: LoaderFunctionArgs) {
   const {handle} = params;
   const {storefront} = context;
+  const url = new URL(request.url);
+  const searchTerm = url.searchParams.get('q')?.trim() || '';
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 8,
   });
@@ -50,10 +59,18 @@ async function loadCriticalData({
   if (!handle) {
     throw redirect('/collections');
   }
+  const filters: {tag?: string; query?: string}[] = [];
+  if (searchTerm) {
+    filters.push({tag: searchTerm});
+  }
 
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
+      variables: {
+        handle,
+        ...paginationVariables,
+        filter: filters.length ? filters : undefined,
+      },
       // Add other queries here, so that they are loaded in parallel
     }),
   ]);
@@ -66,6 +83,7 @@ async function loadCriticalData({
 
   return {
     collection,
+    searchTerm,
   };
 }
 
@@ -79,8 +97,9 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 
 export default function Collection() {
-  const {collection} = useLoaderData<typeof loader>();
-  console.log(collection, '434343');
+  const {collection, searchTerm} = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
+  const currentSearchTerm = searchParams.get('q') || '';
   const [searchText, setSearchText] = useState<string | undefined>();
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
@@ -108,14 +127,44 @@ export default function Collection() {
     <div>
       {collection.handle === 'prints' && <ProductsHeader />}
       {collection.handle === 'stock' && <EProductsHeader />}
-      <form action="">
-        <input
-          type="text"
-          onChange={handleInputChange}
-          name="q"
-          placeholder="Search Product"
-        />
-      </form>
+      <Form
+        method="get"
+        className="search-form"
+        onSubmit={(event) => {
+          const input = event.currentTarget.querySelector(
+            'input[name = "q"]',
+          ) as HTMLInputElement;
+          // if (input && input.value) {
+          input.value = input.value.toLowerCase();
+          // }
+        }}
+      >
+        <Input defaultValue={currentSearchTerm} name="q" type="" />
+
+        <Button variant="default" size="icon" type="submit">
+          Search
+        </Button>
+        {currentSearchTerm && (
+          <Button
+            variant="default"
+            size="icon"
+            onClick={() => {
+              const form = document.querySelector(
+                '.search-form',
+              ) as HTMLFormElement;
+              const input = form.querySelector(
+                'input[name="q"]',
+              ) as HTMLInputElement;
+              input.value = '';
+              form.submit();
+            }}
+            className="clear-search-button"
+          >
+            Clear
+          </Button>
+        )}
+      </Form>
+
       <div className="flex justify-between items-center pt-5 px-9">
         <h4 className="font-medium text-xl p-5">
           {totalProductCount} product{totalProductCount > 1 && 's'}
@@ -155,7 +204,7 @@ export default function Collection() {
             return (
               <>
                 {collection.handle === 'prints' && (
-                  <ProductCarousel product={product} layout={layout}/>
+                  <ProductCarousel product={product} layout={layout} />
                 )}
               </>
             );
@@ -253,6 +302,7 @@ const COLLECTION_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
+    $filter: [ProductFilter!]
   ) @inContext(country: $country, language: $language) {
     collection(handle: $handle) {
       id
@@ -263,7 +313,8 @@ const COLLECTION_QUERY = `#graphql
         first: $first,
         last: $last,
         before: $startCursor,
-        after: $endCursor
+        after: $endCursor,
+        filters: $filter
       ) {
         nodes {
           ...ProductItem
