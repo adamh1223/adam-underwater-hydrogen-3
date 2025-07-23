@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Card, CardContent} from '../ui/card';
+import {Card, CardAction, CardContent} from '../ui/card';
 import {
   Carousel,
   CarouselApi,
@@ -12,6 +12,7 @@ import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {ProductItemFragment} from 'storefrontapi.generated';
+import {AddToCartButton} from '../AddToCartButton';
 
 type shopifyImage = {url: string; altText: string};
 

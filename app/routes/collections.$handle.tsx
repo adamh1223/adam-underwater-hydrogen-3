@@ -181,6 +181,7 @@ export default function Collection() {
           <SearchResultsPredictive>
             {({items, total, term, state, closeSearch}) => {
               const {articles, collections, pages, products, queries} = items;
+              console.log(products, '778877');
 
               if (state === 'loading' && term.current) {
                 return <div>Loading...</div>;
@@ -220,6 +221,9 @@ export default function Collection() {
               return (
                 <>
                   {collection.handle === 'prints' && (
+                    <ProductCarousel product={product} layout={layout} />
+                  )}
+                  {collection.handle === 'stock' && (
                     <ProductCarousel product={product} layout={layout} />
                   )}
                 </>

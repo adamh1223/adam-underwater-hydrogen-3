@@ -165,6 +165,7 @@ export const SEARCH_QUERY = `#graphql
     $last: Int
     $term: String!
     $startCursor: String
+    $filters: [ProductFilter!]
   ) @inContext(country: $country, language: $language) {
     articles: search(
       query: $term,
@@ -194,6 +195,7 @@ export const SEARCH_QUERY = `#graphql
       first: $first,
       last: $last,
       query: $term,
+      productFilters: $filters,
       sortKey: RELEVANCE,
       types: [PRODUCT],
       unavailableProducts: HIDE,
@@ -201,6 +203,7 @@ export const SEARCH_QUERY = `#graphql
       nodes {
         ...on Product {
           ...SearchProduct
+          tags
         }
       }
       pageInfo {
@@ -300,12 +303,31 @@ const PREDICTIVE_SEARCH_PAGE_FRAGMENT = `#graphql
 ` as const;
 
 const PREDICTIVE_SEARCH_PRODUCT_FRAGMENT = `#graphql
+fragment MoneyProductItem on MoneyV2 {
+    amount
+    currencyCode
+  }
   fragment PredictiveProduct on Product {
     __typename
     id
     title
     handle
+    tags
     trackingParameters
+    images(first: 20) {
+      nodes {
+        url
+        altText
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        ...MoneyProductItem
+      }
+      maxVariantPrice {
+        ...MoneyProductItem
+      }
+    }
     selectedOrFirstAvailableVariant(
       selectedOptions: []
       ignoreUnknownOptions: true

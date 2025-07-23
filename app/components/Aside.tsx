@@ -34,6 +34,15 @@ export function Aside({
 }) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
+  const determineActiveTypeImage = () => {
+    if (activeType === 'cart') {
+      return '/cart.png';
+    }
+    if (activeType === 'search') {
+      return '/about2.png';
+    }
+  };
+  const imageSource = determineActiveTypeImage();
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -69,10 +78,11 @@ export function Aside({
             &times;
           </button>
         </div>
+
         <header>
           <div className="flex justify-center">
             <img
-              src={'/cart.png'}
+              src={imageSource}
               style={{height: '80px'}}
               className="pt-3"
             ></img>
