@@ -1,0 +1,9 @@
+.new-address {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.address-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}

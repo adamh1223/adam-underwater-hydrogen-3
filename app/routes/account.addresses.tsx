@@ -21,6 +21,14 @@ import {
   DELETE_ADDRESS_MUTATION,
   CREATE_ADDRESS_MUTATION,
 } from '~/graphql/customer-account/CustomerAddressMutations';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '~/components/ui/card';
+import '../styles/routeStyles/addresses.css';
+import {Button} from '~/components/ui/button';
 
 export type ActionResponse = {
   addressId?: string | null;
@@ -260,23 +268,29 @@ export default function Addresses() {
     <div className="account-addresses">
       <h2>Addresses</h2>
       <br />
-      {!addresses.nodes.length ? (
-        <p>You have no addresses saved.</p>
-      ) : (
-        <div>
-          <div>
-            <legend>Create address</legend>
-            <NewAddressForm />
-          </div>
-          <br />
-          <hr />
-          <br />
-          <ExistingAddresses
-            addresses={addresses}
-            defaultAddress={defaultAddress}
-          />
+      <div className="address-container">
+        <div className="address-left-column flex justify-start m-5">
+          <legend>Create address</legend>
+
+          <NewAddressForm />
         </div>
-      )}
+        <div className="address-right-column">
+          {!addresses.nodes.length ? (
+            <p>You have no addresses saved.</p>
+          ) : (
+            <div>
+              <ExistingAddresses
+                addresses={addresses}
+                defaultAddress={defaultAddress}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <br />
+      <hr />
+      <br />
     </div>
   );
 }
@@ -304,13 +318,14 @@ function NewAddressForm() {
     >
       {({stateForMethod}) => (
         <div>
-          <button
+          <Button
+            variant="default"
             disabled={stateForMethod('POST') !== 'idle'}
             formMethod="POST"
             type="submit"
           >
             {stateForMethod('POST') !== 'idle' ? 'Creating' : 'Create'}
-          </button>
+          </Button>
         </div>
       )}
     </AddressForm>
@@ -373,140 +388,143 @@ export function AddressForm({
   const error = action?.error?.[addressId];
   const isDefaultAddress = defaultAddress?.id === addressId;
   return (
-    <Form id={addressId}>
-      <fieldset>
-        <input type="hidden" name="addressId" defaultValue={addressId} />
-        <label htmlFor="firstName">First name*</label>
-        <input
-          aria-label="First name"
-          autoComplete="given-name"
-          defaultValue={address?.firstName ?? ''}
-          id="firstName"
-          name="firstName"
-          placeholder="First name"
-          required
-          type="text"
-        />
-        <label htmlFor="lastName">Last name*</label>
-        <input
-          aria-label="Last name"
-          autoComplete="family-name"
-          defaultValue={address?.lastName ?? ''}
-          id="lastName"
-          name="lastName"
-          placeholder="Last name"
-          required
-          type="text"
-        />
-        <label htmlFor="company">Company</label>
-        <input
-          aria-label="Company"
-          autoComplete="organization"
-          defaultValue={address?.company ?? ''}
-          id="company"
-          name="company"
-          placeholder="Company"
-          type="text"
-        />
-        <label htmlFor="address1">Address line*</label>
-        <input
-          aria-label="Address line 1"
-          autoComplete="address-line1"
-          defaultValue={address?.address1 ?? ''}
-          id="address1"
-          name="address1"
-          placeholder="Address line 1*"
-          required
-          type="text"
-        />
-        <label htmlFor="address2">Address line 2</label>
-        <input
-          aria-label="Address line 2"
-          autoComplete="address-line2"
-          defaultValue={address?.address2 ?? ''}
-          id="address2"
-          name="address2"
-          placeholder="Address line 2"
-          type="text"
-        />
-        <label htmlFor="city">City*</label>
-        <input
-          aria-label="City"
-          autoComplete="address-level2"
-          defaultValue={address?.city ?? ''}
-          id="city"
-          name="city"
-          placeholder="City"
-          required
-          type="text"
-        />
-        <label htmlFor="zoneCode">State / Province*</label>
-        <input
-          aria-label="State/Province"
-          autoComplete="address-level1"
-          defaultValue={address?.zoneCode ?? ''}
-          id="zoneCode"
-          name="zoneCode"
-          placeholder="State / Province"
-          required
-          type="text"
-        />
-        <label htmlFor="zip">Zip / Postal Code*</label>
-        <input
-          aria-label="Zip"
-          autoComplete="postal-code"
-          defaultValue={address?.zip ?? ''}
-          id="zip"
-          name="zip"
-          placeholder="Zip / Postal Code"
-          required
-          type="text"
-        />
-        <label htmlFor="territoryCode">Country Code*</label>
-        <input
-          aria-label="territoryCode"
-          autoComplete="country"
-          defaultValue={address?.territoryCode ?? ''}
-          id="territoryCode"
-          name="territoryCode"
-          placeholder="Country"
-          required
-          type="text"
-          maxLength={2}
-        />
-        <label htmlFor="phoneNumber">Phone</label>
-        <input
-          aria-label="Phone Number"
-          autoComplete="tel"
-          defaultValue={address?.phoneNumber ?? ''}
-          id="phoneNumber"
-          name="phoneNumber"
-          placeholder="+16135551111"
-          pattern="^\+?[1-9]\d{3,14}$"
-          type="tel"
-        />
-        <div>
+    <Card className="p-5">
+      <Form id={addressId}>
+        <fieldset className="new-address">
+          <input type="hidden" name="addressId" defaultValue={addressId} />
+          <label htmlFor="firstName">First name*</label>
           <input
-            defaultChecked={isDefaultAddress}
-            id="defaultAddress"
-            name="defaultAddress"
-            type="checkbox"
+            aria-label="First name"
+            autoComplete="given-name"
+            defaultValue={address?.firstName ?? ''}
+            id="firstName"
+            name="firstName"
+            placeholder="First name"
+            required
+            type="text"
           />
-          <label htmlFor="defaultAddress">Set as default address</label>
-        </div>
-        {error ? (
-          <p>
-            <mark>
-              <small>{error}</small>
-            </mark>
-          </p>
-        ) : (
-          <br />
-        )}
-        {children({
-          stateForMethod: (method) => (formMethod === method ? state : 'idle'),
-        })}
-      </fieldset>
-    </Form>
+          <label htmlFor="lastName">Last name*</label>
+          <input
+            aria-label="Last name"
+            autoComplete="family-name"
+            defaultValue={address?.lastName ?? ''}
+            id="lastName"
+            name="lastName"
+            placeholder="Last name"
+            required
+            type="text"
+          />
+          <label htmlFor="company">Company</label>
+          <input
+            aria-label="Company"
+            autoComplete="organization"
+            defaultValue={address?.company ?? ''}
+            id="company"
+            name="company"
+            placeholder="Company"
+            type="text"
+          />
+          <label htmlFor="address1">Address line*</label>
+          <input
+            aria-label="Address line 1"
+            autoComplete="address-line1"
+            defaultValue={address?.address1 ?? ''}
+            id="address1"
+            name="address1"
+            placeholder="Address line 1*"
+            required
+            type="text"
+          />
+          <label htmlFor="address2">Address line 2</label>
+          <input
+            aria-label="Address line 2"
+            autoComplete="address-line2"
+            defaultValue={address?.address2 ?? ''}
+            id="address2"
+            name="address2"
+            placeholder="Address line 2"
+            type="text"
+          />
+          <label htmlFor="city">City*</label>
+          <input
+            aria-label="City"
+            autoComplete="address-level2"
+            defaultValue={address?.city ?? ''}
+            id="city"
+            name="city"
+            placeholder="City"
+            required
+            type="text"
+          />
+          <label htmlFor="zoneCode">State / Province*</label>
+          <input
+            aria-label="State/Province"
+            autoComplete="address-level1"
+            defaultValue={address?.zoneCode ?? ''}
+            id="zoneCode"
+            name="zoneCode"
+            placeholder="State / Province"
+            required
+            type="text"
+          />
+          <label htmlFor="zip">Zip / Postal Code*</label>
+          <input
+            aria-label="Zip"
+            autoComplete="postal-code"
+            defaultValue={address?.zip ?? ''}
+            id="zip"
+            name="zip"
+            placeholder="Zip / Postal Code"
+            required
+            type="text"
+          />
+          <label htmlFor="territoryCode">Country Code*</label>
+          <input
+            aria-label="territoryCode"
+            autoComplete="country"
+            defaultValue={address?.territoryCode ?? ''}
+            id="territoryCode"
+            name="territoryCode"
+            placeholder="Country"
+            required
+            type="text"
+            maxLength={2}
+          />
+          <label htmlFor="phoneNumber">Phone</label>
+          <input
+            aria-label="Phone Number"
+            autoComplete="tel"
+            defaultValue={address?.phoneNumber ?? ''}
+            id="phoneNumber"
+            name="phoneNumber"
+            placeholder="+16135551111"
+            pattern="^\+?[1-9]\d{3,14}$"
+            type="tel"
+          />
+          <div>
+            <input
+              defaultChecked={isDefaultAddress}
+              id="defaultAddress"
+              name="defaultAddress"
+              type="checkbox"
+            />
+            <label htmlFor="defaultAddress">Set as default address</label>
+          </div>
+          {error ? (
+            <p>
+              <mark>
+                <small>{error}</small>
+              </mark>
+            </p>
+          ) : (
+            <br />
+          )}
+          {children({
+            stateForMethod: (method) =>
+              formMethod === method ? state : 'idle',
+          })}
+        </fieldset>
+      </Form>
+    </Card>
   );
 }
