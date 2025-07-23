@@ -267,11 +267,7 @@ export default function Addresses() {
   return (
     <>
       <div className="flex justify-center">
-        <img
-          src={'/addresses.png'}
-          style={{height: '100px'}}
-          className=""
-        ></img>
+        <img src={'/addresses.png'} style={{height: '80px'}} className=""></img>
       </div>
       <div className="account-addresses">
         <br />
