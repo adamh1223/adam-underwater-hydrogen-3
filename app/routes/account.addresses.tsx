@@ -265,33 +265,40 @@ export default function Addresses() {
   const {defaultAddress, addresses} = customer;
 
   return (
-    <div className="account-addresses">
-      <h2>Addresses</h2>
-      <br />
-      <div className="address-container">
-        <div className="address-left-column flex justify-start m-5">
-          <legend>Create address</legend>
-
-          <NewAddressForm />
-        </div>
-        <div className="address-right-column">
-          {!addresses.nodes.length ? (
-            <p>You have no addresses saved.</p>
-          ) : (
-            <div>
-              <ExistingAddresses
-                addresses={addresses}
-                defaultAddress={defaultAddress}
-              />
-            </div>
-          )}
-        </div>
+    <>
+      <div className="flex justify-center">
+        <img
+          src={'/addresses.png'}
+          style={{height: '100px'}}
+          className=""
+        ></img>
       </div>
+      <div className="account-addresses">
+        <br />
+        <div className="address-container">
+          <div className="address-left-column ms-5 w-[80%]">
+            <legend>Create address</legend>
+            <NewAddressForm />
+          </div>
+          <div className="address-right-column">
+            {!addresses.nodes.length ? (
+              <p>You have no addresses saved.</p>
+            ) : (
+              <div>
+                <ExistingAddresses
+                  addresses={addresses}
+                  defaultAddress={defaultAddress}
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
-      <br />
-      <hr />
-      <br />
-    </div>
+        <br />
+        <hr />
+        <br />
+      </div>
+    </>
   );
 }
 
@@ -347,21 +354,23 @@ function ExistingAddresses({
           defaultAddress={defaultAddress}
         >
           {({stateForMethod}) => (
-            <div>
-              <button
+            <div className="flex justify-start">
+              <Button
+                variant="ghost"
                 disabled={stateForMethod('PUT') !== 'idle'}
                 formMethod="PUT"
                 type="submit"
               >
                 {stateForMethod('PUT') !== 'idle' ? 'Saving' : 'Save'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 disabled={stateForMethod('DELETE') !== 'idle'}
                 formMethod="DELETE"
                 type="submit"
               >
                 {stateForMethod('DELETE') !== 'idle' ? 'Deleting' : 'Delete'}
-              </button>
+              </Button>
             </div>
           )}
         </AddressForm>
@@ -388,7 +397,7 @@ export function AddressForm({
   const error = action?.error?.[addressId];
   const isDefaultAddress = defaultAddress?.id === addressId;
   return (
-    <Card className="p-5">
+    <Card className="p-5 my-5 me-5">
       <Form id={addressId}>
         <fieldset className="new-address">
           <input type="hidden" name="addressId" defaultValue={addressId} />
@@ -501,7 +510,7 @@ export function AddressForm({
             pattern="^\+?[1-9]\d{3,14}$"
             type="tel"
           />
-          <div>
+          <div className="my-5">
             <input
               defaultChecked={isDefaultAddress}
               id="defaultAddress"

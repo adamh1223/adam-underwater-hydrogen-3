@@ -3,7 +3,27 @@
   grid-template-columns: 1fr 1fr;
 }
 
-.address-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+@media (min-width: 800px) {
+  .address-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 799px) {
+  .address-container {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .address-right-column {
+    padding-left: 20px;
+  }
+}
+
+.address-left-column,
+.address-right-column {
+  min-width: 380px;
+}
+
+.address-left-column {
+  max-width: 450px;
 }
