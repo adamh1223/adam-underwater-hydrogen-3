@@ -10,7 +10,7 @@ import {useAside} from './Aside';
 
 type SearchFormPredictiveChildren = (args: {
   fetchResults: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  goToSearch: () => void;
+  // goToSearch: () => void;
   inputRef: React.MutableRefObject<HTMLInputElement | null>;
   fetcher: Fetcher<PredictiveSearchReturn>;
 }) => React.ReactNode;
@@ -44,16 +44,24 @@ export function SearchFormPredictive({
   }
 
   /** Navigate to the search page with the current input value */
-  function goToSearch() {
-    const term = inputRef?.current?.value;
-    navigate(SEARCH_ENDPOINT + (term ? `?q=${term}` : ''));
-    aside.close();
-  }
+  // function goToSearch() {
+  //   const term = inputRef?.current?.value;
+  //   navigate(SEARCH_ENDPOINT + (term ? `?q=${term}` : ''));
+  //   aside.close();
+  // }
 
   /** Fetch search results based on the input value */
   function fetchResults(event: React.ChangeEvent<HTMLInputElement>) {
     fetcher.submit(
-      {q: event.target.value || '', limit: 5, predictive: true},
+      {
+        q: event.target.value || '',
+        predictive: true,
+        filters: [
+          {
+            tag: 'Print',
+          },
+        ],
+      },
       {method: 'GET', action: SEARCH_ENDPOINT},
     );
   }
@@ -70,7 +78,7 @@ export function SearchFormPredictive({
 
   return (
     <fetcher.Form {...props} className={className} onSubmit={resetInput}>
-      {children({inputRef, fetcher, fetchResults, goToSearch})}
+      {children({inputRef, fetcher, fetchResults})}
     </fetcher.Form>
   );
 }

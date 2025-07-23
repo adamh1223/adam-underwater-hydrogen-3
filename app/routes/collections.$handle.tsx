@@ -20,10 +20,12 @@ import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
-import {useState} from 'react';
+import {useId, useState} from 'react';
 import {Button} from '~/components/ui/button';
 import {LuLayoutGrid, LuList} from 'react-icons/lu';
 import {Input} from '~/components/ui/input';
+import {SearchFormPredictive} from '~/components/SearchFormPredictive';
+import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -123,47 +125,34 @@ export default function Collection() {
       : 'mt-12 grid gap-y-8';
 
   type shopifyImage = {url: string; altText: string};
+  const queriesDatalistId = useId();
   return (
     <div>
       {collection.handle === 'prints' && <ProductsHeader />}
       {collection.handle === 'stock' && <EProductsHeader />}
-      <Form
-        method="get"
-        className="search-form"
-        onSubmit={(event) => {
-          const input = event.currentTarget.querySelector(
-            'input[name = "q"]',
-          ) as HTMLInputElement;
-          // if (input && input.value) {
-          input.value = input.value.toLowerCase();
-          // }
+      <SearchFormPredictive>
+        {({fetchResults, inputRef}) => {
+          const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearchText(e.target.value);
+            fetchResults(e);
+          };
+          return (
+            <>
+              <input
+                className="search-input"
+                name="q"
+                onChange={handleInput}
+                onFocus={handleInput}
+                placeholder="Search"
+                ref={inputRef}
+                type="search"
+                list={queriesDatalistId}
+              />
+              &nbsp;
+            </>
+          );
         }}
-      >
-        <Input defaultValue={currentSearchTerm} name="q" type="" />
-
-        <Button variant="default" size="icon" type="submit">
-          Search
-        </Button>
-        {currentSearchTerm && (
-          <Button
-            variant="default"
-            size="icon"
-            onClick={() => {
-              const form = document.querySelector(
-                '.search-form',
-              ) as HTMLFormElement;
-              const input = form.querySelector(
-                'input[name="q"]',
-              ) as HTMLInputElement;
-              input.value = '';
-              form.submit();
-            }}
-            className="clear-search-button"
-          >
-            Clear
-          </Button>
-        )}
-      </Form>
+      </SearchFormPredictive>
 
       <div className="flex justify-between items-center pt-5 px-9">
         <h4 className="font-medium text-xl p-5">
@@ -188,28 +177,56 @@ export default function Collection() {
       </div>
       <Separator className="mt-4" />
       <div className={layoutClassName}>
-        <PaginatedResourceSection
-          connection={collection.products}
-          resourcesClassName="products-grid"
-        >
-          {({
-            node: product,
-            index,
-          }: {
-            node: ProductItemFragment & {
-              images: {nodes: shopifyImage[]};
-            };
-            index: number;
-          }) => {
-            return (
-              <>
-                {collection.handle === 'prints' && (
-                  <ProductCarousel product={product} layout={layout} />
-                )}
-              </>
-            );
-          }}
-        </PaginatedResourceSection>
+        {searchText && (
+          <SearchResultsPredictive>
+            {({items, total, term, state, closeSearch}) => {
+              const {articles, collections, pages, products, queries} = items;
+
+              if (state === 'loading' && term.current) {
+                return <div>Loading...</div>;
+              }
+
+              if (!total) {
+                return <SearchResultsPredictive.Empty term={term} />;
+              }
+
+              return (
+                <>
+                  <SearchResultsPredictive.Products
+                    products={products}
+                    layout={layout}
+                    closeSearch={closeSearch}
+                    term={term}
+                  />
+                </>
+              );
+            }}
+          </SearchResultsPredictive>
+        )}
+        {!searchText && (
+          <PaginatedResourceSection
+            connection={collection.products}
+            resourcesClassName="products-grid"
+          >
+            {({
+              node: product,
+              index,
+            }: {
+              node: ProductItemFragment & {
+                images: {nodes: shopifyImage[]};
+              };
+              index: number;
+            }) => {
+              return (
+                <>
+                  {collection.handle === 'prints' && (
+                    <ProductCarousel product={product} layout={layout} />
+                  )}
+                </>
+              );
+            }}
+          </PaginatedResourceSection>
+        )}
         <Analytics.CollectionView
           data={{
             collection: {
@@ -223,41 +240,6 @@ export default function Collection() {
   );
 }
 
-function ProductItem({
-  product,
-  loading,
-  collectionName,
-}: {
-  product: ProductItemFragment;
-  loading?: 'eager' | 'lazy';
-  collectionName?: string;
-}) {
-  const variantUrl = useVariantUrl(product.handle);
-  return (
-    <>{collectionName === 'prints' && <h1>prints</h1>}</>
-    // <Link
-    //   className="product-item"
-    //   key={product.id}
-    //   prefetch="intent"
-    //   to={variantUrl}
-    // >
-    //   {product.featuredImage && (
-    //     <Image
-    //       alt={product.featuredImage.altText || product.title}
-    //       aspectRatio="1/1"
-    //       data={product.featuredImage}
-    //       loading={loading}
-    //       sizes="(min-width: 45em) 400px, 100vw"
-    //     />
-    //   )}
-    //   <h4>{product.title}</h4>
-    //   <small>
-    //     <Money data={product.priceRange.minVariantPrice} />
-    //   </small>
-    // </Link>
-  );
-}
-
 const PRODUCT_ITEM_FRAGMENT = `#graphql
   fragment MoneyProductItem on MoneyV2 {
     amount
@@ -267,6 +249,7 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     id
     handle
     title
+    tags
     featuredImage {
       id
       altText

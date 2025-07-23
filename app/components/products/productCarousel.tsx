@@ -30,7 +30,7 @@ const ProductCarousel = ({
       ? 'group-hover:shadow-xl transition-shadow duration-500'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3';
   const variantUrl = useVariantUrl(product.handle);
-  const standardImages = product.images.nodes.filter((item) =>
+  const standardImages = product?.images?.nodes?.filter((item) =>
     item.altText?.includes('standard'),
   );
   console.log(standardImages, '202020');
@@ -87,7 +87,7 @@ const ProductCarousel = ({
                 to={variantUrl}
               >
                 <CarouselContent>
-                  {standardImages.map((url, idx) => (
+                  {standardImages?.map((url, idx) => (
                     <CarouselItem
                       className="flex items-center justify-center"
                       key={idx}
@@ -123,12 +123,14 @@ const ProductCarousel = ({
             <div className="flex justify-center">
               <h5>{product.title}</h5>
             </div>
-            <div className="flex justify-center">
-              <span className="text-md flex flex-row gap-2">
-                From
-                <Money data={product.priceRange.minVariantPrice} />
-              </span>
-            </div>
+            {product?.priceRange?.minVariantPrice && (
+              <div className="flex justify-center">
+                <span className="text-md flex flex-row gap-2">
+                  From
+                  <Money data={product?.priceRange?.minVariantPrice} />
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

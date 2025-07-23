@@ -39,6 +39,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
 export default function SearchPage() {
   const {type, term, result, error} = useLoaderData<typeof loader>();
   if (type === 'predictive') return null;
+  console.log(result, '2025');
 
   return (
     <div className="search">
@@ -55,7 +56,7 @@ export default function SearchPage() {
             />
             &nbsp;
             <Button size="icon" variant="outline" type="submit">
-              ;lskdjfa
+              Search
             </Button>
           </>
         )}
@@ -88,6 +89,7 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
     __typename
     handle
     id
+    tags
     publishedAt
     title
     trackingParameters

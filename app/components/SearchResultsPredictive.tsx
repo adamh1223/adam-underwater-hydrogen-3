@@ -7,6 +7,7 @@ import {
   type PredictiveSearchReturn,
 } from '~/lib/search';
 import {useAside} from './Aside';
+import ProductCarousel from './products/productCarousel';
 
 type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
 
@@ -194,48 +195,21 @@ function SearchResultsPredictivePages({
     </div>
   );
 }
-
+type layout = string;
 function SearchResultsPredictiveProducts({
   term,
+  layout,
   products,
   closeSearch,
-}: PartialPredictiveSearchResult<'products'>) {
+}: PartialPredictiveSearchResult<'products'> & layout) {
   if (!products.length) return null;
 
   return (
-    <div className="predictive-search-result" key="products">
-      <h5>Products</h5>
-      <ul>
-        {products.map((product) => {
-          const productUrl = urlWithTrackingParams({
-            baseUrl: `/products/${product.handle}`,
-            trackingParams: product.trackingParameters,
-            term: term.current,
-          });
-
-          const price = product?.selectedOrFirstAvailableVariant?.price;
-          const image = product?.selectedOrFirstAvailableVariant?.image;
-          return (
-            <li className="predictive-search-result-item" key={product.id}>
-              <Link to={productUrl} onClick={closeSearch}>
-                {image && (
-                  <Image
-                    alt={image.altText ?? ''}
-                    src={image.url}
-                    width={50}
-                    height={50}
-                  />
-                )}
-                <div>
-                  <p>{product.title}</p>
-                  <small>{price && <Money data={price} />}</small>
-                </div>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <>
+      {products.map((product) => {
+        return <ProductCarousel product={product} layout={layout} />;
+      })}
+    </>
   );
 }
 
