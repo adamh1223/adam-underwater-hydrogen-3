@@ -1,16 +1,19 @@
-
 import {useState, useRef, useEffect} from 'react';
 import '../../styles/components/EProductPreview.css';
+import {ProductItemFragment} from 'storefrontapi.generated';
+import {redirect} from '@remix-run/server-runtime';
+import {Link} from '@remix-run/react';
 
+type shopifyImage = {url: string; altText: string};
 function EProductPreview({
   EProduct,
   extraClassName,
 }: {
-  EProduct: EProduct;
+  EProduct: ProductItemFragment & {images: {nodes: shopifyImage[]}};
   extraClassName?: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const [thumbnailSize, setThumbnailSize] = useState({width: 0, height: 0});
+  const [imageSize, setImageSize] = useState({width: 0, height: 0});
   const imgRef = useRef<HTMLImageElement>(null);
   const handleVideoLoad = () => {
     if (isHovered) {
@@ -23,14 +26,14 @@ function EProductPreview({
 
   useEffect(() => {
     if (imgRef.current) {
-      setThumbnailSize({
+      setImageSize({
         width: imgRef.current.clientWidth,
         height: imgRef.current.clientHeight,
       });
     }
   }, [isHovered]);
 
-  const {thumbnail, WMVideoLink, id} = EProduct;
+  const {featuredImage, id} = EProduct;
   const [isVideoReady, setIsVideoReady] = useState(false);
   console.log(isVideoReady, '2222');
 
@@ -76,7 +79,6 @@ function EProductPreview({
     }
   }, [isVideoReady, isHovered]);
 
-  const router = useRouter();
   return (
     <div
       className=""
@@ -90,24 +92,25 @@ function EProductPreview({
       }}
     >
       <>
-        {thumbnail && thumbnail.length > 0 && (
+        {featuredImage && (
           <img
             ref={imgRef}
-            src={thumbnail}
+            src={featuredImage.url}
             alt="name"
             sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
             className={`thumbnail-crop ${imageClass} cursor-pointer`}
-            onPointerDown={() => router.push(`/stock/${id}`)}
+            onPointerDown={() => redirect(`/stock/${id}`)}
           />
         )}
       </>
       {isHovered && (
-        <div className={divStyles} onClick={() => router.push(`/stock/${id}`)}>
+        <div className={divStyles} onClick={() => redirect(`/stock/${id}`)}>
           {' '}
           {/* Aspect ratio for 16:9 */}
-          <Link href={`/stock/${id}`} className="cursor-pointer">
+          <Link to={`/stock/${id}`} className="cursor-pointer">
             <iframe
-              src={`https://player.vimeo.com/video/${WMVideoLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
+              // Make number after video dynamic ${WMVideoLink}
+              src={`https://player.vimeo.com/video/1045853480?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
               allow="autoplay; loop;"
               // @ts-expect-error ignore for now
               style={iframeStyles}
@@ -117,7 +120,7 @@ function EProductPreview({
               className={`EProductVideo ${
                 isVideoReady ? 'visible' : 'tinyVideo'
               } cursor-pointer`}
-              onPointerDown={() => router.push(`/stock/${id}`)}
+              onPointerDown={() => redirect(`/stock/${id}`)}
             ></iframe>
           </Link>
         </div>

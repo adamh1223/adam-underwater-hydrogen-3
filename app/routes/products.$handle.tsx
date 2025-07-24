@@ -14,6 +14,7 @@ import {ProductForm} from '~/components/ProductForm';
 import IndividualProduct from '~/components/products/individualProduct';
 import {ChevronRightIcon} from 'lucide-react';
 import {Card} from '~/components/ui/card';
+import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -98,7 +99,7 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml, collections, images} = product;
+  const {title, descriptionHtml, collections, images, featuredImage} = product;
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
   const {references} = productSizeMetafields || {};
   const threeColumnImages = references?.nodes?.filter((item: any) => {
@@ -153,7 +154,7 @@ export default function Product() {
   //     }
   //   },
   // );
-  console.log(product, '131313');
+
   const standardCarouselImages = images.nodes
     .map((image: any) => {
       if (image.altText?.includes('carousel')) {
@@ -161,9 +162,16 @@ export default function Product() {
       }
     })
     .filter(Boolean);
-  console.log(standardCarouselImages, '282828');
 
   standardCarouselImages.unshift(selectedVariant?.image);
+  const isVideo = product.tags[0] === 'EProduct';
+  // .includes((word: string) => {
+  //   console.log(word, '3000');
+
+  //   return word === 'Video';
+  // });
+  console.log(standardCarouselImages, '2000');
+
   const locationTag = product.tags
     .find((word: string) => word.includes('loc'))
     ?.split('_');
@@ -177,10 +185,10 @@ export default function Product() {
   const locationCountry = locationTag
     ?.slice(locationTag.length - 1, locationTag.length)
     .map((word: string) => word.toUpperCase());
-  console.log(locationTag, '171717');
 
   return (
     <section className="product px-[60px] pt-[40px]">
+      {/* Link tree */}
       <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
         <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
           <Link to="/">Home</Link>
@@ -199,10 +207,18 @@ export default function Product() {
         </li>
       </ol>
       <div className="xl:grid xl:grid-cols-2 xl:gap-x-24">
-        <IndividualProduct
-          productName={title}
-          productImages={standardCarouselImages}
-        ></IndividualProduct>
+        {standardCarouselImages && standardCarouselImages?.length > 1 && (
+          <IndividualProduct
+            productName={title}
+            productImages={standardCarouselImages}
+          ></IndividualProduct>
+        )}
+        {isVideo && (
+          <IndividualVideoProduct
+            productName={title}
+            featuredImage={featuredImage?.url}
+          ></IndividualVideoProduct>
+        )}
         {/* <ProductImage image={selectedVariant?.image} /> */}
         <div className="product-main">
           <h1 className="capitalize text-3xl font-bold">{title}</h1>
@@ -292,6 +308,9 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
+    featuredImage{
+      url
+    }
     encodedVariantExistence
     encodedVariantAvailability
     images(first: 10) {

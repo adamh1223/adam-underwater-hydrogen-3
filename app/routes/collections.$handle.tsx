@@ -26,6 +26,7 @@ import {LuLayoutGrid, LuList} from 'react-icons/lu';
 import {Input} from '~/components/ui/input';
 import {SearchFormPredictive} from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import EProductsContainer from '~/components/eproducts/EProductsContainer';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -224,7 +225,7 @@ export default function Collection() {
                     <ProductCarousel product={product} layout={layout} />
                   )}
                   {collection.handle === 'stock' && (
-                    <ProductCarousel product={product} layout={layout} />
+                    <EProductsContainer product={product} layout={layout} />
                   )}
                 </>
               );

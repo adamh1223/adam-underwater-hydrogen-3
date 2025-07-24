@@ -34,7 +34,6 @@ function IndividualProduct({
   useEffect(() => {
     resetCarousel();
     setCount(0);
-    console.log('hello world', count, '1357');
   }, [productImages]);
   return (
     <>
