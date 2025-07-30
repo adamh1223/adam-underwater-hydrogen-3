@@ -179,10 +179,38 @@ export default function Collection() {
       <Separator className="mt-4" />
       <div className={layoutClassName}>
         {searchText && (
+          // <SearchResultsPredictive>
+          //   {({items, total, term, state, closeSearch}) => {
+          //     const {articles, collections, pages, products, queries} = items;
+          //     console.log(products, '778877');
+
+          //     if (state === 'loading' && term.current) {
+          //       return <div>Loading...</div>;
+          //     }
+
+          //     if (!total) {
+          //       return <SearchResultsPredictive.Empty term={term} />;
+          //     }
+
+          //     return (
+          //       <>
+          //         <SearchResultsPredictive.Products
+          //           products={products}
+          //           layout={layout}
+          //           closeSearch={closeSearch}
+          //           term={term}
+          //         />
+          //       </>
+          //     );
+          //   }}
+          // </SearchResultsPredictive>
           <SearchResultsPredictive>
             {({items, total, term, state, closeSearch}) => {
               const {articles, collections, pages, products, queries} = items;
               console.log(products, '778877');
+              const filteredProducts = products.filter((product) =>
+                product?.tags?.includes(collection.title.toLowerCase()),
+              );
 
               if (state === 'loading' && term.current) {
                 return <div>Loading...</div>;
@@ -195,7 +223,7 @@ export default function Collection() {
               return (
                 <>
                   <SearchResultsPredictive.Products
-                    products={products}
+                    products={filteredProducts}
                     layout={layout}
                     closeSearch={closeSearch}
                     term={term}
