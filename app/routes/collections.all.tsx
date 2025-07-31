@@ -61,7 +61,6 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Collection() {
   const {products} = useLoaderData<typeof loader>();
-  console.log(products, '292929');
 
   return (
     <div className="pt-12 mx-8 grid gap-4 md:grid-cols-2 px-5 pb-5">
@@ -107,6 +106,7 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     id
     handle
     title
+    tags
     featuredImage {
       id
       altText

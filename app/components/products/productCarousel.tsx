@@ -13,19 +13,37 @@ import {Money} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {AddToCartButton} from '../AddToCartButton';
+import {PartialPredictiveSearchResult} from '../SearchResultsPredictive';
+import {CurrencyCode, Scalars} from '@shopify/hydrogen/storefront-api-types';
 
 type shopifyImage = {url: string; altText: string};
-
+type collectionProductImages = {images?: {nodes: shopifyImage[]}};
+type collectionProduct = ProductItemFragment & collectionProductImages;
+interface AugmentedPartialPredictive {
+  handle?: string;
+  title?: string;
+  priceRange?: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: CurrencyCode;
+    };
+  };
+  id?: string;
+}
+type expandedPartialPredictive = AugmentedPartialPredictive &
+  collectionProductImages;
+type collectionPageProduct =
+  | collectionProduct
+  | (PartialPredictiveSearchResult<'products'> & expandedPartialPredictive);
 const ProductCarousel = ({
   product,
   loading,
   layout,
 }: {
-  product: ProductItemFragment & {images: {nodes: shopifyImage[]}};
+  product: collectionPageProduct;
   loading?: 'eager' | 'lazy';
   layout: string;
 }) => {
-  console.log(product, '656565');
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500'

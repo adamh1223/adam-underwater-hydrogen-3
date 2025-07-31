@@ -3,7 +3,7 @@ import type {SelectedOption} from '@shopify/hydrogen/storefront-api-types';
 import {useMemo} from 'react';
 
 export function useVariantUrl(
-  handle: string,
+  handle: string | undefined,
   selectedOptions?: SelectedOption[],
 ) {
   const {pathname} = useLocation();
@@ -24,7 +24,7 @@ export function getVariantUrl({
   searchParams,
   selectedOptions,
 }: {
-  handle: string;
+  handle: string | undefined;
   pathname: string;
   searchParams: URLSearchParams;
   selectedOptions?: SelectedOption[];

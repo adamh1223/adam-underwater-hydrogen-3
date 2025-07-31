@@ -27,7 +27,7 @@ type SearchResultsPredictiveArgs = Pick<
   closeSearch: () => void;
 };
 
-type PartialPredictiveSearchResult<
+export type PartialPredictiveSearchResult<
   ItemType extends keyof PredictiveSearchItems,
   ExtraProps extends keyof SearchResultsPredictiveArgs = 'term' | 'closeSearch',
 > = Pick<PredictiveSearchItems, ItemType> &
@@ -196,12 +196,22 @@ function SearchResultsPredictivePages({
   );
 }
 type layout = string;
+type shopifyImage = {url: string; altText: string};
+interface AugmentedPartialSearchResult {
+  images?: {nodes: shopifyImage[]};
+}
+type EnhancedPartialSearchResult = PartialPredictiveSearchResult<'products'> &
+  AugmentedPartialSearchResult;
+interface PredictiveSearchLayout {
+  term: string;
+  layout: string;
+  products: EnhancedPartialSearchResult[];
+}
 function SearchResultsPredictiveProducts({
   term,
   layout,
   products,
-  closeSearch,
-}: PartialPredictiveSearchResult<'products'> & layout) {
+}: PredictiveSearchLayout) {
   if (!products.length) return null;
 
   return (

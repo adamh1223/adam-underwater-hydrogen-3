@@ -27,6 +27,7 @@ import {Input} from '~/components/ui/input';
 import {SearchFormPredictive} from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
+import {capitalizeFirstLetter} from '~/utils/grammer';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -207,10 +208,11 @@ export default function Collection() {
           <SearchResultsPredictive>
             {({items, total, term, state, closeSearch}) => {
               const {articles, collections, pages, products, queries} = items;
-              console.log(products, '778877');
+              const collectionName = capitalizeFirstLetter(collection.title);
               const filteredProducts = products.filter((product) =>
-                product?.tags?.includes(collection.title.toLowerCase()),
+                product?.tags?.includes(collectionName),
               );
+              console.log(filteredProducts, '151515');
 
               if (state === 'loading' && term.current) {
                 return <div>Loading...</div>;
