@@ -140,22 +140,24 @@ export default function Collection() {
           };
           return (
             <>
-              <input
-                className="search-input"
-                name="q"
-                onChange={handleInput}
-                onFocus={handleInput}
-                placeholder="Search"
-                ref={inputRef}
-                type="search"
-                list={queriesDatalistId}
-              />
+              <div className="flex justify-center">
+                <Input
+                  className="search-input w-[300px]"
+                  name="q"
+                  onChange={handleInput}
+                  onFocus={handleInput}
+                  placeholder="Search Product"
+                  ref={inputRef}
+                  type="search"
+                  list={queriesDatalistId}
+                />
+              </div>
               &nbsp;
             </>
           );
         }}
       </SearchFormPredictive>
-
+      {/* SOMETHING HERE IS NOT WORKING WITH PRODUCT COUNT */}
       <div className="flex justify-between items-center pt-5 px-9">
         <h4 className="font-medium text-xl p-5">
           {totalProductCount} product{totalProductCount > 1 && 's'}
@@ -205,6 +207,7 @@ export default function Collection() {
           //     );
           //   }}
           // </SearchResultsPredictive>
+
           <SearchResultsPredictive>
             {({items, total, term, state, closeSearch}) => {
               const {articles, collections, pages, products, queries} = items;

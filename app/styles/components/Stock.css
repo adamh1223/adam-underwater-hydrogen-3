@@ -6,7 +6,7 @@
 }
 
 .statement::before {
-  content: "•"; /* Adds a bullet point */
+  content: '•'; /* Adds a bullet point */
   margin-right: 8px; /* Space between bullet and text */
   font-size: 1.2em; /* Adjust bullet size as needed */
   color: inherit; /* Matches the text color */
@@ -18,7 +18,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  margin: 15px 0px;
+  margin: 0 0 40px 0;
   padding: 0 30px 0 30px;
 }
 .details-wrapper {
