@@ -13,6 +13,9 @@ import {
   useOutletContext,
   type MetaFunction,
 } from '@remix-run/react';
+import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
+import {Button} from '~/components/ui/button';
+import {Input} from '~/components/ui/input';
 
 export type ActionResponse = {
   error: string | null;
@@ -90,47 +93,70 @@ export default function AccountProfile() {
 
   return (
     <div className="account-profile">
-      <h2>My profile</h2>
-      <br />
-      <Form method="PUT">
-        <legend>Personal information</legend>
-        <fieldset>
-          <label htmlFor="firstName">First name</label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            autoComplete="given-name"
-            placeholder="First name"
-            aria-label="First name"
-            defaultValue={customer.firstName ?? ''}
-            minLength={2}
-          />
-          <label htmlFor="lastName">Last name</label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            autoComplete="family-name"
-            placeholder="Last name"
-            aria-label="Last name"
-            defaultValue={customer.lastName ?? ''}
-            minLength={2}
-          />
-        </fieldset>
-        {action?.error ? (
-          <p>
-            <mark>
-              <small>{action.error}</small>
-            </mark>
-          </p>
-        ) : (
-          <br />
-        )}
-        <button type="submit" disabled={state !== 'idle'}>
-          {state !== 'idle' ? 'Updating' : 'Update'}
-        </button>
-      </Form>
+      <Card className="m-5">
+        <div className="p-4">
+          <h2>My profile</h2>
+        </div>
+
+        <Form method="PUT">
+          <div className="ps-4">
+            <legend>Account information</legend>
+          </div>
+          <CardContent className="ps-4">
+            <fieldset>
+              <label htmlFor="firstName" className="me-2">
+                First name:
+              </label>
+              <div className="py-2">
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  autoComplete="given-name"
+                  placeholder="First name"
+                  aria-label="First name"
+                  defaultValue={customer.firstName ?? ''}
+                  minLength={2}
+                  className="w-[250px]"
+                />
+              </div>
+              <label htmlFor="lastName" className="me-2">
+                Last name:
+              </label>
+              <div className="py-2">
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  autoComplete="family-name"
+                  placeholder="Last name"
+                  aria-label="Last name"
+                  defaultValue={customer.lastName ?? ''}
+                  minLength={2}
+                  className="w-[250px]"
+                />
+              </div>
+            </fieldset>
+            {action?.error ? (
+              <p>
+                <mark>
+                  <small>{action.error}</small>
+                </mark>
+              </p>
+            ) : (
+              <br />
+            )}
+          </CardContent>
+          <CardAction>
+            <Button
+              type="submit"
+              disabled={state !== 'idle'}
+              variant="outline"
+              className="m-5"
+            >
+              {state !== 'idle' ? 'Updating' : 'Update'}
+            </Button>
+          </CardAction>
+        </Form>
+      </Card>
     </div>
   );
 }

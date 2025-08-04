@@ -31,11 +31,23 @@ export async function loader({context}: LoaderFunctionArgs) {
 export default function AccountLayout() {
   const {customer} = useLoaderData<typeof loader>();
 
-  const heading = customer
-    ? customer.firstName
-      ? `Welcome, ${customer.firstName}`
-      : `Welcome to your account.`
-    : 'Account Details';
+  const heading = customer ? (
+    customer.firstName ? (
+      // `Welcome, ${customer.firstName}`
+      <>
+        <div className="flex justify-center pt-5">
+          <img src={'/account.png'} style={{height: '95px'}} className=""></img>
+        </div>
+        <div className="flex justify-center">Welcome, {customer.firstName}</div>
+      </>
+    ) : (
+      <div className="flex justify-center pt-5">
+        <img src={'/account.png'} style={{height: '95px'}} className=""></img>
+      </div>
+    )
+  ) : (
+    'Account Details'
+  );
 
   return (
     <div className="account">
@@ -60,24 +72,27 @@ function AccountMenu() {
     return {
       fontWeight: isActive ? 'bold' : undefined,
       color: 'white',
+      cursor: 'pointer',
     };
   }
 
   return (
     <nav role="navigation">
-      <NavLink to="/account/orders" style={isActiveStyle}>
-        Orders &nbsp;
-      </NavLink>
-      &nbsp;|&nbsp;
-      <NavLink to="/account/profile" style={isActiveStyle}>
-        &nbsp; Profile &nbsp;
-      </NavLink>
-      &nbsp;|&nbsp;
-      <NavLink to="/account/addresses" style={isActiveStyle}>
-        &nbsp; Addresses &nbsp;
-      </NavLink>
-      &nbsp;|&nbsp;
-      <Logout />
+      <div className="flex justify-center ms-2">
+        <NavLink to="/account/orders" style={isActiveStyle}>
+          Orders &nbsp;
+        </NavLink>
+        &nbsp;|&nbsp;
+        <NavLink to="/account/profile" style={isActiveStyle}>
+          &nbsp; Profile &nbsp;
+        </NavLink>
+        &nbsp;|&nbsp;
+        <NavLink to="/account/addresses" style={isActiveStyle}>
+          &nbsp; Addresses &nbsp;
+        </NavLink>
+        &nbsp;|&nbsp;
+        <Logout />
+      </div>
     </nav>
   );
 }

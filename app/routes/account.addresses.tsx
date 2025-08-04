@@ -266,9 +266,6 @@ export default function Addresses() {
 
   return (
     <>
-      <div className="flex justify-center">
-        <img src={'/addresses.png'} style={{height: '80px'}} className=""></img>
-      </div>
       <div className="account-addresses">
         <br />
         <div className="address-container">
@@ -513,7 +510,9 @@ export function AddressForm({
               name="defaultAddress"
               type="checkbox"
             />
-            <label htmlFor="defaultAddress">Set as default address</label>
+            <label htmlFor="defaultAddress" className="ps-1">
+              Set as default address
+            </label>
           </div>
           {error ? (
             <p>

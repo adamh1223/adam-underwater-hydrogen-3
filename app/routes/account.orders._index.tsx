@@ -11,6 +11,7 @@ import type {
   OrderItemFragment,
 } from 'customer-accountapi.generated';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {Button} from '~/components/ui/button';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Orders'}];
@@ -64,11 +65,11 @@ function OrdersTable({orders}: Pick<CustomerOrdersFragment, 'orders'>) {
 function EmptyOrders() {
   return (
     <div>
-      <p>You haven&apos;t placed any orders yet.</p>
+      <p className="ms-5">You haven&apos;t placed any orders yet.</p>
       <br />
-      <p>
+      <Button variant="link" className="ms-1">
         <Link to="/collections">Start Shopping →</Link>
-      </p>
+      </Button>
     </div>
   );
 }
