@@ -62,8 +62,8 @@ function EProductsContainer({
                   RedirectTo={`/stock`}
                 />
               </div> */}
-              <div className="flex justify-center">
-                <h5>{product.title}</h5>
+              <div className="mt-4 text-center">
+                <h2 className="text-lg">{product.title}</h2>
               </div>
               {product?.priceRange?.minVariantPrice && (
                 <div className="flex justify-center">

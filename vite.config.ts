@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['taxi-grain-portions-meanwhile.tryhydrogen.dev'],
+    allowedHosts: ['gtk-settled-playlist-historic.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
