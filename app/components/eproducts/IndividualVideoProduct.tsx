@@ -9,7 +9,7 @@ function IndividualVideoProduct({
   featuredImage,
 }: {
   productName: string;
-  featuredImage: string;
+  featuredImage: string | undefined;
 }) {
   return (
     <>

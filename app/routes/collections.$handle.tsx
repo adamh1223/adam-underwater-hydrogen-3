@@ -20,7 +20,7 @@ import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
-import {useId, useState} from 'react';
+import {useEffect, useId, useState} from 'react';
 import {Button} from '~/components/ui/button';
 import {LuLayoutGrid, LuList} from 'react-icons/lu';
 import {Input} from '~/components/ui/input';
@@ -28,6 +28,7 @@ import {SearchFormPredictive} from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {capitalizeFirstLetter} from '~/utils/grammer';
+import {EnhancedPartialSearchResult} from '~/lib/types';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -105,13 +106,24 @@ export default function Collection() {
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
   const [searchText, setSearchText] = useState<string | undefined>();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
     if (searchText && searchText?.length > 4) {
       console.log('searched');
     }
   };
-  const totalProductCount = collection.products?.length;
+  const [totalProductCount, setTotalProductCount] = useState(
+    collection.products?.nodes?.length,
+  );
+  useEffect(() => {
+    setSearchText('');
+  }, [collection.handle]);
+  useEffect(() => {
+    if (searchText === '') {
+      setTotalProductCount(collection.products?.nodes?.length);
+    }
+  }, [searchText]);
   const [layout, setLayout] = useState('grid');
   const handleLayoutChange = () => {
     if (layout === 'grid') {
@@ -138,6 +150,7 @@ export default function Collection() {
             setSearchText(e.target.value);
             fetchResults(e);
           };
+
           return (
             <>
               <div className="flex justify-center">
@@ -149,6 +162,7 @@ export default function Collection() {
                   placeholder="Search Product"
                   ref={inputRef}
                   type="search"
+                  value={searchText ?? ''}
                   list={queriesDatalistId}
                 />
               </div>
@@ -211,11 +225,28 @@ export default function Collection() {
           <SearchResultsPredictive>
             {({items, total, term, state, closeSearch}) => {
               const {articles, collections, pages, products, queries} = items;
+              console.log(typeof term, '999111');
+
+              const extraTags: string[] = [];
               const collectionName = capitalizeFirstLetter(collection.title);
+              if (collectionName === 'Stock') {
+                extraTags.push('Video');
+                // For other types of EProducts, push that tag here
+              }
               const filteredProducts = products.filter((product) =>
                 product?.tags?.includes(collectionName),
               );
-              console.log(filteredProducts, '151515');
+              const extraFilteredProducts =
+                extraTags?.length > 0
+                  ? products.filter((product) =>
+                      product.tags.some((tag) => extraTags.includes(tag)),
+                    )
+                  : [];
+              const combinedProductSearches = [
+                ...filteredProducts,
+                ...extraFilteredProducts,
+              ];
+              setTotalProductCount(combinedProductSearches.length);
 
               if (state === 'loading' && term.current) {
                 return <div>Loading...</div>;
@@ -228,9 +259,10 @@ export default function Collection() {
               return (
                 <>
                   <SearchResultsPredictive.Products
-                    products={filteredProducts}
+                    products={
+                      combinedProductSearches as unknown as EnhancedPartialSearchResult[]
+                    }
                     layout={layout}
-                    closeSearch={closeSearch}
                     term={term}
                   />
                 </>
@@ -240,6 +272,7 @@ export default function Collection() {
         )}
         {!searchText && (
           <PaginatedResourceSection
+            // @ts-expect-error typing is fine for now, revisit
             connection={collection.products}
             resourcesClassName="products-grid"
           >

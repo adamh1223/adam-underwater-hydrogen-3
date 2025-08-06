@@ -16,6 +16,7 @@ import {Card, CardContent} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
 import {useEffect, useState} from 'react';
+import {shopifyImage} from '~/lib/types';
 
 export const meta: MetaFunction<typeof loader> = () => {
   return [{title: `Hydrogen | Products`}];
@@ -65,6 +66,7 @@ export default function Collection() {
   return (
     <div className="pt-12 mx-8 grid gap-4 md:grid-cols-2 px-5 pb-5">
       <PaginatedResourceSection
+        // @ts-expect-error check this later
         connection={products}
         resourcesClassName="products-grid"
       >
@@ -80,7 +82,6 @@ export default function Collection() {
             product={product}
             loading={index < 8 ? 'eager' : undefined}
           />
-          
         )}
       </PaginatedResourceSection>
     </div>
@@ -94,7 +95,7 @@ function ProductItem({
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}};
   loading?: 'eager' | 'lazy';
 }) {
-  
+  return <></>;
 }
 
 const PRODUCT_ITEM_FRAGMENT = `#graphql

@@ -8,6 +8,7 @@ import {
 } from '~/lib/search';
 import {useAside} from './Aside';
 import ProductCarousel from './products/productCarousel';
+import {EnhancedPartialSearchResult} from '~/lib/types';
 
 type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
 
@@ -195,15 +196,9 @@ function SearchResultsPredictivePages({
     </div>
   );
 }
-type layout = string;
-type shopifyImage = {url: string; altText: string};
-interface AugmentedPartialSearchResult {
-  images?: {nodes: shopifyImage[]};
-}
-type EnhancedPartialSearchResult = PartialPredictiveSearchResult<'products'> &
-  AugmentedPartialSearchResult;
+
 interface PredictiveSearchLayout {
-  term: string;
+  term: React.MutableRefObject<string>;
   layout: string;
   products: EnhancedPartialSearchResult[];
 }

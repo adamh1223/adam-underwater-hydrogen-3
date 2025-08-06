@@ -1,4 +1,4 @@
-import {Await, Link} from '@remix-run/react';
+import {Await, Link, useNavigate} from '@remix-run/react';
 import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,
@@ -15,6 +15,7 @@ import {
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import {Button} from './ui/button';
+import {EnhancedPartialSearchResult} from '~/lib/types';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -82,12 +83,16 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
 
 function SearchAside() {
   const queriesDatalistId = useId();
+  const navigate = useNavigate();
+  const handleClick = () => {
+    navigate('/search');
+  };
   return (
     <Aside type="search" heading="SEARCH">
       <div className="predictive-search">
         <br />
         <SearchFormPredictive>
-          {({fetchResults, goToSearch, inputRef}) => (
+          {({fetchResults, inputRef}) => (
             <>
               <input
                 className="search-input"
@@ -100,7 +105,7 @@ function SearchAside() {
                 list={queriesDatalistId}
               />
               &nbsp;
-              <Button variant="outline" onClick={goToSearch}>
+              <Button variant="outline" onClick={handleClick}>
                 Search
               </Button>
             </>
@@ -126,8 +131,9 @@ function SearchAside() {
                   queriesDatalistId={queriesDatalistId}
                 />
                 <SearchResultsPredictive.Products
-                  products={products}
-                  closeSearch={closeSearch}
+                  products={
+                    products as unknown as EnhancedPartialSearchResult[]
+                  }
                   term={term}
                 />
                 <SearchResultsPredictive.Collections
