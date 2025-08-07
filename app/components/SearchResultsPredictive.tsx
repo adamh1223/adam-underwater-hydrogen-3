@@ -199,7 +199,7 @@ function SearchResultsPredictivePages({
 
 interface PredictiveSearchLayout {
   term: React.MutableRefObject<string>;
-  layout: string;
+  layout?: string;
   products: EnhancedPartialSearchResult[];
 }
 function SearchResultsPredictiveProducts({

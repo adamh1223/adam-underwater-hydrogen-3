@@ -15,6 +15,7 @@ import IndividualProduct from '~/components/products/individualProduct';
 import {ChevronRightIcon} from 'lucide-react';
 import {Card} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
+import {ProductImages} from '~/lib/types';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -231,7 +232,7 @@ export default function Product() {
           <ProductForm
             productOptions={productOptions}
             selectedVariant={selectedVariant}
-            imagesToShow={layoutImagesToUse}
+            imagesToShow={layoutImagesToUse as ProductImages[]}
           />
           <br />
           <br />

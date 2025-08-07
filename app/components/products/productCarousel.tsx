@@ -38,11 +38,11 @@ type collectionPageProduct =
 const ProductCarousel = ({
   product,
   loading,
-  layout,
+  layout = 'grid',
 }: {
   product: collectionPageProduct;
   loading?: 'eager' | 'lazy';
-  layout: string;
+  layout?: string;
 }) => {
   const cardClassName =
     layout === 'grid'

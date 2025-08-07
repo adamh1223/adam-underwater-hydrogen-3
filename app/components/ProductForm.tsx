@@ -8,14 +8,8 @@ import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
 import {sanitizeErrors} from '@remix-run/server-runtime/dist/errors';
+import {ProductImages} from '~/lib/types';
 
-interface ProductImages {
-  id: string;
-  image: {
-    url: string;
-    altText: string;
-  };
-}
 export function ProductForm({
   productOptions,
   selectedVariant,
@@ -23,7 +17,7 @@ export function ProductForm({
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
-  imagesToShow: ProductImages[];
+  imagesToShow?: ProductImages[];
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
@@ -57,7 +51,7 @@ export function ProductForm({
                 };
                 const layoutToCheck = determineLayout(name);
                 const variantImagesToShow = imagesToShow?.filter((image) =>
-                  image?.image.altText?.includes(layoutToCheck),
+                  image?.image?.altText?.includes(layoutToCheck),
                 );
                 console.log(variantImagesToShow, '181818');
 
@@ -168,7 +162,7 @@ function ProductOptionSwatch({
 
   if (variantImagesToShow && sizes.includes(name)) {
     const specificSize = variantImagesToShow.find((image) =>
-      image.image.altText.includes(name.toLowerCase()),
+      image?.image?.altText.includes(name.toLowerCase()),
     );
     return (
       <div

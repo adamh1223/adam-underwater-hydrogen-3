@@ -6,3 +6,11 @@ interface AugmentedPartialSearchResult {
 }
 export type EnhancedPartialSearchResult =
   PartialPredictiveSearchResult<'products'> & AugmentedPartialSearchResult;
+
+export interface ProductImages {
+    id: string;
+    image?: {
+      url: string;
+      altText: string;
+    };
+  }
