@@ -382,4 +382,7 @@ const COLLECTION_QUERY = `#graphql
       }
     }
   }
+
+  
 ` as const;
+// tack on selectedvariants even if theres none

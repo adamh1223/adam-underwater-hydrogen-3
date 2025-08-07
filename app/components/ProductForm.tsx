@@ -21,6 +21,7 @@ export function ProductForm({
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
+  console.log(productOptions, '001100');
 
   return (
     <div className="product-form">
@@ -53,7 +54,7 @@ export function ProductForm({
                 const variantImagesToShow = imagesToShow?.filter((image) =>
                   image?.image?.altText?.includes(layoutToCheck),
                 );
-                console.log(variantImagesToShow, '181818');
+                console.log(selectedVariant, '181818');
 
                 if (isDifferentProduct) {
                   // SEO
