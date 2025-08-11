@@ -67,10 +67,6 @@ aside header h2 {
   margin-top: 0;
 }
 
-aside main {
-  margin: 1rem;
-}
-
 aside p {
   margin: 0 0 0.25rem;
 }
@@ -230,7 +226,7 @@ button.reset:hover:not(:has(> *)) {
   max-height: 100vh;
   overflow-y: auto;
   width: auto;
-  margin: 20px;
+  margin: 8px 20px 20px 20px;
 }
 
 .cart-line {
@@ -258,6 +254,7 @@ button.reset:hover:not(:has(> *)) {
 
 .cart-line-quantity {
   display: flex;
+  align-items: center;
 }
 
 .cart-discount {
@@ -447,6 +444,6 @@ button.reset:hover:not(:has(> *)) {
 } */
 
 .cart-subheader {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 450;
 }

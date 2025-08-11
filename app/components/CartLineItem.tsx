@@ -67,9 +67,9 @@ export function CartLineItem({
                 </li>
               ))}
             </ul>
-            <CartLineQuantity line={line} />
           </div>
         </li>
+        <CartLineQuantity line={line} />
       </CardContent>
     </Card>
   );
@@ -88,27 +88,32 @@ function CartLineQuantity({line}: {line: CartLine}) {
 
   return (
     <div className="cart-line-quantity">
-      <p className="cart-subheader">Quantity: {quantity} &nbsp;&nbsp;</p>
+      <p className="cart-subheader">
+        Quantity: <span className="text-md font-bold">{quantity}</span>{' '}
+        &nbsp;&nbsp;
+      </p>
       <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
-        <button
+        <Button
           aria-label="Decrease quantity"
           disabled={quantity <= 1 || !!isOptimistic}
           name="decrease-quantity"
           value={prevQuantity}
+          variant="ghost"
         >
           <span>&#8722; </span>
-        </button>
+        </Button>
       </CartLineUpdateButton>
       &nbsp;
       <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
-        <button
+        <Button
           aria-label="Increase quantity"
           name="increase-quantity"
           value={nextQuantity}
           disabled={!!isOptimistic}
+          variant="ghost"
         >
           <span>&#43;</span>
-        </button>
+        </Button>
       </CartLineUpdateButton>
       &nbsp;
       <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
@@ -134,7 +139,7 @@ function CartLineRemoveButton({
       action={CartForm.ACTIONS.LinesRemove}
       inputs={{lineIds}}
     >
-      <Button disabled={disabled} type="submit" variant="outline">
+      <Button disabled={disabled} type="submit" variant="ghost">
         Remove
       </Button>
     </CartForm>

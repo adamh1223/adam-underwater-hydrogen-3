@@ -80,7 +80,7 @@ export function Aside({
         </div>
 
         <header>
-          <div className="flex justify-center">
+          <div className="flex justify-center border-b">
             <img
               src={imageSource}
               style={{height: '80px'}}
