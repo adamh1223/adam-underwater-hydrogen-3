@@ -7,6 +7,7 @@ import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {Card, CardContent, CardDescription} from './ui/card';
+import {Button} from './ui/button';
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
@@ -133,9 +134,9 @@ function CartLineRemoveButton({
       action={CartForm.ACTIONS.LinesRemove}
       inputs={{lineIds}}
     >
-      <button disabled={disabled} type="submit">
+      <Button disabled={disabled} type="submit" variant="outline">
         Remove
-      </button>
+      </Button>
     </CartForm>
   );
 }

@@ -228,7 +228,9 @@ export default function Product() {
             compareAtPrice={selectedVariant?.compareAtPrice}
           />
           <br />
-          <h4 className="text-xl mt-2">{`${locationName}, ${locationState}, ${locationCountry}`}</h4>
+          <h4 className="text-xl mt-1 pb-4">
+            {`${locationName}, ${locationState}, ${locationCountry}`}
+          </h4>
           <ProductForm
             productOptions={productOptions}
             selectedVariant={selectedVariant}

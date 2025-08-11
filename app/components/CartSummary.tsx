@@ -4,6 +4,8 @@ import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useRef} from 'react';
 import {FetcherWithComponents} from '@remix-run/react';
 import {Card, CardAction, CardContent, CardHeader} from './ui/card';
+import {Input} from './ui/input';
+import {Button} from './ui/button';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -22,10 +24,13 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         </CardHeader>
         <CardContent>
           <dl className="cart-subtotal">
-            <dt>Subtotal: </dt>
+            <dt>Subtotal:</dt>
             <dd>
               {cart.cost?.subtotalAmount?.amount ? (
-                <Money data={cart.cost?.subtotalAmount} />
+                <Money
+                  data={cart.cost?.subtotalAmount}
+                  className="text-lg font-bold ms-1"
+                />
               ) : (
                 '-'
               )}
@@ -85,12 +90,21 @@ function CartDiscounts({
 
       {/* Show an input to apply a discount */}
       <UpdateDiscountForm discountCodes={codes}>
-        <div>
-          <input type="text" name="discountCode" placeholder="Discount code" />
+        <div className="flex justify-start">
+          <Input
+            type="text"
+            name="discountCode"
+            placeholder="Discount code"
+            className="w-[180px]"
+          />
           &nbsp;
-          <button type="submit" className="cursor-pointer">
+          <Button
+            type="submit"
+            className="cursor-pointer ms-2"
+            variant="outline"
+          >
             Apply
-          </button>
+          </Button>
         </div>
       </UpdateDiscountForm>
     </div>
@@ -149,7 +163,9 @@ function CartGiftCard({
             <div className="cart-discount">
               <code>{codes?.join(', ')}</code>
               &nbsp;
-              <button onSubmit={() => removeAppliedCode}>Remove</button>
+              <Button onSubmit={() => removeAppliedCode} variant="secondary">
+                Remove
+              </Button>
             </div>
           </UpdateGiftCardForm>
         </div>
@@ -160,17 +176,22 @@ function CartGiftCard({
         giftCardCodes={appliedGiftCardCodes.current}
         saveAppliedCode={saveAppliedCode}
       >
-        <div>
-          <input
+        <div className="flex justify-start pt-3">
+          <Input
             type="text"
             name="giftCardCode"
             placeholder="Gift card code"
             ref={giftCardCodeInput}
+            className="w-[180px]"
           />
           &nbsp;
-          <button type="submit" className="cursor-pointer">
+          <Button
+            type="submit"
+            className="cursor-pointer ms-2"
+            variant="outline"
+          >
             Apply
-          </button>
+          </Button>
         </div>
       </UpdateGiftCardForm>
     </div>

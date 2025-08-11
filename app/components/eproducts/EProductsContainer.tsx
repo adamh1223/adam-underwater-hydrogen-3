@@ -75,19 +75,21 @@ function EProductsContainer({
                   </span>
                 </div>
               )}
-              <AddToCartButton
-                lines={[
-                  {
-                    merchandiseId: product.id,
-                    quantity: 1,
-                  },
-                ]}
-                onClick={() => {
-                  open('cart');
-                }}
-              >
-                Add To Cart
-              </AddToCartButton>
+              <div className="flex justify-center pt-5 pb-4">
+                <AddToCartButton
+                  lines={[
+                    {
+                      merchandiseId: product.id,
+                      quantity: 1,
+                    },
+                  ]}
+                  onClick={() => {
+                    open('cart');
+                  }}
+                >
+                  Add To Cart
+                </AddToCartButton>
+              </div>
             </div>
           </CardContent>
         </Card>
