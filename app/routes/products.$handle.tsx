@@ -231,22 +231,19 @@ export default function Product() {
           <h4 className="text-xl mt-1 pb-4">
             {`${locationName}, ${locationState}, ${locationCountry}`}
           </h4>
-          <ProductForm
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-            imagesToShow={layoutImagesToUse as ProductImages[]}
-          />
           <br />
           <br />
           <p>
             <strong>Description</strong>
           </p>
           <br />
-          <div
-            dangerouslySetInnerHTML={{__html: descriptionHtml}}
-            className="w-[50%]"
-          />
+          <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
           <br />
+          <ProductForm
+            productOptions={productOptions}
+            selectedVariant={selectedVariant}
+            imagesToShow={layoutImagesToUse as ProductImages[]}
+          />
         </div>
       </div>
       <Analytics.ProductView

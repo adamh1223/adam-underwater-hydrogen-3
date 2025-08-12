@@ -10,6 +10,7 @@ import {
 import {useEffect, useRef, useState} from 'react';
 import {count} from 'console';
 import {ChevronRightIcon} from 'lucide-react';
+import '../../styles/routeStyles/product.css';
 
 function IndividualProduct({
   productName,
@@ -41,33 +42,33 @@ function IndividualProduct({
       {/* may need to be made into a component if more pages are made */}
 
       {/* <Breadcrumb name="INdividual product name" /> */}
+      <div className="flex justify-center py-4">
+        <Carousel
+          // ref={carouselRef}
+          // opts={{
+          //   align: 'start',
+          //   startIndex: count,
+          // }}
+          className="print-carousel-individual mx-3 flex items-center justify-center "
+          key={JSON.stringify(productImages)}
+        >
+          <CarouselContent className="flex">
+            {productImages.map((url, idx) => (
+              <CarouselItem
+                className="flex items-center justify-center"
+                key={idx}
+              >
+                <div className="p-4 flex items-center justify-center">
+                  <img
+                    src={url.url}
+                    alt=""
+                    className="max-h-full object-contain"
+                  />
+                </div>
+              </CarouselItem>
+            ))}
 
-      <Carousel
-        // ref={carouselRef}
-        // opts={{
-        //   align: 'start',
-        //   startIndex: count,
-        // }}
-        className="max-w-[70%] min-w-[300px] mx-3 flex items-center justify-center "
-        key={JSON.stringify(productImages)}
-      >
-        <CarouselContent className="flex">
-          {productImages.map((url, idx) => (
-            <CarouselItem
-              className="flex items-center justify-center"
-              key={idx}
-            >
-              <div className="p-4 flex items-center justify-center">
-                <img
-                  src={url.url}
-                  alt=""
-                  className="max-h-full object-contain"
-                />
-              </div>
-            </CarouselItem>
-          ))}
-
-          {/* <CarouselItem className="flex items-center justify-center">
+            {/* <CarouselItem className="flex items-center justify-center">
                 <div className="p-4 flex items-center justify-center">
                   <img
                     src={productImages[1]?.url}
@@ -86,12 +87,12 @@ function IndividualProduct({
                   />
                 </div>
               </CarouselItem> */}
-        </CarouselContent>
+          </CarouselContent>
 
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
-
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
       {/* PRODUCT INFO SECOND COL */}
       {/* <div className="lg:ps-3 md:ps-3 sm:ps-3 xl:ps-8">
             <div className="flex gap-x-8 items-center">

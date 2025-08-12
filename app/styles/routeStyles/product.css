@@ -1,0 +1,22 @@
+@media (min-width: 1280px) {
+  .print-carousel-individual {
+    /* display: grid;
+    grid-template-columns: 1fr 1fr; */
+    width: 90vw;
+  }
+}
+
+@media (max-width: 1279px) and (min-width: 900px) {
+  .print-carousel-individual {
+    /* display: grid;
+    grid-template-columns: 1fr; */
+    width: 55vw;
+  }
+}
+@media (max-width: 899px) {
+  .print-carousel-individual {
+    /* display: grid;
+    grid-template-columns: 1fr; */
+    width: 80vw;
+  }
+}
