@@ -210,15 +210,11 @@ function SearchResultsPredictiveProducts({
   products,
   collectionHandle,
 }: PredictiveSearchLayout) {
-  
-
   if (!products.length) return null;
 
   return (
     <>
       {products.map((product) => {
-        
-
         if (collectionHandle === 'stock') {
           return <EProductsContainer product={product} layout={layout} />;
         }

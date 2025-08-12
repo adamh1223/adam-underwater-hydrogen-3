@@ -273,7 +273,6 @@ export default function Collection() {
         )}
         {!searchText && (
           <PaginatedResourceSection
-            // @ts-expect-error typing is fine for now, revisit
             connection={collection.products}
             resourcesClassName="products-grid"
           >
@@ -328,6 +327,23 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       url
       width
       height
+    }
+    selectedOrFirstAvailableVariant(
+      selectedOptions: []
+      ignoreUnknownOptions: false
+      caseInsensitiveMatch: true
+    ) {
+      id
+      image {
+        url
+        altText
+        width
+        height
+      }
+      price {
+        amount
+        currencyCode
+      }
     }
     images(first: 20) {
       nodes {

@@ -81,7 +81,8 @@ function EProductsContainer({
                 <AddToCartButton
                   lines={[
                     {
-                      merchandiseId: product.selectedOrFirstAvailableVariant.id,
+                      merchandiseId:
+                        product?.selectedOrFirstAvailableVariant?.id,
                       quantity: 1,
                     },
                   ]}
