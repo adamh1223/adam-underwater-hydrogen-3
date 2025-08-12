@@ -242,7 +242,10 @@ export default function Product() {
             <strong>Description</strong>
           </p>
           <br />
-          <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+          <div
+            dangerouslySetInnerHTML={{__html: descriptionHtml}}
+            className="w-[50%]"
+          />
           <br />
         </div>
       </div>

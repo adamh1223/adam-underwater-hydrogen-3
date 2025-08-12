@@ -39,7 +39,7 @@ function IndividualProduct({
     <>
       {/* // <div className="pe-[60px]"> */}
       {/* may need to be made into a component if more pages are made */}
-      
+
       {/* <Breadcrumb name="INdividual product name" /> */}
 
       <Carousel
@@ -48,7 +48,7 @@ function IndividualProduct({
         //   align: 'start',
         //   startIndex: count,
         // }}
-        className="w-full max-w-m mx-3 flex items-center justify-center "
+        className="max-w-[70%] min-w-[300px] mx-3 flex items-center justify-center "
         key={JSON.stringify(productImages)}
       >
         <CarouselContent className="flex">

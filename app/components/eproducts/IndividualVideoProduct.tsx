@@ -14,7 +14,7 @@ function IndividualVideoProduct({
   return (
     <>
       {/* PLUG IN EPRODUCT PREVIEW WITH DIFFERENT TYPING BELOW */}
-      <div className="p-4 flex items-center justify-center">
+      <div className="px-5 flex items-center justify-center">
         <img src={featuredImage} alt="" className="max-h-full object-contain" />
       </div>
     </>
