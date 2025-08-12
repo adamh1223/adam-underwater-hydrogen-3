@@ -39,7 +39,7 @@ export function Aside({
       return '/cart.png';
     }
     if (activeType === 'search') {
-      return '/about2.png';
+      return '/searchstore.png';
     }
   };
   const imageSource = determineActiveTypeImage();

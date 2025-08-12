@@ -46,7 +46,7 @@ const ProductCarousel = ({
 }) => {
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl transition-shadow duration-500'
+      ? 'group-hover:shadow-xl transition-shadow duration-500 m-5'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3';
   const variantUrl = useVariantUrl(product.handle);
   const standardImages = product?.images?.nodes?.filter((item) =>

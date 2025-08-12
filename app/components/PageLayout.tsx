@@ -16,6 +16,7 @@ import {
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import {Button} from './ui/button';
 import {EnhancedPartialSearchResult} from '~/lib/types';
+import {Input} from './ui/input';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -89,25 +90,31 @@ function SearchAside() {
   };
   return (
     <Aside type="search" heading="SEARCH">
-      <div className="predictive-search">
+      <div className="predictive-search mt-[8px]">
         <br />
         <SearchFormPredictive>
           {({fetchResults, inputRef}) => (
             <>
-              <input
-                className="search-input"
-                name="q"
-                onChange={fetchResults}
-                onFocus={fetchResults}
-                placeholder="Search"
-                ref={inputRef}
-                type="search"
-                list={queriesDatalistId}
-              />
-              &nbsp;
-              <Button variant="outline" onClick={handleClick}>
-                Search
-              </Button>
+              <div className="flex justify-center mb-5">
+                <Input
+                  className="search-input w-[220px]"
+                  name="q"
+                  onChange={fetchResults}
+                  onFocus={fetchResults}
+                  placeholder="Search"
+                  ref={inputRef}
+                  type="search"
+                  list={queriesDatalistId}
+                />
+                &nbsp;
+                <Button
+                  variant="outline"
+                  onClick={handleClick}
+                  className="cursor-pointer"
+                >
+                  Search
+                </Button>
+              </div>
             </>
           )}
         </SearchFormPredictive>
@@ -117,7 +124,11 @@ function SearchAside() {
             const {articles, collections, pages, products, queries} = items;
 
             if (state === 'loading' && term.current) {
-              return <div>Loading...</div>;
+              return (
+                <div className="flex justify-center text-lg fw-bold">
+                  Loading...
+                </div>
+              );
             }
 
             if (!total) {

@@ -247,9 +247,9 @@ function SearchResultsPredictiveEmpty({
   }
 
   return (
-    <p>
-      No results found for <q>{term.current}</q>
-    </p>
+    <div className="flex justify-center text-lg fw-bold">
+      No results found for &nbsp;<q>{term.current}</q>
+    </div>
   );
 }
 
