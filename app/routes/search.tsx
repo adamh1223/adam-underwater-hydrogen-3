@@ -313,6 +313,10 @@ fragment MoneyProductItem on MoneyV2 {
     title
     handle
     tags
+    featuredImage {
+      altText
+      url
+    }
     trackingParameters
     images(first: 20) {
       nodes {
@@ -330,7 +334,7 @@ fragment MoneyProductItem on MoneyV2 {
     }
     selectedOrFirstAvailableVariant(
       selectedOptions: []
-      ignoreUnknownOptions: true
+      ignoreUnknownOptions: false
       caseInsensitiveMatch: true
     ) {
       id
@@ -430,7 +434,7 @@ async function predictiveSearch({
 
   if (errors) {
     throw new Error(
-      `Shopify API errors: ${errors.map(({message}) => message).join(', ')}`,
+      `Shopify API errors: ${errors.map(({message}: any) => message).join(', ')}`,
     );
   }
 
@@ -439,9 +443,9 @@ async function predictiveSearch({
   }
 
   const total = Object.values(items).reduce(
-    (acc, item) => acc + item.length,
+    (acc: any, item: any) => acc + item.length,
     0,
-  );
+  ) as unknown as number;
 
   return {type, term, result: {items, total}};
 }

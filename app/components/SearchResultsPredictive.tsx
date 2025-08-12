@@ -9,6 +9,7 @@ import {
 import {useAside} from './Aside';
 import ProductCarousel from './products/productCarousel';
 import {EnhancedPartialSearchResult} from '~/lib/types';
+import EProductsContainer from './eproducts/EProductsContainer';
 
 type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
 
@@ -201,17 +202,26 @@ interface PredictiveSearchLayout {
   term: React.MutableRefObject<string>;
   layout?: string;
   products: EnhancedPartialSearchResult[];
+  collectionHandle?: string;
 }
 function SearchResultsPredictiveProducts({
   term,
   layout,
   products,
+  collectionHandle,
 }: PredictiveSearchLayout) {
+  
+
   if (!products.length) return null;
 
   return (
     <>
       {products.map((product) => {
+        
+
+        if (collectionHandle === 'stock') {
+          return <EProductsContainer product={product} layout={layout} />;
+        }
         return <ProductCarousel product={product} layout={layout} />;
       })}
     </>

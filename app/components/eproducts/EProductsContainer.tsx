@@ -14,16 +14,18 @@ function EProductsContainer({
   loading,
   layout,
 }: {
-  product: ProductItemFragment & {images: {nodes: shopifyImage[]}};
+  product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
+    selectedOrFirstAvailableVariant: {id: string};
+  };
   loading?: 'eager' | 'lazy';
-  layout: string;
+  layout: string | undefined;
 }) {
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3 h-full';
   const variantUrl = useVariantUrl(product.handle);
-  console.log(product, '1996');
+  console.log(product, '204020');
   const {open} = useAside();
 
   return (
@@ -79,7 +81,7 @@ function EProductsContainer({
                 <AddToCartButton
                   lines={[
                     {
-                      merchandiseId: product.id,
+                      merchandiseId: product.selectedOrFirstAvailableVariant.id,
                       quantity: 1,
                     },
                   ]}
