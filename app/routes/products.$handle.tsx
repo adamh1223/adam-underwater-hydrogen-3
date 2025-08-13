@@ -199,7 +199,7 @@ export default function Product() {
   });
 
   return (
-    <section className="product px-[60px] pt-[40px]">
+    <section className="product px-[40px] pt-[20px]">
       {/* Link tree */}
       <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
         <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
@@ -220,12 +220,12 @@ export default function Product() {
       </ol>
       {windowWidth && windowWidth < 1280 && (
         <>
+          <br />
           <h1 className="capitalize text-3xl font-bold">{title}</h1>
           <ProductPrice
             price={selectedVariant?.price}
             compareAtPrice={selectedVariant?.compareAtPrice}
           />
-          <br />
           <h4 className="text-xl mt-1 pb-4">
             {`${locationName}, ${locationState}, ${locationCountry}`}
           </h4>
@@ -259,7 +259,6 @@ export default function Product() {
               </h4>
             </>
           )}
-          <br />
           <br />
           <p>
             <strong>Description</strong>

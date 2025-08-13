@@ -2,7 +2,7 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useRef} from 'react';
-import {FetcherWithComponents} from '@remix-run/react';
+import {FetcherWithComponents, Link, redirect} from '@remix-run/react';
 import {Card, CardAction, CardContent, CardHeader} from './ui/card';
 import {Input} from './ui/input';
 import {Button} from './ui/button';
@@ -53,12 +53,15 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
   if (!checkoutUrl) return null;
 
   return (
-    <div>
-      <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
-      </a>
-      <br />
-    </div>
+    // <div>
+    //   <a href={checkoutUrl} target="_self">
+    //     <p>Continue to Checkout &rarr;</p>
+    //   </a>
+    //   <br />
+    // </div>
+    <Button variant="default" className="mb-4">
+      <Link to={checkoutUrl}>Continue to Checkout &rarr;</Link>
+    </Button>
   );
 }
 
@@ -77,12 +80,12 @@ function CartDiscounts({
       {/* Have existing discount, display it with a remove option */}
       <dl hidden={!codes.length}>
         <div>
-          <dt>Discount(s)</dt>
+          <dt>Applied Discounts:</dt>
           <UpdateDiscountForm>
-            <div className="cart-discount">
+            <div className="cart-discount py-3">
               <code>{codes?.join(', ')}</code>
-              &nbsp;
-              <button>Remove</button>
+              &nbsp;&nbsp;
+              <Button variant="outline">Remove</Button>
             </div>
           </UpdateDiscountForm>
         </div>
