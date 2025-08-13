@@ -266,6 +266,9 @@ export default function Addresses() {
 
   return (
     <>
+      <p className="subheader">
+        Speed up your checkout process by saving your address
+      </p>
       <div className="account-addresses">
         <br />
         <div className="address-container">
