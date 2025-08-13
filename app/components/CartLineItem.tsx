@@ -8,6 +8,7 @@ import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {Card, CardContent, CardDescription} from './ui/card';
 import {Button} from './ui/button';
+import {generateCartDescription, includesTagName} from '~/lib/utils';
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
@@ -26,7 +27,15 @@ export function CartLineItem({
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
-  console.log(product, '484848');
+  const hasOnlyDefaultTitle = selectedOptions.some(
+    (option) => option.value === 'Default Title',
+  );
+  // @ts-expect-error fixed when restart
+  const hasVideoTag = includesTagName(product.tags, 'Video');
+  // @ts-expect-error fixed when restart
+  const hasPrintTag = includesTagName(product.tags, 'Prints');
+  const cartDescription = generateCartDescription(hasVideoTag || hasPrintTag);
+  console.log(cartDescription, '484848');
 
   return (
     <Card className="my-4">
@@ -53,23 +62,28 @@ export function CartLineItem({
                 }
               }}
             >
-              <p>
-                <strong>{product.title}</strong>
-              </p>
+              <div className="flex flex-row">
+                <p>
+                  <strong>{product.title}</strong>
+                </p>
+                &nbsp;{cartDescription && <p>{cartDescription}</p>}
+              </div>
             </Link>
             <ProductPrice price={line?.cost?.totalAmount} />
-            <ul>
-              {selectedOptions.map((option) => (
-                <li key={option.name}>
-                  <p className="cart-subheader">
-                    {option.name}: {option.value}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            {!hasOnlyDefaultTitle && (
+              <ul>
+                {selectedOptions.map((option) => (
+                  <li key={option.name}>
+                    <p className="cart-subheader">
+                      {option.name}: {option.value}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </li>
-        <CartLineQuantity line={line} />
+        <CartLineQuantity line={line} hideQuantityButtons={!!hasPrintTag} />
       </CardContent>
     </Card>
   );
@@ -80,7 +94,13 @@ export function CartLineItem({
  * These controls are disabled when the line item is new, and the server
  * hasn't yet responded that it was successfully added to the cart.
  */
-function CartLineQuantity({line}: {line: CartLine}) {
+function CartLineQuantity({
+  line,
+  hideQuantityButtons,
+}: {
+  line: CartLine;
+  hideQuantityButtons: boolean;
+}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity, isOptimistic} = line;
   const prevQuantity = Number(Math.max(0, quantity - 1).toFixed(0));
@@ -92,29 +112,33 @@ function CartLineQuantity({line}: {line: CartLine}) {
         Quantity: <span className="text-md font-bold">{quantity}</span>{' '}
         &nbsp;&nbsp;
       </p>
-      <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
-        <Button
-          aria-label="Decrease quantity"
-          disabled={quantity <= 1 || !!isOptimistic}
-          name="decrease-quantity"
-          value={prevQuantity}
-          variant="ghost"
-        >
-          <span>&#8722; </span>
-        </Button>
-      </CartLineUpdateButton>
-      &nbsp;
-      <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
-        <Button
-          aria-label="Increase quantity"
-          name="increase-quantity"
-          value={nextQuantity}
-          disabled={!!isOptimistic}
-          variant="ghost"
-        >
-          <span>&#43;</span>
-        </Button>
-      </CartLineUpdateButton>
+      {hideQuantityButtons && (
+        <>
+          <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
+            <Button
+              aria-label="Decrease quantity"
+              disabled={quantity <= 1 || !!isOptimistic}
+              name="decrease-quantity"
+              value={prevQuantity}
+              variant="ghost"
+            >
+              <span>&#8722; </span>
+            </Button>
+          </CartLineUpdateButton>
+          &nbsp;
+          <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
+            <Button
+              aria-label="Increase quantity"
+              name="increase-quantity"
+              value={nextQuantity}
+              disabled={!!isOptimistic}
+              variant="ghost"
+            >
+              <span>&#43;</span>
+            </Button>
+          </CartLineUpdateButton>
+        </>
+      )}
       &nbsp;
       <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
     </div>

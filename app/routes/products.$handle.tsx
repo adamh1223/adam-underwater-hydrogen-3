@@ -16,6 +16,7 @@ import {ChevronRightIcon} from 'lucide-react';
 import {Card} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 import {ProductImages} from '~/lib/types';
+import {useEffect, useState} from 'react';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -187,6 +188,16 @@ export default function Product() {
     ?.slice(locationTag.length - 1, locationTag.length)
     .map((word: string) => word.toUpperCase());
 
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
+
   return (
     <section className="product px-[60px] pt-[40px]">
       {/* Link tree */}
@@ -207,6 +218,19 @@ export default function Product() {
           <Link to="/">{title}</Link>
         </li>
       </ol>
+      {windowWidth && windowWidth < 1280 && (
+        <>
+          <h1 className="capitalize text-3xl font-bold">{title}</h1>
+          <ProductPrice
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+          <br />
+          <h4 className="text-xl mt-1 pb-4">
+            {`${locationName}, ${locationState}, ${locationCountry}`}
+          </h4>
+        </>
+      )}
       <div className="xl:grid xl:grid-cols-2 xl:gap-x-24">
         {standardCarouselImages && standardCarouselImages?.length > 1 && (
           <IndividualProduct
@@ -222,15 +246,19 @@ export default function Product() {
         )}
         {/* <ProductImage image={selectedVariant?.image} /> */}
         <div className="product-main">
-          <h1 className="capitalize text-3xl font-bold">{title}</h1>
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <br />
-          <h4 className="text-xl mt-1 pb-4">
-            {`${locationName}, ${locationState}, ${locationCountry}`}
-          </h4>
+          {windowWidth && windowWidth >= 1280 && (
+            <>
+              <h1 className="capitalize text-3xl font-bold">{title}</h1>
+              <ProductPrice
+                price={selectedVariant?.price}
+                compareAtPrice={selectedVariant?.compareAtPrice}
+              />
+              <br />
+              <h4 className="text-xl mt-1 pb-4">
+                {`${locationName}, ${locationState}, ${locationCountry}`}
+              </h4>
+            </>
+          )}
           <br />
           <br />
           <p>

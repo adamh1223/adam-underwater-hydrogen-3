@@ -45,6 +45,7 @@ export const CART_QUERY_FRAGMENT = `#graphql
           handle
           title
           id
+          tags
           vendor
         }
         selectedOptions {
