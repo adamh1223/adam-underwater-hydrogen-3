@@ -12,6 +12,13 @@ import type {
 } from 'customer-accountapi.generated';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {Button} from '~/components/ui/button';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '~/components/ui/card';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Orders'}];
@@ -42,15 +49,15 @@ export default function Orders() {
   const {customer} = useLoaderData<{customer: CustomerOrdersFragment}>();
   const {orders} = customer;
   return (
-    <div className="orders">
+    <section className="orders">
       {orders.nodes.length ? <OrdersTable orders={orders} /> : <EmptyOrders />}
-    </div>
+    </section>
   );
 }
 
 function OrdersTable({orders}: Pick<CustomerOrdersFragment, 'orders'>) {
   return (
-    <div className="acccount-orders">
+    <div className="acccount-orders grid gap-4 md:grid-cols-2">
       {orders?.nodes.length ? (
         <PaginatedResourceSection connection={orders}>
           {({node: order}) => <OrderItem key={order.id} order={order} />}
@@ -79,14 +86,25 @@ function OrderItem({order}: {order: OrderItemFragment}) {
   return (
     <>
       <fieldset>
-        <Link to={`/account/orders/${btoa(order.id)}`}>
-          <strong>#{order.number}</strong>
-        </Link>
-        <p>{new Date(order.processedAt).toDateString()}</p>
-        <p>{order.financialStatus}</p>
-        {fulfillmentStatus && <p>{fulfillmentStatus}</p>}
-        <Money data={order.totalPrice} />
-        <Link to={`/account/orders/${btoa(order.id)}`}>View Order →</Link>
+        <Card className="mx-5">
+          <CardHeader>
+            <Link to={`/account/orders/${btoa(order.id)}`}>
+              <strong>Order#: {order.number}</strong>
+            </Link>
+            <p>{new Date(order.processedAt).toDateString()}</p>
+          </CardHeader>
+
+          <CardContent className="ms-3">
+            <p>{order.financialStatus}</p>
+            {fulfillmentStatus && <p>{fulfillmentStatus}</p>}
+            <Money data={order.totalPrice} />
+          </CardContent>
+          <CardAction className="m-5">
+            <Button variant="default">
+              <Link to={`/account/orders/${btoa(order.id)}`}>View Order →</Link>
+            </Button>
+          </CardAction>
+        </Card>
       </fieldset>
       <br />
     </>

@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['lawn-applications-gi-gardens.tryhydrogen.dev'],
+    allowedHosts: ['vulnerability-degree-booking-velvet.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

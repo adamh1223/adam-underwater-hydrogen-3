@@ -447,3 +447,11 @@ button.reset:hover:not(:has(> *)) {
   font-size: 16px;
   font-weight: 450;
 }
+
+th {
+  padding: 20px; /* Applies 10px padding on all sides of the header cells */
+}
+
+tbody {
+  margin-top: 500px;
+}
