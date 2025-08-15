@@ -92,8 +92,8 @@ export default function AccountProfile() {
   const customer = action?.customer ?? account?.customer;
 
   return (
-    <div className="account-profile">
-      <Card className="m-5">
+    <div className="account-profile flex justify-center">
+      <Card className="m-5 w-[70%]">
         <div className="p-4">
           <h2>My profile</h2>
         </div>
