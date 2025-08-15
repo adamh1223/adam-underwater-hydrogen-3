@@ -449,7 +449,7 @@ button.reset:hover:not(:has(> *)) {
 }
 
 th {
-  padding: 20px; /* Applies 10px padding on all sides of the header cells */
+  padding: 0 30px; /* Applies 10px padding on all sides of the header cells */
 }
 
 tbody {

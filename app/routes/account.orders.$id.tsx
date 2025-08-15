@@ -1,9 +1,10 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
 import {Money, Image, flattenConnection} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
+import {Button} from '~/components/ui/button';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
@@ -61,117 +62,131 @@ export default function OrderRoute() {
     fulfillmentStatus,
   } = useLoaderData<typeof loader>();
   return (
-    <div className="flex justify-center">
-      <Card className="account-order w-[90%]">
-        <CardHeader>
-          <h2>Order {order.name}</h2>
-          <p>Placed on {new Date(order.processedAt!).toDateString()}</p>
-        </CardHeader>
-        <CardContent className="ms-3">
-          <div>
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Product</th>
-                  <th scope="col">Price</th>
-                  <th scope="col">Quantity</th>
-                  <th scope="col">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lineItems.map((lineItem, lineItemIndex) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <OrderLineRow key={lineItemIndex} lineItem={lineItem} />
-                ))}
-              </tbody>
-              <tfoot>
-                {((discountValue && discountValue.amount) ||
-                  discountPercentage) && (
-                  <tr>
-                    <th scope="row" colSpan={3}>
-                      <p>Discounts</p>
-                    </th>
-                    <th scope="row">
-                      <p>Discounts</p>
-                    </th>
-                    <td>
-                      {discountPercentage ? (
-                        <span>-{discountPercentage}% OFF</span>
-                      ) : (
-                        discountValue && <Money data={discountValue!} />
-                      )}
-                    </td>
-                  </tr>
-                )}
-                <tr>
-                  <th scope="row" colSpan={3}>
-                    <p>Subtotal</p>
-                  </th>
-                  <th scope="row">
-                    <p>Subtotal</p>
-                  </th>
-                  <td>
-                    <Money data={order.subtotal!} />
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row" colSpan={3}>
-                    Tax
-                  </th>
-                  <th scope="row">
-                    <p>Tax</p>
-                  </th>
-                  <td>
-                    <Money data={order.totalTax!} />
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row" colSpan={3}>
-                    Total
-                  </th>
-                  <th scope="row">
-                    <p>Total</p>
-                  </th>
-                  <td>
-                    <Money data={order.totalPrice!} />
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+    <div className="outer-container flex justify-center">
+      <div className="card-container flex justify-center w-[80%]">
+        <Card className="account-order">
+          <CardHeader>
+            <h2>Order {order.name}</h2>
+            <p>Placed on {new Date(order.processedAt!).toDateString()}</p>
+          </CardHeader>
+          <CardContent className="ms-3">
             <div>
-              <h3>Shipping Address</h3>
-              {order?.shippingAddress ? (
-                <address>
-                  <p>{order.shippingAddress.name}</p>
-                  {order.shippingAddress.formatted ? (
-                    <p>{order.shippingAddress.formatted}</p>
-                  ) : (
-                    ''
-                  )}
-                  {order.shippingAddress.formattedArea ? (
-                    <p>{order.shippingAddress.formattedArea}</p>
-                  ) : (
-                    ''
-                  )}
-                </address>
-              ) : (
-                <p>N/A</p>
-              )}
-              <h3>Status</h3>
-              <div>
-                <p>{fulfillmentStatus}</p>
+              <div className="upper-part grid grid-cols-2">
+                <table>
+                  <Card className="p-5">
+                    <thead>
+                      <tr>
+                        <th scope="col">Product</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Download Link</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {lineItems.map((lineItem, lineItemIndex) => (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <OrderLineRow key={lineItemIndex} lineItem={lineItem} />
+                      ))}
+                    </tbody>
+                  </Card>
+                </table>
+                <div className="py-3 totals flex justify-end items-end">
+                  <Card className="grid grid-cols-1 w-[60%] h-[60%] pe-5">
+                    {((discountValue && discountValue.amount) ||
+                      discountPercentage) && (
+                      <tr className="flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <th scope="row" colSpan={2}>
+                            <p>Discounts</p>
+                          </th>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <td>
+                            {discountPercentage ? (
+                              <span>-{discountPercentage}% OFF</span>
+                            ) : (
+                              discountValue && <Money data={discountValue!} />
+                            )}
+                          </td>
+                        </div>
+                      </tr>
+                    )}
+                    <tr className="flex justify-between">
+                      <div className="flex justify-center items-center">
+                        <th scope="row" colSpan={2}>
+                          <p>Subtotal</p>
+                        </th>
+                      </div>
+                      <div className="flex justify-center items-center">
+                        <td>
+                          <Money data={order.subtotal!} />
+                        </td>
+                      </div>
+                    </tr>
+                    <tr className="flex justify-between">
+                      <div className="flex justify-center items-center">
+                        <th scope="row" colSpan={2}>
+                          Tax
+                        </th>
+                      </div>
+                      <div className="flex justify-center items-center">
+                        <td>
+                          <Money data={order.totalTax!} />
+                        </td>
+                      </div>
+                    </tr>
+                    <tr className="flex justify-between">
+                      <div className="flex justify-center items-center">
+                        <th scope="row" colSpan={2}>
+                          Total
+                        </th>
+                      </div>
+                      <div className="flex justify-center items-center">
+                        <td>
+                          <Money data={order.totalPrice!} />
+                        </td>
+                      </div>
+                    </tr>
+                  </Card>
+                </div>
+              </div>
+              <div className="lower-part">
+                <h3>Shipping Address</h3>
+                {order?.shippingAddress ? (
+                  <address>
+                    <p>{order.shippingAddress.name}</p>
+                    {order.shippingAddress.formatted ? (
+                      <p>{order.shippingAddress.formatted}</p>
+                    ) : (
+                      ''
+                    )}
+                    {order.shippingAddress.formattedArea ? (
+                      <p>{order.shippingAddress.formattedArea}</p>
+                    ) : (
+                      ''
+                    )}
+                  </address>
+                ) : (
+                  <p>N/A</p>
+                )}
+                <h3>Status</h3>
+                <div>
+                  <p>{fulfillmentStatus}</p>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-        <CardAction>
-          <p>
-            <a target="_blank" href={order.statusPageUrl} rel="noreferrer">
-              View Order Status →
-            </a>
-          </p>
-        </CardAction>
-      </Card>
+          </CardContent>
+          <CardAction>
+            <Button variant="outline">
+              <Link to={order.statusPageUrl} rel="noreferrer">
+                View Order Status →
+              </Link>
+            </Button>
+          </CardAction>
+        </Card>
+      </div>
     </div>
   );
 }
