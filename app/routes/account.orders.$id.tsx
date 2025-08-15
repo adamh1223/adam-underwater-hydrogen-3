@@ -66,8 +66,12 @@ export default function OrderRoute() {
       <div className="card-container flex justify-center w-[80%]">
         <Card className="account-order">
           <CardHeader>
-            <h2>Order {order.name}</h2>
-            <p>Placed on {new Date(order.processedAt!).toDateString()}</p>
+            <p className="ms-2">
+              <strong>Order {order.name}</strong>
+            </p>
+            <p className="ms-2">
+              Placed on {new Date(order.processedAt!).toDateString()}
+            </p>
           </CardHeader>
           <CardContent className="ms-3">
             <div>
@@ -80,7 +84,8 @@ export default function OrderRoute() {
                         <th scope="col">Price</th>
                         <th scope="col">Quantity</th>
                         <th scope="col">Total</th>
-                        <th scope="col">Download Link</th>
+                        <th scope="col">Download Links</th>
+                        <th scope="col">Release Forms</th>
                       </tr>
                     </thead>
 
@@ -92,7 +97,7 @@ export default function OrderRoute() {
                     </tbody>
                   </Card>
                 </table>
-                <div className="py-3 totals flex justify-end items-end">
+                <div className="pt-3 totals flex justify-end items-end">
                   <Card className="grid grid-cols-1 w-[60%] h-[60%] pe-5">
                     {((discountValue && discountValue.amount) ||
                       discountPercentage) && (
@@ -179,7 +184,7 @@ export default function OrderRoute() {
             </div>
           </CardContent>
           <CardAction>
-            <Button variant="outline">
+            <Button variant="default" className="m-5">
               <Link to={order.statusPageUrl} rel="noreferrer">
                 View Order Status →
               </Link>

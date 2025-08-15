@@ -49,7 +49,7 @@ export default function Orders() {
   const {customer} = useLoaderData<{customer: CustomerOrdersFragment}>();
   const {orders} = customer;
   return (
-    <section className="orders">
+    <section className="orders flex justify-center">
       {orders.nodes.length ? <OrdersTable orders={orders} /> : <EmptyOrders />}
     </section>
   );
@@ -57,7 +57,7 @@ export default function Orders() {
 
 function OrdersTable({orders}: Pick<CustomerOrdersFragment, 'orders'>) {
   return (
-    <div className="acccount-orders grid gap-4 md:grid-cols-2">
+    <div className="acccount-orders w-[70%]">
       {orders?.nodes.length ? (
         <PaginatedResourceSection connection={orders}>
           {({node: order}) => <OrderItem key={order.id} order={order} />}
