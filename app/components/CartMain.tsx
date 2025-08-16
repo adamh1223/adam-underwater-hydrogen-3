@@ -30,9 +30,12 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const cartHasItems = cart?.totalQuantity && cart?.totalQuantity > 0;
 
   return (
-    <div className={className}>
+    // CART PAGE (Class name)
+    <div className="mt-8 grid gap-4 lg:grid-cols-12 px-5">
+      {/* changed classname for cart page*/}
       <CartEmpty hidden={linesCount} layout={layout} />
-      <div className="cart-details">
+      {/* Added lg:col-span-8 */}
+      <div className="cart-details lg:col-span-8">
         <div aria-labelledby="cart-lines">
           <ul>
             {(cart?.lines?.nodes ?? []).map((line) => (
@@ -40,8 +43,13 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
             ))}
           </ul>
         </div>
+      </div>
+      {/* put this line inside a div for cart page to mimic old project, gave div a class */}
+      {/* I also commented out the css for cart-main */}
+      <div className="lg:col-span-4">
         {cartHasItems && <CartSummary cart={cart} layout={layout} />}
       </div>
+      {/* </div> */}
     </div>
   );
 }

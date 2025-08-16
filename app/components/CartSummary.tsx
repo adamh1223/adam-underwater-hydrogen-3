@@ -1,11 +1,12 @@
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
-import {useRef} from 'react';
+import {useRef, useState} from 'react';
 import {FetcherWithComponents, Link, redirect} from '@remix-run/react';
 import {Card, CardAction, CardContent, CardHeader} from './ui/card';
 import {Input} from './ui/input';
 import {Button} from './ui/button';
+import StockForm from './form/StockForm';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -15,38 +16,51 @@ type CartSummaryProps = {
 export function CartSummary({cart, layout}: CartSummaryProps) {
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
+  // const [isOrderReady, setIsOrderReady] = useState(defaultOrderValue);
+  // const defaultOrderValue = includesEProducts ? false : true;
 
   return (
-    <div aria-labelledby="cart-summary" className={className}>
-      <Card>
-        <CardHeader>
-          <h4>Totals</h4>
-        </CardHeader>
-        <CardContent>
-          <dl className="cart-subtotal">
-            <dt>Subtotal:</dt>
-            <dd>
-              {cart.cost?.subtotalAmount?.amount ? (
-                <Money
-                  data={cart.cost?.subtotalAmount}
-                  className="text-lg font-bold ms-1"
-                />
-              ) : (
-                '-'
-              )}
-            </dd>
-          </dl>
-          <br />
-          <CartDiscounts discountCodes={cart.discountCodes} />
-          <CartGiftCard giftCardCodes={cart.appliedGiftCards} />
-        </CardContent>
-        <CardAction>
-          <div className="px-4">
-            <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
-          </div>
-        </CardAction>
-      </Card>
-    </div>
+    <>
+      <div aria-labelledby="cart-summary" className={className}>
+        <Card>
+          <CardHeader>
+            <h4>Totals</h4>
+          </CardHeader>
+          <CardContent>
+            <dl className="cart-subtotal">
+              <dt>Subtotal:</dt>
+              <dd>
+                {cart.cost?.subtotalAmount?.amount ? (
+                  <Money
+                    data={cart.cost?.subtotalAmount}
+                    className="text-lg font-bold ms-1"
+                  />
+                ) : (
+                  '-'
+                )}
+              </dd>
+            </dl>
+            <br />
+            <CartDiscounts discountCodes={cart.discountCodes} />
+            <CartGiftCard giftCardCodes={cart.appliedGiftCards} />
+          </CardContent>
+        </Card>
+      </div>
+      {/* CART PAGE */}
+      <p className="flex justify-center pt-7 px-8">
+        Electronic products will be downloaded immediately and a download code
+        will be sent via email.
+      </p>
+      <div className="flex items-center justify-center pt-7 gap-2">
+        <StockForm updateCheck={true} />
+      </div>
+      <div className="flex justify-center">
+        <div className="p-5">
+          <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
+        </div>
+      </div>
+      {/* CART PAGE */}
+    </>
   );
 }
 function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {

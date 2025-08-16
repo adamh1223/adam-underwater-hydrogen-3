@@ -128,7 +128,7 @@ function FooterMenu({
         <p>Copyright 2024 Adam Underwater, All rights reserved.</p>
       </div>
 
-      {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
+      {/* {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
         const url =
@@ -150,10 +150,10 @@ function FooterMenu({
             style={activeLinkStyle}
             to={url}
           >
-            {item.title}
+            {item.title} 
           </NavLink>
         );
-      })}
+      })} */}
       {/* // </nav> */}
     </>
   );

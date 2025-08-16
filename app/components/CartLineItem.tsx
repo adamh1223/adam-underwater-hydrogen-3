@@ -38,7 +38,7 @@ export function CartLineItem({
   console.log(cartDescription, '484848');
 
   return (
-    <Card className="my-4">
+    <Card className="mb-4">
       <CardContent>
         <li key={id} className="cart-line">
           {image && (

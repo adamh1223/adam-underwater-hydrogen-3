@@ -1,0 +1,26 @@
+.modal-content {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 800px) {
+  .modal-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .modal {
+    border-radius: var(--radius);
+  }
+}
+
+.modal {
+  max-height: 80vh; /* Limit modal height to 80% of viewport */
+  overflow-y: auto; /* Enable vertical scrolling when necessary */
+  padding: 30px;
+}
+
+.one-entry {
+  font-weight: 700;
+  color: white;
+}
