@@ -46,7 +46,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           </CardContent>
         </Card>
       </div>
-      {/* CART PAGE */}
+      {/* CART PAGE ONLY, NOT ASIDE*/}
       <p className="flex justify-center pt-7 px-8">
         Electronic products will be downloaded immediately and a download code
         will be sent via email.
@@ -59,7 +59,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
         </div>
       </div>
-      {/* CART PAGE */}
+      {/* END CART PAGE ONLY*/}
     </>
   );
 }
