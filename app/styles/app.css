@@ -455,3 +455,7 @@ th {
 tbody {
   margin-top: 500px;
 }
+
+.cart-description {
+  color: rgb(169, 167, 167);
+}

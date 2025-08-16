@@ -20,6 +20,7 @@ function StockForm({
   updateCheck: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [formData, setFormData] = useState({
+    clips: '',
     name: '',
     email: '',
     youtube: '',
@@ -77,6 +78,7 @@ function StockForm({
       if (response.ok) {
         setStatus('Form submitted successfully!');
         setFormData({
+          clips: '',
           name: '',
           email: '',
           youtube: '',
@@ -109,7 +111,7 @@ function StockForm({
 
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline">Stock Footage Terms & Conditions</Button>
+          <Button variant="outline">Stock Footage Licensing Form</Button>
         </DialogTrigger>
         <DialogContent className="modal">
           <DialogHeader>
@@ -134,6 +136,13 @@ function StockForm({
               </span>{' '}
             </DialogDescription>
           </DialogHeader>
+          <div className="flex items-center">
+            <Label className="w-30 text-right">Clips</Label>
+            <div>Clip 1</div>
+            <div>Clip 2</div>
+            <div>Clip 3</div>
+            <div>Clip 4</div>
+          </div>
           <div className="grid gap-4 py-4 modal-content">
             {/* Left Column */}
             <div className="flex flex-col gap-4">
@@ -213,11 +222,11 @@ function StockForm({
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Checkbox
-                  id="terms"
+                  id="licensingForm"
                   checked={agreeTerms}
                   onCheckedChange={(checked) => setAgreeTerms(checked === true)}
                 />
-                <Label htmlFor="terms">
+                <Label htmlFor="licensingForm">
                   I agree to these terms and conditions
                 </Label>
               </div>

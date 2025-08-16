@@ -66,9 +66,12 @@ export function CartLineItem({
                 <p>
                   <strong>{product.title}</strong>
                 </p>
-                &nbsp;{cartDescription && <p>{cartDescription}</p>}
               </div>
+              {cartDescription && (
+                <p className="cart-description">{cartDescription}</p>
+              )}
             </Link>
+
             <ProductPrice price={line?.cost?.totalAmount} />
             {!hasOnlyDefaultTitle && (
               <ul>

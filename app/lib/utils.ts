@@ -7,10 +7,10 @@ export function cn(...inputs: ClassValue[]) {
 
 export function generateCartDescription(tag: string | undefined) {
   if (tag === 'Prints') {
-    return 'PRINT';
+    return 'Canvas Print';
   }
   if (tag === 'Video') {
-    return 'VIDEO';
+    return 'Stock Footage Video';
   }
 }
 export function includesTagName(tags: string[], tagToLookFor: string) {

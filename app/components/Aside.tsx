@@ -36,7 +36,7 @@ export function Aside({
   const expanded = type === activeType;
   const determineActiveTypeImage = () => {
     if (activeType === 'cart') {
-      return '/cart.png';
+      return '/mycart.png';
     }
     if (activeType === 'search') {
       return '/searchstore.png';

@@ -111,7 +111,11 @@ export default function Cart() {
   return (
     <div className="cart">
       <div className="flex justify-center">
-        <img src={'/cart.png'} style={{height: '80px'}} className="pt-3"></img>
+        <img
+          src={'/mycart.png'}
+          style={{height: '110px'}}
+          className="pt-5"
+        ></img>
       </div>
       <CartMain layout="page" cart={cart} />
     </div>
