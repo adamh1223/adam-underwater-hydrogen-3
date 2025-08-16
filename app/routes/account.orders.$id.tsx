@@ -85,7 +85,7 @@ export default function OrderRoute() {
                         <th scope="col">Quantity</th>
                         <th scope="col">Total</th>
                         <th scope="col">Download Links</th>
-                        <th scope="col">Release Forms</th>
+                        <th scope="col">Licensing Forms</th>
                       </tr>
                     </thead>
 
