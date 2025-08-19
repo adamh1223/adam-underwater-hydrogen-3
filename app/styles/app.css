@@ -459,3 +459,22 @@ tbody {
 .cart-description {
   color: rgb(169, 167, 167);
 }
+
+@media (max-width: 1424px) {
+  tr {
+    padding: 15px 0;
+  }
+  span {
+    display: flex;
+    justify-content: center;
+  }
+}
+@media (min-width: 1425px) {
+  table {
+  }
+}
+@media (max-width: 800px) {
+  .totals-card {
+    width: 70%;
+  }
+}

@@ -5,6 +5,7 @@ import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
+import {useEffect, useState} from 'react';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
@@ -61,6 +62,15 @@ export default function OrderRoute() {
     discountPercentage,
     fulfillmentStatus,
   } = useLoaderData<typeof loader>();
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
   return (
     <div className="outer-container flex justify-center">
       <div className="card-container flex justify-center w-[80%]">
@@ -97,8 +107,97 @@ export default function OrderRoute() {
                     </tbody>
                   </Card>
                 </table>
+                {windowWidth && windowWidth >= 1425 && (
+                  <div className="pt-3 totals flex justify-end items-end">
+                    <Card className="grid grid-cols-1 w-[60%] h-[60%] pe-5">
+                      {((discountValue && discountValue.amount) ||
+                        discountPercentage) && (
+                        <tr className="flex justify-between">
+                          <div className="flex justify-center items-center">
+                            <th scope="row" colSpan={2}>
+                              <p>Discounts</p>
+                            </th>
+                          </div>
+                          <div className="flex justify-center items-center">
+                            <td>
+                              {discountPercentage ? (
+                                <span>-{discountPercentage}% OFF</span>
+                              ) : (
+                                discountValue && <Money data={discountValue!} />
+                              )}
+                            </td>
+                          </div>
+                        </tr>
+                      )}
+                      <tr className="flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <th scope="row" colSpan={2}>
+                            <p>Subtotal</p>
+                          </th>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <td>
+                            <Money data={order.subtotal!} />
+                          </td>
+                        </div>
+                      </tr>
+                      <tr className="flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <th scope="row" colSpan={2}>
+                            Tax
+                          </th>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <td>
+                            <Money data={order.totalTax!} />
+                          </td>
+                        </div>
+                      </tr>
+                      <tr className="flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <th scope="row" colSpan={2}>
+                            Total
+                          </th>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <td>
+                            <Money data={order.totalPrice!} />
+                          </td>
+                        </div>
+                      </tr>
+                    </Card>
+                  </div>
+                )}
+              </div>
+              <div className="lower-part">
+                <Card className="mt-3 p-5">
+                  <h3>Shipping Address</h3>
+                  {order?.shippingAddress ? (
+                    <address>
+                      <p>{order.shippingAddress.name}</p>
+                      {order.shippingAddress.formatted ? (
+                        <p>{order.shippingAddress.formatted}</p>
+                      ) : (
+                        ''
+                      )}
+                      {order.shippingAddress.formattedArea ? (
+                        <p>{order.shippingAddress.formattedArea}</p>
+                      ) : (
+                        ''
+                      )}
+                    </address>
+                  ) : (
+                    <p>N/A</p>
+                  )}
+                  <h3>Status</h3>
+                  <div>
+                    <p>{fulfillmentStatus}</p>
+                  </div>
+                </Card>
+              </div>
+              {windowWidth && windowWidth < 1425 && (
                 <div className="pt-3 totals flex justify-end items-end">
-                  <Card className="grid grid-cols-1 w-[60%] h-[60%] pe-5">
+                  <Card className="grid grid-cols-1 w-[60%] h-[60%] pe-5 totals-card">
                     {((discountValue && discountValue.amount) ||
                       discountPercentage) && (
                       <tr className="flex justify-between">
@@ -156,31 +255,7 @@ export default function OrderRoute() {
                     </tr>
                   </Card>
                 </div>
-              </div>
-              <div className="lower-part">
-                <h3>Shipping Address</h3>
-                {order?.shippingAddress ? (
-                  <address>
-                    <p>{order.shippingAddress.name}</p>
-                    {order.shippingAddress.formatted ? (
-                      <p>{order.shippingAddress.formatted}</p>
-                    ) : (
-                      ''
-                    )}
-                    {order.shippingAddress.formattedArea ? (
-                      <p>{order.shippingAddress.formattedArea}</p>
-                    ) : (
-                      ''
-                    )}
-                  </address>
-                ) : (
-                  <p>N/A</p>
-                )}
-                <h3>Status</h3>
-                <div>
-                  <p>{fulfillmentStatus}</p>
-                </div>
-              </div>
+              )}
             </div>
           </CardContent>
           <CardAction>
