@@ -1,4 +1,6 @@
+import {OptimisticCartLine} from '@shopify/hydrogen';
 import {CurrencyCode} from '@shopify/hydrogen/customer-account-api-types';
+import {CartApiQueryFragment} from 'storefrontapi.generated';
 import {PartialPredictiveSearchResult} from '~/components/SearchResultsPredictive';
 
 export type shopifyImage = {url: string; altText: string};
@@ -23,3 +25,6 @@ export interface ProductImages {
     altText: string;
   };
 }
+export type CartLine = OptimisticCartLine<CartApiQueryFragment>;
+
+export type DefaultCart = CartApiQueryFragment;

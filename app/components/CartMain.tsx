@@ -1,9 +1,12 @@
 import {useOptimisticCart} from '@shopify/hydrogen';
-import {Link} from '@remix-run/react';
+import {Link, useLocation} from '@remix-run/react';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {CartLineItem} from '~/components/CartLineItem';
 import {CartSummary} from './CartSummary';
+import {DefaultCart} from '~/lib/types';
+import {CartPageLayout} from './cartLayouts/CartPageLayout';
+import {CartAsideLayout} from './cartLayouts/CartAsideLayout';
 
 export type CartLayout = 'page' | 'aside';
 
@@ -20,7 +23,9 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   // The useOptimisticCart hook applies pending actions to the cart
   // so the user immediately sees feedback when they modify the cart.
   const cart = useOptimisticCart(originalCart);
-  console.log(cart, '373737');
+  const location = useLocation();
+  const currentURL = location.pathname;
+  console.log(currentURL, '373737');
 
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
   const withDiscount =
@@ -29,32 +34,31 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const className = `cart-main ${withDiscount ? 'with-discount' : ''}`;
   const cartHasItems = cart?.totalQuantity && cart?.totalQuantity > 0;
 
+  // CART PAGE (Class name)
   return (
-    // CART PAGE (Class name)
-    <div className="mt-8 grid gap-4 lg:grid-cols-12 px-5">
-      {/* changed classname for cart page*/}
-      <CartEmpty hidden={linesCount} layout={layout} />
-      {/* Added lg:col-span-8 */}
-      <div className="cart-details lg:col-span-8">
-        <div aria-labelledby="cart-lines">
-          <ul>
-            {(cart?.lines?.nodes ?? []).map((line) => (
-              <CartLineItem key={line.id} line={line} layout={layout} />
-            ))}
-          </ul>
-        </div>
-      </div>
-      {/* put this line inside a div for cart page to mimic old project, gave div a class */}
-      {/* I also commented out the css for cart-main */}
-      <div className="lg:col-span-4">
-        {cartHasItems && <CartSummary cart={cart} layout={layout} />}
-      </div>
-      {/* </div> */}
-    </div>
+    <>
+      {currentURL === '/cart' && (
+        <CartPageLayout
+          linesCount={linesCount}
+          layout={layout}
+          cart={cart as DefaultCart}
+          cartHasItems={cartHasItems}
+        />
+      )}
+      {currentURL != '/cart' && (
+        <CartAsideLayout
+          linesCount={linesCount}
+          layout={layout}
+          cart={cart as DefaultCart}
+          cartHasItems={cartHasItems}
+          className={className}
+        />
+      )}
+    </>
   );
 }
 
-function CartEmpty({
+export function CartEmpty({
   hidden = false,
 }: {
   hidden: boolean;
