@@ -53,6 +53,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
 
       <div className="flex items-center justify-center pt-7 gap-2">
         <StockForm updateCheck={true} />
+        <div>hi</div>
       </div>
       <p className="flex justify-center pt-7 px-8">
         products will be downloaded immediately and a download code will be sent

@@ -278,7 +278,7 @@ function CartBadge({count}: {count: number | null}) {
       variant="outline"
       onClick={(e) => {
         e.preventDefault();
-        open('cart');
+
         publish('cart_viewed', {
           cart,
           prevCart,

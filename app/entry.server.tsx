@@ -16,11 +16,11 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
-    connectSrc: ['wss://patient-mite-notably.ngrok-free.app:3000'],
-    frameSrc: [
-      "https://player.vimeo.com/",
-      "https://vimeo.com/"
-    ]
+    connectSrc: [
+      'wss://patient-mite-notably.ngrok-free.app:3000',
+      'https://api.courier.com/send',
+    ],
+    frameSrc: ['https://player.vimeo.com/', 'https://vimeo.com/'],
   });
 
   const body = await renderToReadableStream(

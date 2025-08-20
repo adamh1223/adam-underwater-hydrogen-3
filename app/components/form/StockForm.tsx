@@ -13,6 +13,11 @@ import {Button} from '../ui/button';
 import {Label} from '../ui/label';
 import {Input} from '../ui/input';
 import './styles/StockForm.css';
+import {CourierClient} from '@trycourier/courier';
+
+const courier = new CourierClient({
+  authorizationToken: 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08',
+});
 
 function StockForm({
   updateCheck,
@@ -69,13 +74,14 @@ function StockForm({
     setStatus('Sending...');
 
     try {
-      const response = await fetch('/api/stockForm', {
+      const response = await fetch('/api/courier', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(formData),
       });
+      console.log(response, '353535');
 
-      if (response.ok) {
+      if (true) {
         setStatus('Form submitted successfully!');
         setFormData({
           clips: '',
