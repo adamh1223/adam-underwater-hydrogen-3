@@ -25,13 +25,17 @@ export function CartAsideLayout({
         <CartEmpty hidden={linesCount} layout={layout} />
         <div className="cart-details">
           <div aria-labelledby="cart-lines">
-            <ul>
-              {(cart?.lines?.nodes ?? []).map((line) => (
-                <CartLineItem key={line.id} line={line} layout={layout} />
-              ))}
-            </ul>
+            <div className="mt-5">
+              <ul className="mx-4">
+                {(cart?.lines?.nodes ?? []).map((line) => (
+                  <CartLineItem key={line.id} line={line} layout={layout} />
+                ))}
+              </ul>
+            </div>
           </div>
-          {cartHasItems && <CartSummary cart={cart} layout={layout} />}
+          <div className="mx-4">
+            {cartHasItems && <CartSummary cart={cart} layout={layout} />}
+          </div>
         </div>
       </div>
     </>

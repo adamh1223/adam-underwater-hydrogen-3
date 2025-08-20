@@ -46,20 +46,23 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           </CardContent>
         </Card>
       </div>
-      {/* CART PAGE ONLY, NOT ASIDE*/}
+
       <p className="flex justify-center pt-7 px-8">
-        Electronic products will be downloaded immediately and a download code
-        will be sent via email.
+        Please fill out the stock footage licensing form below.
       </p>
+
       <div className="flex items-center justify-center pt-7 gap-2">
         <StockForm updateCheck={true} />
       </div>
+      <p className="flex justify-center pt-7 px-8">
+        products will be downloaded immediately and a download code will be sent
+        via email.
+      </p>
       <div className="flex justify-center">
         <div className="p-5">
           <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
         </div>
       </div>
-      {/* END CART PAGE ONLY*/}
     </>
   );
 }

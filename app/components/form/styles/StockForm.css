@@ -18,6 +18,7 @@
   max-height: 80vh; /* Limit modal height to 80% of viewport */
   overflow-y: auto; /* Enable vertical scrolling when necessary */
   padding: 30px;
+  z-index: 400;
 }
 
 .one-entry {

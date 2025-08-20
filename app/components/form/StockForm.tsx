@@ -96,7 +96,7 @@ function StockForm({
         setAgreeTerms(false);
         setAgreePlatforms(false);
       } else {
-        setStatus('Failed to send message. Please try again.');
+        setStatus('Failed to submit form. Please try again later.');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -123,21 +123,22 @@ function StockForm({
               By purchasing stock footage from Adam Underwater, you must list
               the channels and/or films in which the stock footage will appear.
               These channels are given access to the footage for use publicly.{' '}
-              <span className="one-entry">
-                Only one entry per platform is allowed.
-              </span>{' '}
+              <div className="flex justify-start one-entry">
+                Only one entry per platform is allowed.{' '}
+              </div>
               Channels not listed are not given access to post this stock
               footage publicly, and are subject to a copyright infringement
               violation where stock footage from Adam Underwater appears.
               Unauthorized platforms using stock footage may result in content
               being taken down.{' '}
-              <span className="one-entry">
+              <div className="flex justify-start one-entry">
                 Second-hand sale of purchased clips is not permitted.
-              </span>{' '}
+              </div>{' '}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center">
             <Label className="w-30 text-right">Clips</Label>
+            {/* TODO: filter or map through each clip and list it at the top of the form. Should not be editable */}
             <div>Clip 1</div>
             <div>Clip 2</div>
             <div>Clip 3</div>

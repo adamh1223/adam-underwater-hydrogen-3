@@ -42,7 +42,7 @@ export default function ContactForm() {
           message: '',
         });
       } else {
-        setStatus('Failed to send message. Please try again.');
+        setStatus('Failed to submit form. Please try again.');
       }
     } catch (error) {
       console.error('Error:', error);

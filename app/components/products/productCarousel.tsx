@@ -46,8 +46,8 @@ const ProductCarousel = ({
 }) => {
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl h-full transition-shadow duration-500'
-      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3';
+      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer'
+      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3 cursor-pointer';
   const variantUrl = useVariantUrl(product.handle);
   const standardImages = product?.images?.nodes?.filter((item) =>
     item.altText?.includes('standard'),
@@ -88,8 +88,8 @@ const ProductCarousel = ({
   return (
     <article className="group relative">
       <Card className={cardClassName}>
-        <CardContent>
-          <div className="relative h-full w-full rounded">
+        <CardContent className="flex flex-col h-full">
+          <div className="relative w-full h-full rounded top-part-card">
             <Carousel
               // ref={carouselRef}
               // opts={{
@@ -122,8 +122,24 @@ const ProductCarousel = ({
                   ))}
                 </CarouselContent>
               </Link>
+              <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+                <Button
+                  onClick={decreaseIndex}
+                  className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-4px] shadow-none"
+                  variant="secondary"
+                >
+                  <ChevronLeftIcon className="h-6 w-6 text-white"></ChevronLeftIcon>
+                </Button>
+                <Button
+                  onClick={increaseIndex}
+                  className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-4px] shadow-none"
+                  variant="secondary"
+                >
+                  <ChevronRightIcon className="h-6 w-6 text-white"></ChevronRightIcon>
+                </Button>
+              </div>
             </Carousel>
-            <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+            {/* <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
               <Button
                 onClick={decreaseIndex}
                 className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-8px] shadow-none"
@@ -138,9 +154,11 @@ const ProductCarousel = ({
               >
                 <ChevronRightIcon className="h-6 w-6 text-white"></ChevronRightIcon>
               </Button>
-            </div>
-            <div className="flex justify-center">
-              <h5>{product.title}</h5>
+            </div> */}
+          </div>
+          <div className="bottom-part-card">
+            <div className="text-center">
+              <h5 className="text-lg">{product.title}</h5>
             </div>
             {product?.priceRange?.minVariantPrice && (
               <div className="flex justify-center">
