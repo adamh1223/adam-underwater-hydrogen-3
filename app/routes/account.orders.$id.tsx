@@ -62,6 +62,8 @@ export default function OrderRoute() {
     discountPercentage,
     fulfillmentStatus,
   } = useLoaderData<typeof loader>();
+  console.log(fulfillmentStatus, '5678');
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -191,7 +193,11 @@ export default function OrderRoute() {
                   )}
                   <h3>Status</h3>
                   <div>
-                    <p>{fulfillmentStatus}</p>
+                    <p>
+                      {fulfillmentStatus === 'SUCCESS'
+                        ? 'Shipped'
+                        : 'Preparing Shipment'}
+                    </p>
                   </div>
                 </Card>
               </div>

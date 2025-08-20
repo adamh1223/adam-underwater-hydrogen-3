@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['archived-spectacular-salaries-nav.tryhydrogen.dev'],
+    allowedHosts: ['mpg-regardless-latitude-epic.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
@@ -51,7 +51,7 @@ export default defineConfig({
        * Include 'example-dep' in the array below.
        * @see https://vitejs.dev/config/dep-optimization-options
        */
-      include: [],
+      include: ['@trycourier/courier'],
     },
   },
   resolve: {

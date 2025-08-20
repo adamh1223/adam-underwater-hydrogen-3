@@ -1,3 +1,4 @@
+import {useLocation} from '@remix-run/react';
 import {
   createContext,
   type ReactNode,
@@ -42,11 +43,16 @@ export function Aside({
       return '/searchstore.png';
     }
   };
+  const location = useLocation();
   const imageSource = determineActiveTypeImage();
 
   useEffect(() => {
     const abortController = new AbortController();
+    if (location.pathname === '/cart') {
+      console.log('hello there');
 
+      close();
+    }
     if (expanded) {
       document.addEventListener(
         'keydown',
@@ -59,7 +65,7 @@ export function Aside({
       );
     }
     return () => abortController.abort();
-  }, [close, expanded]);
+  }, [close, expanded, location]);
 
   return (
     <div
