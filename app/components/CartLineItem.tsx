@@ -111,8 +111,8 @@ function CartLineQuantity({
 
   return (
     <div className="cart-line-quantity">
-      <p className="cart-subheader">
-        Quantity: <span className="text-md font-bold">{quantity}</span>{' '}
+      <p className="cart-subheader flex justify-center align-center ps-1">
+        Quantity: &nbsp;<span className="text-md font-bold">{quantity}</span>{' '}
         &nbsp;&nbsp;
       </p>
       {hideQuantityButtons && (
