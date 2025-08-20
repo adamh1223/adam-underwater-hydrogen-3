@@ -38,7 +38,6 @@ export function CartPageLayout({
         </div>
         {/* </div> */}
       </div>
-      ;
     </>
   );
 }
