@@ -267,65 +267,74 @@ export default function OrderRoute() {
                 </Card>
               </div> */}
               {windowWidth && windowWidth < 1050 && (
-                <div className="pt-3 totals flex justify-end items-end">
-                  <Card className="grid grid-cols-1 w-[30%] h-[60%] pe-5 totals-card">
-                    {((discountValue && discountValue.amount) ||
-                      discountPercentage) && (
+                <>
+                  <div className="pt-3 totals flex justify-end items-end">
+                    <Card className="grid grid-cols-1 w-[40%] h-[60%] pe-5 totals-card">
+                      {((discountValue && discountValue.amount) ||
+                        discountPercentage) && (
+                        <tr className="flex justify-between">
+                          <div className="flex justify-center items-center">
+                            <th scope="row" colSpan={2}>
+                              <p>Discounts</p>
+                            </th>
+                          </div>
+                          <div className="flex justify-center items-center">
+                            <td>
+                              {discountPercentage ? (
+                                <span>-{discountPercentage}% OFF</span>
+                              ) : (
+                                discountValue && <Money data={discountValue!} />
+                              )}
+                            </td>
+                          </div>
+                        </tr>
+                      )}
                       <tr className="flex justify-between">
                         <div className="flex justify-center items-center">
                           <th scope="row" colSpan={2}>
-                            <p>Discounts</p>
+                            <p>Subtotal</p>
                           </th>
                         </div>
                         <div className="flex justify-center items-center">
                           <td>
-                            {discountPercentage ? (
-                              <span>-{discountPercentage}% OFF</span>
-                            ) : (
-                              discountValue && <Money data={discountValue!} />
-                            )}
+                            <Money data={order.subtotal!} />
                           </td>
                         </div>
                       </tr>
-                    )}
-                    <tr className="flex justify-between">
-                      <div className="flex justify-center items-center">
-                        <th scope="row" colSpan={2}>
-                          <p>Subtotal</p>
-                        </th>
-                      </div>
-                      <div className="flex justify-center items-center">
-                        <td>
-                          <Money data={order.subtotal!} />
-                        </td>
-                      </div>
-                    </tr>
-                    <tr className="flex justify-between">
-                      <div className="flex justify-center items-center">
-                        <th scope="row" colSpan={2}>
-                          Tax
-                        </th>
-                      </div>
-                      <div className="flex justify-center items-center">
-                        <td>
-                          <Money data={order.totalTax!} />
-                        </td>
-                      </div>
-                    </tr>
-                    <tr className="flex justify-between">
-                      <div className="flex justify-center items-center">
-                        <th scope="row" colSpan={2}>
-                          Total
-                        </th>
-                      </div>
-                      <div className="flex justify-center items-center">
-                        <td>
-                          <Money data={order.totalPrice!} />
-                        </td>
-                      </div>
-                    </tr>
-                  </Card>
-                </div>
+                      <tr className="flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <th scope="row" colSpan={2}>
+                            Tax
+                          </th>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <td>
+                            <Money data={order.totalTax!} />
+                          </td>
+                        </div>
+                      </tr>
+                      <tr className="flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <th scope="row" colSpan={2}>
+                            Total
+                          </th>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <td>
+                            <Money data={order.totalPrice!} />
+                          </td>
+                        </div>
+                      </tr>
+                    </Card>
+                  </div>
+                  <div className="flex justify-end items-end">
+                    <Button variant="default" className="m-5">
+                      <Link to={order.statusPageUrl} rel="noreferrer">
+                        View Order Status →
+                      </Link>
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
           </CardContent>
