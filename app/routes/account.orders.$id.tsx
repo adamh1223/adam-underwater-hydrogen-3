@@ -62,7 +62,7 @@ export default function OrderRoute() {
     discountPercentage,
     fulfillmentStatus,
   } = useLoaderData<typeof loader>();
-  console.log(fulfillmentStatus, '5678');
+  console.log(order, '5678');
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
@@ -93,9 +93,6 @@ export default function OrderRoute() {
                     <thead>
                       <tr>
                         <th scope="col">Product</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Total</th>
                         <th scope="col">Download Links</th>
                         <th scope="col">Licensing Forms</th>
                       </tr>
@@ -173,17 +170,16 @@ export default function OrderRoute() {
               </div>
               <div className="lower-part">
                 <Card className="mt-3 p-5">
-                  <h3>Shipping Address</h3>
+                  <h3 className="pb-3">Shipping Address:</h3>
                   {order?.shippingAddress ? (
                     <address>
                       <p>{order.shippingAddress.name}</p>
                       {order.shippingAddress.formatted ? (
-                        <p>{order.shippingAddress.formatted}</p>
-                      ) : (
-                        ''
-                      )}
-                      {order.shippingAddress.formattedArea ? (
-                        <p>{order.shippingAddress.formattedArea}</p>
+                        <>
+                          <p>{order.shippingAddress.formatted[1]}</p>
+                          <p>{order.shippingAddress.formatted[2]}</p>
+                          <p>{order.shippingAddress.formatted[3]}</p>
+                        </>
                       ) : (
                         ''
                       )}
@@ -191,7 +187,7 @@ export default function OrderRoute() {
                   ) : (
                     <p>N/A</p>
                   )}
-                  <h3>Status</h3>
+                  <h3 className="pt-3">Status:</h3>
                   <div>
                     <p>
                       {fulfillmentStatus === 'SUCCESS'
@@ -280,36 +276,47 @@ export default function OrderRoute() {
 function OrderLineRow({lineItem}: {lineItem: OrderLineItemFullFragment}) {
   return (
     <tr key={lineItem.id}>
-      <td>
+      {/* <Card className="p-3 mb-5"> */}
+      <td className="pb-5">
         <div>
-          <div className="flex flex-col py-3">
-            <div className="flex justify-start">
+          <div className="flex flex-col">
+            <div className="flex justify-start pb-1">
               <p>
                 <strong>{lineItem.title}</strong>
               </p>
             </div>
             <small>{lineItem.variantTitle}</small>
           </div>
+
           {lineItem?.image && (
             <div className="flex justify-center">
               <Image data={lineItem.image} width={140} height={140} />
             </div>
           )}
         </div>
-      </td>
-      <td>
-        <div className="flex justify-center">
+        <div className="flex justify-start">
+          Price: &nbsp;
           <Money data={lineItem.price!} />
         </div>
-      </td>
-      <td>
-        <div className="flex justify-center">{lineItem.quantity}</div>
-      </td>
-      <td>
-        <div className="flex justify-center">
+        <div className="flex justify-start">
+          Quantity: &nbsp;{lineItem.quantity}
+        </div>
+        <div className="flex justify-start">
+          Total: &nbsp;
           <Money data={lineItem.totalDiscount!} />
         </div>
       </td>
+      <td>
+        <div className="flex justify-center align-center">
+          <Button variant="outline">Download</Button>
+        </div>
+      </td>
+      <td>
+        <div>
+          <Button variant="outline">Licensing Form</Button>
+        </div>
+      </td>
+      {/* </Card> */}
     </tr>
   );
 }
