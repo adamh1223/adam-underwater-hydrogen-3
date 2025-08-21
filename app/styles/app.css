@@ -460,7 +460,7 @@ tbody {
   color: rgb(169, 167, 167);
 }
 
-@media (max-width: 1424px) {
+
   tr {
     padding: 15px 0;
   }
@@ -468,7 +468,7 @@ tbody {
     display: flex;
     justify-content: center;
   }
-}
+
 @media (min-width: 1425px) {
   table {
   }
