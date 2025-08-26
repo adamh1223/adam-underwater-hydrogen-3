@@ -78,28 +78,50 @@ function AccountMenu() {
 
   return (
     <nav role="navigation">
-      <div className="flex justify-center ms-2">
-        <NavLink to="/account/orders" style={isActiveStyle}>
-          Orders &nbsp;
-        </NavLink>
-        &nbsp;|&nbsp;
-        <NavLink to="/account/favorites" style={isActiveStyle}>
-          &nbsp; Favorites &nbsp;
-        </NavLink>
-        &nbsp;|&nbsp;
-        <NavLink to="/account/reviews" style={isActiveStyle}>
-          &nbsp; Reviews &nbsp;
-        </NavLink>
-        &nbsp;|&nbsp;
-        <NavLink to="/account/profile" style={isActiveStyle}>
-          &nbsp; Profile &nbsp;
-        </NavLink>
-        &nbsp;|&nbsp;
-        <NavLink to="/account/addresses" style={isActiveStyle}>
-          &nbsp; Addresses &nbsp;
-        </NavLink>
-        &nbsp;|&nbsp;
-        <Logout />
+      <div className="flex justify-center ms-2 account-tabs-container">
+        <div className="nav-link-first-4 flex justify-center">
+          <div className="nav-link-container">
+            <NavLink to="/account/orders" style={isActiveStyle}>
+              Orders &nbsp;
+            </NavLink>
+            &nbsp;|&nbsp;
+          </div>
+          <div className="nav-link-container">
+            <NavLink to="/account/downloads" style={isActiveStyle}>
+              &nbsp; Downloads &nbsp;
+            </NavLink>
+            &nbsp;|&nbsp;
+          </div>
+          <div className="nav-link-container">
+            <NavLink to="/account/favorites" style={isActiveStyle}>
+              &nbsp; Favorites &nbsp;
+            </NavLink>
+            &nbsp;|&nbsp;
+          </div>
+          <div className="nav-link-container">
+            <NavLink to="/account/reviews" style={isActiveStyle}>
+              &nbsp; Reviews &nbsp;
+            </NavLink>
+            &nbsp;|&nbsp;
+          </div>
+        </div>
+        <div className="nav-link-last-3 flex justify-center">
+          <div className="nav-link-container">
+            <NavLink to="/account/profile" style={isActiveStyle}>
+              &nbsp; Profile &nbsp;
+            </NavLink>
+            &nbsp;|&nbsp;
+          </div>
+          <div className="nav-link-container">
+            <NavLink to="/account/addresses" style={isActiveStyle}>
+              &nbsp; Addresses &nbsp;
+            </NavLink>
+            &nbsp;|&nbsp;
+          </div>
+          <div className="nav-link-container">
+            <Logout />
+          </div>
+        </div>
       </div>
     </nav>
   );

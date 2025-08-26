@@ -435,6 +435,12 @@ button.reset:hover:not(:has(> *)) {
   display: inline-block;
 }
 
+@media (max-width: 700px) {
+  .account-tabs-container {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
 /* .logo {
   width: 95%;
 }
@@ -460,14 +466,13 @@ tbody {
   color: rgb(169, 167, 167);
 }
 
-
-  tr {
-    padding: 15px 0;
-  }
-  span {
-    display: flex;
-    justify-content: center;
-  }
+tr {
+  padding: 15px 0;
+}
+span {
+  display: flex;
+  justify-content: center;
+}
 
 @media (min-width: 1425px) {
   table {
