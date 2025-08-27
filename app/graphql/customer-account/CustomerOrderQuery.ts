@@ -22,6 +22,7 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     price {
       ...OrderMoney
     }
+    
     discountAllocations {
       allocatedAmount {
         ...OrderMoney
@@ -47,6 +48,12 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     name
     statusPageUrl
     processedAt
+    metafields (namespace: "custom.video_download_links") {
+      type 
+      references (first: 10) {
+        node
+      }
+    }
     fulfillments(first: 1) {
       nodes {
         status
