@@ -37,6 +37,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
       },
     },
   );
+  console.log(data, '97531');
 
   if (errors?.length || !data?.customer) {
     throw Error('Customer orders not found');

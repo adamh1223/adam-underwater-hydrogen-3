@@ -1,7 +1,7 @@
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
-import {useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {FetcherWithComponents, Link, redirect} from '@remix-run/react';
 import {Card, CardAction, CardContent, CardHeader} from './ui/card';
 import {Input} from './ui/input';
@@ -14,11 +14,25 @@ type CartSummaryProps = {
 };
 
 export function CartSummary({cart, layout}: CartSummaryProps) {
+  const clipProducts = cart.lines.nodes.filter((item) => {
+    //@ts-expect-error not picking up tags somehow
+    return item.merchandise.product.tags.includes('Video');
+  });
+  const clipNames = clipProducts.map(
+    (product) => product.merchandise.product.title,
+  );
+
+  console.log(clipNames, '2468');
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
   // const [isOrderReady, setIsOrderReady] = useState(defaultOrderValue);
   // const defaultOrderValue = includesEProducts ? false : true;
-
+  const [hideExtraInfo, setHideExtraInfo] = useState(!!clipNames?.length);
+  useEffect(() => {
+    // might need to bring over
+    setHideExtraInfo(!!clipNames?.length);
+  }, [clipNames]);
+  const [isOrderReady, setIsOrderReady] = useState(!clipNames?.length);
   return (
     <>
       <div aria-labelledby="cart-summary" className={className}>
@@ -47,27 +61,39 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         </Card>
       </div>
 
-      <p className="flex justify-center pt-7 px-8">
-        Please fill out the stock footage licensing form below.
-      </p>
+      {hideExtraInfo && (
+        <div className="stock-form-container">
+          <p className="flex justify-center pt-7 px-8">
+            Please fill out the stock footage licensing form below.
+          </p>
 
-      <div className="flex items-center justify-center pt-7 gap-2">
-        <StockForm updateCheck={true} />
-        <div>hi</div>
-      </div>
-      <p className="flex justify-center pt-7 px-8">
-        products will be downloaded immediately and a download code will be sent
-        via email.
-      </p>
+          <div className="flex items-center justify-center pt-7 gap-2">
+            <StockForm updateCheck={setIsOrderReady} clipNames={clipNames} />
+          </div>
+          <p className="flex justify-center pt-7 px-8">
+            products will be downloaded immediately and a download code will be
+            sent via email.
+          </p>
+        </div>
+      )}
       <div className="flex justify-center">
         <div className="p-5">
-          <CartCheckoutActions checkoutUrl={cart.checkoutUrl} />
+          <CartCheckoutActions
+            checkoutUrl={cart.checkoutUrl}
+            disabled={!isOrderReady}
+          />
         </div>
       </div>
     </>
   );
 }
-function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
+function CartCheckoutActions({
+  checkoutUrl,
+  disabled,
+}: {
+  checkoutUrl?: string;
+  disabled: boolean;
+}) {
   if (!checkoutUrl) return null;
 
   return (
@@ -77,7 +103,7 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
     //   </a>
     //   <br />
     // </div>
-    <Button variant="default" className="mb-4">
+    <Button variant="default" className="mb-4" disabled={disabled}>
       <Link to={checkoutUrl}>Continue to Checkout &rarr;</Link>
     </Button>
   );

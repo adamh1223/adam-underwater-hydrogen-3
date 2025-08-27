@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['repair-felt-distant-wrestling.tryhydrogen.dev'],
+    allowedHosts: ['gains-worst-raid-closing.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

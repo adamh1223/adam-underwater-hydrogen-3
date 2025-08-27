@@ -14,18 +14,20 @@ import {Label} from '../ui/label';
 import {Input} from '../ui/input';
 import './styles/StockForm.css';
 import {CourierClient} from '@trycourier/courier';
+import {ClipboardSignature} from 'lucide-react';
 
 const courier = new CourierClient({
   authorizationToken: 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08',
 });
-
 function StockForm({
   updateCheck,
+  clipNames,
 }: {
   updateCheck: React.Dispatch<React.SetStateAction<boolean>>;
+  clipNames: string[];
 }) {
   const [formData, setFormData] = useState({
-    clips: '',
+    clips: clipNames.join(', '),
     name: '',
     email: '',
     youtube: '',
@@ -145,10 +147,7 @@ function StockForm({
           <div className="flex items-center">
             <Label className="w-30 text-right">Clips</Label>
             {/* TODO: filter or map through each clip and list it at the top of the form. Should not be editable */}
-            <div>Clip 1</div>
-            <div>Clip 2</div>
-            <div>Clip 3</div>
-            <div>Clip 4</div>
+            <div>{formData.clips}</div>
           </div>
           <div className="grid gap-4 py-4 modal-content">
             {/* Left Column */}
