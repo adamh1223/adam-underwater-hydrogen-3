@@ -34,8 +34,9 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const discountApplications = flattenConnection(order.discountApplications);
 
   const fulfillmentStatus =
+    //@ts-expect-error order is any
     flattenConnection(order.fulfillments)[0]?.status ?? 'N/A';
-
+  //@ts-expect-error order is any
   const firstDiscount = discountApplications[0]?.value;
 
   const discountValue =
@@ -62,8 +63,14 @@ export default function OrderRoute() {
     discountPercentage,
     fulfillmentStatus,
   } = useLoaderData<typeof loader>();
-  console.log(order, '5678');
 
+  const {metafield} = order;
+  const linkValue = JSON.parse(metafield?.value || '[{}]') as {
+    text: string;
+    url: string;
+  }[];
+
+  console.log(linkValue, '5678');
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -110,7 +117,10 @@ export default function OrderRoute() {
                             // eslint-disable-next-line react/no-array-index-key
                             <OrderLineRow
                               key={lineItemIndex}
-                              lineItem={lineItem}
+                              lineItem={
+                                lineItem as unknown as OrderLineItemFullFragment
+                              }
+                              downloadLinks={linkValue}
                             />
                           ))}
                         </div>
@@ -256,7 +266,10 @@ export default function OrderRoute() {
                           // eslint-disable-next-line react/no-array-index-key
                           <OrderLineRow
                             key={lineItemIndex}
-                            lineItem={lineItem}
+                            lineItem={
+                              lineItem as unknown as OrderLineItemFullFragment
+                            }
+                            downloadLinks={linkValue}
                           />
                         ))}
                       </div>
@@ -399,8 +412,17 @@ export default function OrderRoute() {
   );
 }
 
-function OrderLineRow({lineItem}: {lineItem: OrderLineItemFullFragment}) {
+function OrderLineRow({
+  lineItem,
+  downloadLinks,
+}: {
+  lineItem: OrderLineItemFullFragment;
+  downloadLinks: {text: string; url: string}[];
+}) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const downloadLink = downloadLinks.filter((downloadLink) => {
+    return downloadLink.text === lineItem.title;
+  });
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -456,7 +478,11 @@ function OrderLineRow({lineItem}: {lineItem: OrderLineItemFullFragment}) {
           <div className="td">
             {/* <td> */}
             <div className="flex justify-center align-center">
-              <Button variant="outline">Download ↓</Button>
+              {/* <Button variant="outline">Download ↓</Button> */}
+              {/* <a href={downloadLink[0]?.url}>download</a> */}
+              <Button variant="outline">
+                <Link to={downloadLink[0]?.url}>Download</Link>
+              </Button>
             </div>
           </div>
         </>

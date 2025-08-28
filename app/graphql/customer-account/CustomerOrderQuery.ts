@@ -57,6 +57,12 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     name
     statusPageUrl
     processedAt
+    metafield (key: "test_links", namespace: "custom") {
+      value
+      type
+      id
+      jsonValue
+    }
     fulfillments(first: 1) {
       nodes {
         status
