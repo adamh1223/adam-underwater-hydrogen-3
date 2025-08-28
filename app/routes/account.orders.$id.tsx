@@ -150,16 +150,16 @@ export default function OrderRoute() {
                             <Card className="grid grid-cols-1 w-full h-[60%] pe-5">
                               {((discountValue && discountValue.amount) ||
                                 discountPercentage) && (
-                                <div className="flex justify-between">
+                                <div className="tr flex justify-between">
                                   {/* <tr className="flex justify-between"> */}
                                   <div className="flex justify-center items-center">
-                                    <div>
+                                    <div className="th">
                                       {/* <th scope="row" colSpan={2}> */}
                                       <p>Discounts</p>
                                     </div>
                                   </div>
                                   <div className="flex justify-center items-center">
-                                    <div>
+                                    <div className="td">
                                       {/* <td> */}
                                       {discountPercentage ? (
                                         <span>-{discountPercentage}% OFF</span>
@@ -172,31 +172,31 @@ export default function OrderRoute() {
                                   </div>
                                 </div>
                               )}
-                              <div className="flex justify-between">
+                              <div className="tr flex justify-between">
                                 {/* <tr className="flex justify-between"> */}
                                 <div className="flex justify-center items-center">
-                                  <div>
+                                  <div className="th">
                                     {/* <th scope="row" colSpan={2}> */}
                                     <p>Subtotal</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-center items-center">
-                                  <div>
+                                  <div className="td">
                                     {/* <td> */}
                                     <Money data={order.subtotal!} />
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="tr flex justify-between">
                                 {/*  <tr className="flex justify-between"> */}
                                 <div className="flex justify-center items-center">
-                                  <div>Tax</div>
+                                  <div className="th">Tax</div>
                                   {/* <th scope="row" colSpan={2}>
                                     Tax
                                   </th> */}
                                 </div>
                                 <div className="flex justify-center items-center">
-                                  <div>
+                                  <div className="td">
                                     <Money data={order.totalTax!} />
                                   </div>
                                   {/* <td>
@@ -204,16 +204,16 @@ export default function OrderRoute() {
                                   </td> */}
                                 </div>
                               </div>
-                              <div className="flex justify-between">
+                              <div className="tr flex justify-between">
                                 {/* <tr className="flex justify-between"> */}
                                 <div className="flex justify-center items-center">
-                                  <div>Total</div>
+                                  <div className="th">Total</div>
                                   {/* <th scope="row" colSpan={2}>
                                     Total
                                   </th> */}
                                 </div>
                                 <div className="flex justify-center items-center">
-                                  <div>
+                                  <div className="td">
                                     <Money data={order.totalPrice!} />
                                   </div>
                                   {/* <td>
@@ -239,14 +239,19 @@ export default function OrderRoute() {
               {windowWidth && windowWidth < 605 && (
                 <>
                   <div className="upper-part-small grid grid-cols-1 flex justify-start px-[100px]">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th scope="col">Product</th>
-                        </tr>
-                      </thead>
+                    <div className="table">
+                      {/* <table> */}
+                      <div className="thead">
+                        {/* <thead> */}
+                        <div className="tr">
+                          {/* <tr> */}
+                          <div className="th">Product</div>
+                          {/* <th scope="col">Product</th> */}
+                        </div>
+                      </div>
 
-                      <tbody>
+                      <div className="tbody">
+                        {/* <tbody> */}
                         {lineItems.map((lineItem, lineItemIndex) => (
                           // eslint-disable-next-line react/no-array-index-key
                           <OrderLineRow
@@ -254,8 +259,8 @@ export default function OrderRoute() {
                             lineItem={lineItem}
                           />
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
@@ -294,59 +299,87 @@ export default function OrderRoute() {
                     <Card className="grid grid-cols-1 w-[40%] h-[60%] pe-5 totals-card">
                       {((discountValue && discountValue.amount) ||
                         discountPercentage) && (
-                        <tr className="flex justify-between">
+                        <div className="tr flex justify-between">
+                          {/* <tr className="flex justify-between"> */}
                           <div className="flex justify-center items-center">
-                            <th scope="row" colSpan={2}>
+                            <div className="th">
                               <p>Discounts</p>
-                            </th>
+                            </div>
+                            {/* <th scope="row" colSpan={2}>
+                              <p>Discounts</p>
+                            </th> */}
                           </div>
                           <div className="flex justify-center items-center">
-                            <td>
+                            <div className="td">
                               {discountPercentage ? (
                                 <span>-{discountPercentage}% OFF</span>
                               ) : (
                                 discountValue && <Money data={discountValue!} />
                               )}
-                            </td>
+                            </div>
+                            {/* <td>
+                              {discountPercentage ? (
+                                <span>-{discountPercentage}% OFF</span>
+                              ) : (
+                                discountValue && <Money data={discountValue!} />
+                              )}
+                            </td> */}
                           </div>
-                        </tr>
+                        </div>
                       )}
-                      <tr className="flex justify-between">
+                      <div className="tr flex justify-between">
+                        {/* <tr className="flex justify-between"> */}
                         <div className="flex justify-center items-center">
-                          <th scope="row" colSpan={2}>
+                          <div className="th">
                             <p>Subtotal</p>
-                          </th>
+                          </div>
+                          {/* <th scope="row" colSpan={2}>
+                            <p>Subtotal</p>
+                          </th> */}
                         </div>
                         <div className="flex justify-center items-center">
-                          <td>
+                          <div className="td">
                             <Money data={order.subtotal!} />
-                          </td>
+                          </div>
+                          {/* <td>
+                            <Money data={order.subtotal!} />
+                          </td> */}
                         </div>
-                      </tr>
-                      <tr className="flex justify-between">
+                      </div>
+                      <div className="tr flex justify-between">
+                        {/* <tr className="flex justify-between"> */}
                         <div className="flex justify-center items-center">
-                          <th scope="row" colSpan={2}>
+                          <div className="th">Tax</div>
+                          {/* <th scope="row" colSpan={2}>
                             Tax
-                          </th>
+                          </th> */}
                         </div>
                         <div className="flex justify-center items-center">
-                          <td>
+                          <div className="td">
                             <Money data={order.totalTax!} />
-                          </td>
+                          </div>
+                          {/* <td>
+                            <Money data={order.totalTax!} />
+                          </td> */}
                         </div>
-                      </tr>
-                      <tr className="flex justify-between">
+                      </div>
+                      <div className="tr flex justify-between">
+                        {/* <tr className="flex justify-between"> */}
                         <div className="flex justify-center items-center">
-                          <th scope="row" colSpan={2}>
+                          <div className="th">Total</div>
+                          {/* <th scope="row" colSpan={2}>
                             Total
-                          </th>
+                          </th> */}
                         </div>
                         <div className="flex justify-center items-center">
-                          <td>
+                          <div className="td">
                             <Money data={order.totalPrice!} />
-                          </td>
+                          </div>
+                          {/* <td>
+                            <Money data={order.totalPrice!} />
+                          </td> */}
                         </div>
-                      </tr>
+                      </div>
                     </Card>
                   </div>
                   <div className="flex justify-end items-end">
@@ -377,8 +410,10 @@ function OrderLineRow({lineItem}: {lineItem: OrderLineItemFullFragment}) {
     return () => window.removeEventListener('resize', handleResize);
   });
   return (
-    <tr key={lineItem.id}>
-      <td className="pb-5">
+    <div key={lineItem.id} className="tr">
+      {/* <tr key={lineItem.id}> */}
+      <div className="td pb-5">
+        {/* <td className="pb-5"> */}
         <div>
           <div className="flex flex-col">
             <div className="flex justify-start pb-1">
@@ -415,16 +450,17 @@ function OrderLineRow({lineItem}: {lineItem: OrderLineItemFullFragment}) {
             </div>
           </>
         )}
-      </td>
+      </div>
       {windowWidth && windowWidth >= 605 && (
         <>
-          <td>
+          <div className="td">
+            {/* <td> */}
             <div className="flex justify-center align-center">
               <Button variant="outline">Download ↓</Button>
             </div>
-          </td>
+          </div>
         </>
       )}
-    </tr>
+    </div>
   );
 }

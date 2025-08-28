@@ -1,4 +1,13 @@
 // NOTE: https://shopify.dev/docs/api/customer/latest/queries/order
+
+// This is what we had on line 50:
+// metafields (namespace: "custom.video_download_links") {
+//       type
+//       references (first: 10) {
+//         node
+//       }
+//     }
+
 export const CUSTOMER_ORDER_QUERY = `#graphql
   fragment OrderMoney on MoneyV2 {
     amount
@@ -48,12 +57,6 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     name
     statusPageUrl
     processedAt
-    metafields (namespace: "custom.video_download_links") {
-      type 
-      references (first: 10) {
-        node
-      }
-    }
     fulfillments(first: 1) {
       nodes {
         status

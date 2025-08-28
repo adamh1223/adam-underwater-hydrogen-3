@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['gains-worst-raid-closing.tryhydrogen.dev'],
+    allowedHosts: ['cargo-indicates-achievements-downloads.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
