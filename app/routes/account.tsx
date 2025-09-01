@@ -87,12 +87,6 @@ function AccountMenu() {
             &nbsp;|&nbsp;
           </div>
           <div className="nav-link-container">
-            <NavLink to="/account/downloads" style={isActiveStyle}>
-              &nbsp; Downloads &nbsp;
-            </NavLink>
-            &nbsp;|&nbsp;
-          </div>
-          <div className="nav-link-container">
             <NavLink to="/account/favorites" style={isActiveStyle}>
               &nbsp; Favorites &nbsp;
             </NavLink>
