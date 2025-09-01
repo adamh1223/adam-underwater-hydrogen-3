@@ -454,19 +454,15 @@ button.reset:hover:not(:has(> *)) {
   font-weight: 450;
 }
 
-th {
+.th {
   padding: 0 30px; /* Applies 10px padding on all sides of the header cells */
-}
-
-tbody {
-  margin-top: 500px;
 }
 
 .cart-description {
   color: rgb(169, 167, 167);
 }
 
-tr {
+.tr {
   padding: 15px 0;
 }
 span {
