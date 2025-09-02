@@ -21,17 +21,22 @@ const ProductsHeader = () => {
       <div className="flex justify-center returns">
         <Card className="my-7 p-5">
           <div>
-            <p className="statement">1" wooden frames</p>
-          </div>
-          <div>
             <p className="statement">Customizable sizes</p>
           </div>
+
+          <div>
+            <p className="statement">Thick and durable wooden frames</p>
+          </div>
+
           <div>
             <p className="statement">Anti-glare, polyester canvas</p>
           </div>
 
           <div>
-            <p className="statement">Printed on Canon 4600 Image Pro-Graf</p>
+            <p className="statement">Printed on Canon Image PROGRAF PRO-4600</p>
+          </div>
+          <div>
+            <p className="statement">Handcrafted by me in San Diego, CA</p>
           </div>
         </Card>
       </div>

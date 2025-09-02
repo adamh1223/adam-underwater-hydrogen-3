@@ -71,8 +71,8 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
             <StockForm updateCheck={setIsOrderReady} clipNames={clipNames} />
           </div>
           <p className="flex justify-center pt-7 px-8">
-            products will be downloaded immediately and a download code will be
-            sent via email.
+            Download links will be sent via email and available on the orders
+            page.
           </p>
         </div>
       )}
