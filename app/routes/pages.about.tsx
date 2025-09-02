@@ -136,13 +136,10 @@ function AboutPage() {
             <br />
             <br />
             Through my experience filming and photographing wildlife underwater
-            I began <span className="font-semibold">
-              large format printing
-            </span>{' '}
-            my high resolution underwater images. Over the years, I have refined
-            the printing process to maximize quality from the canvas paper to
-            the ink to the printer itself to bring the magic of the ocean into
-            people's homes. Navigate to the{' '}
+            I began large format printing my high resolution underwater images.
+            Over the years, I have refined the printing process to maximize
+            quality from the canvas paper to the ink to the printer itself to
+            bring the magic of the ocean into people's homes. Navigate to the{' '}
             <a
               href="/products"
               target="_blank"

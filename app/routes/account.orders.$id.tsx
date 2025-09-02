@@ -240,7 +240,7 @@ export default function OrderRoute() {
                   </div>
                 </>
               )}
-              {windowWidth && windowWidth < 605 && (
+              {windowWidth && windowWidth < 604 && (
                 <>
                   <div className="upper-part-small grid grid-cols-1 flex justify-start px-[100px]">
                     <div className="table">
@@ -261,37 +261,119 @@ export default function OrderRoute() {
                       </div>
                     </div>
                   </div>
+                  <div className="lower-part">
+                    <Card className="mt-3 p-5">
+                      <h3 className="pb-3">Shipping Address:</h3>
+                      {order?.shippingAddress ? (
+                        <address>
+                          <p>{order.shippingAddress.name}</p>
+                          {order.shippingAddress.formatted ? (
+                            <>
+                              <p>{order.shippingAddress.formatted[1]}</p>
+                              <p>{order.shippingAddress.formatted[2]}</p>
+                              <p>{order.shippingAddress.formatted[3]}</p>
+                            </>
+                          ) : (
+                            ''
+                          )}
+                        </address>
+                      ) : (
+                        <p>N/A</p>
+                      )}
+                      <h3 className="pt-3">Status:</h3>
+                      <div>
+                        <p>
+                          {fulfillmentStatus === 'SUCCESS'
+                            ? 'Shipped'
+                            : 'Preparing Shipment'}
+                        </p>
+                      </div>
+                    </Card>
+                  </div>
+                  <div className="pt-3 totals flex justify-end items-end">
+                    <Card className="grid grid-cols-1 w-full h-[60%] pe-6">
+                      {((discountValue && discountValue.amount) ||
+                        discountPercentage) && (
+                        <div className="tr flex justify-between">
+                          {/* <tr className="flex justify-between"> */}
+                          <div className="flex justify-center items-center">
+                            <div className="th">
+                              {/* <th scope="row" colSpan={2}> */}
+                              <p>Discounts</p>
+                            </div>
+                          </div>
+                          <div className="flex justify-center items-center">
+                            <div className="td">
+                              {/* <td> */}
+                              {discountPercentage ? (
+                                <span>-{discountPercentage}% OFF</span>
+                              ) : (
+                                discountValue && <Money data={discountValue!} />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="tr flex justify-between">
+                        {/* <tr className="flex justify-between"> */}
+                        <div className="flex justify-center items-center">
+                          <div className="th">
+                            {/* <th scope="row" colSpan={2}> */}
+                            <p>Subtotal</p>
+                          </div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <div className="td">
+                            {/* <td> */}
+                            <Money data={order.subtotal!} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="tr flex justify-between">
+                        {/*  <tr className="flex justify-between"> */}
+                        <div className="flex justify-center items-center">
+                          <div className="th">Tax</div>
+                          {/* <th scope="row" colSpan={2}>
+                                    Tax
+                                  </th> */}
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <div className="td">
+                            <Money data={order.totalTax!} />
+                          </div>
+                          {/* <td>
+                                    <Money data={order.totalTax!} />
+                                  </td> */}
+                        </div>
+                      </div>
+                      <div className="tr flex justify-between">
+                        {/* <tr className="flex justify-between"> */}
+                        <div className="flex justify-center items-center">
+                          <div className="th">Total</div>
+                          {/* <th scope="row" colSpan={2}>
+                                    Total
+                                  </th> */}
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <div className="td">
+                            <Money data={order.totalPrice!} />
+                          </div>
+                          {/* <td>
+                                    <Money data={order.totalPrice!} />
+                                  </td> */}
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                  <div className="flex justify-end items-end">
+                    <Button variant="default" className="m-5">
+                      <Link to={order.statusPageUrl} rel="noreferrer">
+                        View Order Status →
+                      </Link>
+                    </Button>
+                  </div>
                 </>
               )}
-              {/* <div className="lower-part">
-                <Card className="mt-3 p-5">
-                  <h3 className="pb-3">Shipping Address:</h3>
-                  {order?.shippingAddress ? (
-                    <address>
-                      <p>{order.shippingAddress.name}</p>
-                      {order.shippingAddress.formatted ? (
-                        <>
-                          <p>{order.shippingAddress.formatted[1]}</p>
-                          <p>{order.shippingAddress.formatted[2]}</p>
-                          <p>{order.shippingAddress.formatted[3]}</p>
-                        </>
-                      ) : (
-                        ''
-                      )}
-                    </address>
-                  ) : (
-                    <p>N/A</p>
-                  )}
-                  <h3 className="pt-3">Status:</h3>
-                  <div>
-                    <p>
-                      {fulfillmentStatus === 'SUCCESS'
-                        ? 'Shipped'
-                        : 'Preparing Shipment'}
-                    </p>
-                  </div>
-                </Card>
-              </div> */}
             </div>
           </CardContent>
         </Card>

@@ -435,7 +435,7 @@ button.reset:hover:not(:has(> *)) {
   display: inline-block;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 600px) {
   .account-tabs-container {
     display: grid;
     grid-template-columns: 1fr;

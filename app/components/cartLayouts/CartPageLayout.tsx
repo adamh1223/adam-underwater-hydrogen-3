@@ -19,6 +19,7 @@ export function CartPageLayout({
   return (
     <>
       <div className="mt-8 grid gap-4 lg:grid-cols-12 px-5">
+        {/* ATTENTION: this class name needs to disappear when the cart is empty otherwise it puts everything into the first column */}
         {/* changed classname for cart page*/}
         <CartEmpty hidden={linesCount} layout={layout} />
         {/* Added lg:col-span-8 */}

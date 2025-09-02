@@ -68,7 +68,7 @@ export default function Homepage() {
           <img src={'/featured.png'} style={{height: '90px'}}></img>
         </div>
       </section>
-      <FeaturedCollection collection={data.featuredCollection} />
+      {/* <FeaturedCollection collection={data.featuredCollection} /> */}
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );
