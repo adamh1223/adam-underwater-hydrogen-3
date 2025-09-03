@@ -14,6 +14,8 @@ interface AugmentedPartialSearchResult {
     minVariantPrice: {amount: string; currencyCode: CurrencyCode};
     maxVariantPrice: {amount: string; currencyCode: CurrencyCode};
   };
+
+  selectedOrFirstAvailableVariant?: {id: string};
 }
 export type EnhancedPartialSearchResult =
   PartialPredictiveSearchResult<'products'> & AugmentedPartialSearchResult;

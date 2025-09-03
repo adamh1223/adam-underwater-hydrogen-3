@@ -15,7 +15,7 @@ function EProductsContainer({
   layout,
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
-    selectedOrFirstAvailableVariant: {id: string};
+    selectedOrFirstAvailableVariant?: {id: string};
   };
   loading?: 'eager' | 'lazy';
   layout: string | undefined;
@@ -77,22 +77,24 @@ function EProductsContainer({
                   </span>
                 </div>
               )}
-              <div className="flex justify-center pt-5 pb-4">
-                <AddToCartButton
-                  lines={[
-                    {
-                      merchandiseId:
-                        product?.selectedOrFirstAvailableVariant?.id,
-                      quantity: 1,
-                    },
-                  ]}
-                  onClick={() => {
-                    open('cart');
-                  }}
-                >
-                  Add To Cart
-                </AddToCartButton>
-              </div>
+              {product?.selectedOrFirstAvailableVariant?.id && (
+                <div className="flex justify-center pt-5 pb-4">
+                  <AddToCartButton
+                    lines={[
+                      {
+                        merchandiseId:
+                          product?.selectedOrFirstAvailableVariant?.id,
+                        quantity: 1,
+                      },
+                    ]}
+                    onClick={() => {
+                      open('cart');
+                    }}
+                  >
+                    Add To Cart
+                  </AddToCartButton>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
