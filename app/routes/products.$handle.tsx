@@ -1,5 +1,10 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
+import {
+  useLoaderData,
+  type MetaFunction,
+  Link,
+  useRouteLoaderData,
+} from '@remix-run/react';
 import {
   getSelectedProductOptions,
   Analytics,
@@ -17,6 +22,7 @@ import {Card} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 import {ProductImages} from '~/lib/types';
 import {useEffect, useState} from 'react';
+import {RootLoader} from '~/root';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -101,7 +107,15 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml, collections, images, featuredImage} = product;
+  const {
+    title,
+    descriptionHtml,
+    collections,
+    images,
+    featuredImage,
+    selectedOrFirstAvailableVariant,
+  } = product;
+
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
   const {references} = productSizeMetafields || {};
   const threeColumnImages = references?.nodes?.filter((item: any) => {
@@ -197,6 +211,23 @@ export default function Product() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
+
+  const data = useRouteLoaderData<RootLoader>('root');
+
+  const merchandiseIDs = data?.cart
+    .then((cartData) =>
+      cartData?.lines.nodes
+        .map((node) => {
+          if (node.merchandise.product.tags?.includes('Video')) {
+            return node.merchandise.id;
+          }
+        })
+        .filter(Boolean),
+    )
+    .finally((merchandiseIDs:) =>
+      merchandiseIDs.includes(selectedOrFirstAvailableVariant?.id),
+    );
+  const VideoIsAlreadyInCart = merchandiseIDs?.then();
 
   return (
     <section className="product px-[40px] pt-[20px]">

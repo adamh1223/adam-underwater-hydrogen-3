@@ -393,6 +393,11 @@ function OrderLineRow({
   const downloadLink = downloadLinks.filter((downloadLink) => {
     return downloadLink.text === lineItem.title;
   });
+  const itemSubtotal =
+    lineItem.quantity * Number(lineItem.price?.amount) -
+    Number(lineItem.totalDiscount.amount);
+  console.log(itemSubtotal, '775577');
+
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -431,8 +436,14 @@ function OrderLineRow({
             Quantity: &nbsp;{lineItem.quantity}
           </div>
           <div className="flex justify-start">
-            Total: &nbsp;
+            Discount: &nbsp; -
             <Money data={lineItem.totalDiscount!} />
+          </div>
+          <div className="flex justify-start">
+            Total: &nbsp;
+            <Money
+              data={{amount: itemSubtotal.toString(), currencyCode: 'USD'}}
+            />
           </div>
         </div>
         {windowWidth && windowWidth < 605 && (

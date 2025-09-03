@@ -1,8 +1,9 @@
 import {Breadcrumb} from '../ui/breadcrumb';
-import {Link} from '@remix-run/react';
+import {Link, useRouteLoaderData} from '@remix-run/react';
 import {useEffect, useRef, useState} from 'react';
 import {count} from 'console';
 import {ChevronRightIcon} from 'lucide-react';
+import {RootLoader} from '~/root';
 
 function IndividualVideoProduct({
   productName,
@@ -11,6 +12,9 @@ function IndividualVideoProduct({
   productName: string;
   featuredImage: string | undefined;
 }) {
+  
+  
+
   return (
     <>
       {/* PLUG IN EPRODUCT PREVIEW WITH DIFFERENT TYPING BELOW */}

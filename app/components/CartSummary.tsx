@@ -16,7 +16,7 @@ type CartSummaryProps = {
 export function CartSummary({cart, layout}: CartSummaryProps) {
   const clipProducts = cart.lines.nodes.filter((item) => {
     //@ts-expect-error not picking up tags somehow
-    return item.merchandise.product.tags.includes('Video');
+    return item.merchandise.product.tags?.includes('Video');
   });
   const clipNames = clipProducts.map(
     (product) => product.merchandise.product.title,

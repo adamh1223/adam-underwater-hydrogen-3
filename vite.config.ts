@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['cooler-collaborative-cylinder-editor.tryhydrogen.dev'],
+    allowedHosts: ['qld-republicans-austria-dealtime.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
