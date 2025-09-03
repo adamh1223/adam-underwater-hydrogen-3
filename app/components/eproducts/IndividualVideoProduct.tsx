@@ -8,13 +8,12 @@ import {RootLoader} from '~/root';
 function IndividualVideoProduct({
   productName,
   featuredImage,
+  VideoAlreadyInCart,
 }: {
   productName: string;
   featuredImage: string | undefined;
+  VideoAlreadyInCart: Promise<boolean | undefined> | undefined;
 }) {
-  
-  
-
   return (
     <>
       {/* PLUG IN EPRODUCT PREVIEW WITH DIFFERENT TYPING BELOW */}

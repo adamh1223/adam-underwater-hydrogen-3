@@ -14,10 +14,12 @@ export function ProductForm({
   productOptions,
   selectedVariant,
   imagesToShow,
+  VideoAlreadyInCart,
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
   imagesToShow?: ProductImages[];
+  VideoAlreadyInCart: boolean;
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
@@ -125,7 +127,11 @@ export function ProductForm({
         );
       })}
       <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
+        disabled={
+          !selectedVariant ||
+          !selectedVariant.availableForSale ||
+          VideoAlreadyInCart
+        }
         onClick={() => {
           open('cart');
         }}

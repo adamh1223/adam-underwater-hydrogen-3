@@ -54,7 +54,7 @@ async function loadCriticalData({
   request,
 }: LoaderFunctionArgs) {
   const {handle} = params;
-  const {storefront} = context;
+  const {storefront, cart} = context;
 
   if (!handle) {
     throw new Error('Expected product handle to be defined');
@@ -73,6 +73,7 @@ async function loadCriticalData({
 
   return {
     product,
+    cart: cart.get(),
   };
 }
 
@@ -89,7 +90,7 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
 }
 
 export default function Product() {
-  const {product} = useLoaderData<typeof loader>();
+  const {product, cart} = useLoaderData<typeof loader>();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -213,21 +214,33 @@ export default function Product() {
   });
 
   const data = useRouteLoaderData<RootLoader>('root');
+  const [disableButton, setDisableButton] = useState(false);
+  console.log(cart, 'rrrr');
 
-  const merchandiseIDs = data?.cart
-    .then((cartData) =>
-      cartData?.lines.nodes
-        .map((node) => {
-          if (node.merchandise.product.tags?.includes('Video')) {
-            return node.merchandise.id;
-          }
-        })
-        .filter(Boolean),
-    )
-    .finally((merchandiseIDs:) =>
-      merchandiseIDs.includes(selectedOrFirstAvailableVariant?.id),
-    );
-  const VideoIsAlreadyInCart = merchandiseIDs?.then();
+  useEffect(() => {
+    cart
+      .then((cartData) => {
+        if (!cartData) {
+          setDisableButton(false);
+        }
+        const IDs = cartData?.lines.nodes
+          .map((node) => {
+            if (node.merchandise.product.tags?.includes('Video')) {
+              return node.merchandise.id;
+            }
+          })
+          .filter(Boolean);
+        const matches = IDs?.includes(
+          selectedOrFirstAvailableVariant?.id ?? '',
+        );
+        setDisableButton(!!matches);
+        console.log(matches, 'tttt');
+      })
+
+      .catch(() => setDisableButton(false));
+  }, [cart]);
+
+  console.log(disableButton, '5511');
 
   return (
     <section className="product px-[40px] pt-[20px]">
@@ -298,6 +311,7 @@ export default function Product() {
           <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
           <br />
           <ProductForm
+            VideoAlreadyInCart={disableButton}
             productOptions={productOptions}
             selectedVariant={selectedVariant}
             imagesToShow={layoutImagesToUse as ProductImages[]}
