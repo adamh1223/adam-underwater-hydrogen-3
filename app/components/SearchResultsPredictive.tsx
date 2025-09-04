@@ -1,5 +1,5 @@
 import {Link, useFetcher, type Fetcher} from '@remix-run/react';
-import {Image, Money} from '@shopify/hydrogen';
+import {CartReturn, Image, Money} from '@shopify/hydrogen';
 import React, {useRef, useEffect} from 'react';
 import {
   getEmptyPredictiveSearchResult,
@@ -203,12 +203,14 @@ interface PredictiveSearchLayout {
   layout?: string;
   products: EnhancedPartialSearchResult[];
   collectionHandle?: string;
+  cart: Promise<CartReturn | null>;
 }
 function SearchResultsPredictiveProducts({
   term,
   layout,
   products,
   collectionHandle,
+  cart,
 }: PredictiveSearchLayout) {
   if (!products.length) return null;
 
@@ -216,7 +218,9 @@ function SearchResultsPredictiveProducts({
     <>
       {products.map((product) => {
         if (collectionHandle === 'stock') {
-          return <EProductsContainer product={product} layout={layout} />;
+          return (
+            <EProductsContainer product={product} layout={layout} cart={cart} />
+          );
         }
         return <ProductCarousel product={product} layout={layout} />;
       })}

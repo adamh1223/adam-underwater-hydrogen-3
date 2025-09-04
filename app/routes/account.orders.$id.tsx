@@ -389,6 +389,8 @@ function OrderLineRow({
   lineItem: OrderLineItemFullFragment;
   downloadLinks: {text: string; url: string}[];
 }) {
+  console.log(lineItem, '7123');
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const downloadLink = downloadLinks.filter((downloadLink) => {
     return downloadLink.text === lineItem.title;
@@ -406,6 +408,8 @@ function OrderLineRow({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
+  console.log(lineItem.totalDiscount.amount, 'tttt');
+
   return (
     <div key={lineItem.id} className="tr">
       {/* <tr key={lineItem.id}> */}
@@ -435,10 +439,12 @@ function OrderLineRow({
           <div className="flex justify-start">
             Quantity: &nbsp;{lineItem.quantity}
           </div>
-          <div className="flex justify-start">
-            Discount: &nbsp; -
-            <Money data={lineItem.totalDiscount!} />
-          </div>
+          {lineItem.totalDiscount.amount != '0.0' && (
+            <div className="flex justify-start">
+              Discount: &nbsp; -
+              <Money data={lineItem.totalDiscount!} />
+            </div>
+          )}
           <div className="flex justify-start">
             Total: &nbsp;
             <Money
@@ -448,7 +454,25 @@ function OrderLineRow({
         </div>
         {windowWidth && windowWidth < 605 && (
           <>
-            <div className="td pt-3">
+            {lineItem.variantTitle === null && (
+              <div className="td pt-3">
+                {/* <td> */}
+                <div className="flex justify-center align-center">
+                  {/* <Button variant="outline">Download ↓</Button> */}77
+                  {/* <a href={downloadLink[0]?.url}>download</a> */}
+                  <Button variant="outline" className="mb-5">
+                    <Link to={downloadLink[0]?.url}>Download ↓</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {windowWidth && windowWidth >= 605 && (
+        <>
+          {lineItem.variantTitle === null && (
+            <div className="td">
               {/* <td> */}
               <div className="flex justify-center align-center">
                 {/* <Button variant="outline">Download ↓</Button> */}
@@ -458,21 +482,7 @@ function OrderLineRow({
                 </Button>
               </div>
             </div>
-          </>
-        )}
-      </div>
-      {windowWidth && windowWidth >= 605 && (
-        <>
-          <div className="td">
-            {/* <td> */}
-            <div className="flex justify-center align-center">
-              {/* <Button variant="outline">Download ↓</Button> */}
-              {/* <a href={downloadLink[0]?.url}>download</a> */}
-              <Button variant="outline" className="mb-5">
-                <Link to={downloadLink[0]?.url}>Download ↓</Link>
-              </Button>
-            </div>
-          </div>
+          )}
         </>
       )}
     </div>

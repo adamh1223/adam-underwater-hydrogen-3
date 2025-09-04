@@ -266,6 +266,7 @@ export default function Collection() {
                     layout={layout}
                     term={term}
                     collectionHandle={collection.handle}
+                    cart={cart}
                   />
                 </>
               );
