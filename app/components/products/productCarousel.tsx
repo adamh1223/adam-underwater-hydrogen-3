@@ -115,7 +115,7 @@ const ProductCarousel = ({
                         <img
                           src={url.url}
                           alt=""
-                          className="max-h-full object-contain"
+                          className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                     </CarouselItem>
