@@ -9,11 +9,11 @@ import '../../styles/routeStyles/work.css';
 function IndividualVideoProduct({
   productName,
   featuredImage,
-  VideoAlreadyInCart,
+  WMLink,
 }: {
   productName: string;
   featuredImage: string | undefined;
-  VideoAlreadyInCart: Promise<boolean | undefined> | undefined;
+  WMLink: string | undefined;
 }) {
   return (
     <>
@@ -24,7 +24,7 @@ function IndividualVideoProduct({
       <div className="clip-wrapper flex justify-center position-relative">
         <iframe
           className="clip"
-          src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+          src={`https://player.vimeo.com/video/${WMLink}?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`}
           allow="autoplay; fullscreen; picture-in-picture;"
           title="Seaforestation Trailer"
         ></iframe>

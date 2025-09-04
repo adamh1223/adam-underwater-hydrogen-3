@@ -22,7 +22,9 @@ function EProductPreview({
       }, 800);
     }
   };
-  console.log(isHovered, '1111');
+
+  const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
+  const parsedWMLink = WMLink?.split('_')[1];
 
   useEffect(() => {
     if (imgRef.current) {
@@ -110,7 +112,8 @@ function EProductPreview({
           <Link to={`/stock/${id}`} className="cursor-pointer">
             <iframe
               // Make number after video dynamic ${WMVideoLink}
-              src={`https://player.vimeo.com/video/1045853480?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
+              src={`https://player.vimeo.com/video/${parsedWMLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
+              // <div style="padding:52.73% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1045853480?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="3M"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
               allow="autoplay; loop;"
               // @ts-expect-error ignore for now
               style={iframeStyles}

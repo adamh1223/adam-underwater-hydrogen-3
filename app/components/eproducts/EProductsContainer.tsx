@@ -7,18 +7,22 @@ import EProductPreview from './EProductPreview';
 import {Money} from '@shopify/hydrogen';
 import {Link} from '@remix-run/react';
 import {useAside} from '../Aside';
+import {useIsVideoInCart} from '~/lib/hooks';
+import {CartReturn} from '@shopify/hydrogen';
 
 type shopifyImage = {url: string; altText: string};
 function EProductsContainer({
   product,
   loading,
   layout,
+  cart,
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
     selectedOrFirstAvailableVariant?: {id: string};
   };
   loading?: 'eager' | 'lazy';
   layout: string | undefined;
+  cart: Promise<CartReturn | null>;
 }) {
   const cardClassName =
     layout === 'grid'
@@ -27,6 +31,10 @@ function EProductsContainer({
   const variantUrl = useVariantUrl(product.handle);
   console.log(product, '204020');
   const {open} = useAside();
+  const disableButton = useIsVideoInCart(
+    cart,
+    product?.selectedOrFirstAvailableVariant?.id,
+  );
 
   return (
     <>
@@ -87,6 +95,7 @@ function EProductsContainer({
                         quantity: 1,
                       },
                     ]}
+                    disabled={disableButton}
                     onClick={() => {
                       open('cart');
                     }}

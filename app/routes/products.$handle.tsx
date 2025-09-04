@@ -23,6 +23,7 @@ import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduc
 import {ProductImages} from '~/lib/types';
 import {useEffect, useState} from 'react';
 import {RootLoader} from '~/root';
+import {useIsVideoInCart} from '~/lib/hooks';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -115,7 +116,11 @@ export default function Product() {
     images,
     featuredImage,
     selectedOrFirstAvailableVariant,
+    tags,
   } = product;
+
+  const WMLink = tags.filter((tag) => tag.includes('wmlink'))?.[0];
+  const parsedWMLink = WMLink?.split('_')[1];
 
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
   const {references} = productSizeMetafields || {};
@@ -214,31 +219,35 @@ export default function Product() {
   });
 
   const data = useRouteLoaderData<RootLoader>('root');
-  const [disableButton, setDisableButton] = useState(false);
-  console.log(cart, 'rrrr');
+  // const [disableButton, setDisableButton] = useState(false);
+  // console.log(cart, 'rrrr');
 
-  useEffect(() => {
-    cart
-      .then((cartData) => {
-        if (!cartData) {
-          setDisableButton(false);
-        }
-        const IDs = cartData?.lines.nodes
-          .map((node) => {
-            if (node.merchandise.product.tags?.includes('Video')) {
-              return node.merchandise.id;
-            }
-          })
-          .filter(Boolean);
-        const matches = IDs?.includes(
-          selectedOrFirstAvailableVariant?.id ?? '',
-        );
-        setDisableButton(!!matches);
-        console.log(matches, 'tttt');
-      })
+  // useEffect(() => {
+  //   cart
+  //     .then((cartData) => {
+  //       if (!cartData) {
+  //         setDisableButton(false);
+  //       }
+  //       const IDs = cartData?.lines.nodes
+  //         .map((node) => {
+  //           if (node.merchandise.product.tags?.includes('Video')) {
+  //             return node.merchandise.id;
+  //           }
+  //         })
+  //         .filter(Boolean);
+  //       const matches = IDs?.includes(
+  //         selectedOrFirstAvailableVariant?.id ?? '',
+  //       );
+  //       setDisableButton(!!matches);
+  //       console.log(matches, 'tttt');
+  //     })
 
-      .catch(() => setDisableButton(false));
-  }, [cart]);
+  //     .catch(() => setDisableButton(false));
+  // }, [cart]);
+  const disableButton = useIsVideoInCart(
+    cart,
+    selectedOrFirstAvailableVariant?.id,
+  );
 
   console.log(disableButton, '5511');
 
@@ -286,6 +295,7 @@ export default function Product() {
           <IndividualVideoProduct
             productName={title}
             featuredImage={featuredImage?.url}
+            WMLink={parsedWMLink}
           ></IndividualVideoProduct>
         )}
         {/* <ProductImage image={selectedVariant?.image} /> */}

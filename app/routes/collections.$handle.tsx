@@ -54,7 +54,7 @@ async function loadCriticalData({
   request,
 }: LoaderFunctionArgs) {
   const {handle} = params;
-  const {storefront} = context;
+  const {storefront, cart} = context;
   const url = new URL(request.url);
   const searchTerm = url.searchParams.get('q')?.trim() || '';
   const paginationVariables = getPaginationVariables(request, {
@@ -89,6 +89,7 @@ async function loadCriticalData({
   return {
     collection,
     searchTerm,
+    cart: cart.get(),
   };
 }
 
@@ -102,7 +103,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 
 export default function Collection() {
-  const {collection, searchTerm} = useLoaderData<typeof loader>();
+  const {collection, searchTerm, cart} = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
   const [searchText, setSearchText] = useState<string | undefined>();
@@ -291,7 +292,11 @@ export default function Collection() {
                     <ProductCarousel product={product} layout={layout} />
                   )}
                   {collection.handle === 'stock' && (
-                    <EProductsContainer product={product} layout={layout} />
+                    <EProductsContainer
+                      product={product}
+                      layout={layout}
+                      cart={cart}
+                    />
                   )}
                 </>
               );
