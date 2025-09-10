@@ -1,4 +1,5 @@
 import {CartReturn} from '@shopify/hydrogen';
+import {truncate} from 'fs/promises';
 import React, {useState} from 'react';
 import {useEffect} from 'react';
 
@@ -30,19 +31,16 @@ export const useIsVideoInCart = (
   return disableButton;
 };
 
-export const useIsLoggedIn = (
-    isLoggedIn: Promise<boolean>
-) => {
-    const [isLoggedIn2, setIsLoggedIn] = useState(false);
-    useEffect(() => {
+export const useIsLoggedIn = (isLoggedIn: Promise<boolean>) => {
+  const [isLoggedIn2, setIsLoggedIn] = useState(false);
+  useEffect(() => {
     isLoggedIn
-      .then((loggedInValue) => {
-        if (!loggedInValue) {
-          setIsLoggedIn(false);
+      ?.then((loggedInValue) => {
+        if (loggedInValue) {
+          setIsLoggedIn(true);
         }
-        
-        setIsLoggedIn(true);
-      
+
+        setIsLoggedIn(false);
       })
 
       .catch(() => setIsLoggedIn(false));

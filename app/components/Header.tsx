@@ -248,7 +248,7 @@ function HeaderCtas({
     {href: 'account/profile', label: 'My Profile'},
     {href: 'account/addresses', label: 'My Addresses'},
   ];
-  console.log(isLoggedIn, 'xyz');
+  console.log(loginValue, 'xyz');
 
   return (
     <nav className="header-ctas" role="navigation">
@@ -287,8 +287,12 @@ function HeaderCtas({
               <Link to={'/account'}>Sign In/Create Account</Link>
             </Button>
           )}
-          <hr />
-          <Logout />
+          {loginValue && (
+            <>
+              <hr />
+              <Logout />{' '}
+            </>
+          )}
         </HoverCardContent>
       </HoverCard>
 
