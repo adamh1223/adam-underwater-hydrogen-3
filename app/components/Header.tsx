@@ -1,5 +1,12 @@
 import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue, useLoaderData} from '@remix-run/react';
+import {
+  Await,
+  Form,
+  Link,
+  NavLink,
+  useAsyncValue,
+  useLoaderData,
+} from '@remix-run/react';
 import {
   type CartViewPayload,
   useAnalytics,
@@ -14,6 +21,8 @@ import ServicesDropdown from './navbar/ServicesDropdown';
 import {loader} from '~/routes/_index';
 import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
+import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
+import {useIsLoggedIn} from '~/lib/hooks';
 
 interface HeaderProps {
   header: HeaderQuery & {
@@ -212,33 +221,86 @@ export function HeaderMenu({
         </div>
       </div>
       <div className="3 flex gap-4 items-center">
-        <HeaderCtas cart={cart} />
+        <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
       </div>
     </nav>
   );
 }
 
-function HeaderCtas({cart}: Partial<Pick<HeaderProps, 'cart'>>) {
+function HeaderCtas({
+  cart,
+  isLoggedIn,
+}: {
+  cart: Partial<Pick<HeaderProps, 'cart'>>;
+  isLoggedIn: Promise<boolean>;
+}) {
+  type NavLink = {
+    href: string;
+    label: string;
+  };
+  const loginValue = useIsLoggedIn(isLoggedIn);
+
+  const links: NavLink[] = [
+    {href: '/', label: 'Home'},
+    {href: 'account/orders', label: 'My orders'},
+    {href: 'account/favorites', label: 'Your favorites'},
+    {href: 'account/reviews', label: 'My reviews'},
+    {href: 'account/profile', label: 'My Profile'},
+    {href: 'account/addresses', label: 'My Addresses'},
+  ];
+  console.log(isLoggedIn, 'xyz');
+
   return (
     <nav className="header-ctas" role="navigation">
       {/* <HeaderMenuMobileToggle /> */}
       <CartToggle cart={cart} />
-      <NavLink prefetch="intent" to="/account">
-        <Button
-          variant="outline"
-          className="flex gap-4 max-w-[100px] cursor-pointer"
-        >
-          <LuAlignLeft className="w-6 h-6" />
-          <LuUser className="w-6 h-6 bg-primary rounded-full text-white" />
-          {/* <Suspense fallback="Sign in">
+      <HoverCard openDelay={100} closeDelay={100}>
+        <HoverCardTrigger>
+          <NavLink prefetch="intent" to="/account">
+            <div className="account-menu-dropdown">
+              <Button
+                variant="outline"
+                className="flex gap-4 max-w-[100px] cursor-pointer"
+              >
+                <LuAlignLeft className="w-6 h-6" />
+                <LuUser className="w-6 h-6 bg-primary rounded-full text-white" />
+                {/* <Suspense fallback="Sign in">
             <Await resolve={isLoggedIn} errorElement="Sign in">
               {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
             </Await>
           </Suspense> */}
-        </Button>
-      </NavLink>
+              </Button>
+            </div>
+          </NavLink>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-48">
+          {loginValue ? (
+            links.map((link) => {
+              return (
+                <Button variant="ghost">
+                  <Link to={link.href}>{link.label}</Link>
+                </Button>
+              );
+            })
+          ) : (
+            <Button variant="ghost">
+              <Link to={'/account'}>Sign In/Create Account</Link>
+            </Button>
+          )}
+          <hr />
+          <Logout />
+        </HoverCardContent>
+      </HoverCard>
+
       <SearchToggle />
     </nav>
+  );
+}
+function Logout() {
+  return (
+    <Form className="account-logout" method="POST" action="/account/logout">
+      &nbsp;<button type="submit">Sign out</button>
+    </Form>
   );
 }
 

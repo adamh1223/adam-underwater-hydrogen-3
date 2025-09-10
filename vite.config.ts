@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['lopez-widespread-rd-child.tryhydrogen.dev'],
+    allowedHosts: ['briefly-bureau-vulnerable-ye.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
