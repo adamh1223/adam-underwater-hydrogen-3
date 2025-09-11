@@ -51,9 +51,8 @@ function EProductPreview({
     };
   }, [isHovered]);
 
-  const divStyles = isVideoReady
-    ? 'relative w-full h-0 pb-[56.25%]'
-    : 'h-0 w-0';
+  const divStyles = isVideoReady ? 'relative w-full pb-[56.25%]' : 'h-0 w-0';
+  // This pb is messing things up, we have to find another way to do this
   const iframeStyles = isVideoReady
     ? {
         width: '100%',
@@ -85,13 +84,14 @@ function EProductPreview({
     <div
       className=""
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsVideoReady(false);
-        if (!isVideoReady) {
-          setTimeout(() => setIsVideoReady(false), 100);
-        }
-      }}
+      // onMouseLeave={() => {
+      //   setIsHovered(false);
+      //   setIsVideoReady(false);
+      //   if (!isVideoReady) {
+      //     setTimeout(() => setIsVideoReady(false), 100);
+      //   }
+      // }}
+      onMouseLeave={() => setIsHovered(true)}
     >
       <>
         {featuredImage && (
@@ -100,7 +100,7 @@ function EProductPreview({
             src={featuredImage.url}
             alt="name"
             sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
-            className={`thumbnail-crop ${imageClass} cursor-pointer`}
+            className={`${imageClass} cursor-pointer`}
             onPointerDown={() => redirect(`/stock/${id}`)}
           />
         )}
