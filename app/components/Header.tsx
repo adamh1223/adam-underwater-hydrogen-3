@@ -231,8 +231,8 @@ function HeaderCtas({
   cart,
   isLoggedIn,
 }: {
-  cart: Partial<Pick<HeaderProps, 'cart'>>;
-  isLoggedIn: Promise<boolean>;
+  cart: Partial<Pick<HeaderProps, 'cart'>> | undefined | null;
+  isLoggedIn: Promise<boolean> | undefined;
 }) {
   type NavLink = {
     href: string;

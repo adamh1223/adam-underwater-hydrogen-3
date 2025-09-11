@@ -31,16 +31,13 @@ export const useIsVideoInCart = (
   return disableButton;
 };
 
-export const useIsLoggedIn = (isLoggedIn: Promise<boolean>) => {
+export const useIsLoggedIn = (isLoggedIn: Promise<boolean> | undefined) => {
   const [isLoggedIn2, setIsLoggedIn] = useState(false);
+
   useEffect(() => {
     isLoggedIn
       ?.then((loggedInValue) => {
-        if (loggedInValue) {
-          setIsLoggedIn(true);
-        }
-
-        setIsLoggedIn(false);
+        setIsLoggedIn(loggedInValue);
       })
 
       .catch(() => setIsLoggedIn(false));
