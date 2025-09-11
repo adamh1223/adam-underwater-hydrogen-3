@@ -44,6 +44,6 @@ export const useIsLoggedIn = (isLoggedIn: Promise<boolean>) => {
       })
 
       .catch(() => setIsLoggedIn(false));
-  }, [isLoggedIn2]);
+  }, [isLoggedIn]);
   return isLoggedIn2;
 };

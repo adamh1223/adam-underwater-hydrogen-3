@@ -42,7 +42,7 @@ function IndividualProduct({
       {/* may need to be made into a component if more pages are made */}
 
       {/* <Breadcrumb name="INdividual product name" /> */}
-      <div className="flex justify-center py-4">
+      <div className="flex justify-center py-4 ps-4">
         <Carousel
           // ref={carouselRef}
           // opts={{

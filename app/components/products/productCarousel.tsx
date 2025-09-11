@@ -6,10 +6,10 @@ import {
   CarouselContent,
   CarouselItem,
 } from '../ui/carousel';
-import {Link} from '@remix-run/react';
+import {Link, useLoaderData} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
-import {Money} from '@shopify/hydrogen';
+import {Money, useOptimisticVariant} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {AddToCartButton} from '../AddToCartButton';
@@ -48,6 +48,11 @@ const ProductCarousel = ({
     layout === 'grid'
       ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3 cursor-pointer';
+  const cardContentClassName =
+    layout === 'grid'
+      ? 'flex flex-col h-full'
+      : 'p-8 gap-y-4 grid md:grid-cols-3';
+
   const variantUrl = useVariantUrl(product.handle);
   const standardImages = product?.images?.nodes?.filter((item) =>
     item.altText?.includes('standard'),
@@ -88,7 +93,7 @@ const ProductCarousel = ({
   return (
     <article className="group relative">
       <Card className={cardClassName}>
-        <CardContent className="flex flex-col h-full">
+        <CardContent className={cardContentClassName}>
           <div className="relative w-full h-full rounded top-part-card">
             <Carousel
               // ref={carouselRef}
@@ -111,32 +116,65 @@ const ProductCarousel = ({
                       className="flex items-center justify-center"
                       key={idx}
                     >
-                      <div className="w-[90%] p-4 flex items-center justify-center">
-                        <img
-                          src={url.url}
-                          alt=""
-                          className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
+                      {layout === 'grid' && (
+                        <div className="w-[90%] p-4 flex items-center justify-center">
+                          <img
+                            src={url.url}
+                            alt=""
+                            className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                      )}
+                      {layout === 'list' && (
+                        <div className="w-[95%] p-4 ms-3 flex items-center justify-center">
+                          <img
+                            src={url.url}
+                            alt=""
+                            className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                      )}
                     </CarouselItem>
                   ))}
                 </CarouselContent>
               </Link>
               <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
-                <Button
-                  onClick={decreaseIndex}
-                  className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-4px] shadow-none"
-                  variant="secondary"
-                >
-                  <ChevronLeftIcon className="h-6 w-6 text-white"></ChevronLeftIcon>
-                </Button>
-                <Button
-                  onClick={increaseIndex}
-                  className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-4px] shadow-none"
-                  variant="secondary"
-                >
-                  <ChevronRightIcon className="h-6 w-6 text-white"></ChevronRightIcon>
-                </Button>
+                {layout === 'grid' && (
+                  <>
+                    <Button
+                      onClick={decreaseIndex}
+                      className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-4px] shadow-none"
+                      variant="secondary"
+                    >
+                      <ChevronLeftIcon className="h-6 w-6 text-white"></ChevronLeftIcon>
+                    </Button>
+                    <Button
+                      onClick={increaseIndex}
+                      className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-4px] shadow-none"
+                      variant="secondary"
+                    >
+                      <ChevronRightIcon className="h-6 w-6 text-white"></ChevronRightIcon>
+                    </Button>
+                  </>
+                )}
+                {layout === 'list' && (
+                  <>
+                    <Button
+                      onClick={decreaseIndex}
+                      className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-15px] shadow-none"
+                      variant="secondary"
+                    >
+                      <ChevronLeftIcon className="h-6 w-6 text-white"></ChevronLeftIcon>
+                    </Button>
+                    <Button
+                      onClick={increaseIndex}
+                      className="pointer-events-auto rounded-full w-8 h-8 p-0 mx-[-26px] shadow-none"
+                      variant="secondary"
+                    >
+                      <ChevronRightIcon className="h-6 w-6 text-white"></ChevronRightIcon>
+                    </Button>
+                  </>
+                )}
               </div>
             </Carousel>
             {/* <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
@@ -156,19 +194,36 @@ const ProductCarousel = ({
               </Button>
             </div> */}
           </div>
-          <div className="bottom-part-card">
-            <div className="text-center">
-              <h5 className="text-lg">{product.title}</h5>
-            </div>
-            {product?.priceRange?.minVariantPrice && (
-              <div className="flex justify-center">
-                <span className="text-md flex flex-row gap-2">
-                  From
-                  <Money data={product?.priceRange?.minVariantPrice} />
-                </span>
+          {layout === 'grid' && (
+            <div className="bottom-part-card">
+              <div className="text-center">
+                <h5 className="text-lg">{product.title}</h5>
               </div>
-            )}
-          </div>
+              {product?.priceRange?.minVariantPrice && (
+                <div className="flex justify-center">
+                  <span className="text-md flex flex-row gap-2">
+                    From
+                    <Money data={product?.priceRange?.minVariantPrice} />
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          {layout === 'list' && (
+            <div className="bottom-part-card mx-[40px]">
+              <div className="text-start">
+                <h5 className="text-lg">{product.title}</h5>
+              </div>
+              {product?.priceRange?.minVariantPrice && (
+                <div className="flex justify-start">
+                  <span className="text-md flex flex-row gap-2">
+                    From
+                    <Money data={product?.priceRange?.minVariantPrice} />
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </article>
