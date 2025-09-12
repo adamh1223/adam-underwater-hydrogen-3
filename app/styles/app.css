@@ -479,3 +479,48 @@ span {
     width: 70%;
   }
 }
+
+/* Container for the footer layout */
+.footer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  gap: 16px; /* Adds spacing between lines and icons */
+}
+
+/* Styling for the social icons */
+.social-icons {
+  display: flex;
+  gap: 16px; /* Spacing between icons */
+  align-items: center;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+}
+
+@media (min-width: 601px) {
+  .print-specs-container {
+    display: grid; /* Establishes the element as a grid container */
+    grid-template-columns: 1fr 1fr; /* Creates two columns of equal width */
+  }
+}
+@media (max-width: 600px) {
+  .print-specs-container {
+    display: grid; /* Establishes the element as a grid container */
+    grid-template-columns: 1fr; /* Creates two columns of equal width */
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .framing-info {
+    margin: 15px 0 15px 0;
+  }
+}
+
+.framing-info {
+  margin: 15px 0 15px 0;
+}

@@ -1,5 +1,8 @@
 import {Link, useNavigate} from '@remix-run/react';
-import {type MappedProductOptions} from '@shopify/hydrogen';
+import {
+  getAdjacentAndFirstAvailableVariants,
+  type MappedProductOptions,
+} from '@shopify/hydrogen';
 import type {
   Maybe,
   ProductOptionValueSwatch,
@@ -9,6 +12,7 @@ import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
 import {sanitizeErrors} from '@remix-run/server-runtime/dist/errors';
 import {ProductImages} from '~/lib/types';
+import Product from '~/routes/products.$handle';
 
 export function ProductForm({
   productOptions,
@@ -126,29 +130,57 @@ export function ProductForm({
           </div>
         );
       })}
-      <AddToCartButton
-        disabled={
-          !selectedVariant ||
-          !selectedVariant.availableForSale ||
-          VideoAlreadyInCart
-        }
-        onClick={() => {
-          open('cart');
-        }}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
-      >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
-      </AddToCartButton>
+
+      {productOptions?.length > 1 && (
+        <>
+          <hr />
+          <div className="grid grid-cols-1 framing-info">
+            <h3 className="text-center font-bold mb-1">
+              Framing Service - FREE
+            </h3>
+            <p className="text-center">
+              All prints come professionally stretched over a wooden frame
+            </p>
+          </div>
+        </>
+      )}
+      <div className="flex justify-center">
+        <AddToCartButton
+          disabled={
+            !selectedVariant ||
+            !selectedVariant.availableForSale ||
+            VideoAlreadyInCart
+          }
+          onClick={() => {
+            open('cart');
+          }}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    selectedVariant,
+                  },
+                ]
+              : []
+          }
+        >
+          {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+        </AddToCartButton>
+      </div>
+      {productOptions?.length > 1 && (
+        <>
+          <br />
+          <hr />
+          <br />
+          <div className="manufacturing-info-container grid grid-cols-3">
+            <div className="flex justify-center">1</div>
+            <div className="flex justify-center">2</div>
+            <div className="flex justify-center">3</div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

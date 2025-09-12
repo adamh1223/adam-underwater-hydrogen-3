@@ -2,7 +2,6 @@ import {Suspense} from 'react';
 import {Await, Link, NavLink} from '@remix-run/react';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 import {FaFacebook, FaInstagram, FaLinkedin, FaYoutube} from 'react-icons/fa';
-import '../styles/components/Footer.css';
 import {Button} from './ui/button';
 
 interface FooterProps {

@@ -29,6 +29,7 @@ export function AddToCartButton({
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== 'idle'}
             variant="default"
+            size="lg"
           >
             {children}
           </Button>

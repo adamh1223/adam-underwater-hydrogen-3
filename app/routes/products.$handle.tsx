@@ -24,6 +24,12 @@ import {ProductImages} from '~/lib/types';
 import {useEffect, useState} from 'react';
 import {RootLoader} from '~/root';
 import {useIsVideoInCart} from '~/lib/hooks';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@radix-ui/react-accordion';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -252,98 +258,132 @@ export default function Product() {
   console.log(disableButton, '5511');
 
   return (
-    <section className="product px-[40px] pt-[20px]">
-      {/* Link tree */}
-      <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
-        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-          <Link to="/">Home</Link>
-        </li>
-        <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
-          {<ChevronRightIcon />}
-        </li>
-        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-          <Link to="/collections/all">Products</Link>
-        </li>
-        <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
-          {<ChevronRightIcon />}
-        </li>
-        <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-          <Link to="/">{title}</Link>
-        </li>
-      </ol>
-      {windowWidth && windowWidth < 1280 && (
-        <>
-          <br />
-          <h1 className="capitalize text-3xl font-bold">{title}</h1>
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
-          <h4 className="text-xl mt-1 pb-4">
-            {`${locationName}, ${locationState}, ${locationCountry}`}
-          </h4>
-        </>
-      )}
-      <div className="xl:grid xl:grid-cols-2 xl:gap-x-24">
-        {standardCarouselImages && standardCarouselImages?.length > 1 && (
-          <IndividualProduct
-            productName={title}
-            productImages={standardCarouselImages}
-          ></IndividualProduct>
+    <>
+      <section className="product px-[40px] pt-[20px]">
+        {/* Link tree */}
+        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/">Home</Link>
+          </li>
+          <li
+            role="presentation"
+            aria-hidden="true"
+            className="[&>svg]:size-3.5"
+          >
+            {<ChevronRightIcon />}
+          </li>
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/collections/all">Products</Link>
+          </li>
+          <li
+            role="presentation"
+            aria-hidden="true"
+            className="[&>svg]:size-3.5"
+          >
+            {<ChevronRightIcon />}
+          </li>
+          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+            <Link to="/">{title}</Link>
+          </li>
+        </ol>
+        {windowWidth && windowWidth < 1024 && (
+          <>
+            <br />
+            <h1 className="capitalize text-3xl font-bold">{title}</h1>
+            <ProductPrice
+              price={selectedVariant?.price}
+              compareAtPrice={selectedVariant?.compareAtPrice}
+            />
+            <h4 className="text-xl mt-1 pb-4">
+              {`${locationName}, ${locationState}, ${locationCountry}`}
+            </h4>
+          </>
         )}
-        {isVideo && (
-          <IndividualVideoProduct
-            productName={title}
-            featuredImage={featuredImage?.url}
-            WMLink={parsedWMLink}
-          ></IndividualVideoProduct>
-        )}
-        {/* <ProductImage image={selectedVariant?.image} /> */}
-        <div className="product-main">
-          {windowWidth && windowWidth >= 1280 && (
-            <>
-              <h1 className="capitalize text-3xl font-bold">{title}</h1>
-              <ProductPrice
-                price={selectedVariant?.price}
-                compareAtPrice={selectedVariant?.compareAtPrice}
-              />
-              <br />
-              <h4 className="text-xl mt-1 pb-4">
-                {`${locationName}, ${locationState}, ${locationCountry}`}
-              </h4>
-            </>
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-24">
+          {standardCarouselImages && standardCarouselImages?.length > 1 && (
+            <IndividualProduct
+              productName={title}
+              productImages={standardCarouselImages}
+            ></IndividualProduct>
           )}
-          <br />
-          <p>
-            <strong>Description</strong>
-          </p>
-          <br />
-          <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-          <br />
-          <ProductForm
-            VideoAlreadyInCart={disableButton}
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-            imagesToShow={layoutImagesToUse as ProductImages[]}
-          />
+          {isVideo && (
+            <IndividualVideoProduct
+              productName={title}
+              featuredImage={featuredImage?.url}
+              WMLink={parsedWMLink}
+            ></IndividualVideoProduct>
+          )}
+          {/* <ProductImage image={selectedVariant?.image} /> */}
+          <div className="product-main">
+            {windowWidth && windowWidth >= 1024 && (
+              <>
+                <h1 className="capitalize text-3xl font-bold">{title}</h1>
+                <ProductPrice
+                  price={selectedVariant?.price}
+                  compareAtPrice={selectedVariant?.compareAtPrice}
+                />
+                <br />
+                <h4 className="text-xl mt-1 pb-4">
+                  {`${locationName}, ${locationState}, ${locationCountry}`}
+                </h4>
+              </>
+            )}
+            <br />
+            <p>
+              <strong>Description</strong>
+            </p>
+            <br />
+            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+            <br />
+            
+            <ProductForm
+              VideoAlreadyInCart={disableButton}
+              productOptions={productOptions}
+              selectedVariant={selectedVariant}
+              imagesToShow={layoutImagesToUse as ProductImages[]}
+            />
+          </div>
         </div>
-      </div>
-      <Analytics.ProductView
-        data={{
-          products: [
-            {
-              id: product.id,
-              title: product.title,
-              price: selectedVariant?.price.amount || '0',
-              vendor: product.vendor,
-              variantId: selectedVariant?.id || '',
-              variantTitle: selectedVariant?.title || '',
-              quantity: 1,
-            },
-          ],
-        }}
-      />
-    </section>
+        <Analytics.ProductView
+          data={{
+            products: [
+              {
+                id: product.id,
+                title: product.title,
+                price: selectedVariant?.price.amount || '0',
+                vendor: product.vendor,
+                variantId: selectedVariant?.id || '',
+                variantTitle: selectedVariant?.title || '',
+                quantity: 1,
+              },
+            ],
+          }}
+        />
+      </section>
+      <section className="print-specs">
+        {/* section title */}
+        <div className="footer-container px-5">
+          <div className="flex items-center justify-center w-full my-8">
+            <div className="flex-1 h-px bg-muted" />
+            <span className="px-4">
+              <div>Print Specs</div>
+            </span>
+            <div className="flex-1 h-px bg-muted" />
+          </div>
+        </div>
+        {/* section body */}
+        <div className="print-specs-container">
+          <div className="column-1">
+            <div className="flex justify-center">1</div>
+            <div className="flex justify-center">2</div>
+          </div>
+          <div className="column-2">
+            <div className="flex justify-center">3</div>
+            <div className="flex justify-center">4</div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 
