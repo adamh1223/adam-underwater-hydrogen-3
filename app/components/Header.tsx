@@ -242,9 +242,9 @@ function HeaderCtas({
 
   const links: NavLink[] = [
     {href: '/', label: 'Home'},
-    {href: 'account/orders', label: 'My orders'},
-    {href: 'account/favorites', label: 'Your favorites'},
-    {href: 'account/reviews', label: 'My reviews'},
+    {href: 'account/orders', label: 'My Orders'},
+    {href: 'account/favorites', label: 'My Favorites'},
+    {href: 'account/reviews', label: 'My Reviews'},
     {href: 'account/profile', label: 'My Profile'},
     {href: 'account/addresses', label: 'My Addresses'},
   ];
@@ -273,24 +273,30 @@ function HeaderCtas({
             </div>
           </NavLink>
         </HoverCardTrigger>
-        <HoverCardContent className="w-48">
+        <HoverCardContent className={loginValue ? 'w-40' : 'w-54'}>
           {loginValue ? (
-            links.map((link) => {
-              return (
-                <Button variant="ghost">
-                  <Link to={link.href}>{link.label}</Link>
-                </Button>
-              );
-            })
+            <>
+              <div className="mb-3">
+                {links.map((link) => {
+                  return (
+                    <Button variant="ghost">
+                      <Link to={link.href}>{link.label}</Link>
+                    </Button>
+                  );
+                })}
+              </div>
+            </>
           ) : (
-            <Button variant="ghost">
+            <Button variant="ghost" className="mb-3">
               <Link to={'/account'}>Sign In/Create Account</Link>
             </Button>
           )}
           {loginValue && (
             <>
               <hr />
-              <Logout />{' '}
+              <div className="mt-3">
+                <Logout />{' '}
+              </div>
             </>
           )}
         </HoverCardContent>
@@ -302,8 +308,15 @@ function HeaderCtas({
 }
 function Logout() {
   return (
-    <Form className="account-logout" method="POST" action="/account/logout">
-      &nbsp;<button type="submit">Sign out</button>
+    <Form
+      className="account-logout cursor-pointer"
+      method="POST"
+      action="/account/logout"
+    >
+      &nbsp;
+      <Button type="submit" variant="ghost" className="custor-pointer">
+        Sign out
+      </Button>
     </Form>
   );
 }

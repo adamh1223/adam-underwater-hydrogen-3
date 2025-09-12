@@ -408,7 +408,7 @@ function OrderLineRow({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  console.log(lineItem.totalDiscount.amount, 'tttt');
+  console.log(downloadLinks, 'azaz');
 
   return (
     <div key={lineItem.id} className="tr">
@@ -458,7 +458,7 @@ function OrderLineRow({
               <div className="td pt-3">
                 {/* <td> */}
                 <div className="flex justify-center align-center">
-                  {/* <Button variant="outline">Download ↓</Button> */}77
+                  {/* <Button variant="outline">Download ↓</Button> */}
                   {/* <a href={downloadLink[0]?.url}>download</a> */}
                   <Button variant="outline" className="mb-5">
                     <Link to={downloadLink[0]?.url}>Download ↓</Link>
@@ -469,6 +469,7 @@ function OrderLineRow({
           </>
         )}
       </div>
+
       {windowWidth && windowWidth >= 605 && (
         <>
           {lineItem.variantTitle === null && (
