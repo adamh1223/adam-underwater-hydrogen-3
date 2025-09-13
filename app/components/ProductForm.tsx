@@ -177,9 +177,30 @@ export function ProductForm({
           <hr />
           <br />
           <div className="manufacturing-info-container grid grid-cols-3">
-            <div className="flex justify-center">1</div>
-            <div className="flex justify-center">2</div>
-            <div className="flex justify-center">3</div>
+            <div className="grid grid-cols-1">
+              <div className="flex justify-center items-center">
+                <img src={'/usaflag3.png'} style={{height: '2.2rem'}} />
+              </div>
+              <div className="flex justify-center mt-3">
+                <p>Made in USA</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1">
+              <div className="flex justify-center items-center">
+                <img src={'/diamond.png'} style={{height: '2.4rem'}} />
+              </div>
+              <div className="flex justify-center mt-2">
+                <p className="text-center">Premium Quality</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1">
+              <div className="flex justify-center items-center">
+                <img src={'/returnarrow2.png'} style={{height: '3rem'}} />
+              </div>
+              <div className="flex justify-center">
+                <p>14-day returns</p>
+              </div>
+            </div>
           </div>
         </>
       )}

@@ -370,12 +370,12 @@ export default function Product() {
         {/* section body */}
         <div className="print-specs-container">
           <div className="column-1">
-            <div className="flex justify-center">1</div>
-            <div className="flex justify-center">2</div>
+            <div className="flex justify-center">Printing Process</div>
+            <div className="flex justify-center">Paper Quality</div>
           </div>
           <div className="column-2">
-            <div className="flex justify-center">3</div>
-            <div className="flex justify-center">4</div>
+            <div className="flex justify-center">Anti-glare</div>
+            <div className="flex justify-center">Durable</div>
           </div>
         </div>
       </section>
@@ -393,12 +393,35 @@ export default function Product() {
         {/* section body */}
         <div className="print-specs-container">
           <div className="column-1">
-            <div className="flex justify-center">1</div>
-            <div className="flex justify-center">2</div>
+            <div className="flex justify-center">Handmade</div>
+            <div className="flex justify-center">Light Weight</div>
           </div>
           <div className="column-2">
-            <div className="flex justify-center">3</div>
-            <div className="flex justify-center">4</div>
+            <div className="flex justify-center">UV Resistant</div>
+            <div className="flex justify-center">Ready to Hang</div>
+          </div>
+        </div>
+      </section>
+      <section className="how-its-made">
+        {/* section title */}
+        <div className="footer-container px-5">
+          <div className="flex items-center justify-center w-full my-8">
+            <div className="flex-1 h-px bg-muted" />
+            <span className="px-4">
+              <div>How it's Made</div>
+            </span>
+            <div className="flex-1 h-px bg-muted" />
+          </div>
+        </div>
+        {/* section body */}
+        <div className="how-its-made-container">
+          <div className="clip-wrapper flex justify-center position-relative">
+            <iframe
+              className="clip"
+              src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+              allow="autoplay; fullscreen; picture-in-picture;"
+              title="Seaforestation Trailer"
+            ></iframe>
           </div>
         </div>
       </section>
