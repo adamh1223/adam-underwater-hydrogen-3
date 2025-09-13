@@ -84,14 +84,15 @@ function EProductPreview({
     <div
       className=""
       onMouseEnter={() => setIsHovered(true)}
-      // onMouseLeave={() => {
-      //   setIsHovered(false);
-      //   setIsVideoReady(false);
-      //   if (!isVideoReady) {
-      //     setTimeout(() => setIsVideoReady(false), 100);
-      //   }
-      // }}
-      onMouseLeave={() => setIsHovered(true)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        setIsVideoReady(false);
+        if (!isVideoReady) {
+          setTimeout(() => setIsVideoReady(false), 100);
+        }
+      }}
+      // comment out above and uncomment out below to test eproductpreview bug
+      // onMouseLeave={() => setIsHovered(true)}
     >
       <>
         {featuredImage && (
