@@ -18,10 +18,12 @@ export function CartPageLayout({
 }: cartPageLayoutProps) {
   return (
     <>
+      <div>
+        <CartEmpty hidden={linesCount} layout={layout} />
+      </div>
       <div className="mt-8 grid gap-4 lg:grid-cols-12 px-5">
         {/* ATTENTION: this class name needs to disappear when the cart is empty otherwise it puts everything into the first column */}
         {/* changed classname for cart page*/}
-        <CartEmpty hidden={linesCount} layout={layout} />
         {/* Added lg:col-span-8 */}
         <div className="cart-details lg:col-span-8">
           <div aria-labelledby="cart-lines">

@@ -7,6 +7,7 @@ import {CartSummary} from './CartSummary';
 import {DefaultCart} from '~/lib/types';
 import {CartPageLayout} from './cartLayouts/CartPageLayout';
 import {CartAsideLayout} from './cartLayouts/CartAsideLayout';
+import {Button} from './ui/button';
 
 export type CartLayout = 'page' | 'aside';
 
@@ -68,14 +69,20 @@ export function CartEmpty({
   return (
     <div hidden={hidden}>
       <br />
-      <p>
-        Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
-        started!
-      </p>
-      <br />
-      <Link to="/collections" onClick={close} prefetch="viewport">
-        Continue shopping →
-      </Link>
+      <div className="flex justify-center p-5">
+        <p>
+          Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
+          started!
+        </p>
+        <br />
+      </div>
+      <div className="flex justify-center">
+        <Button variant="default">
+          <Link to="/collections/prints" onClick={close} prefetch="viewport">
+            Continue shopping →
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

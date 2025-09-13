@@ -33,9 +33,13 @@ export function CartAsideLayout({
               </ul>
             </div>
           </div>
-          <div className="mx-4">
-            {cartHasItems && <CartSummary cart={cart} layout={layout} />}
-          </div>
+          {cartHasItems && (
+            <>
+              <div className="mx-4">
+                <CartSummary cart={cart} layout={layout} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

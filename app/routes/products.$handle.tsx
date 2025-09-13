@@ -261,7 +261,7 @@ export default function Product() {
     <>
       <section className="product px-[40px] pt-[20px]">
         {/* Link tree */}
-        <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
+        <ol className="flex flex-wrap items-center gap-1.5 break-words text-lg text-muted-foreground sm:gap-2.5">
           <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
             <Link to="/">Home</Link>
           </li>
@@ -328,14 +328,10 @@ export default function Product() {
                 </h4>
               </>
             )}
-            <br />
-            <p>
-              <strong>Description</strong>
-            </p>
-            <br />
+
             <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
             <br />
-            
+
             <ProductForm
               VideoAlreadyInCart={disableButton}
               productOptions={productOptions}
@@ -367,6 +363,29 @@ export default function Product() {
             <div className="flex-1 h-px bg-muted" />
             <span className="px-4">
               <div>Print Specs</div>
+            </span>
+            <div className="flex-1 h-px bg-muted" />
+          </div>
+        </div>
+        {/* section body */}
+        <div className="print-specs-container">
+          <div className="column-1">
+            <div className="flex justify-center">1</div>
+            <div className="flex justify-center">2</div>
+          </div>
+          <div className="column-2">
+            <div className="flex justify-center">3</div>
+            <div className="flex justify-center">4</div>
+          </div>
+        </div>
+      </section>
+      <section className="print-specs">
+        {/* section title */}
+        <div className="footer-container px-5">
+          <div className="flex items-center justify-center w-full my-8">
+            <div className="flex-1 h-px bg-muted" />
+            <span className="px-4">
+              <div>Frame Specs</div>
             </span>
             <div className="flex-1 h-px bg-muted" />
           </div>

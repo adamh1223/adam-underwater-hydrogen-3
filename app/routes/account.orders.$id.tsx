@@ -70,7 +70,7 @@ export default function OrderRoute() {
     url: string;
   }[];
 
-  console.log(linkValue, '5678');
+  console.log(order, '5678');
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -395,6 +395,7 @@ function OrderLineRow({
   const downloadLink = downloadLinks.filter((downloadLink) => {
     return downloadLink.text === lineItem.title;
   });
+  console.log(downloadLinks, 'azaz');
   const itemSubtotal =
     lineItem.quantity * Number(lineItem.price?.amount) -
     Number(lineItem.totalDiscount.amount);
@@ -408,7 +409,6 @@ function OrderLineRow({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  console.log(downloadLinks, 'azaz');
 
   return (
     <div key={lineItem.id} className="tr">

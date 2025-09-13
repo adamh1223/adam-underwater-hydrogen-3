@@ -37,7 +37,9 @@ export function ProductForm({
 
         return (
           <div className="product-options" key={option.name}>
-            <h5>{option.name}</h5>
+            <p className="mb-3">
+              <strong>{option.name}:</strong>
+            </p>
             <div className="product-options-grid">
               {option.optionValues.map((value) => {
                 const {
