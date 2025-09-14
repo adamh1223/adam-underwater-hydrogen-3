@@ -355,13 +355,24 @@ export default function Product() {
               </div>
               {/* section body */}
               <div className="how-its-made-container">
-                <div className="clip-wrapper flex justify-center position-relative">
+                <div className="how-its-made-clip-wrapper flex justify-center position-relative">
                   <iframe
                     className="clip"
                     src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
                     allow="autoplay; fullscreen; picture-in-picture;"
                     title="Seaforestation Trailer"
                   ></iframe>
+                </div>
+                <div className="flex justify-center ">
+                  <div className="justify-start">
+                    <Card>
+                      <CardContent>
+                        Lorem ipsum dolor, sit amet consectetur adipisicing
+                        elit. Numquam laborum odit, quo blanditiis ea dolores
+                        dolorum accusantium
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </div>
             </div>
@@ -448,7 +459,7 @@ export default function Product() {
                                 Paper Quality
                               </div>
                               <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
                                   <CardContent>
                                     <div>
                                       Lorem ipsum dolor sit amet consectetur
@@ -463,7 +474,7 @@ export default function Product() {
                             <div className="column-2">
                               <div className="flex justify-center">Durable</div>
                               <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
                                   <CardContent>
                                     <div>
                                       Lorem ipsum dolor sit amet consectetur
@@ -526,7 +537,7 @@ export default function Product() {
                                 Interactive
                               </div>
                               <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
                                   <CardContent>
                                     <div>
                                       Lorem ipsum dolor sit amet consectetur
@@ -543,7 +554,7 @@ export default function Product() {
                                 Ready to Hang
                               </div>
                               <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
                                   <CardContent>
                                     <div>
                                       Lorem ipsum dolor sit amet consectetur
