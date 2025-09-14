@@ -18,7 +18,7 @@ import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import IndividualProduct from '~/components/products/individualProduct';
 import {ChevronRightIcon} from 'lucide-react';
-import {Card} from '~/components/ui/card';
+import {Card, CardContent} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 import {ProductImages} from '~/lib/types';
 import {useEffect, useState} from 'react';
@@ -29,7 +29,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@radix-ui/react-accordion';
+} from '~/components/ui/accordion';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -299,7 +299,7 @@ export default function Product() {
             </h4>
           </>
         )}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-24">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
           {standardCarouselImages && standardCarouselImages?.length > 1 && (
             <IndividualProduct
               productName={title}
@@ -340,6 +340,232 @@ export default function Product() {
             />
           </div>
         </div>
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 extra-info">
+          <div className="grid grid-cols-1">
+            <div className="how-its-made">
+              {/* section title */}
+              <div className="section-title-container">
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex-1 h-px bg-muted" />
+                  <span className="px-4">
+                    <div>How it's Made</div>
+                  </span>
+                  <div className="flex-1 h-px bg-muted" />
+                </div>
+              </div>
+              {/* section body */}
+              <div className="how-its-made-container">
+                <div className="clip-wrapper flex justify-center position-relative">
+                  <iframe
+                    className="clip"
+                    src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+                    allow="autoplay; fullscreen; picture-in-picture;"
+                    title="Seaforestation Trailer"
+                  ></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1">
+            <div className="pt-[10px]">
+              <hr />
+              <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
+                <div className="grid grid-cols-1">
+                  <div className="flex justify-center items-center">
+                    <img src={'/usaflag3.png'} style={{height: '2.2rem'}} />
+                  </div>
+                  <div className="flex justify-center mt-3">
+                    <p>Made in USA</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1">
+                  <div className="flex justify-center items-center">
+                    <img src={'/diamond.png'} style={{height: '2.4rem'}} />
+                  </div>
+                  <div className="flex justify-center mt-2">
+                    <p className="text-center">Premium Quality</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1">
+                  <div className="flex justify-center items-center">
+                    <img src={'/returnarrow2.png'} style={{height: '3rem'}} />
+                  </div>
+                  <div className="flex justify-center">
+                    <p>14-day returns</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="items-top ">
+              <div className="flex justify-end card-accordion-container">
+                <Card className="p-4 w-full">
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>Print Specs</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="print-specs">
+                          {/* section body */}
+                          <div className="print-specs-container">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                Printing Process
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div className="text-center">
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">
+                                Anti-glare
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div>
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="print-specs-container">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                Paper Quality
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div>
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">Durable</div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div>
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger>Frame Specs</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="frame-specs">
+                          {/* section body */}
+                          <div className="print-specs-container">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                Handcrafted
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div className="text-center">
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">
+                                Light Weight
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div>
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="print-specs-container">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                Interactive
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div>
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">
+                                Ready to Hang
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                  <CardContent>
+                                    <div>
+                                      Lorem ipsum dolor sit amet consectetur
+                                      adipisicing elit. Asperiores, aliquid
+                                      aperiam blanditiis laboriosam sint velit
+                                      consequuntur.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <Analytics.ProductView
           data={{
             products: [
@@ -355,75 +581,6 @@ export default function Product() {
             ],
           }}
         />
-      </section>
-      <section className="print-specs">
-        {/* section title */}
-        <div className="footer-container px-5">
-          <div className="flex items-center justify-center w-full my-8">
-            <div className="flex-1 h-px bg-muted" />
-            <span className="px-4">
-              <div>Print Specs</div>
-            </span>
-            <div className="flex-1 h-px bg-muted" />
-          </div>
-        </div>
-        {/* section body */}
-        <div className="print-specs-container">
-          <div className="column-1">
-            <div className="flex justify-center">Printing Process</div>
-            <div className="flex justify-center">Paper Quality</div>
-          </div>
-          <div className="column-2">
-            <div className="flex justify-center">Anti-glare</div>
-            <div className="flex justify-center">Durable</div>
-          </div>
-        </div>
-      </section>
-      <section className="print-specs">
-        {/* section title */}
-        <div className="footer-container px-5">
-          <div className="flex items-center justify-center w-full my-8">
-            <div className="flex-1 h-px bg-muted" />
-            <span className="px-4">
-              <div>Frame Specs</div>
-            </span>
-            <div className="flex-1 h-px bg-muted" />
-          </div>
-        </div>
-        {/* section body */}
-        <div className="print-specs-container">
-          <div className="column-1">
-            <div className="flex justify-center">Handmade</div>
-            <div className="flex justify-center">Light Weight</div>
-          </div>
-          <div className="column-2">
-            <div className="flex justify-center">UV Resistant</div>
-            <div className="flex justify-center">Ready to Hang</div>
-          </div>
-        </div>
-      </section>
-      <section className="how-its-made">
-        {/* section title */}
-        <div className="footer-container px-5">
-          <div className="flex items-center justify-center w-full my-8">
-            <div className="flex-1 h-px bg-muted" />
-            <span className="px-4">
-              <div>How it's Made</div>
-            </span>
-            <div className="flex-1 h-px bg-muted" />
-          </div>
-        </div>
-        {/* section body */}
-        <div className="how-its-made-container">
-          <div className="clip-wrapper flex justify-center position-relative">
-            <iframe
-              className="clip"
-              src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-              allow="autoplay; fullscreen; picture-in-picture;"
-              title="Seaforestation Trailer"
-            ></iframe>
-          </div>
-        </div>
       </section>
     </>
   );
