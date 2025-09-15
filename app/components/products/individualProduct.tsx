@@ -116,7 +116,7 @@ function IndividualProduct({
                     <img
                       src={url.url}
                       alt=""
-                      className="max-h-full object-contain"
+                      className="max-h-full object-contain carousel-item"
                       onClick={(e) => handleImageClick(e, url.url)}
                       onMouseMove={(e) => handleMouseMove(e, url.url)}
                       onMouseLeave={handleMouseLeave}
@@ -147,13 +147,13 @@ function IndividualProduct({
         <div
           className="floating-zoom-window fixed border-2 border-gray-300 shadow-xl z-50 bg-no-repeat bg-white pointer-events-none"
           style={{
-            width: '300px',
-            height: '300px',
+            width: '350px',
+            height: '350px',
             backgroundImage: `url(${zoomData.src})`,
             backgroundPosition: `${zoomData.x}% ${zoomData.y}%`,
             backgroundSize: '500%',
 
-            top: zoomData.mouseY - 270, // position ABOVE the cursor
+            top: zoomData.mouseY - 330, // position ABOVE the cursor
             left: zoomData.mouseX + 10, // position to the RIGHT of the cursor
           }}
           onClick={() =>
