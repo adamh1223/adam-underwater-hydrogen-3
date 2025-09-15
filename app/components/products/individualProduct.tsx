@@ -23,6 +23,16 @@ function IndividualProduct({
     altText: string;
   }[];
 }) {
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
+
   const carouselRef = useRef(null);
   const resetCarousel = () => {
     if (carouselRef.current) {
@@ -31,49 +41,68 @@ function IndividualProduct({
     }
   };
 
-  const [count, setCount] = useState(0);
+  const [zoomData, setZoomData] = useState<{
+    src: string;
+    x: number;
+    y: number;
+    visible: boolean;
+    mouseX: number;
+    mouseY: number;
+  }>({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
 
-  useEffect(() => {
-    resetCarousel();
-    setCount(0);
-  }, [productImages]);
+  const handleMouseMove = (
+    e: React.MouseEvent<HTMLImageElement, MouseEvent>,
+    src: string,
+  ) => {
+    if (!zoomData.visible) return;
 
-  // const ScrollZoomImage = ({ src, alt }) => {
-  // const [zoomLevel, setZoomLevel] = useState(1);
-  // const imageRef = useRef(null);
+    const {left, top, width, height} = e.currentTarget.getBoundingClientRect();
+    const x = ((e.pageX - left) / width) * 100;
+    const y = ((e.pageY - top) / height) * 100;
 
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     if (imageRef.current) {
-  //       const { top, height } = imageRef.current;
-  //       const viewportHeight = window.innerHeight;
+    setZoomData((prev) => ({
+      ...prev,
+      x,
+      y,
+      mouseX: e.pageX,
+      mouseY: e.pageY,
+    }));
+  };
 
-  //       let newZoom = 1;
-  //       if (top < viewportHeight && top + height > 0) {
-  //         const scrollProgress = (viewportHeight - top) / (viewportHeight + height);
-  //         newZoom = 1 + scrollProgress * 0.5;
-  //       }
-  //       setZoomLevel(newZoom);
-  //     }
-  //   };
+  const handleImageClick = (
+    e: React.MouseEvent<HTMLImageElement, MouseEvent>,
+    src: string,
+  ) => {
+    if (zoomData.visible && zoomData.src === src) {
+      // close zoom
+      setZoomData({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
+    } else {
+      const {left, top, width, height} =
+        e.currentTarget.getBoundingClientRect();
+      const x = ((e.pageX - left) / width) * 100;
+      const y = ((e.pageY - top) / height) * 100;
 
-  //   window.addEventListener('scroll', handleScroll);
-  //   return () => window.removeEventListener('scroll', handleScroll);
-  // }, []);
+      setZoomData({
+        src,
+        x,
+        y,
+        visible: true,
+        mouseX: e.pageX,
+        mouseY: e.pageY,
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    // close zoom when mouse leaves the image
+    setZoomData({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
+  };
+
   return (
     <>
-      {/* // <div className="pe-[60px]"> */}
-      {/* may need to be made into a component if more pages are made */}
-
-      {/* <Breadcrumb name="INdividual product name" /> */}
       <div className="grid grid-cols-1">
-        <div className="flex justify-center  px-4 product-carousel-container">
+        <div className="flex justify-center px-4 product-carousel-container">
           <Carousel
-            // ref={carouselRef}
-            // opts={{
-            //   align: 'start',
-            //   startIndex: count,
-            // }}
             className="print-carousel-individual mx-3 flex items-center justify-center "
             key={JSON.stringify(productImages)}
           >
@@ -88,76 +117,59 @@ function IndividualProduct({
                       src={url.url}
                       alt=""
                       className="max-h-full object-contain"
+                      onClick={(e) => handleImageClick(e, url.url)}
+                      onMouseMove={(e) => handleMouseMove(e, url.url)}
+                      onMouseLeave={handleMouseLeave}
                     />
                   </div>
                 </CarouselItem>
               ))}
-
-              {/* <CarouselItem className="flex items-center justify-center">
-                <div className="p-4 flex items-center justify-center">
-                  <img
-                    src={productImages[1]?.url}
-                    alt=""
-                    className="max-h-full object-contain"
-                  />
-                </div>
-              </CarouselItem>
-
-              <CarouselItem className="flex items-center justify-center">
-                <div className="p-4 flex items-center justify-center">
-                  <img
-                    src={productImages[2]?.url}
-                    alt=""
-                    className="max-h-full object-contain"
-                  />
-                </div>
-              </CarouselItem> */}
             </CarouselContent>
 
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
         </div>
+
         <div className="flex justify-center gap-2 mb-5 carousel-shortcuts-container">
           {productImages.map((url, idx) => (
             <img
               key={idx}
               src={url.url}
-              className="cursor-pointer border-2 h-[75px] w-[130px] object-contain" // Add active state styling
-              // onClick={() => mainApi?.scrollTo(idx)}
+              className="cursor-pointer border-2 h-[75px] w-[130px] object-contain"
             />
           ))}
         </div>
-        
       </div>
-      {/* PRODUCT INFO SECOND COL */}
-      {/* <div className="lg:ps-3 md:ps-3 sm:ps-3 xl:ps-8">
-            <div className="flex gap-x-8 items-center">
-              <h1 className="capitalize text-3xl font-bold">{name}</h1>
-              <FavoriteToggleButton productId={params.id} EProductId={null} />
-            </div>
-            <ProductRating productId={params.id} />
-            <h4 className="text-xl mt-2">{company}</h4>
-            <p className="mt-3 text-md bg-muted inline-block p-2 rounded-md">
-              {dollarsAmount}
-            </p>
-            <p className="mt-6 leading-8 text-muted-foreground">
-              {description}
-            </p>
-            <div className="flex items-center">
-              <AddToCart
-                productId={params.id}
-                RedirectTo={`/products/${params.id}`}
-                isEProduct={false}
-              />
-            </div>
-          </div>
-        </div>
-        <ProductReviews productId={params.id} />
 
-        {reviewDoesNotExist && <SubmitReview productId={params.id} />} */}
-      {/* // </div> */}
+      {/* Floating Zoom Window */}
+      {zoomData.visible && (
+        <div
+          className="floating-zoom-window fixed border-2 border-gray-300 shadow-xl z-50 bg-no-repeat bg-white pointer-events-none"
+          style={{
+            width: '300px',
+            height: '300px',
+            backgroundImage: `url(${zoomData.src})`,
+            backgroundPosition: `${zoomData.x}% ${zoomData.y}%`,
+            backgroundSize: '500%',
+
+            top: zoomData.mouseY - 270, // position ABOVE the cursor
+            left: zoomData.mouseX + 10, // position to the RIGHT of the cursor
+          }}
+          onClick={() =>
+            setZoomData({
+              src: '',
+              x: 0,
+              y: 0,
+              visible: false,
+              mouseX: 0,
+              mouseY: 0,
+            })
+          }
+        />
+      )}
     </>
   );
 }
+
 export default IndividualProduct;

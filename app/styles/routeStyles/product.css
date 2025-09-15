@@ -1,5 +1,5 @@
 @media (min-width: 1280px) {
-  .print-carousel-individual {
+  .print-carousel-individual{
     /* display: grid;
     grid-template-columns: 1fr 1fr; */
     width: 90vw;
@@ -14,9 +14,25 @@
   }
 }
 @media (max-width: 899px) {
-  .print-carousel-individual {
+  .print-carousel-individual{
     /* display: grid;
     grid-template-columns: 1fr; */
     width: 80vw;
+  }
+}
+
+@media (max-width: 699px) {
+  .floating-zoom-window {
+    
+  }
+}
+@media (min-width: 700px) and (max-width: 1023px) {
+  .floating-zoom-window {
+    
+  }
+}
+@media (min-width: 1024px) {
+  .floating-zoom-window {
+
   }
 }
