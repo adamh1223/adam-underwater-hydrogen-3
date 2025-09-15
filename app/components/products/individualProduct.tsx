@@ -7,11 +7,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel';
-import {useEffect, useRef, useState} from 'react';
-import {count} from 'console';
-import {ChevronRightIcon} from 'lucide-react';
+import {useEffect, useState} from 'react';
 import '../../styles/routeStyles/product.css';
-import {Image} from '@shopify/hydrogen';
 
 function IndividualProduct({
   productName,
@@ -24,6 +21,7 @@ function IndividualProduct({
   }[];
 }) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -31,15 +29,7 @@ function IndividualProduct({
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
-
-  const carouselRef = useRef(null);
-  const resetCarousel = () => {
-    if (carouselRef.current) {
-      // @ts-expect-error testing
-      carouselRef.current.scrollToIndex(0);
-    }
-  };
+  }, []);
 
   const [zoomData, setZoomData] = useState<{
     src: string;
@@ -74,7 +64,6 @@ function IndividualProduct({
     src: string,
   ) => {
     if (zoomData.visible && zoomData.src === src) {
-      // close zoom
       setZoomData({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
     } else {
       const {left, top, width, height} =
@@ -94,17 +83,52 @@ function IndividualProduct({
   };
 
   const handleMouseLeave = () => {
-    // close zoom when mouse leaves the image
     setZoomData({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
   };
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<any>(null);
+
+  // Sync active index when carousel changes (via chevrons or user scroll)
+  useEffect(() => {
+    if (!carouselApi) return;
+    const onSelect = () => {
+      setActiveIndex(carouselApi.selectedScrollSnap());
+    };
+    carouselApi.on('select', onSelect);
+    return () => {
+      carouselApi.off('select', onSelect);
+    };
+  }, [carouselApi]);
+
+  const handleThumbnailClick = (index: number) => {
+    if (carouselApi) {
+      carouselApi.scrollTo(index); // smooth scroll
+    }
+    setActiveIndex(index);
+  };
+
+  // Reset carousel to first slide
+  const resetCarousel = () => {
+    if (carouselApi) {
+      carouselApi.scrollTo(0); // scroll smoothly to first
+    }
+    setActiveIndex(0); // update blue border
+  };
+
+  // Reset carousel when productImages change
+  useEffect(() => {
+    resetCarousel();
+  }, [productImages]);
 
   return (
     <>
       <div className="grid grid-cols-1">
         <div className="flex justify-center px-4 product-carousel-container">
           <Carousel
-            className="print-carousel-individual mx-3 flex items-center justify-center "
+            className="print-carousel-individual mx-3 flex items-center justify-center"
             key={JSON.stringify(productImages)}
+            setApi={setCarouselApi} // get the Embla API
           >
             <CarouselContent className="flex">
               {productImages.map((url, idx) => (
@@ -136,7 +160,10 @@ function IndividualProduct({
             <img
               key={idx}
               src={url.url}
-              className="cursor-pointer border-2 h-[75px] w-[130px] object-contain"
+              className={`cursor-pointer border-2 h-[75px] w-[130px] object-contain ${
+                idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
+              }`}
+              onClick={() => handleThumbnailClick(idx)}
             />
           ))}
         </div>
@@ -152,9 +179,8 @@ function IndividualProduct({
             backgroundImage: `url(${zoomData.src})`,
             backgroundPosition: `${zoomData.x}% ${zoomData.y}%`,
             backgroundSize: '500%',
-
-            top: zoomData.mouseY - 330, // position ABOVE the cursor
-            left: zoomData.mouseX + 10, // position to the RIGHT of the cursor
+            top: zoomData.mouseY - 330, // above cursor
+            left: zoomData.mouseX + 10, // to right of cursor
           }}
           onClick={() =>
             setZoomData({
