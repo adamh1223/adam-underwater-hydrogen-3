@@ -501,25 +501,24 @@ span {
     padding: 25px 0;
   }
 }
-@media (max-width: 1023px) {
-  .extra-info {
-    padding: 25px 0 0 0;
-  }
+
+.extra-info {
+  padding: 25px 0 0 0;
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
   .items-top {
-    height: 580px;
+    height: 620px;
   }
 }
 @media (min-width: 1280px) {
   .items-top {
-    height: 500px;
+    height: 540px;
   }
 }
 @media (min-width: 1280px) {
   .how-its-made-clip-wrapper {
-    margin: 30px 0 30px 0;
+    margin: 10px 0 10px 0;
   }
 }
 @media (max-width: 1280px) {
@@ -528,6 +527,10 @@ span {
     justify-content: center;
     margin: 0;
   }
+}
+
+.how-its-made-description-container {
+  width: 500px;
 }
 
 /* Styling for the social icons */
@@ -542,7 +545,19 @@ span {
   height: 40px;
 }
 
-.print-specs-container {
+.print-specs-container-1 {
+  display: grid; /* Establishes the element as a grid container */
+  grid-template-columns: 1fr 1fr; /* Creates two columns of equal width */
+}
+.print-specs-container-2 {
+  display: grid; /* Establishes the element as a grid container */
+  grid-template-columns: 1fr 1fr; /* Creates two columns of equal width */
+}
+.frame-specs-container-1 {
+  display: grid; /* Establishes the element as a grid container */
+  grid-template-columns: 1fr 1fr; /* Creates two columns of equal width */
+}
+.frame-specs-container-2 {
   display: grid; /* Establishes the element as a grid container */
   grid-template-columns: 1fr 1fr; /* Creates two columns of equal width */
 }

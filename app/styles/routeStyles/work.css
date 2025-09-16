@@ -19,6 +19,30 @@
     height: 50vh;
   }
 }
+@media (min-width: 1180px) {
+  .how-its-made-clip {
+    width: 80vw;
+    height: 50vh;
+  }
+}
+@media (min-width: 829px) and (max-width: 1179px) {
+  .how-its-made-clip {
+    width: 80vw;
+    height: 45vh;
+  }
+}
+@media (min-width: 640px) and (max-width: 828px) {
+  .how-its-made-clip {
+    width: 80vw;
+    height: 40vh;
+  }
+}
+@media (max-width: 639px) {
+  .how-its-made-clip {
+    width: 80vw;
+    height: 30vh;
+  }
+}
 /* @media (max-width: 599px) {
   .clip {
     width: 360px;

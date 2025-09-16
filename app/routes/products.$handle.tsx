@@ -365,12 +365,12 @@ export default function Product() {
                   <img src={'/diamond.png'} style={{height: '2.4rem'}} />
                 </div>
                 <div className="flex justify-center mt-2">
-                  <p className="text-center">Premium Quality</p>
+                  <p>Premium Quality</p>
                 </div>
               </div>
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
-                  <img src={'/returnarrow2.png'} style={{height: '3rem'}} />
+                  <img src={'/returnarrow2.png'} style={{height: '2.7rem'}} />
                 </div>
                 <div className="flex justify-center">
                   <p>14-day returns</p>
@@ -389,21 +389,21 @@ export default function Product() {
                     <AccordionContent>
                       <div className="print-specs">
                         {/* section body */}
-                        <div className="print-specs-container">
+                        <div className="print-specs-container-1">
                           <div className="column-1">
                             <div className="flex justify-center">
                               <img
                                 src={'/printingprocess.png'}
-                                style={{height: '3rem'}}
+                                style={{height: '2.7rem'}}
                               />
                             </div>
                             <div className="flex justify-center">
                               Printing Process
                             </div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
-                                  <div className="text-center">
+                                  <div>
                                     Lorem ipsum dolor sit amet consectetur
                                     adipisicing elit. Asperiores, aliquid
                                     aperiam blanditiis laboriosam sint velit
@@ -417,14 +417,14 @@ export default function Product() {
                             <div className="flex justify-center">
                               <img
                                 src={'/antiglare.png'}
-                                style={{height: '3rem'}}
+                                style={{height: '2.7rem'}}
                               />
                             </div>
                             <div className="flex justify-center">
                               Anti-glare
                             </div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
                                   <div>
                                     Lorem ipsum dolor sit amet consectetur
@@ -437,19 +437,19 @@ export default function Product() {
                             </div>
                           </div>
                         </div>
-                        <div className="print-specs-container">
+                        <div className="print-specs-container-2">
                           <div className="column-1">
                             <div className="flex justify-center">
                               <img
                                 src={'/paperquality2.png'}
-                                style={{height: '3rem'}}
+                                style={{height: '2.7rem'}}
                               />
                             </div>
                             <div className="flex justify-center">
                               Paper Quality
                             </div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
                                     Lorem ipsum dolor sit amet consectetur
@@ -465,12 +465,12 @@ export default function Product() {
                             <div className="flex justify-center">
                               <img
                                 src={'/durable.png'}
-                                style={{height: '3rem'}}
+                                style={{height: '2.7rem'}}
                               />
                             </div>
                             <div className="flex justify-center">Durable</div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
                                     Lorem ipsum dolor sit amet consectetur
@@ -491,15 +491,21 @@ export default function Product() {
                     <AccordionContent>
                       <div className="frame-specs">
                         {/* section body */}
-                        <div className="print-specs-container">
+                        <div className="frame-specs-container-1">
                           <div className="column-1">
+                            <div className="flex justify-center">
+                              <img
+                                src={'/handcrafted.png'}
+                                style={{height: '2.7rem'}}
+                              />
+                            </div>
                             <div className="flex justify-center">
                               Handcrafted
                             </div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
-                                  <div className="text-center">
+                                  <div>
                                     Lorem ipsum dolor sit amet consectetur
                                     adipisicing elit. Asperiores, aliquid
                                     aperiam blanditiis laboriosam sint velit
@@ -511,10 +517,16 @@ export default function Product() {
                           </div>
                           <div className="column-2">
                             <div className="flex justify-center">
+                              <img
+                                src={'/lightweight.png'}
+                                style={{height: '2.7rem'}}
+                              />
+                            </div>
+                            <div className="flex justify-center">
                               Light Weight
                             </div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
                                   <div>
                                     Lorem ipsum dolor sit amet consectetur
@@ -527,13 +539,19 @@ export default function Product() {
                             </div>
                           </div>
                         </div>
-                        <div className="print-specs-container">
+                        <div className="frame-specs-container-2">
                           <div className="column-1">
+                            <div className="flex justify-center">
+                              <img
+                                src={'/phonetap.png'}
+                                style={{height: '2.7rem'}}
+                              />
+                            </div>
                             <div className="flex justify-center">
                               Interactive
                             </div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
                                     Lorem ipsum dolor sit amet consectetur
@@ -547,10 +565,16 @@ export default function Product() {
                           </div>
                           <div className="column-2">
                             <div className="flex justify-center">
+                              <img
+                                src={'/readytohang.png'}
+                                style={{height: '2.7rem'}}
+                              />
+                            </div>
+                            <div className="flex justify-center">
                               Ready to Hang
                             </div>
                             <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
                                     Lorem ipsum dolor sit amet consectetur
@@ -590,14 +614,14 @@ export default function Product() {
                   <div className="how-its-made-container">
                     <div className="how-its-made-clip-wrapper flex justify-center position-relative">
                       <iframe
-                        className="clip"
+                        className="how-its-made-clip"
                         src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
                         allow="autoplay; fullscreen; picture-in-picture;"
                         title="Seaforestation Trailer"
                       ></iframe>
                     </div>
                     <div className="flex justify-center ">
-                      <div className="justify-start">
+                      <div className="how-its-made-description-container justify-start xl:mt-2">
                         <Card>
                           <CardContent>
                             Lorem ipsum dolor, sit amet consectetur adipisicing
@@ -635,14 +659,14 @@ export default function Product() {
                             />
                           </div>
                           <div className="flex justify-center mt-2">
-                            <p className="text-center">Premium Quality</p>
+                            <p>Premium Quality</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-1">
                           <div className="flex justify-center items-center">
                             <img
                               src={'/returnarrow2.png'}
-                              style={{height: '3rem'}}
+                              style={{height: '2.7rem'}}
                             />
                           </div>
                           <div className="flex justify-center">
@@ -663,21 +687,21 @@ export default function Product() {
                             <AccordionContent>
                               <div className="print-specs">
                                 {/* section body */}
-                                <div className="print-specs-container">
+                                <div className="print-specs-container-1">
                                   <div className="column-1">
                                     <div className="flex justify-center">
                                       <img
                                         src={'/printingprocess.png'}
-                                        style={{height: '3rem'}}
+                                        style={{height: '2.7rem'}}
                                       />
                                     </div>
                                     <div className="flex justify-center">
                                       Printing Process
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
-                                          <div className="text-center">
+                                          <div>
                                             Lorem ipsum dolor sit amet
                                             consectetur adipisicing elit.
                                             Asperiores, aliquid aperiam
@@ -692,14 +716,14 @@ export default function Product() {
                                     <div className="flex justify-center">
                                       <img
                                         src={'/antiglare.png'}
-                                        style={{height: '3rem'}}
+                                        style={{height: '2.7rem'}}
                                       />
                                     </div>
                                     <div className="flex justify-center">
                                       Anti-glare
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
                                           <div>
                                             Lorem ipsum dolor sit amet
@@ -713,19 +737,19 @@ export default function Product() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="print-specs-container">
+                                <div className="print-specs-container-2">
                                   <div className="column-1">
                                     <div className="flex justify-center">
                                       <img
                                         src={'/paperquality2.png'}
-                                        style={{height: '3rem'}}
+                                        style={{height: '2.7rem'}}
                                       />
                                     </div>
                                     <div className="flex justify-center">
                                       Paper Quality
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
                                             Lorem ipsum dolor sit amet
@@ -742,14 +766,14 @@ export default function Product() {
                                     <div className="flex justify-center">
                                       <img
                                         src={'/durable.png'}
-                                        style={{height: '3rem'}}
+                                        style={{height: '2.7rem'}}
                                       />
                                     </div>
                                     <div className="flex justify-center">
                                       Durable
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
                                             Lorem ipsum dolor sit amet
@@ -771,15 +795,21 @@ export default function Product() {
                             <AccordionContent>
                               <div className="frame-specs">
                                 {/* section body */}
-                                <div className="print-specs-container">
+                                <div className="frame-specs-container-1">
                                   <div className="column-1">
+                                    <div className="flex justify-center">
+                                      <img
+                                        src={'/handcrafted.png'}
+                                        style={{height: '2.7rem'}}
+                                      />
+                                    </div>
                                     <div className="flex justify-center">
                                       Handcrafted
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
-                                          <div className="text-center">
+                                          <div>
                                             Lorem ipsum dolor sit amet
                                             consectetur adipisicing elit.
                                             Asperiores, aliquid aperiam
@@ -792,10 +822,16 @@ export default function Product() {
                                   </div>
                                   <div className="column-2">
                                     <div className="flex justify-center">
+                                      <img
+                                        src={'/lightweight.png'}
+                                        style={{height: '2.7rem'}}
+                                      />
+                                    </div>
+                                    <div className="flex justify-center">
                                       Light Weight
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
                                           <div>
                                             Lorem ipsum dolor sit amet
@@ -809,13 +845,19 @@ export default function Product() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="print-specs-container">
+                                <div className="frame-specs-container-2">
                                   <div className="column-1">
+                                    <div className="flex justify-center">
+                                      <img
+                                        src={'/phonetap.png'}
+                                        style={{height: '2.7rem'}}
+                                      />
+                                    </div>
                                     <div className="flex justify-center">
                                       Interactive
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
                                             Lorem ipsum dolor sit amet
@@ -830,10 +872,16 @@ export default function Product() {
                                   </div>
                                   <div className="column-2">
                                     <div className="flex justify-center">
+                                      <img
+                                        src={'/readytohang.png'}
+                                        style={{height: '2.7rem'}}
+                                      />
+                                    </div>
+                                    <div className="flex justify-center">
                                       Ready to Hang
                                     </div>
                                     <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
                                             Lorem ipsum dolor sit amet
