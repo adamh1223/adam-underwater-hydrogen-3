@@ -392,6 +392,12 @@ export default function Product() {
                         <div className="print-specs-container">
                           <div className="column-1">
                             <div className="flex justify-center">
+                              <img
+                                src={'/printingprocess.png'}
+                                style={{height: '3rem'}}
+                              />
+                            </div>
+                            <div className="flex justify-center">
                               Printing Process
                             </div>
                             <div className="flex justify-center">
@@ -408,6 +414,12 @@ export default function Product() {
                             </div>
                           </div>
                           <div className="column-2">
+                            <div className="flex justify-center">
+                              <img
+                                src={'/antiglare.png'}
+                                style={{height: '3rem'}}
+                              />
+                            </div>
                             <div className="flex justify-center">
                               Anti-glare
                             </div>
@@ -428,6 +440,12 @@ export default function Product() {
                         <div className="print-specs-container">
                           <div className="column-1">
                             <div className="flex justify-center">
+                              <img
+                                src={'/paperquality2.png'}
+                                style={{height: '3rem'}}
+                              />
+                            </div>
+                            <div className="flex justify-center">
                               Paper Quality
                             </div>
                             <div className="flex justify-center">
@@ -444,6 +462,12 @@ export default function Product() {
                             </div>
                           </div>
                           <div className="column-2">
+                            <div className="flex justify-center">
+                              <img
+                                src={'/durable.png'}
+                                style={{height: '3rem'}}
+                              />
+                            </div>
                             <div className="flex justify-center">Durable</div>
                             <div className="flex justify-center">
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
@@ -642,6 +666,12 @@ export default function Product() {
                                 <div className="print-specs-container">
                                   <div className="column-1">
                                     <div className="flex justify-center">
+                                      <img
+                                        src={'/printingprocess.png'}
+                                        style={{height: '3rem'}}
+                                      />
+                                    </div>
+                                    <div className="flex justify-center">
                                       Printing Process
                                     </div>
                                     <div className="flex justify-center">
@@ -659,6 +689,12 @@ export default function Product() {
                                     </div>
                                   </div>
                                   <div className="column-2">
+                                    <div className="flex justify-center">
+                                      <img
+                                        src={'/antiglare.png'}
+                                        style={{height: '3rem'}}
+                                      />
+                                    </div>
                                     <div className="flex justify-center">
                                       Anti-glare
                                     </div>
@@ -680,6 +716,12 @@ export default function Product() {
                                 <div className="print-specs-container">
                                   <div className="column-1">
                                     <div className="flex justify-center">
+                                      <img
+                                        src={'/paperquality2.png'}
+                                        style={{height: '3rem'}}
+                                      />
+                                    </div>
+                                    <div className="flex justify-center">
                                       Paper Quality
                                     </div>
                                     <div className="flex justify-center">
@@ -697,6 +739,12 @@ export default function Product() {
                                     </div>
                                   </div>
                                   <div className="column-2">
+                                    <div className="flex justify-center">
+                                      <img
+                                        src={'/durable.png'}
+                                        style={{height: '3rem'}}
+                                      />
+                                    </div>
                                     <div className="flex justify-center">
                                       Durable
                                     </div>

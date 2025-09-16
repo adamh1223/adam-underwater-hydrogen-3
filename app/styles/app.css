@@ -497,8 +497,13 @@ span {
 }
 
 @media (max-width: 1023px) {
-  .how-its-made {
-    padding-top: 25px;
+  .how-its-made-clip-wrapper {
+    padding: 25px 0;
+  }
+}
+@media (max-width: 1023px) {
+  .extra-info {
+    padding: 25px 0 0 0;
   }
 }
 
