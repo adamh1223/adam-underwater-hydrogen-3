@@ -30,6 +30,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '~/components/ui/accordion';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '~/components/ui/carousel';
+import {ThreeUpCarousel} from '~/components/global/ThreeUpCarousel';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -340,245 +348,505 @@ export default function Product() {
             />
           </div>
         </div>
+        {windowWidth && windowWidth < 1024 && (
+          <>
+            <hr />
+            <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
+              <div className="grid grid-cols-1">
+                <div className="flex justify-center items-center">
+                  <img src={'/usaflag3.png'} style={{height: '2.2rem'}} />
+                </div>
+                <div className="flex justify-center mt-3">
+                  <p>Made in USA</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1">
+                <div className="flex justify-center items-center">
+                  <img src={'/diamond.png'} style={{height: '2.4rem'}} />
+                </div>
+                <div className="flex justify-center mt-2">
+                  <p className="text-center">Premium Quality</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1">
+                <div className="flex justify-center items-center">
+                  <img src={'/returnarrow2.png'} style={{height: '3rem'}} />
+                </div>
+                <div className="flex justify-center">
+                  <p>14-day returns</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        {windowWidth && windowWidth < 1024 && (
+          <div className="items-top ">
+            <div className="flex justify-end card-accordion-container">
+              <Card className="p-4 w-full">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Print Specs</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="print-specs">
+                        {/* section body */}
+                        <div className="print-specs-container">
+                          <div className="column-1">
+                            <div className="flex justify-center">
+                              Printing Process
+                            </div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <CardContent>
+                                  <div className="text-center">
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                          <div className="column-2">
+                            <div className="flex justify-center">
+                              Anti-glare
+                            </div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <CardContent>
+                                  <div>
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="print-specs-container">
+                          <div className="column-1">
+                            <div className="flex justify-center">
+                              Paper Quality
+                            </div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                <CardContent>
+                                  <div>
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                          <div className="column-2">
+                            <div className="flex justify-center">Durable</div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                <CardContent>
+                                  <div>
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger>Frame Specs</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="frame-specs">
+                        {/* section body */}
+                        <div className="print-specs-container">
+                          <div className="column-1">
+                            <div className="flex justify-center">
+                              Handcrafted
+                            </div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <CardContent>
+                                  <div className="text-center">
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                          <div className="column-2">
+                            <div className="flex justify-center">
+                              Light Weight
+                            </div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                <CardContent>
+                                  <div>
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="print-specs-container">
+                          <div className="column-1">
+                            <div className="flex justify-center">
+                              Interactive
+                            </div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                <CardContent>
+                                  <div>
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                          <div className="column-2">
+                            <div className="flex justify-center">
+                              Ready to Hang
+                            </div>
+                            <div className="flex justify-center">
+                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                <CardContent>
+                                  <div>
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Asperiores, aliquid
+                                    aperiam blanditiis laboriosam sint velit
+                                    consequuntur.
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </Card>
+            </div>
+          </div>
+        )}
         {!isVideo && (
-          <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 extra-info">
-            <div className="grid grid-cols-1">
-              <div className="how-its-made">
-                {/* section title */}
-                <div className="section-title-container">
-                  <div className="flex items-center justify-center w-full">
-                    <div className="flex-1 h-px bg-muted" />
-                    <span className="px-4">
-                      <div>How it's Made</div>
-                    </span>
-                    <div className="flex-1 h-px bg-muted" />
+          <>
+            <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 extra-info">
+              <div className="grid grid-cols-1">
+                <div className="how-its-made">
+                  {/* section title */}
+                  <div className="section-title-container">
+                    <div className="flex items-center justify-center w-full">
+                      <div className="flex-1 h-px bg-muted" />
+                      <span className="px-4">
+                        <div>How it's Made</div>
+                      </span>
+                      <div className="flex-1 h-px bg-muted" />
+                    </div>
+                  </div>
+                  {/* section body */}
+                  <div className="how-its-made-container">
+                    <div className="how-its-made-clip-wrapper flex justify-center position-relative">
+                      <iframe
+                        className="clip"
+                        src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+                        allow="autoplay; fullscreen; picture-in-picture;"
+                        title="Seaforestation Trailer"
+                      ></iframe>
+                    </div>
+                    <div className="flex justify-center ">
+                      <div className="justify-start">
+                        <Card>
+                          <CardContent>
+                            Lorem ipsum dolor, sit amet consectetur adipisicing
+                            elit. Numquam laborum odit, quo blanditiis ea
+                            dolores dolorum accusantium
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                {/* section body */}
-                <div className="how-its-made-container">
-                  <div className="how-its-made-clip-wrapper flex justify-center position-relative">
-                    <iframe
-                      className="clip"
-                      src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-                      allow="autoplay; fullscreen; picture-in-picture;"
-                      title="Seaforestation Trailer"
-                    ></iframe>
-                  </div>
-                  <div className="flex justify-center ">
-                    <div className="justify-start">
-                      <Card>
-                        <CardContent>
-                          Lorem ipsum dolor, sit amet consectetur adipisicing
-                          elit. Numquam laborum odit, quo blanditiis ea dolores
-                          dolorum accusantium
-                        </CardContent>
+              </div>
+              <div className="grid grid-cols-1">
+                <div className="pt-[10px]">
+                  {windowWidth && windowWidth >= 1024 && (
+                    <>
+                      <hr />
+                      <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
+                        <div className="grid grid-cols-1">
+                          <div className="flex justify-center items-center">
+                            <img
+                              src={'/usaflag3.png'}
+                              style={{height: '2.2rem'}}
+                            />
+                          </div>
+                          <div className="flex justify-center mt-3">
+                            <p>Made in USA</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1">
+                          <div className="flex justify-center items-center">
+                            <img
+                              src={'/diamond.png'}
+                              style={{height: '2.4rem'}}
+                            />
+                          </div>
+                          <div className="flex justify-center mt-2">
+                            <p className="text-center">Premium Quality</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1">
+                          <div className="flex justify-center items-center">
+                            <img
+                              src={'/returnarrow2.png'}
+                              style={{height: '3rem'}}
+                            />
+                          </div>
+                          <div className="flex justify-center">
+                            <p>14-day returns</p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                {windowWidth && windowWidth >= 1024 && (
+                  <div className="items-top ">
+                    <div className="flex justify-end card-accordion-container">
+                      <Card className="p-4 w-full">
+                        <Accordion type="single" collapsible className="w-full">
+                          <AccordionItem value="item-1">
+                            <AccordionTrigger>Print Specs</AccordionTrigger>
+                            <AccordionContent>
+                              <div className="print-specs">
+                                {/* section body */}
+                                <div className="print-specs-container">
+                                  <div className="column-1">
+                                    <div className="flex justify-center">
+                                      Printing Process
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                        <CardContent>
+                                          <div className="text-center">
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                  <div className="column-2">
+                                    <div className="flex justify-center">
+                                      Anti-glare
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                        <CardContent>
+                                          <div>
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="print-specs-container">
+                                  <div className="column-1">
+                                    <div className="flex justify-center">
+                                      Paper Quality
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                        <CardContent>
+                                          <div>
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                  <div className="column-2">
+                                    <div className="flex justify-center">
+                                      Durable
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                        <CardContent>
+                                          <div>
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                          <AccordionItem value="item-2">
+                            <AccordionTrigger>Frame Specs</AccordionTrigger>
+                            <AccordionContent>
+                              <div className="frame-specs">
+                                {/* section body */}
+                                <div className="print-specs-container">
+                                  <div className="column-1">
+                                    <div className="flex justify-center">
+                                      Handcrafted
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                        <CardContent>
+                                          <div className="text-center">
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                  <div className="column-2">
+                                    <div className="flex justify-center">
+                                      Light Weight
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
+                                        <CardContent>
+                                          <div>
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="print-specs-container">
+                                  <div className="column-1">
+                                    <div className="flex justify-center">
+                                      Interactive
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                        <CardContent>
+                                          <div>
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                  <div className="column-2">
+                                    <div className="flex justify-center">
+                                      Ready to Hang
+                                    </div>
+                                    <div className="flex justify-center">
+                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
+                                        <CardContent>
+                                          <div>
+                                            Lorem ipsum dolor sit amet
+                                            consectetur adipisicing elit.
+                                            Asperiores, aliquid aperiam
+                                            blanditiis laboriosam sint velit
+                                            consequuntur.
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
                       </Card>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
-            <div className="grid grid-cols-1">
-              <div className="pt-[10px]">
-                <hr />
-                <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
-                  <div className="grid grid-cols-1">
-                    <div className="flex justify-center items-center">
-                      <img src={'/usaflag3.png'} style={{height: '2.2rem'}} />
-                    </div>
-                    <div className="flex justify-center mt-3">
-                      <p>Made in USA</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1">
-                    <div className="flex justify-center items-center">
-                      <img src={'/diamond.png'} style={{height: '2.4rem'}} />
-                    </div>
-                    <div className="flex justify-center mt-2">
-                      <p className="text-center">Premium Quality</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1">
-                    <div className="flex justify-center items-center">
-                      <img src={'/returnarrow2.png'} style={{height: '3rem'}} />
-                    </div>
-                    <div className="flex justify-center">
-                      <p>14-day returns</p>
-                    </div>
-                  </div>
+            <section className="reviews mt-3">
+              {/* section title */}
+              <div className="section-title-container">
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex-1 h-px bg-muted" />
+                  <span className="px-4">
+                    <p className="text-xl">Reviews</p>
+                  </span>
+                  <div className="flex-1 h-px bg-muted" />
                 </div>
               </div>
-
-              <div className="items-top ">
-                <div className="flex justify-end card-accordion-container">
-                  <Card className="p-4 w-full">
-                    <Accordion type="single" collapsible className="w-full">
-                      <AccordionItem value="item-1">
-                        <AccordionTrigger>Print Specs</AccordionTrigger>
-                        <AccordionContent>
-                          <div className="print-specs">
-                            {/* section body */}
-                            <div className="print-specs-container">
-                              <div className="column-1">
-                                <div className="flex justify-center">
-                                  Printing Process
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
-                                    <CardContent>
-                                      <div className="text-center">
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                              <div className="column-2">
-                                <div className="flex justify-center">
-                                  Anti-glare
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
-                                    <CardContent>
-                                      <div>
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="print-specs-container">
-                              <div className="column-1">
-                                <div className="flex justify-center">
-                                  Paper Quality
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
-                                    <CardContent>
-                                      <div>
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                              <div className="column-2">
-                                <div className="flex justify-center">
-                                  Durable
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
-                                    <CardContent>
-                                      <div>
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                      <AccordionItem value="item-2">
-                        <AccordionTrigger>Frame Specs</AccordionTrigger>
-                        <AccordionContent>
-                          <div className="frame-specs">
-                            {/* section body */}
-                            <div className="print-specs-container">
-                              <div className="column-1">
-                                <div className="flex justify-center">
-                                  Handcrafted
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
-                                    <CardContent>
-                                      <div className="text-center">
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                              <div className="column-2">
-                                <div className="flex justify-center">
-                                  Light Weight
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-5">
-                                    <CardContent>
-                                      <div>
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="print-specs-container">
-                              <div className="column-1">
-                                <div className="flex justify-center">
-                                  Interactive
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
-                                    <CardContent>
-                                      <div>
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                              <div className="column-2">
-                                <div className="flex justify-center">
-                                  Ready to Hang
-                                </div>
-                                <div className="flex justify-center">
-                                  <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-5">
-                                    <CardContent>
-                                      <div>
-                                        Lorem ipsum dolor sit amet consectetur
-                                        adipisicing elit. Asperiores, aliquid
-                                        aperiam blanditiis laboriosam sint velit
-                                        consequuntur.
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  </Card>
+              <div className="my-5">This is where reviews will go</div>
+            </section>
+            <section className="you-may-also-like mt-3">
+              {/* section title */}
+              <div className="section-title-container">
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex-1 h-px bg-muted" />
+                  <span className="px-4">
+                    <p className="text-xl">You may also like</p>
+                  </span>
+                  <div className="flex-1 h-px bg-muted" />
                 </div>
               </div>
-            </div>
-          </div>
+              <div className="you-may-also-like-container flex justify-center mt-3">
+                <ThreeUpCarousel
+                  images={[
+                    '/print3.jpg',
+                    '/print3.jpg',
+                    '/print3.jpg',
+                    '/print3.jpg',
+                    '/print3.jpg',
+                    '/print3.jpg',
+                  ]}
+                />
+              </div>
+            </section>
+          </>
         )}
 
         <Analytics.ProductView

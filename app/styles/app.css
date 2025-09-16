@@ -501,14 +501,15 @@ span {
     padding-top: 25px;
   }
 }
+
 @media (min-width: 1024px) and (max-width: 1279px) {
   .items-top {
-    height: 565px;
+    height: 580px;
   }
 }
 @media (min-width: 1280px) {
   .items-top {
-    height: 485px;
+    height: 500px;
   }
 }
 @media (min-width: 1280px) {
@@ -558,4 +559,25 @@ span {
 .product-options-grid {
   display: flex;
   justify-content: start;
+}
+
+@media (max-width: 550px) {
+  .you-may-like-carousel {
+    width: 63vw;
+  }
+}
+@media (min-width: 551px) and (max-width: 720px) {
+  .you-may-like-carousel {
+    width: 55vw;
+  }
+}
+@media (min-width: 720px) and (max-width: 1023px) {
+  .you-may-like-carousel {
+    width: 75vw;
+  }
+}
+@media (min-width: 1024px) {
+  .you-may-like-carousel {
+    width: 80vw;
+  }
 }
