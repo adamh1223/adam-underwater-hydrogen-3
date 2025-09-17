@@ -51,7 +51,7 @@ const ProductCarousel = ({
   const cardContentClassName =
     layout === 'grid'
       ? 'flex flex-col h-full'
-      : 'p-8 gap-y-4 grid md:grid-cols-3';
+      : 'px-8 md:px-6 gap-y-4 grid grid-cols-2 lg:grid-cols-3';
 
   const variantUrl = useVariantUrl(product.handle);
   const standardImages = product?.images?.nodes?.filter((item) =>

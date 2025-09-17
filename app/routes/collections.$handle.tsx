@@ -136,8 +136,8 @@ export default function Collection() {
 
   const layoutClassName =
     layout === 'grid'
-      ? 'pt-12 mx-8 grid gap-4 md:grid-cols-2 px-5 pb-5'
-      : 'mt-12 grid gap-y-8';
+      ? 'mt-6 mx-8 grid gap-4 md:grid-cols-2 px-5 pb-5'
+      : 'mt-6 grid';
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();

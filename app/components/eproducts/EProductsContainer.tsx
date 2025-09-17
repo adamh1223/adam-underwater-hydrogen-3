@@ -27,7 +27,12 @@ function EProductsContainer({
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'
-      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3 h-full';
+      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 h-full';
+
+  const cardContentClassName =
+    layout === 'grid'
+      ? 'flex flex-col h-full'
+      : 'p-3 md:p-6 gap-y-4 grid grid-cols-2 lg:grid-cols-3 h-full';
   const variantUrl = useVariantUrl(product.handle);
   console.log(product, '204020');
   const {open} = useAside();
@@ -44,10 +49,10 @@ function EProductsContainer({
           const productId = product.id;
           const dollarsAmount = formatCurrency(price);
           return ( */}
-      <article className="group relative">
+      <article className="group relative mb-5">
         <Card className={cardClassName}>
-          <CardContent className="p-4 flex flex-col h-full">
-            <div className="relative h-full evideo">
+          <CardContent className={cardContentClassName}>
+            <div className="relative h-full evideo top-part-card">
               {/* {thumbnail && (
                       <img
                         src={thumbnail}

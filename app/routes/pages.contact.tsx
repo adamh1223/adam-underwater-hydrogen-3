@@ -10,7 +10,6 @@ function ContactPage() {
         className="mb-5"
         style={{height: '100px'}}
       />
-      <NavExample />
       <ContactForm />
     </div>
   );

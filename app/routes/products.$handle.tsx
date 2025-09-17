@@ -382,7 +382,7 @@ export default function Product() {
         {windowWidth && windowWidth < 1024 && (
           <div className="items-top ">
             <div className="flex justify-end card-accordion-container">
-              <Card className="p-4 w-full">
+              <Card className="py-2 px-4 w-full">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1">
                     <AccordionTrigger>Print Specs</AccordionTrigger>
@@ -680,7 +680,7 @@ export default function Product() {
                 {windowWidth && windowWidth >= 1024 && (
                   <div className="items-top ">
                     <div className="flex justify-end card-accordion-container">
-                      <Card className="p-4 w-full">
+                      <Card className="py-2 px-4 w-full">
                         <Accordion type="single" collapsible className="w-full">
                           <AccordionItem value="item-1">
                             <AccordionTrigger>Print Specs</AccordionTrigger>
