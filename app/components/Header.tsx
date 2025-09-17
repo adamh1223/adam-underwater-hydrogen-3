@@ -148,17 +148,22 @@ export function HeaderMenu({
 
               default:
                 renderContent = (
-                  <Button variant="link">
-                    <NavLink
-                      className=""
-                      end
-                      onClick={close}
-                      prefetch="intent"
-                      to={url}
+                  <NavLink
+                    className="relative z-10"
+                    end
+                    onClick={close}
+                    prefetch="intent"
+                    to={url}
+                  >
+                    <Button
+                      variant="ghost2"
+                      className="relative group px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
                     >
                       {item.title}
-                    </NavLink>
-                  </Button>
+                      {/* animated underline */}
+                      <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
+                    </Button>
+                  </NavLink>
                 );
                 break;
             }
@@ -202,17 +207,22 @@ export function HeaderMenu({
 
               default:
                 renderContent = (
-                  <Button variant="link">
-                    <NavLink
-                      className=""
-                      end
-                      onClick={close}
-                      prefetch="intent"
-                      to={url}
+                  <NavLink
+                    className="relative z-10"
+                    end
+                    onClick={close}
+                    prefetch="intent"
+                    to={url}
+                  >
+                    <Button
+                      variant="ghost2"
+                      className="relative group px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
                     >
                       {item.title}
-                    </NavLink>
-                  </Button>
+                      {/* animated underline */}
+                      <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
+                    </Button>
+                  </NavLink>
                 );
                 break;
             }
@@ -273,7 +283,7 @@ function HeaderCtas({
             </div>
           </NavLink>
         </HoverCardTrigger>
-        <HoverCardContent className={loginValue ? 'w-40' : 'w-54'}>
+        <HoverCardContent className={loginValue ? 'w-40' : 'w-42'}>
           {loginValue ? (
             <>
               <div className="mb-3">
@@ -288,7 +298,7 @@ function HeaderCtas({
             </>
           ) : (
             <Button variant="ghost" className="mb-3">
-              <Link to={'/account'}>Sign In/Create Account</Link>
+              <Link to={'/account'}>Sign In/Sign Up</Link>
             </Button>
           )}
           {loginValue && (

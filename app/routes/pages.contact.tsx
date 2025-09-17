@@ -1,4 +1,5 @@
 import ContactForm from '~/components/form/Contact';
+import NavExample from '~/components/navbar/NavExample';
 
 function ContactPage() {
   return (
@@ -9,6 +10,7 @@ function ContactPage() {
         className="mb-5"
         style={{height: '100px'}}
       />
+      <NavExample />
       <ContactForm />
     </div>
   );

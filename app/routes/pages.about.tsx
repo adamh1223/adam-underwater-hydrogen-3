@@ -12,6 +12,8 @@ import {
 import photo1 from '~/assets/1.png';
 import photo2 from '~/assets/2.5.jpg';
 import photo3 from '~/assets/2.png';
+import {Navbar03} from 'components/ui/shadcn-io/navbar-03';
+import NavExample from '~/components/navbar/NavExample';
 
 function AboutPage() {
   const handleClick = (
@@ -322,6 +324,7 @@ function AboutPage() {
               </p>
             </Card>
           </Card>
+          
         </div>
       </section>
     </>
