@@ -18,11 +18,13 @@ import {CurrencyCode, Scalars} from '@shopify/hydrogen/storefront-api-types';
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
-type collectionProduct = ProductItemFragment & collectionProductImages & CollectionQuery;
+type collectionProduct = ProductItemFragment &
+  collectionProductImages &
+  CollectionQuery;
 interface AugmentedPartialPredictive {
   handle?: string;
   title?: string;
-  
+
   priceRange?: {
     minVariantPrice: {
       amount: string;
@@ -234,7 +236,7 @@ const ProductCarousel = ({
               )}
             </div>
           )}
-          {layout === 'list' && windowWidth > 1023 && <p>{product.}</p>}
+          {/* {layout === 'list' && windowWidth > 1023 && <p>{product.}</p>} */}
         </CardContent>
       </Card>
     </article>
