@@ -38,6 +38,7 @@ import {
   CarouselPrevious,
 } from '~/components/ui/carousel';
 import {ThreeUpCarousel} from '~/components/global/ThreeUpCarousel';
+import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarousel';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -280,9 +281,16 @@ export default function Product() {
           >
             {<ChevronRightIcon />}
           </li>
-          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-            <Link to="/collections/all">Products</Link>
-          </li>
+          {!isVideo && (
+            <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+              <Link to="/collections/prints">Products</Link>
+            </li>
+          )}
+          {isVideo && (
+            <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+              <Link to="/collections/stock">Stock Footage</Link>
+            </li>
+          )}
           <li
             role="presentation"
             aria-hidden="true"
@@ -291,7 +299,7 @@ export default function Product() {
             {<ChevronRightIcon />}
           </li>
           <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-            <Link to="/">{title}</Link>
+            {title}
           </li>
         </ol>
         {windowWidth && windowWidth < 1024 && (
@@ -348,7 +356,7 @@ export default function Product() {
             />
           </div>
         </div>
-        {windowWidth && windowWidth < 1024 && (
+        {windowWidth && windowWidth < 1024 && !isVideo && (
           <>
             <hr />
             <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
@@ -379,7 +387,7 @@ export default function Product() {
             </div>
           </>
         )}
-        {windowWidth && windowWidth < 1024 && (
+        {windowWidth && windowWidth < 1024 && !isVideo && (
           <div className="items-top ">
             <div className="flex justify-end card-accordion-container">
               <Card className="py-2 px-4 w-full">
@@ -636,7 +644,7 @@ export default function Product() {
               </div>
               <div className="grid grid-cols-1">
                 <div className="pt-[10px]">
-                  {windowWidth && windowWidth >= 1024 && (
+                  {windowWidth && windowWidth >= 1024 && !isVideo && (
                     <>
                       <hr />
                       <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
@@ -677,7 +685,7 @@ export default function Product() {
                     </>
                   )}
                 </div>
-                {windowWidth && windowWidth >= 1024 && (
+                {windowWidth && windowWidth >= 1024 && !isVideo && (
                   <div className="items-top ">
                     <div className="flex justify-end card-accordion-container">
                       <Card className="py-2 px-4 w-full">
@@ -905,45 +913,59 @@ export default function Product() {
                 )}
               </div>
             </div>
-            <section className="reviews mt-3">
-              {/* section title */}
-              <div className="section-title-container">
-                <div className="flex items-center justify-center w-full">
-                  <div className="flex-1 h-px bg-muted" />
-                  <span className="px-4">
-                    <p className="text-xl">Reviews</p>
-                  </span>
-                  <div className="flex-1 h-px bg-muted" />
-                </div>
-              </div>
-              <div className="my-5">This is where reviews will go</div>
-            </section>
-            <section className="you-may-also-like mt-3">
-              {/* section title */}
-              <div className="section-title-container">
-                <div className="flex items-center justify-center w-full">
-                  <div className="flex-1 h-px bg-muted" />
-                  <span className="px-4">
-                    <p className="text-xl">You may also like</p>
-                  </span>
-                  <div className="flex-1 h-px bg-muted" />
-                </div>
-              </div>
-              <div className="you-may-also-like-container flex justify-center mt-3">
-                <ThreeUpCarousel
-                  images={[
-                    '/print3.jpg',
-                    '/print3.jpg',
-                    '/print3.jpg',
-                    '/print3.jpg',
-                    '/print3.jpg',
-                    '/print3.jpg',
-                  ]}
-                />
-              </div>
-            </section>
           </>
         )}
+        <section className="reviews mt-3">
+          {/* section title */}
+          <div className="section-title-container">
+            <div className="flex items-center justify-center w-full">
+              <div className="flex-1 h-px bg-muted" />
+              <span className="px-4">
+                <p className="text-xl">Reviews</p>
+              </span>
+              <div className="flex-1 h-px bg-muted" />
+            </div>
+          </div>
+          <div className="my-5">This is where reviews will go</div>
+        </section>
+        <section className="you-may-also-like mt-3">
+          {/* section title */}
+          <div className="section-title-container">
+            <div className="flex items-center justify-center w-full">
+              <div className="flex-1 h-px bg-muted" />
+              <span className="px-4">
+                <p className="text-xl">You may also like</p>
+              </span>
+              <div className="flex-1 h-px bg-muted" />
+            </div>
+          </div>
+          <div className="you-may-also-like-container flex justify-center mt-3">
+            {!isVideo && (
+              <ThreeUpCarousel
+                images={[
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                ]}
+              />
+            )}
+            {isVideo && (
+              <ThreeUpEProductCarousel
+                images={[
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                  '/print3.jpg',
+                ]}
+              />
+            )}
+          </div>
+        </section>
 
         <Analytics.ProductView
           data={{
