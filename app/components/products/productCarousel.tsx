@@ -11,17 +11,18 @@ import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
 import {Money, useOptimisticVariant} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {ProductItemFragment} from 'storefrontapi.generated';
+import {CollectionQuery, ProductItemFragment} from 'storefrontapi.generated';
 import {AddToCartButton} from '../AddToCartButton';
 import {PartialPredictiveSearchResult} from '../SearchResultsPredictive';
 import {CurrencyCode, Scalars} from '@shopify/hydrogen/storefront-api-types';
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
-type collectionProduct = ProductItemFragment & collectionProductImages;
+type collectionProduct = ProductItemFragment & collectionProductImages & CollectionQuery;
 interface AugmentedPartialPredictive {
   handle?: string;
   title?: string;
+  
   priceRange?: {
     minVariantPrice: {
       amount: string;
@@ -61,6 +62,15 @@ const ProductCarousel = ({
   const [carouselApi, setcarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setcurrentIndex] = useState(0);
   const [totalItems, settotalItems] = useState(0);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
   useEffect(() => {
     if (!carouselApi) return;
 
@@ -224,6 +234,7 @@ const ProductCarousel = ({
               )}
             </div>
           )}
+          {layout === 'list' && windowWidth > 1023 && <p>{product.}</p>}
         </CardContent>
       </Card>
     </article>
