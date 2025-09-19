@@ -9,6 +9,7 @@ import {Link} from '@remix-run/react';
 import {useAside} from '../Aside';
 import {useIsVideoInCart} from '~/lib/hooks';
 import {CartReturn} from '@shopify/hydrogen';
+import '../../styles/routeStyles/product.css';
 
 type shopifyImage = {url: string; altText: string};
 function EProductsContainer({
@@ -31,8 +32,8 @@ function EProductsContainer({
 
   const cardContentClassName =
     layout === 'grid'
-      ? 'flex flex-col h-full'
-      : 'p-3 md:p-6 gap-y-4 grid grid-cols-2 lg:grid-cols-3 h-full';
+      ? 'flex flex-col h-full p-4'
+      : 'ps-3 pt-3 pb-3 gap-y-4 list-view-large-row h-full';
   const variantUrl = useVariantUrl(product.handle);
   console.log(product, '204020');
   const {open} = useAside();
@@ -51,7 +52,7 @@ function EProductsContainer({
           return ( */}
       <article className="group relative mb-5">
         <Card className={cardClassName}>
-          <CardContent className={cardContentClassName}>
+          <div className={cardContentClassName}>
             <div className="relative h-full evideo top-part-card">
               {/* {thumbnail && (
                       <img
@@ -78,39 +79,47 @@ function EProductsContainer({
                   RedirectTo={`/stock`}
                 />
               </div> */}
-            <div>
-              <div className="mt-4 text-center">
-                <h2 className="text-lg">{product.title}</h2>
-              </div>
-              {product?.priceRange?.minVariantPrice && (
-                <div className="flex justify-center">
-                  <span className="text-md flex flex-row gap-2">
-                    From
-                    <Money data={product?.priceRange?.minVariantPrice} />
-                  </span>
-                </div>
-              )}
-              {product?.selectedOrFirstAvailableVariant?.id && (
-                <div className="flex justify-center pt-5 pb-4">
-                  <AddToCartButton
-                    lines={[
-                      {
-                        merchandiseId:
-                          product?.selectedOrFirstAvailableVariant?.id,
-                        quantity: 1,
-                      },
-                    ]}
-                    disabled={disableButton}
-                    onClick={() => {
-                      open('cart');
-                    }}
+            <div className="flex justify-center items-center">
+              <div className="product-right-side-container">
+                <div className="product-title-container text-center">
+                  <h2
+                    className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
                   >
-                    Add To Cart
-                  </AddToCartButton>
+                    {product.title}
+                  </h2>
                 </div>
-              )}
+                {product?.priceRange?.minVariantPrice && (
+                  <div className="flex justify-center">
+                    <span
+                      className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                    >
+                      From
+                      <Money data={product?.priceRange?.minVariantPrice} />
+                    </span>
+                  </div>
+                )}
+                {product?.selectedOrFirstAvailableVariant?.id && (
+                  <div className="flex justify-center product-add-to-cart-container">
+                    <AddToCartButton
+                      lines={[
+                        {
+                          merchandiseId:
+                            product?.selectedOrFirstAvailableVariant?.id,
+                          quantity: 1,
+                        },
+                      ]}
+                      disabled={disableButton}
+                      onClick={() => {
+                        open('cart');
+                      }}
+                    >
+                      Add To Cart
+                    </AddToCartButton>
+                  </div>
+                )}
+              </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
         {/* <div className="absolute top-5 right-2 z-5">
                 <FavoriteToggleButton EProductId={productId} productId={null} />

@@ -141,7 +141,7 @@ const ProductCarousel = ({
                         <img
                           src={img.url}
                           alt={img.altText ?? ''}
-                          className={`rounded ${layout === 'grid' ? 'w-full' : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
+                          className={`rounded ${layout === 'grid' ? 'w-[90%]' : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>
                     </CarouselItem>
@@ -152,7 +152,7 @@ const ProductCarousel = ({
                 <Button
                   onClick={decreaseIndex}
                   className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${
-                    layout === 'list' ? 'mx-[-15px]' : 'mx-[-4px]'
+                    layout === 'list' ? 'left-arrow-carousel-list' : 'mx-[-4px]'
                   }`}
                   variant="secondary"
                 >
@@ -161,7 +161,9 @@ const ProductCarousel = ({
                 <Button
                   onClick={increaseIndex}
                   className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${
-                    layout === 'list' ? 'mx-[-26px]' : 'mx-[-4px]'
+                    layout === 'list'
+                      ? 'right-arrow-carousel-list'
+                      : 'mx-[-4px]'
                   }`}
                   variant="secondary"
                 >
@@ -175,37 +177,46 @@ const ProductCarousel = ({
           <div
             className={`bottom-part-card ${layout === 'grid' ? '' : 'ms-9'}`}
           >
-            <div className="bottom-part-card-inside">
-              <div className={layout === 'grid' ? 'text-center' : 'text-start'}>
-                <h5 className="text-lg">{title}</h5>
-              </div>
-              {priceRange?.minVariantPrice && (
+            <Link
+              className="product-item"
+              key={id}
+              prefetch="intent"
+              to={variantUrl}
+            >
+              <div className="bottom-part-card-inside">
                 <div
-                  className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                  className={layout === 'grid' ? 'text-center' : 'text-start'}
                 >
-                  <span className="text-md flex flex-row gap-2">
-                    From <Money data={priceRange.minVariantPrice} />
-                  </span>
+                  <h5 className="text-lg">{title}</h5>
                 </div>
-              )}
-              {layout !== 'grid' &&
-                (product as any).descriptionHtml &&
-                windowWidth != undefined &&
-                windowWidth > 699 && (
-                  <>
-                    <div>
-                      <Card className="description-html-card ">
-                        <div
-                          className="text-sm p-3"
-                          dangerouslySetInnerHTML={{
-                            __html: (product as any).descriptionHtml,
-                          }}
-                        />
-                      </Card>
-                    </div>
-                  </>
+                {priceRange?.minVariantPrice && (
+                  <div
+                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                  >
+                    <span className="text-md flex flex-row gap-2">
+                      From <Money data={priceRange.minVariantPrice} />
+                    </span>
+                  </div>
                 )}
-            </div>
+                {layout !== 'grid' &&
+                  (product as any).descriptionHtml &&
+                  windowWidth != undefined &&
+                  windowWidth > 787 && (
+                    <>
+                      <div>
+                        <Card className="description-html-card ">
+                          <div
+                            className="text-sm p-3"
+                            dangerouslySetInnerHTML={{
+                              __html: (product as any).descriptionHtml,
+                            }}
+                          />
+                        </Card>
+                      </div>
+                    </>
+                  )}
+              </div>
+            </Link>
           </div>
         </CardContent>
       </Card>

@@ -105,7 +105,7 @@ function ArticleItem({
               aspectRatio="3/2"
               data={article.image}
               loading={loading}
-              sizes="(min-width: 768px) 50vw, 100vw"
+              sizes="(min-width:768px) 50vw, 100vw"
             />
           </div>
         )}

@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['geo-maritime-brad-aspect.tryhydrogen.dev'],
+    allowedHosts: ['yes-determination-welding-change.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
