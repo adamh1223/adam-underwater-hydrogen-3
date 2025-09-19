@@ -11,6 +11,11 @@ import {
   Image,
   Money,
   Analytics,
+  getProductOptions,
+  useOptimisticVariant,
+  getAdjacentAndFirstAvailableVariants,
+  useSelectedOptionInUrlParam,
+  getSelectedProductOptions,
 } from '@shopify/hydrogen';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
@@ -29,6 +34,7 @@ import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {capitalizeFirstLetter} from '~/utils/grammer';
 import {EnhancedPartialSearchResult} from '~/lib/types';
+import Product from './products.$handle';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -117,6 +123,9 @@ export default function Collection() {
   const [totalProductCount, setTotalProductCount] = useState(
     collection.products?.nodes?.length,
   );
+
+  // Add other queries here, so that they are loaded in parallel
+
   useEffect(() => {
     setSearchText('');
   }, [collection.handle]);
@@ -284,11 +293,12 @@ export default function Collection() {
             }: {
               node: ProductItemFragment & {
                 images: {nodes: shopifyImage[]};
+                descriptionHtml?: string;
               };
               index: number;
             }) => {
               return (
-                <>
+                <div className="relative">
                   {collection.handle === 'prints' && (
                     <ProductCarousel product={product} layout={layout} />
                   )}
@@ -299,7 +309,7 @@ export default function Collection() {
                       cart={cart}
                     />
                   )}
-                </>
+                </div>
               );
             }}
           </PaginatedResourceSection>
@@ -327,6 +337,7 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     handle
     title
     tags
+    descriptionHtml
     featuredImage {
       id
       altText
@@ -395,6 +406,7 @@ const COLLECTION_QUERY = `#graphql
       ) {
         nodes {
           ...ProductItem
+          descriptionHtml
         }
         pageInfo {
           hasPreviousPage

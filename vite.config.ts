@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['eat-born-analytical-synthesis.tryhydrogen.dev'],
+    allowedHosts: ['geo-maritime-brad-aspect.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
