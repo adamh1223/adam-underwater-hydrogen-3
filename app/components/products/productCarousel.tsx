@@ -114,7 +114,9 @@ const ProductCarousel = ({
     <article className="group relative">
       <Card className={cardClassName}>
         <CardContent className={cardContentClassName}>
-          <div className="relative w-full h-full rounded top-part-card">
+          <div
+            className={`relative w-full h-full rounded${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+          >
             <Carousel
               setApi={setCarouselApi}
               className="w-full max-w-7xl transform-none me-4"
@@ -139,7 +141,7 @@ const ProductCarousel = ({
                         <img
                           src={img.url}
                           alt={img.altText ?? ''}
-                          className="rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          className={`rounded ${layout === 'grid' ? 'w-full' : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>
                     </CarouselItem>
@@ -173,37 +175,36 @@ const ProductCarousel = ({
           <div
             className={`bottom-part-card ${layout === 'grid' ? '' : 'ms-9'}`}
           >
-            <div className='bottom-part-card-inside'>
-
-            <div className={layout === 'grid' ? 'text-center' : 'text-start'}>
-              <h5 className="text-lg">{title}</h5>
-            </div>
-            {priceRange?.minVariantPrice && (
-              <div
-                className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
-              >
-                <span className="text-md flex flex-row gap-2">
-                  From <Money data={priceRange.minVariantPrice} />
-                </span>
+            <div className="bottom-part-card-inside">
+              <div className={layout === 'grid' ? 'text-center' : 'text-start'}>
+                <h5 className="text-lg">{title}</h5>
               </div>
-            )}
-            {layout !== 'grid' &&
-              (product as any).descriptionHtml &&
-              windowWidth != undefined &&
-              windowWidth > 737 && (
-                <>
-                  <div>
-                    <Card className="description-html-card ">
-                      <div
-                        className="text-sm p-3"
-                        dangerouslySetInnerHTML={{
-                          __html: (product as any).descriptionHtml,
-                        }}
-                      />
-                    </Card>
-                  </div>
-                </>
+              {priceRange?.minVariantPrice && (
+                <div
+                  className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                >
+                  <span className="text-md flex flex-row gap-2">
+                    From <Money data={priceRange.minVariantPrice} />
+                  </span>
+                </div>
               )}
+              {layout !== 'grid' &&
+                (product as any).descriptionHtml &&
+                windowWidth != undefined &&
+                windowWidth > 699 && (
+                  <>
+                    <div>
+                      <Card className="description-html-card ">
+                        <div
+                          className="text-sm p-3"
+                          dangerouslySetInnerHTML={{
+                            __html: (product as any).descriptionHtml,
+                          }}
+                        />
+                      </Card>
+                    </div>
+                  </>
+                )}
             </div>
           </div>
         </CardContent>
