@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['actress-nine-liquid-affair.tryhydrogen.dev'],
+    allowedHosts: ['buf-accordance-poker-sip.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

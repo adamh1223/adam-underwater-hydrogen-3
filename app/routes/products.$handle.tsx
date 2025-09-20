@@ -412,10 +412,9 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    Images are printed on the Canon
+                                    ImagePro-Graf 4600 Pro and stretched over
+                                    thick wooden frames using stretcher plyers.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -435,10 +434,9 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    The professional matte canvas that we use
+                                    does not reflect light - the print will be
+                                    viewable in any room and any wall.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -460,10 +458,9 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    Printed on 200 GSM, polyester inkjet matte
+                                    canvas on the Canon ImagePro-graf 4600 on a
+                                    44 inch roll.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -481,10 +478,10 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    Prints are professionally stretched over
+                                    heavy duty wooden frames. Staples are
+                                    methodically placed to allow even tension of
+                                    the canvas.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -710,11 +707,12 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            Images are printed on the Canon
+                                            ImagePro-Graf 4600 Pro and stretched
+                                            over thick wooden frames using
+                                            stretcher plyers. Staples are
+                                            methodically placed to allow even
+                                            tension of the canvas.
                                           </div>
                                         </CardContent>
                                       </Card>
@@ -734,11 +732,10 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            The professional matte canvas that
+                                            we use does not reflect light - the
+                                            print will be viewable in any room
+                                            and any wall.
                                           </div>
                                         </CardContent>
                                       </Card>
@@ -760,11 +757,10 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            Printed on 200 GSM, polyester inkjet
+                                            matte canvas on the Canon
+                                            ImagePro-graf 4600 on a 44 inch
+                                            roll.
                                           </div>
                                         </CardContent>
                                       </Card>
@@ -784,11 +780,10 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            Prints are professionally stretched
+                                            over heavy duty wooden frames.
+                                            Staples are methodically placed to
+                                            allow even tension of the canvas.
                                           </div>
                                         </CardContent>
                                       </Card>

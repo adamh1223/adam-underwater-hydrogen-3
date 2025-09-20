@@ -29,14 +29,14 @@ const ProductsHeader = () => {
           </div>
 
           <div>
-            <p className="statement">Anti-glare, polyester canvas</p>
+            <p className="statement">Anti-glare, polyester Inkjet canvas</p>
           </div>
 
           <div>
             <p className="statement">Printed on Canon Image PROGRAF PRO-4600</p>
           </div>
           <div>
-            <p className="statement">Handcrafted by me in San Diego, CA</p>
+            <p className="statement">Handcrafted in San Diego, CA</p>
           </div>
         </Card>
       </div>
