@@ -508,12 +508,12 @@ span {
 
 @media (min-width: 1024px) and (max-width: 1279px) {
   .items-top {
-    height: 620px;
+    height: 580px;
   }
 }
 @media (min-width: 1280px) {
   .items-top {
-    height: 540px;
+    height: 500px;
   }
 }
 @media (min-width: 1280px) {

@@ -511,10 +511,9 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    Each frame is assembled by hand. Canvas is
+                                    stretched over frames using stretcher
+                                    plyers, and stapled onto the back frame.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -534,10 +533,9 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    Heavy duty and high quality canvas stretcher
+                                    bars remove the need for extra wooden
+                                    braces, reducing weight.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -559,10 +557,9 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    Tap your phone on the bottom right corner of
+                                    the canvas to see the latest products at
+                                    Adam Underwater.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -582,10 +579,9 @@ export default function Product() {
                               <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                 <CardContent>
                                   <div>
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Asperiores, aliquid
-                                    aperiam blanditiis laboriosam sint velit
-                                    consequuntur.
+                                    Wire is installed on the back of each frame,
+                                    and hanging materials are included. We
+                                    recommend using 2 hangers for large prints.
                                   </div>
                                 </CardContent>
                               </Card>
@@ -710,9 +706,7 @@ export default function Product() {
                                             Images are printed on the Canon
                                             ImagePro-Graf 4600 Pro and stretched
                                             over thick wooden frames using
-                                            stretcher plyers. Staples are
-                                            methodically placed to allow even
-                                            tension of the canvas.
+                                            stretcher plyers.
                                           </div>
                                         </CardContent>
                                       </Card>
@@ -813,11 +807,10 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            Each frame is assembled by hand.
+                                            Canvas is stretched over frames
+                                            using stretcher plyers, and stapled
+                                            onto the back frame.
                                           </div>
                                         </CardContent>
                                       </Card>
@@ -837,11 +830,10 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            Heavy duty and high quality canvas
+                                            stretcher bars remove the need for
+                                            extra wooden braces, reducing
+                                            weight.
                                           </div>
                                         </CardContent>
                                       </Card>
@@ -863,11 +855,9 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            Tap your phone on the bottom right
+                                            corner of the canvas to see the
+                                            latest products at Adam Underwater.
                                           </div>
                                         </CardContent>
                                       </Card>
@@ -887,11 +877,10 @@ export default function Product() {
                                       <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
                                         <CardContent>
                                           <div>
-                                            Lorem ipsum dolor sit amet
-                                            consectetur adipisicing elit.
-                                            Asperiores, aliquid aperiam
-                                            blanditiis laboriosam sint velit
-                                            consequuntur.
+                                            Wire is installed on the back of
+                                            each frame, and hanging materials
+                                            are included. We recommend using 2
+                                            hangers for large prints.
                                           </div>
                                         </CardContent>
                                       </Card>
