@@ -625,9 +625,9 @@ export default function Product() {
                       <div className="how-its-made-description-container justify-start xl:mt-2">
                         <Card>
                           <CardContent>
-                            Lorem ipsum dolor, sit amet consectetur adipisicing
-                            elit. Numquam laborum odit, quo blanditiis ea
-                            dolores dolorum accusantium
+                            Quality matters - In this video, I break down how I
+                            make each framed canvas print by hand, using premium
+                            materials.
                           </CardContent>
                         </Card>
                       </div>
