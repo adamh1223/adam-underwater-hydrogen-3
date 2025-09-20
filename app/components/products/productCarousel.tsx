@@ -54,7 +54,7 @@ const ProductCarousel = ({
 
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer'
+      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-5'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3 cursor-pointer';
 
   const cardContentClassName =
@@ -215,6 +215,11 @@ const ProductCarousel = ({
                       </div>
                     </>
                   )}
+                <div
+                  className={`flex ${layout === 'grid' ? 'justify-center my-2' : 'justify-start mt-2'}`}
+                >
+                  <Button variant="default">View Product</Button>
+                </div>
               </div>
             </Link>
           </div>

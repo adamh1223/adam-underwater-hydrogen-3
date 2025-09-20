@@ -64,7 +64,7 @@
 }
 @media (min-width: 787px) {
   .description-html-card {
-    margin-top: 25px;
+    margin-top: 5px;
     max-width: 530px;
   }
 }
@@ -96,13 +96,7 @@
     justify-content: center;
   }
 }
-@media (min-width: 1250px) {
-  .bottom-part-card {
-    display: flex;
-    /* align-items: center; */
-    justify-content: center;
-  }
-}
+
 .top-part-card-list {
   display: flex;
   justify-content: center;
