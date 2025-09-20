@@ -115,7 +115,7 @@ const ProductCarousel = ({
       <Card className={cardClassName}>
         <CardContent className={cardContentClassName}>
           <div
-            className={`relative w-full h-full rounded${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+            className={`relative w-full h-full rounded ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
           >
             <Carousel
               setApi={setCarouselApi}

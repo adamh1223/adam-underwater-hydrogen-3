@@ -75,9 +75,11 @@ function EmptyOrders() {
     <div>
       <p className="ms-5">You haven&apos;t placed any orders yet.</p>
       <br />
-      <Button variant="link" className="ms-1">
-        <Link to="/collections">Start Shopping →</Link>
-      </Button>
+      <div className="flex justify-center">
+        <Button variant="default" className="ms-5">
+          <Link to="/collections/prints">Start Shopping →</Link>
+        </Button>
+      </div>
     </div>
   );
 }

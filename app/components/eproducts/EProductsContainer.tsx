@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Card, CardContent} from '../ui/card';
 import {AddToCartButton} from '../AddToCartButton';
 import {ProductItemFragment} from 'storefrontapi.generated';
@@ -41,6 +41,16 @@ function EProductsContainer({
     cart,
     product?.selectedOrFirstAvailableVariant?.id,
   );
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <>
@@ -53,7 +63,9 @@ function EProductsContainer({
       <article className="group relative mb-5">
         <Card className={cardClassName}>
           <div className={cardContentClassName}>
-            <div className="relative h-full evideo top-part-card">
+            <div
+              className={`relative h-full evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+            >
               {/* {thumbnail && (
                       <img
                         src={thumbnail}
@@ -79,27 +91,71 @@ function EProductsContainer({
                   RedirectTo={`/stock`}
                 />
               </div> */}
-            <div className="flex justify-center items-center">
-              <div className="product-right-side-container">
-                <div className="product-title-container text-center">
-                  <h2
-                    className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
+            <div className="bottom-part-card items-center">
+              <div className="bottom-part-card-inside mx-5">
+                <div
+                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                >
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
                   >
-                    {product.title}
-                  </h2>
+                    <h2
+                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
+                    >
+                      {product.title}
+                    </h2>
+                  </Link>
                 </div>
                 {product?.priceRange?.minVariantPrice && (
-                  <div className="flex justify-center">
-                    <span
-                      className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                  <div
+                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                  >
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
                     >
-                      From
-                      <Money data={product?.priceRange?.minVariantPrice} />
-                    </span>
+                      <span
+                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                      >
+                        From
+                        <Money data={product?.priceRange?.minVariantPrice} />
+                      </span>
+                    </Link>
                   </div>
                 )}
+                {layout !== 'grid' &&
+                  (product as any).descriptionHtml &&
+                  windowWidth != undefined &&
+                  windowWidth > 786 && (
+                    <>
+                      <div>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <Card className="description-html-card-list ">
+                            <div
+                              className="p-3"
+                              dangerouslySetInnerHTML={{
+                                __html: (product as any).descriptionHtml,
+                              }}
+                            />
+                          </Card>
+                        </Link>
+                      </div>
+                    </>
+                  )}
                 {product?.selectedOrFirstAvailableVariant?.id && (
-                  <div className="flex justify-center product-add-to-cart-container">
+                  <div
+                    className={`flex  product-add-to-cart-container ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                  >
                     <AddToCartButton
                       lines={[
                         {

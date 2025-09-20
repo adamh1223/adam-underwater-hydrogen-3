@@ -145,7 +145,7 @@ export default function Collection() {
 
   const layoutClassName =
     layout === 'grid'
-      ? 'mt-6 mx-8 grid gap-4 md:grid-cols-2 px-5 pb-5'
+      ? 'mt-6 mx-8 grid gap-x-4 md:grid-cols-2 px-5 pb-5'
       : 'mt-6 grid';
 
   type shopifyImage = {url: string; altText: string};
