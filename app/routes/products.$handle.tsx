@@ -17,8 +17,8 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import IndividualProduct from '~/components/products/individualProduct';
-import {ChevronRightIcon} from 'lucide-react';
-import {Card, CardContent} from '~/components/ui/card';
+import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
+import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 import {ProductImages} from '~/lib/types';
 import {useEffect, useState} from 'react';
@@ -32,6 +32,7 @@ import {
 } from '~/components/ui/accordion';
 import {
   Carousel,
+  CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
@@ -39,6 +40,7 @@ import {
 } from '~/components/ui/carousel';
 import {ThreeUpCarousel} from '~/components/global/ThreeUpCarousel';
 import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarousel';
+import {Button} from '~/components/ui/button';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -234,38 +236,43 @@ export default function Product() {
   });
 
   const data = useRouteLoaderData<RootLoader>('root');
-  // const [disableButton, setDisableButton] = useState(false);
-  // console.log(cart, 'rrrr');
 
-  // useEffect(() => {
-  //   cart
-  //     .then((cartData) => {
-  //       if (!cartData) {
-  //         setDisableButton(false);
-  //       }
-  //       const IDs = cartData?.lines.nodes
-  //         .map((node) => {
-  //           if (node.merchandise.product.tags?.includes('Video')) {
-  //             return node.merchandise.id;
-  //           }
-  //         })
-  //         .filter(Boolean);
-  //       const matches = IDs?.includes(
-  //         selectedOrFirstAvailableVariant?.id ?? '',
-  //       );
-  //       setDisableButton(!!matches);
-  //       console.log(matches, 'tttt');
-  //     })
-
-  //     .catch(() => setDisableButton(false));
-  // }, [cart]);
   const disableButton = useIsVideoInCart(
     cart,
     selectedOrFirstAvailableVariant?.id,
   );
 
   console.log(disableButton, '5511');
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+  useEffect(() => {
+    if (!carouselApi) return;
 
+    const updateCarouselState = () => {
+      setCurrentIndex(carouselApi.selectedScrollSnap());
+      setTotalItems(carouselApi.scrollSnapList().length);
+    };
+
+    updateCarouselState();
+
+    carouselApi.on('select', updateCarouselState);
+
+    // Cleanup function
+    return () => void carouselApi.off('select', updateCarouselState);
+  }, [carouselApi]);
+
+  const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
+
+  const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.stopPropagation();
+    scrollToIndex(currentIndex + 1);
+  };
+
+  const decreaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.stopPropagation();
+    scrollToIndex(currentIndex - 1);
+  };
   return (
     <>
       <section className="product px-[40px] pt-[20px]">
@@ -899,6 +906,187 @@ export default function Product() {
             </div>
           </>
         )}
+        <section className="in-the-box-section mt-3">
+          {/* section title */}
+          <div className="section-title-container">
+            <div className="flex items-center justify-center w-full">
+              <div className="flex-1 h-px bg-muted" />
+              <span className="px-4">
+                <p className="text-xl">In the Box</p>
+              </span>
+              <div className="flex-1 h-px bg-muted" />
+            </div>
+          </div>
+          <div className="my-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-x-0 md:gap-x-5 lg:gap-x-5">
+            <div className="in-the-box in-the-box-1 flex justify-center">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-start">
+                    <img src={'/1x-icon-2.png'} style={{height: '2rem'}} />
+                  </div>
+                  <div className="flex justify-center">
+                    <strong>Canvas Print</strong>
+                  </div>
+                  <hr />
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-center">
+                    <Carousel className="w-full max-w-sm px-5">
+                      <CarouselContent>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear1.png'} alt="Gear 1" />
+                          </div>
+                        </CarouselItem>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear2.png'} alt="Gear 2" />
+                          </div>
+                        </CarouselItem>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear3.png'} alt="Gear 3" />
+                          </div>
+                        </CarouselItem>
+                      </CarouselContent>
+                      <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+                        <Button
+                          onClick={decreaseIndex}
+                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
+                          variant="secondary"
+                        >
+                          <ChevronLeftIcon className="h-6 w-6 text-white" />
+                        </Button>
+                        <Button
+                          onClick={increaseIndex}
+                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
+                          variant="secondary"
+                        >
+                          <ChevronRightIcon className="h-6 w-6 text-white" />
+                        </Button>
+                      </div>
+                    </Carousel>
+                  </div>
+                  <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
+                    Each framed print comes with heavy duty hanging wire
+                    attached
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="in-the-box in-the-box-2 flex justify-center">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-start">
+                    <img src={'/1x-icon-2.png'} style={{height: '2rem'}} />
+                  </div>
+                  <div className="flex justify-center">
+                    <strong>NFC Tag in bottom right corner</strong>
+                  </div>
+                  <hr />
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-center">
+                    <Carousel className="w-full max-w-sm px-5">
+                      <CarouselContent>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear1.png'} alt="Gear 1" />
+                          </div>
+                        </CarouselItem>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear2.png'} alt="Gear 2" />
+                          </div>
+                        </CarouselItem>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear3.png'} alt="Gear 3" />
+                          </div>
+                        </CarouselItem>
+                      </CarouselContent>
+                      <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+                        <Button
+                          onClick={decreaseIndex}
+                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
+                          variant="secondary"
+                        >
+                          <ChevronLeftIcon className="h-6 w-6 text-white" />
+                        </Button>
+                        <Button
+                          onClick={increaseIndex}
+                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
+                          variant="secondary"
+                        >
+                          <ChevronRightIcon className="h-6 w-6 text-white" />
+                        </Button>
+                      </div>
+                    </Carousel>
+                  </div>
+                  <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
+                    Try tapping your phone to the bottom right corner of the
+                    frame
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="in-the-box in-the-box-3 flex justify-center">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-start">
+                    <img src={'/2x-icon.png'} style={{height: '2rem'}} />
+                  </div>
+                  <div className="flex justify-center">
+                    <strong>Picture hangers and nails</strong>
+                  </div>
+                  <hr />
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-center">
+                    <Carousel className="w-full max-w-sm px-5">
+                      <CarouselContent>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear1.png'} alt="Gear 1" />
+                          </div>
+                        </CarouselItem>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear2.png'} alt="Gear 2" />
+                          </div>
+                        </CarouselItem>
+                        <CarouselItem>
+                          <div className="p-4 flex items-center justify-center">
+                            <img src={'/gear3.png'} alt="Gear 3" />
+                          </div>
+                        </CarouselItem>
+                      </CarouselContent>
+                      <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+                        <Button
+                          onClick={decreaseIndex}
+                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
+                          variant="secondary"
+                        >
+                          <ChevronLeftIcon className="h-6 w-6 text-white" />
+                        </Button>
+                        <Button
+                          onClick={increaseIndex}
+                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
+                          variant="secondary"
+                        >
+                          <ChevronRightIcon className="h-6 w-6 text-white" />
+                        </Button>
+                      </div>
+                    </Carousel>
+                  </div>
+                  <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
+                    Each print comes with 2 sets of picture hangers and nails
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
         <section className="reviews mt-3">
           {/* section title */}
           <div className="section-title-container">
