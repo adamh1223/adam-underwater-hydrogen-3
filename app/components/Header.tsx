@@ -230,9 +230,11 @@ export function HeaderMenu({
           })}
         </div>
       </div>
-      <div className="3 flex gap-4 items-center">
-        <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
-      </div>
+      {cart && (
+        <div className="3 flex gap-4 items-center">
+          <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
+        </div>
+      )}
     </nav>
   );
 }
@@ -241,7 +243,7 @@ function HeaderCtas({
   cart,
   isLoggedIn,
 }: {
-  cart: Partial<Pick<HeaderProps, 'cart'>> | undefined | null;
+  cart: HeaderProps['cart'];
   isLoggedIn: Promise<boolean> | undefined;
 }) {
   type NavLink = {
