@@ -389,8 +389,8 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .product-option-label-swatch {
-  width: 7.5rem;
-  height: 7.5rem;
+  width: 5rem;
+  height: 5rem;
   margin: 0.25rem 0;
 }
 
@@ -602,7 +602,6 @@ span {
   }
 }
 
-
 @media (max-width: 767px) {
   .in-the-box-1 {
   }
@@ -628,4 +627,8 @@ span {
   }
   .in-the-box-3 {
   }
+}
+
+.size-image {
+  width: 50px;
 }

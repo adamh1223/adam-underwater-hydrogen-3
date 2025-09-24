@@ -168,27 +168,38 @@ function CarouselItem({className, ...props}: React.ComponentProps<'div'>) {
     />
   );
 }
+type buttonProps = React.ComponentProps<typeof Button>;
+type augmentedButtonProps = buttonProps & {
+  inTheBox?: boolean;
+};
 
 function CarouselPrevious({
   className,
   variant = 'outline',
   size = 'icon',
+  inTheBox = false,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: augmentedButtonProps) {
   const {orientation, scrollPrev, canScrollPrev} = useCarousel();
+
+  const orientationStylesInTheBox =
+    orientation === 'horizontal'
+      ? 'top-1/2 -left-4 -translate-y-1/2'
+      : '-top-12 left-1/2 -translate-x-1/2 rotate-90';
+  const orientationStyles =
+    orientation === 'horizontal'
+      ? 'top-1/2 -left-12 -translate-y-1/2'
+      : '-top-12 left-1/2 -translate-x-1/2 rotate-90';
+  const inTheBoxStyles = inTheBox
+    ? `absolute size-8 rounded-full ${orientationStylesInTheBox}`
+    : `absolute size-8 rounded-full ${orientationStyles}`;
 
   return (
     <Button
       data-slot="carousel-previous"
       variant={variant}
       size={size}
-      className={cn(
-        'absolute size-8 rounded-full',
-        orientation === 'horizontal'
-          ? 'top-1/2 -left-12 -translate-y-1/2'
-          : '-top-12 left-1/2 -translate-x-1/2 rotate-90',
-        className,
-      )}
+      className={cn(className, inTheBoxStyles)}
       disabled={!canScrollPrev}
       onClick={scrollPrev}
       {...props}
@@ -203,22 +214,27 @@ function CarouselNext({
   className,
   variant = 'outline',
   size = 'icon',
+  inTheBox = false,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: augmentedButtonProps) {
   const {orientation, scrollNext, canScrollNext} = useCarousel();
-
+  const orientationStylesInTheBox =
+    orientation === 'horizontal'
+      ? 'top-1/2 -right-4 -translate-y-1/2'
+      : '-bottom-12 left-1/2 -translate-x-1/2 rotate-90';
+  const orientationStyles =
+    orientation === 'horizontal'
+      ? 'top-1/2 -right-12 -translate-y-1/2'
+      : '-bottom-12 left-1/2 -translate-x-1/2 rotate-90';
+  const inTheBoxStyles = inTheBox
+    ? `absolute size-8 rounded-full ${orientationStylesInTheBox}`
+    : `absolute size-8 rounded-full ${orientationStyles}`;
   return (
     <Button
       data-slot="carousel-next"
       variant={variant}
       size={size}
-      className={cn(
-        'absolute size-8 rounded-full',
-        orientation === 'horizontal'
-          ? 'top-1/2 -right-12 -translate-y-1/2'
-          : '-bottom-12 left-1/2 -translate-x-1/2 rotate-90',
-        className,
-      )}
+      className={cn(className, inTheBoxStyles)}
       disabled={!canScrollNext}
       onClick={scrollNext}
       {...props}

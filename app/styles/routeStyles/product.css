@@ -97,11 +97,11 @@
   }
 }
 
-.top-part-card-list {
+/* .top-part-card-list {
   display: flex;
   justify-content: center;
   align-items: center;
-}
+} */
 @media (min-width: 1250px) {
   .left-arrow-carousel-list {
     margin: 0 12px;

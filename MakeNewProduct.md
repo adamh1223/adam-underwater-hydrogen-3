@@ -1,8 +1,8 @@
 Category:
 Home & Garden -> Decor -> Artwork -> Posters, Prints, & Visual Artwork
 
+---
 
-------------------------------------------
 VARIANTS:
 Layout:
 Standard
@@ -14,7 +14,8 @@ Small
 Medium
 Large
 
-------------------------------------------
+---
+
 Location tags:
 
 loc_locname_san_miguel_island_locstatecaps_ca_loccountrycaps_usa
@@ -33,10 +34,10 @@ Prints
 COLLECTIONS:
 Prints
 
-
 ## Images:
 
-------------------------------------------
+---
+
 Main Thumbnail for Products Container (VIEWING ALL PRODUCTS):
 
 altText:
@@ -48,7 +49,7 @@ altText:
 standard_example1 = Second image in carousel
 standard_example2 = Third image in carousel
 
---------------------------------------
+---
 
 Main Thumbnail/first image for Product (VIEWING SPECIFIC PRODUCT):
 
@@ -59,7 +60,9 @@ Second and third images in this carousel:
 
 altText:
 carousel
-------------------------------------
+
+---
+
 Sizes:
 
 NAME (NOT ALTTEXT):
@@ -67,5 +70,20 @@ large3_230498230... = large size, 3 columns
 medium3_28479238... = medium size, 3 columns
 small3_823842883... = small size, 3 columns
 
-------------------------------------
+small1 = small size, 1 column
+medium1
+large1
+
+---
+
 Shipping and Delivery -> Manage Shipping Profiles -> Products -> Manage Products -> Add the product
+
+QUESTIONS:
+Where does it get its standard sizes from? See Tree
+Where's the third carousel image on viewing specific product?
+How do we determine which image is second and third when we are just using altText 'carousel'
+Can we delete other collections besides prints? Like
+
+Home page
+multiple_images
+product_sizes

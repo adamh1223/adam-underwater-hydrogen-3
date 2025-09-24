@@ -51,7 +51,7 @@ function EProductPreview({
     };
   }, [isHovered]);
 
-  const divStyles = isVideoReady ? 'relative w-full pb-[56.25%]' : 'h-0 w-0';
+  const divStyles = isVideoReady ? 'relative w-full pb-[52.7%]' : 'h-0 w-0';
   // This pb is messing things up, we have to find another way to do this
   const iframeStyles = isVideoReady
     ? {

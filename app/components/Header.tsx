@@ -300,7 +300,7 @@ function HeaderCtas({
             </>
           ) : (
             <Button variant="ghost" className="mb-3">
-              <Link to={'/account'}>Sign In/Sign Up</Link>
+              <Link to={'/account/login'}>Sign In/Sign Up</Link>
             </Button>
           )}
           {loginValue && (

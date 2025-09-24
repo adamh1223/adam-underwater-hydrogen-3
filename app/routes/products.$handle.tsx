@@ -17,7 +17,12 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import IndividualProduct from '~/components/products/individualProduct';
-import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from 'lucide-react';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 import {ProductImages} from '~/lib/types';
@@ -201,6 +206,7 @@ export default function Product() {
       }
     })
     .filter(Boolean);
+  console.log(images, 'hellohello');
 
   standardCarouselImages.unshift(selectedVariant?.image);
   const isVideo = product.tags[0] === 'EProduct';
@@ -287,7 +293,9 @@ export default function Product() {
   );
 
   console.log(disableButton, '5511');
-  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | undefined>(
+    undefined,
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   useEffect(() => {
@@ -310,9 +318,11 @@ export default function Product() {
 
   const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.stopPropagation();
+
     scrollToIndex(currentIndex + 1);
   };
 
+  console.log(currentIndex, 'index after');
   const decreaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.stopPropagation();
     scrollToIndex(currentIndex - 1);
@@ -991,7 +1001,7 @@ export default function Product() {
                           </div>
                         </CarouselItem>
                       </CarouselContent>
-                      <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+                      {/* <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
                         <Button
                           onClick={decreaseIndex}
                           className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
@@ -1000,13 +1010,15 @@ export default function Product() {
                           <ChevronLeftIcon className="h-6 w-6 text-white" />
                         </Button>
                         <Button
-                          onClick={increaseIndex}
+                          onClick={() => carouselApi?.scrollNext()}
                           className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
                           variant="secondary"
                         >
                           <ChevronRightIcon className="h-6 w-6 text-white" />
                         </Button>
-                      </div>
+                      </div> */}
+                      <CarouselPrevious inTheBox />
+                      <CarouselNext inTheBox />
                     </Carousel>
                   </div>
                   <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
@@ -1047,22 +1059,8 @@ export default function Product() {
                           </div>
                         </CarouselItem>
                       </CarouselContent>
-                      <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
-                        <Button
-                          onClick={decreaseIndex}
-                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
-                          variant="secondary"
-                        >
-                          <ChevronLeftIcon className="h-6 w-6 text-white" />
-                        </Button>
-                        <Button
-                          onClick={increaseIndex}
-                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
-                          variant="secondary"
-                        >
-                          <ChevronRightIcon className="h-6 w-6 text-white" />
-                        </Button>
-                      </div>
+                      <CarouselPrevious inTheBox />
+                      <CarouselNext inTheBox />
                     </Carousel>
                   </div>
                   <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
@@ -1103,22 +1101,9 @@ export default function Product() {
                           </div>
                         </CarouselItem>
                       </CarouselContent>
-                      <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
-                        <Button
-                          onClick={decreaseIndex}
-                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
-                          variant="secondary"
-                        >
-                          <ChevronLeftIcon className="h-6 w-6 text-white" />
-                        </Button>
-                        <Button
-                          onClick={increaseIndex}
-                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
-                          variant="secondary"
-                        >
-                          <ChevronRightIcon className="h-6 w-6 text-white" />
-                        </Button>
-                      </div>
+
+                      <CarouselPrevious inTheBox />
+                      <CarouselNext inTheBox />
                     </Carousel>
                   </div>
                   <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
@@ -1237,7 +1222,7 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
     }
   }
 ` as const;
-
+// changing the first first: number changes how many images get snet back
 const PRODUCT_FRAGMENT = `#graphql
   fragment Product on Product {
     id
@@ -1252,7 +1237,7 @@ const PRODUCT_FRAGMENT = `#graphql
     }
     encodedVariantExistence
     encodedVariantAvailability
-    images(first: 10) {
+    images(first: 50) {
       nodes {
         url
         altText
@@ -1299,7 +1284,7 @@ const PRODUCT_QUERY = `#graphql
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product
-      collections(first: 10) {
+      collections(first: 15) {
         edges {
           node {
             title
@@ -1307,7 +1292,7 @@ const PRODUCT_QUERY = `#graphql
               namespace
               key
               value
-              references(first: 10) {
+              references(first: 15) {
                 nodes {
                   ... on MediaImage {
                     id

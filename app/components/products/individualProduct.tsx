@@ -20,6 +20,8 @@ function IndividualProduct({
     altText: string;
   }[];
 }) {
+  console.log(productImages, 'imgs');
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   useEffect(() => {

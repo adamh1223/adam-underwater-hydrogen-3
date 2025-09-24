@@ -101,8 +101,10 @@ const ProductCarousel = ({
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
 
   const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    console.log(carouselApi, 'api1');
     evt.stopPropagation();
     scrollToIndex(currentIndex + 1);
+    console.log(carouselApi, 'api2');
   };
 
   const decreaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
