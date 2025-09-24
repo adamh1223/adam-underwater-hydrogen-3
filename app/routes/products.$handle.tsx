@@ -211,19 +211,63 @@ export default function Product() {
   // });
   console.log(standardCarouselImages, '2000');
 
-  const locationTag = product.tags
-    .find((word: string) => word.includes('loc'))
-    ?.split('_');
-  const locationName = locationTag
-    ?.slice(1, locationTag.length - 2)
-    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-  const locationState = locationTag
-    ?.slice(locationTag.length - 2, locationTag.length - 1)
-    .map((word: string) => word.toUpperCase());
-  const locationCountry = locationTag
-    ?.slice(locationTag.length - 1, locationTag.length)
-    .map((word: string) => word.toUpperCase());
+  const locationTag = product.tags.find((t: string) => t?.startsWith?.('loc_'));
+  let locationName: string | undefined;
+  let locationState: string | undefined;
+  let locationCountry: string | undefined;
+
+  const titleCase = (w: string) =>
+    w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+
+  if (locationTag) {
+    const parts = locationTag.split('_');
+
+    const extract = (base: 'locname' | 'locstate' | 'loccountry') => {
+      const capsKey = `${base}caps`;
+      const capsIdx = parts.indexOf(capsKey);
+      const baseIdx = parts.indexOf(base);
+      const idx = capsIdx !== -1 ? capsIdx : baseIdx;
+      if (idx === -1) return undefined;
+
+      // collect tokens after the key until next loc* signifier or end
+      const valueParts: string[] = [];
+      for (let i = idx + 1; i < parts.length; i++) {
+        if (parts[i].startsWith('loc')) break;
+        valueParts.push(parts[i]);
+      }
+      if (valueParts.length === 0) return undefined;
+
+      const raw = valueParts.join(' ').trim();
+      if (raw.toLowerCase() === 'null') return undefined;
+
+      // caps key present -> force ALL CAPS
+      if (capsIdx !== -1) return raw.toUpperCase();
+
+      // locname -> always title-case each token (no short-token uppercasing)
+      if (base === 'locname') {
+        return valueParts.map(titleCase).join(' ');
+      }
+
+      // locstate / loccountry -> uppercase tokens <= 3 chars (CA, USA), otherwise title-case
+      return valueParts
+        .map((w) => (w.length <= 3 ? w.toUpperCase() : titleCase(w)))
+        .join(' ');
+    };
+
+    locationName = extract('locname');
+    locationState = extract('locstate');
+    locationCountry = extract('loccountry');
+  }
+
+  const formattedLocation = [locationName, locationState, locationCountry]
+    .filter(Boolean)
+    .join(', ');
+
+  // Example:
+  // tag: loc_locname_san_miguel_island_locstatecaps_ca_loccountrycaps_usa
+  // formattedLocation -> "San Miguel Island, CA, USA"
+
+  Example: console.log(formattedLocation, 'qqq');
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
@@ -317,9 +361,7 @@ export default function Product() {
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
-            <h4 className="text-xl mt-1 pb-4">
-              {`${locationName}, ${locationState}, ${locationCountry}`}
-            </h4>
+            <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
           </>
         )}
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
