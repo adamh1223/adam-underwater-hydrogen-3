@@ -361,7 +361,11 @@ function SearchToggle() {
 function CartBadge({count}: {count: number | null}) {
   const {open} = useAside();
   const {publish, shop, cart, prevCart} = useAnalytics();
+  const onCartHover = () => {
+    console.log('hello');
 
+    open('cart');
+  };
   return (
     <Button
       // href="/cart"
@@ -379,10 +383,12 @@ function CartBadge({count}: {count: number | null}) {
       }}
     >
       <NavLink to="/cart">
-        <LuShoppingCart className="relative -bottom-3 -right-1" />
-        <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
-          {count}
-        </span>
+        <div onMouseEnter={onCartHover}>
+          <LuShoppingCart className="relative -bottom-3 -right-1" />
+          <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
+            {count}
+          </span>
+        </div>
       </NavLink>
     </Button>
   );

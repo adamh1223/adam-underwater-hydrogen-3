@@ -33,7 +33,7 @@ aside {
   min-width: var(--aside-width);
   position: fixed;
   right: calc(-1 * var(--aside-width));
-  top: 0;
+  top: 100px;
   transition: transform 200ms ease-in-out;
   overflow-y: auto;
 }
