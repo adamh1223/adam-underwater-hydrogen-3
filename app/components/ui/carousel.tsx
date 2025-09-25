@@ -184,7 +184,7 @@ function CarouselPrevious({
 
   const orientationStylesInTheBox =
     orientation === 'horizontal'
-      ? 'top-1/2 -left-4 -translate-y-1/2'
+      ? 'top-1/2 -left-1 -translate-y-1/2'
       : '-top-12 left-1/2 -translate-x-1/2 rotate-90';
   const orientationStyles =
     orientation === 'horizontal'
@@ -220,7 +220,7 @@ function CarouselNext({
   const {orientation, scrollNext, canScrollNext} = useCarousel();
   const orientationStylesInTheBox =
     orientation === 'horizontal'
-      ? 'top-1/2 -right-4 -translate-y-1/2'
+      ? 'top-1/2 -right-1 -translate-y-1/2'
       : '-bottom-12 left-1/2 -translate-x-1/2 rotate-90';
   const orientationStyles =
     orientation === 'horizontal'

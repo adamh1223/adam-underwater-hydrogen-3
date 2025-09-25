@@ -141,7 +141,7 @@ export default function Product() {
     tags,
   } = product;
 
-  const WMLink = tags.filter((tag) => tag.includes('wmlink'))?.[0];
+  const WMLink = tags.filter((tag: string) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
 
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
@@ -958,162 +958,149 @@ export default function Product() {
             </div>
           </>
         )}
-        <section className="in-the-box-section mt-3">
-          {/* section title */}
-          <div className="section-title-container">
-            <div className="flex items-center justify-center w-full">
-              <div className="flex-1 h-px bg-muted" />
-              <span className="px-4">
-                <p className="text-xl">In the Box</p>
-              </span>
-              <div className="flex-1 h-px bg-muted" />
+        {!isVideo && (
+          <section className="in-the-box-section mt-3">
+            {/* section title */}
+            <div className="section-title-container">
+              <div className="flex items-center justify-center w-full">
+                <div className="flex-1 h-px bg-muted" />
+                <span className="px-4">
+                  <p className="text-xl">In the Box</p>
+                </span>
+                <div className="flex-1 h-px bg-muted" />
+              </div>
             </div>
-          </div>
-          <div className="my-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-x-0 md:gap-x-5 lg:gap-x-5">
-            <div className="in-the-box in-the-box-1 flex justify-center">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-start">
-                    <img src={'/1x-icon-2.png'} style={{height: '2rem'}} />
-                  </div>
-                  <div className="flex justify-center">
-                    <strong>Canvas Print</strong>
-                  </div>
-                  <hr />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-center">
-                    <Carousel className="w-full max-w-sm px-5">
-                      <CarouselContent>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear1.png'} alt="Gear 1" />
-                          </div>
-                        </CarouselItem>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear2.png'} alt="Gear 2" />
-                          </div>
-                        </CarouselItem>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear3.png'} alt="Gear 3" />
-                          </div>
-                        </CarouselItem>
-                      </CarouselContent>
-                      {/* <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
-                        <Button
-                          onClick={decreaseIndex}
-                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
-                          variant="secondary"
-                        >
-                          <ChevronLeftIcon className="h-6 w-6 text-white" />
-                        </Button>
-                        <Button
-                          onClick={() => carouselApi?.scrollNext()}
-                          className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none mx-[-4px]`}
-                          variant="secondary"
-                        >
-                          <ChevronRightIcon className="h-6 w-6 text-white" />
-                        </Button>
-                      </div> */}
-                      <CarouselPrevious inTheBox />
-                      <CarouselNext inTheBox />
-                    </Carousel>
-                  </div>
-                  <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
-                    Each framed print comes with heavy duty hanging wire
-                    attached
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="in-the-box in-the-box-2 flex justify-center">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-start">
-                    <img src={'/1x-icon-2.png'} style={{height: '2rem'}} />
-                  </div>
-                  <div className="flex justify-center">
-                    <strong>NFC Tag in bottom right corner</strong>
-                  </div>
-                  <hr />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-center">
-                    <Carousel className="w-full max-w-sm px-5">
-                      <CarouselContent>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear1.png'} alt="Gear 1" />
-                          </div>
-                        </CarouselItem>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear2.png'} alt="Gear 2" />
-                          </div>
-                        </CarouselItem>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear3.png'} alt="Gear 3" />
-                          </div>
-                        </CarouselItem>
-                      </CarouselContent>
-                      <CarouselPrevious inTheBox />
-                      <CarouselNext inTheBox />
-                    </Carousel>
-                  </div>
-                  <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
-                    Try tapping your phone to the bottom right corner of the
-                    frame
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="in-the-box in-the-box-3 flex justify-center">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-start">
-                    <img src={'/2x-icon.png'} style={{height: '2rem'}} />
-                  </div>
-                  <div className="flex justify-center">
-                    <strong>Picture hangers and nails</strong>
-                  </div>
-                  <hr />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-center">
-                    <Carousel className="w-full max-w-sm px-5">
-                      <CarouselContent>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear1.png'} alt="Gear 1" />
-                          </div>
-                        </CarouselItem>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear2.png'} alt="Gear 2" />
-                          </div>
-                        </CarouselItem>
-                        <CarouselItem>
-                          <div className="p-4 flex items-center justify-center">
-                            <img src={'/gear3.png'} alt="Gear 3" />
-                          </div>
-                        </CarouselItem>
-                      </CarouselContent>
+            <div className="my-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-x-0 md:gap-x-5 lg:gap-x-5">
+              <div className="in-the-box in-the-box-1 flex justify-center">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-start">
+                      <img src={'/1x-icon-2.png'} style={{height: '2rem'}} />
+                    </div>
+                    <div className="flex justify-center">
+                      <strong>Canvas Print</strong>
+                    </div>
+                    <hr />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <Carousel className="w-full max-w-sm px-[25px]">
+                        <CarouselContent>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear1.png'} alt="Gear 1" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear2.png'} alt="Gear 2" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear3.png'} alt="Gear 3" />
+                            </div>
+                          </CarouselItem>
+                        </CarouselContent>
 
-                      <CarouselPrevious inTheBox />
-                      <CarouselNext inTheBox />
-                    </Carousel>
-                  </div>
-                  <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
-                    Each print comes with 2 sets of picture hangers and nails
-                  </div>
-                </CardContent>
-              </Card>
+                        <CarouselPrevious inTheBox />
+                        <CarouselNext inTheBox />
+                      </Carousel>
+                    </div>
+                    <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
+                      Each framed print comes with heavy duty hanging wire
+                      attached
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="in-the-box in-the-box-2 flex justify-center">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-start">
+                      <img src={'/1x-icon-2.png'} style={{height: '2rem'}} />
+                    </div>
+                    <div className="flex justify-center">
+                      <strong>NFC Tag in bottom right corner</strong>
+                    </div>
+                    <hr />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <Carousel className="w-full max-w-sm px-[25px]">
+                        <CarouselContent>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear1.png'} alt="Gear 1" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear2.png'} alt="Gear 2" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear3.png'} alt="Gear 3" />
+                            </div>
+                          </CarouselItem>
+                        </CarouselContent>
+                        <CarouselPrevious inTheBox />
+                        <CarouselNext inTheBox />
+                      </Carousel>
+                    </div>
+                    <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
+                      Try tapping your phone to the bottom right corner of the
+                      frame
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="in-the-box in-the-box-3 flex justify-center">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-start">
+                      <img src={'/2x-icon.png'} style={{height: '2rem'}} />
+                    </div>
+                    <div className="flex justify-center">
+                      <strong>Picture hangers and nails</strong>
+                    </div>
+                    <hr />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <Carousel className="w-full max-w-sm px-[25px]">
+                        <CarouselContent>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear1.png'} alt="Gear 1" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear2.png'} alt="Gear 2" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear3.png'} alt="Gear 3" />
+                            </div>
+                          </CarouselItem>
+                        </CarouselContent>
+
+                        <CarouselPrevious inTheBox />
+                        <CarouselNext inTheBox />
+                      </Carousel>
+                    </div>
+                    <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
+                      Each print comes with 2 sets of picture hangers and nails
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
         <section className="reviews mt-3">
           {/* section title */}
           <div className="section-title-container">

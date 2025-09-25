@@ -37,23 +37,24 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
     <>
       <div aria-labelledby="cart-summary" className={className}>
         <Card>
-          <CardHeader>
-            <h4>Totals</h4>
-          </CardHeader>
+          <div className="p-3">
+            <p className="cart-header">Totals</p>
+            <hr />
+          </div>
           <CardContent>
-            <dl className="cart-subtotal">
-              <dt>Subtotal:</dt>
-              <dd>
+            <div className="cart-subtotal">
+              <p className="cart-header">Subtotal:</p>
+              <div>
                 {cart.cost?.subtotalAmount?.amount ? (
                   <Money
                     data={cart.cost?.subtotalAmount}
-                    className="text-lg font-bold ms-1"
+                    className="cart-header ms-1"
                   />
                 ) : (
                   '-'
                 )}
-              </dd>
-            </dl>
+              </div>
+            </div>
             <br />
             <CartDiscounts discountCodes={cart.discountCodes} />
             <CartGiftCard giftCardCodes={cart.appliedGiftCards} />
@@ -150,7 +151,7 @@ function CartDiscounts({
             className="cursor-pointer ms-2"
             variant="outline"
           >
-            Apply
+            <p className="apply-text">Apply</p>
           </Button>
         </div>
       </UpdateDiscountForm>

@@ -58,8 +58,6 @@ export function Aside({
   useEffect(() => {
     const abortController = new AbortController();
     if (location.pathname === '/cart') {
-      console.log('hello there');
-
       close();
     }
     if (expanded) {
@@ -84,12 +82,12 @@ export function Aside({
     >
       <button className="close-outside" onClick={close} />
 
-      <aside className="border-l border-t">
+      <aside className="border-l">
         {windowWidth != null && windowWidth > 1279 && (
-          <div className="mt-[70px]">
-            <div className="flex justify-end pe-4 pt-1">
+          <div className="mt-[45px]">
+            <div className="flex justify-end pe-4">
               <button
-                className="close reset cursor-pointer"
+                className="close reset cursor-pointer text-xl"
                 onClick={close}
                 aria-label="Close"
               >
@@ -108,11 +106,11 @@ export function Aside({
             <main>{children}</main>
           </div>
         )}
-        {windowWidth != null && windowWidth <= 1279 && windowWidth > 602 && (
-          <div className="mt-[180px]">
-            <div className="flex justify-end pe-4 pt-1">
+        {windowWidth != null && windowWidth <= 1279 && windowWidth > 600 && (
+          <div className="mt-[125px]">
+            <div className="flex justify-end pe-4">
               <button
-                className="close reset cursor-pointer"
+                className="close reset cursor-pointer text-xl"
                 onClick={close}
                 aria-label="Close"
               >
@@ -131,11 +129,11 @@ export function Aside({
             <main>{children}</main>
           </div>
         )}
-        {windowWidth != null && windowWidth <= 602 && (
-          <div className="mt-[210px]">
-            <div className="flex justify-end pe-4 pt-1">
+        {windowWidth != null && windowWidth <= 600 && (
+          <div className="mt-[135px]">
+            <div className="flex justify-end pe-4">
               <button
-                className="close reset cursor-pointer"
+                className="close reset cursor-pointer text-xl"
                 onClick={close}
                 aria-label="Close"
               >

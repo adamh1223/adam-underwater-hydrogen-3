@@ -9,6 +9,7 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {Card, CardContent, CardDescription} from './ui/card';
 import {Button} from './ui/button';
 import {generateCartDescription, includesTagName} from '~/lib/utils';
+import {useEffect, useState} from 'react';
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
@@ -63,12 +64,12 @@ export function CartLineItem({
               }}
             >
               <div className="flex flex-row">
-                <p>
+                <div>
                   <strong>{product.title}</strong>
-                </p>
+                </div>
               </div>
               {cartDescription && (
-                <p className="cart-description">{cartDescription}</p>
+                <div className="cart-description">{cartDescription}</div>
               )}
             </Link>
 
@@ -77,9 +78,11 @@ export function CartLineItem({
               <ul>
                 {selectedOptions.map((option) => (
                   <li key={option.name}>
-                    <p className="cart-subheader">
-                      {option.name}: {option.value}
-                    </p>
+                    <div className="flex justify-start items-center">
+                      <p className="cart-subheader">
+                        {option.name}: {option.value}
+                      </p>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -111,10 +114,11 @@ function CartLineQuantity({
 
   return (
     <div className="cart-line-quantity">
-      <p className="cart-subheader flex justify-center align-center ps-1">
-        Quantity: &nbsp;<span className="text-md font-bold">{quantity}</span>{' '}
+      <div className="cart-subheader flex justify-center align-center ps-1">
+        <span>Quantity:</span> &nbsp;
+        <span className="text-md font-bold cart-quantity">{quantity}</span>{' '}
         &nbsp;&nbsp;
-      </p>
+      </div>
       {hideQuantityButtons && (
         <>
           <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
@@ -124,6 +128,7 @@ function CartLineQuantity({
               name="decrease-quantity"
               value={prevQuantity}
               variant="ghost"
+              size="icon"
             >
               <span>&#8722; </span>
             </Button>
@@ -160,15 +165,43 @@ function CartLineRemoveButton({
   lineIds: string[];
   disabled: boolean;
 }) {
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
   return (
     <CartForm
       route="/cart"
       action={CartForm.ACTIONS.LinesRemove}
       inputs={{lineIds}}
     >
-      <Button disabled={disabled} type="submit" variant="ghost">
-        Remove
-      </Button>
+      {windowWidth != null && windowWidth <= 600 && (
+        <Button
+          disabled={disabled}
+          type="submit"
+          variant="ghost"
+          className="remove-button"
+          size="sm"
+        >
+          <p className="remove-button-text">Remove</p>
+        </Button>
+      )}
+      {windowWidth != null && windowWidth > 600 && (
+        <Button
+          disabled={disabled}
+          type="submit"
+          variant="ghost"
+          className="remove-button"
+          size="lg"
+        >
+          <p className="remove-button-text">Remove</p>
+        </Button>
+      )}
     </CartForm>
   );
 }

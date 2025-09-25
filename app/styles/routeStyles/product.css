@@ -90,10 +90,15 @@
     margin-top: 10px;
     max-width: 530px;
   }
-  .bottom-part-card {
+  .bottom-part-card-grid {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  .bottom-part-card-list {
+    display: flex;
+    align-items: center;
+    justify-content: start;
   }
 }
 

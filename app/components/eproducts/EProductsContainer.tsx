@@ -91,7 +91,13 @@ function EProductsContainer({
                   RedirectTo={`/stock`}
                 />
               </div> */}
-            <div className="bottom-part-card">
+            <div
+              className={
+                layout === 'grid'
+                  ? `bottom-part-card-grid`
+                  : `bottom-part-card-list`
+              }
+            >
               <div className="bottom-part-card-inside mx-5">
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}

@@ -377,30 +377,32 @@ function CartBadge({count}: {count: number | null}) {
     open('cart');
   };
   return (
-    <Button
-      // href="/cart"
-      className="w-12"
-      variant="outline"
-      onClick={(e) => {
-        e.preventDefault();
+    <div onMouseEnter={onCartHover}>
+      <Button
+        // href="/cart"
+        className="w-1"
+        variant="outline"
+        onClick={(e) => {
+          e.preventDefault();
 
-        publish('cart_viewed', {
-          cart,
-          prevCart,
-          shop,
-          url: window.location.href || '',
-        } as CartViewPayload);
-      }}
-    >
-      <NavLink to="/cart">
-        <div onMouseEnter={onCartHover}>
-          <LuShoppingCart className="relative -bottom-3 -right-1" />
-          <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
-            {count}
-          </span>
-        </div>
-      </NavLink>
-    </Button>
+          publish('cart_viewed', {
+            cart,
+            prevCart,
+            shop,
+            url: window.location.href || '',
+          } as CartViewPayload);
+        }}
+      >
+        <NavLink to="/cart">
+          <div>
+            <LuShoppingCart className="relative -bottom-3 -right-1" />
+            <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
+              {count}
+            </span>
+          </div>
+        </NavLink>
+      </Button>
+    </div>
   );
 }
 
