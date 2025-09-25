@@ -189,7 +189,7 @@ button.reset:hover:not(:has(> *)) {
   position: sticky;
   color: white;
   top: 0;
-  z-index: 41;
+  z-index: 300;
 }
 
 /* .header-menu-mobile-toggle {
@@ -663,4 +663,27 @@ span {
 
 .size-image {
   width: 50px;
+}
+
+/* keep trigger z-index so it doesn't get hidden under other inline things */
+.about-dropdown {
+  z-index: 400;
+}
+
+/* portal-mounted dropdown content */
+.hovercard-content,
+[data-radix-hover-card-content] {
+  z-index: 9999 !important;
+  background-color: var(--color-background);
+}
+
+.account-menu-dropdown {
+  z-index: 400;
+}
+
+/* portal-mounted dropdown content */
+.hovercard-content,
+[data-radix-hover-card-content] {
+  z-index: 9999 !important;
+  background-color: var(--color-background);
 }

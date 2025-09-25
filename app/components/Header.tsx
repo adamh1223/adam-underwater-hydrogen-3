@@ -1,4 +1,5 @@
 import {Suspense} from 'react';
+import * as RadixHoverCard from '@radix-ui/react-hover-card';
 import {
   Await,
   Form,
@@ -265,9 +266,9 @@ function HeaderCtas({
   return (
     <nav className="header-ctas" role="navigation">
       {/* <HeaderMenuMobileToggle /> */}
-      <CartToggle cart={cart} />
-      <HoverCard openDelay={100} closeDelay={100}>
-        <HoverCardTrigger>
+
+      <RadixHoverCard.Root openDelay={100} closeDelay={100}>
+        <RadixHoverCard.Trigger asChild>
           <NavLink prefetch="intent" to="/account">
             <div className="account-menu-dropdown">
               <Button
@@ -277,44 +278,55 @@ function HeaderCtas({
                 <LuAlignLeft className="w-6 h-6" />
                 <LuUser className="w-6 h-6 bg-primary rounded-full text-white" />
                 {/* <Suspense fallback="Sign in">
-            <Await resolve={isLoggedIn} errorElement="Sign in">
-              {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-            </Await>
-          </Suspense> */}
+                <Await resolve={isLoggedIn} errorElement="Sign in">
+                  {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
+                </Await>
+              </Suspense> */}
               </Button>
             </div>
           </NavLink>
-        </HoverCardTrigger>
-        <HoverCardContent className={loginValue ? 'w-40' : 'w-42'}>
-          {loginValue ? (
-            <>
-              <div className="mb-3">
-                {links.map((link) => {
-                  return (
-                    <Button variant="ghost">
+        </RadixHoverCard.Trigger>
+
+        {/* Portal ensures this content floats above the header */}
+        <RadixHoverCard.Portal>
+          <RadixHoverCard.Content
+            sideOffset={3}
+            align="center"
+            className={`
+            hovercard-content 
+            rounded border-l border-r border-t border-b
+            ${loginValue ? 'w-38' : 'w-40'}
+          `}
+          >
+            {loginValue ? (
+              <>
+                <div className="p-3">
+                  {links.map((link) => (
+                    <Button key={link.href} variant="ghost">
                       <Link to={link.href}>{link.label}</Link>
                     </Button>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <Button variant="ghost" className="mb-3">
-              <Link to={'/account/login'}>Sign In/Sign Up</Link>
-            </Button>
-          )}
-          {loginValue && (
-            <>
-              <hr />
-              <div className="mt-3">
-                <Logout />{' '}
-              </div>
-            </>
-          )}
-        </HoverCardContent>
-      </HoverCard>
+                  ))}
+                </div>
+                <hr />
+                <div className="p-3 cursor-pointer">
+                  <Logout />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="p-3">
+                  <Button variant="ghost" className="mb-3">
+                    <Link to="/account/login">Sign In/Sign Up</Link>
+                  </Button>
+                </div>
+              </>
+            )}
+          </RadixHoverCard.Content>
+        </RadixHoverCard.Portal>
+      </RadixHoverCard.Root>
 
       <SearchToggle />
+      <CartToggle cart={cart} />
     </nav>
   );
 }
@@ -362,13 +374,12 @@ function CartBadge({count}: {count: number | null}) {
   const {open} = useAside();
   const {publish, shop, cart, prevCart} = useAnalytics();
   const onCartHover = () => {
-
     open('cart');
   };
   return (
     <Button
       // href="/cart"
-      size="icon"
+      className="w-12"
       variant="outline"
       onClick={(e) => {
         e.preventDefault();
