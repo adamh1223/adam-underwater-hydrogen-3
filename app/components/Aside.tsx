@@ -84,7 +84,7 @@ export function Aside({
 
       <aside className="border-l">
         {windowWidth != null && windowWidth > 1279 && (
-          <div className="mt-[45px]">
+          <div className="mt-[30px]">
             <div className="flex justify-end pe-4">
               <button
                 className="close reset cursor-pointer text-xl"
@@ -107,7 +107,7 @@ export function Aside({
           </div>
         )}
         {windowWidth != null && windowWidth <= 1279 && windowWidth > 600 && (
-          <div className="mt-[125px]">
+          <div className="mt-[105px]">
             <div className="flex justify-end pe-4">
               <button
                 className="close reset cursor-pointer text-xl"
@@ -130,7 +130,7 @@ export function Aside({
           </div>
         )}
         {windowWidth != null && windowWidth <= 600 && (
-          <div className="mt-[135px]">
+          <div className="mt-[100px]">
             <div className="flex justify-end pe-4">
               <button
                 className="close reset cursor-pointer text-xl"

@@ -196,11 +196,14 @@ function ProductOptionSwatch({
   // Add sizes here in future
   const image = swatch?.image?.previewImage?.url;
   const color = swatch?.color;
+  console.log(variantImagesToShow, 'hihihi');
+  // WE ARE NOT GETTING VariantImagesToShow - undefined
 
   if (variantImagesToShow && sizes.includes(name)) {
     const specificSize = variantImagesToShow.find((image) =>
       image?.image?.altText.includes(name.toLowerCase()),
     );
+
     return (
       <div
         aria-label={name}
