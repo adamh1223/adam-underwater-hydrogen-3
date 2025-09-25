@@ -45,7 +45,16 @@ export function Aside({
   };
   const location = useLocation();
   const imageSource = determineActiveTypeImage();
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   useEffect(() => {
     const abortController = new AbortController();
     if (location.pathname === '/cart') {
@@ -74,27 +83,77 @@ export function Aside({
       role="dialog"
     >
       <button className="close-outside" onClick={close} />
-      <aside className="border-l">
-        <div className="flex justify-end pe-4 pt-1">
-          <button
-            className="close reset cursor-pointer"
-            onClick={close}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-        </div>
 
-        <header>
-          <div className="flex justify-center border-b">
-            <img
-              src={imageSource}
-              style={{height: '80px'}}
-              className="pt-3"
-            ></img>
+      <aside className="border-l border-t">
+        {windowWidth != null && windowWidth > 1279 && (
+          <div className="mt-[70px]">
+            <div className="flex justify-end pe-4 pt-1">
+              <button
+                className="close reset cursor-pointer"
+                onClick={close}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <header>
+              <div className="flex justify-center border-b">
+                <img
+                  src={imageSource}
+                  style={{height: '80px'}}
+                  className="pt-3"
+                ></img>
+              </div>
+            </header>
+            <main>{children}</main>
           </div>
-        </header>
-        <main>{children}</main>
+        )}
+        {windowWidth != null && windowWidth <= 1279 && windowWidth > 602 && (
+          <div className="mt-[180px]">
+            <div className="flex justify-end pe-4 pt-1">
+              <button
+                className="close reset cursor-pointer"
+                onClick={close}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <header>
+              <div className="flex justify-center border-b">
+                <img
+                  src={imageSource}
+                  style={{height: '80px'}}
+                  className="pt-3"
+                ></img>
+              </div>
+            </header>
+            <main>{children}</main>
+          </div>
+        )}
+        {windowWidth != null && windowWidth <= 602 && (
+          <div className="mt-[210px]">
+            <div className="flex justify-end pe-4 pt-1">
+              <button
+                className="close reset cursor-pointer"
+                onClick={close}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <header>
+              <div className="flex justify-center border-b">
+                <img
+                  src={imageSource}
+                  style={{height: '80px'}}
+                  className="pt-3"
+                ></img>
+              </div>
+            </header>
+            <main>{children}</main>
+          </div>
+        )}
       </aside>
     </div>
   );

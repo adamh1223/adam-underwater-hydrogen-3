@@ -362,7 +362,6 @@ function CartBadge({count}: {count: number | null}) {
   const {open} = useAside();
   const {publish, shop, cart, prevCart} = useAnalytics();
   const onCartHover = () => {
-    console.log('hello');
 
     open('cart');
   };
