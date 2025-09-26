@@ -69,14 +69,14 @@
   }
 }
 
-@media (min-width: 1000px) {
+@media (min-width: 958px) {
   .description-html-card-list {
     font-size: 15px;
   }
 }
-@media (max-width: 999px) {
+@media (max-width: 957px) {
   .description-html-card-list {
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 @media (min-width: 787px) {
@@ -107,6 +107,29 @@
   justify-content: center;
   align-items: center;
 } */
+@media (min-width: 787px) and (max-width: 880px) {
+  .top-part-card-list {
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+}
+@media (min-width: 881px) and (max-width: 957px) {
+  .top-part-card-list {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+}
+@media (min-width: 958px) and (max-width: 1124px) {
+  .top-part-card-list {
+    margin-top: 27px;
+    margin-bottom: 20px;
+  }
+}
+@media (min-width: 1124px) and (max-width: 1300px) {
+  .top-part-card-list {
+    margin-top: 14px;
+  }
+}
 @media (min-width: 1250px) {
   .left-arrow-carousel-list {
     margin: 0 12px;

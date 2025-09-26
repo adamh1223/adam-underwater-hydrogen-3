@@ -748,3 +748,20 @@ span {
   z-index: 9999 !important;
   background-color: var(--color-background);
 }
+
+@media (min-width: 601px) {
+  .stock-footage-page-header {
+    height: 115px;
+  }
+}
+@media (max-width: 600px) {
+  .stock-footage-page-header {
+    height: 100px;
+  }
+}
+
+.policy-div {
+  width: 80vw;
+  display: flex;
+  justify-content: center;
+}

@@ -416,13 +416,15 @@ function OrderLineRow({
       <div className="td pb-5">
         {/* <td className="pb-5"> */}
         <div>
-          <div className="flex justify-center pb-3">
+          <div className="grid grid-cols-1 pb-3">
             <div className="flex justify-center">
               <p>
                 <strong>{lineItem.title}</strong>
               </p>
             </div>
-            <small>{lineItem.variantTitle}</small>
+            <div className="flex justify-center">
+              <small>{lineItem.variantTitle}</small>
+            </div>
           </div>
 
           {lineItem?.image && (

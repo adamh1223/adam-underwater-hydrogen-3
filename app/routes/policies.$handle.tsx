@@ -1,6 +1,7 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
 import {type Shop} from '@shopify/hydrogen/storefront-api-types';
+import {Card, CardContent, CardHeader} from '~/components/ui/card';
 
 type SelectedPolicies = keyof Pick<
   Shop,
@@ -45,13 +46,23 @@ export default function Policy() {
   const {policy} = useLoaderData<typeof loader>();
 
   return (
-    <div className="policy">
-      <br />
-      <br />
-      <br />
-      <h1>{policy.title}</h1>
-      <div dangerouslySetInnerHTML={{__html: policy.body}} />
-    </div>
+    <section className="policy-section flex justify-center">
+      <div className="policy-div flex justify-center">
+        <Card className="mt-5">
+          <CardHeader>
+            <div className="flex justify-center">
+              <div className="pb-3">{policy.title}</div>
+            </div>
+            <hr />
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-center ps-7 pe-7">
+              <div dangerouslySetInnerHTML={{__html: policy.body}} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
   );
 }
 

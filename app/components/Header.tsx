@@ -325,8 +325,8 @@ function HeaderCtas({
         </RadixHoverCard.Portal>
       </RadixHoverCard.Root>
 
-      <SearchToggle />
       <CartToggle cart={cart} />
+      <SearchToggle />
     </nav>
   );
 }
