@@ -2,6 +2,7 @@ import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
 import {type Shop} from '@shopify/hydrogen/storefront-api-types';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
+import {Button} from '~/components/ui/button';
 
 type SelectedPolicies = keyof Pick<
   Shop,
@@ -46,23 +47,34 @@ export default function Policy() {
   const {policy} = useLoaderData<typeof loader>();
 
   return (
-    <section className="policy-section flex justify-center">
-      <div className="policy-div flex justify-center">
-        <Card className="mt-5">
-          <CardHeader>
-            <div className="flex justify-center">
-              <div className="pb-3">{policy.title}</div>
-            </div>
-            <hr />
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center ps-7 pe-7">
-              <div dangerouslySetInnerHTML={{__html: policy.body}} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+    <>
+      <section>
+        <div className="pt-5 ps-[60px]">
+          <Link to="/policies">
+            <Button variant="outline" size="sm">
+              &larr; Back to Policies
+            </Button>
+          </Link>
+        </div>
+        <div className="policy-div-container flex justify-center">
+          <div className="policy-div flex justify-center">
+            <Card className="mt-5">
+              <CardHeader>
+                <div className="flex justify-center">
+                  <div className="pb-3">{policy.title}</div>
+                </div>
+                <hr />
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center ps-7 pe-7">
+                  <div dangerouslySetInnerHTML={{__html: policy.body}} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 

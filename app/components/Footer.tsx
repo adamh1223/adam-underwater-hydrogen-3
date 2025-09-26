@@ -89,7 +89,7 @@ function FooterMenu({
         </div>
         <div className="policies">
           <div className="footer-title flex justify-center mb-2 text-3xl">
-            Policies
+            <Link to="/policies">Policies</Link>
           </div>
           <div className="my-[-10px]">
             <Button variant="link">

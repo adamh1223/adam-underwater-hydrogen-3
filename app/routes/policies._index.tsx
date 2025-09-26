@@ -1,5 +1,6 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, Link} from '@remix-run/react';
+import {Button} from '~/components/ui/button';
 
 export async function loader({context}: LoaderFunctionArgs) {
   const data = await context.storefront.query(POLICIES_QUERY);
@@ -17,14 +18,20 @@ export default function Policies() {
 
   return (
     <div className="policies">
-      <h1>Policies</h1>
-      <div>
+      <div className="flex justify-center mt-5">
+        <img src={'/policies.png'} style={{height: '85px'}}></img>
+      </div>
+      <div className="flex justify-center gap-x-4">
         {policies.map((policy) => {
           if (!policy) return null;
           return (
-            <fieldset key={policy.id}>
-              <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
-            </fieldset>
+            <>
+              <Button variant="outline">
+                <fieldset key={policy.id}>
+                  <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
+                </fieldset>
+              </Button>
+            </>
           );
         })}
       </div>

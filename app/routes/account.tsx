@@ -37,7 +37,7 @@ export default function AccountLayout() {
       // `Welcome, ${customer.firstName}`
       <>
         <div className="flex justify-center pt-5">
-          <img src={'/account.png'} style={{height: '95px'}} className=""></img>
+          <img src={'/account.png'} style={{height: '95px'}}></img>
         </div>
         <div className="flex justify-center">Welcome, {customer.firstName}</div>
       </>
