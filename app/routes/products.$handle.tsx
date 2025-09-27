@@ -176,15 +176,31 @@ export default function Product() {
       };
     }
   });
+  const verticalImages = references?.nodes?.filter((item: any) => {
+    if (item.image.altText?.includes('vertical')) {
+      return {
+        image: {
+          url: item.image.url,
+          altText: item.image.altText,
+        },
+      };
+    }
+  });
 
   const determineLayoutImages = (variant: any) => {
-    const layout = variant.title.split(' / ')[0];
-    if (layout === 'Standard') {
+    const orientation = variant.title.split(' / ')[0];
+    const layout = variant.title.split(' / ')[1];
+    console.log(layout, '112233');
+    console.log(orientation, '11223344');
+
+    if (layout === 'Standard' && orientation === 'Landscape') {
       return standardImages;
-    } else if (layout === 'Two Columns') {
+    } else if (layout === 'Two Columns' && orientation === 'Landscape') {
       return twoColumnImages;
-    } else if (layout === 'Three Columns') {
+    } else if (layout === 'Three Columns' && orientation === 'Landscape') {
       return threeColumnImages;
+    } else if (layout === 'Standard' && orientation === 'vertical') {
+      return verticalImages;
     }
   };
 
@@ -206,7 +222,7 @@ export default function Product() {
       }
     })
     .filter(Boolean);
-  console.log(images, 'hellohello');
+  
 
   standardCarouselImages.unshift(selectedVariant?.image);
   const isVideo = product.tags[0] === 'EProduct';
@@ -215,7 +231,7 @@ export default function Product() {
 
   //   return word === 'Video';
   // });
-  console.log(standardCarouselImages, '2000');
+  console.log(selectedVariant, '2000');
 
   const locationTag = product.tags.find((t: string) => t?.startsWith?.('loc_'));
   let locationName: string | undefined;

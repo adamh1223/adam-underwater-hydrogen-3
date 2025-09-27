@@ -62,6 +62,8 @@ export function ProductForm({
                 const determineLayout = (name: string) => {
                   if (name === 'three columns') {
                     return '3';
+                  } else if (name === 'two columns') {
+                    return '2';
                   }
                   return '';
                 };
