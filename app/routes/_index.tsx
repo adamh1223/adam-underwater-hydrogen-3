@@ -65,7 +65,7 @@ export default function Homepage() {
       <Hero></Hero>
       <section className="pt-24">
         <div className="flex justify-center">
-          <img src={'/featured.png'} style={{height: '90px'}}></img>
+          <img src={'/featured.png'} style={{height: '90px'}} />
         </div>
       </section>
       {/* <FeaturedCollection collection={data.featuredCollection} /> */}

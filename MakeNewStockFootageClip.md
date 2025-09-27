@@ -20,21 +20,23 @@ Format for Stock Footage Product Description:
 4. Collections: "Stock"
 5. Tags:
 
-   Video
+   1. Video
 
-   EProduct
+   2. EProduct
 
-   wmlink_1045853480
+   3. wmlink_1045853480
 
-   loc_san_miguel_island_ca_usa
+   4. loc_locname_cape_town_locstate_null_loccountry_south_africa
 
-   https://www.adamunderwater.com/a/downloads/-/2226ee02b406f7af/4ed26301f79c4a52/download
+   loc_locname_san_miguel_island_locstatecaps_ca_loccountrycaps_usa
+
+
+   5. https://www.adamunderwater.com/a/downloads/-/2226ee02b406f7af/4ed26301f79c4a52/download
+
+   6. vimeo-3
 
 To get the last link, you have to buy the product, get the download link, and add /download to the end of the link.
 
 to get wmlink_1045853480, you have to get the number from the watermarked video on vimeo.
-
-add a tag that identifies which video it is on vimeo.
-vimeo-3
 
 Next feature: Add raw files for extra charge

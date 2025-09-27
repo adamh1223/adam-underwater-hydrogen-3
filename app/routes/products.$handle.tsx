@@ -181,9 +181,9 @@ export default function Product() {
     const layout = variant.title.split(' / ')[0];
     if (layout === 'Standard') {
       return standardImages;
-    } else if (layout === 'two columns') {
+    } else if (layout === 'Two Columns') {
       return twoColumnImages;
-    } else if (layout === 'three columns') {
+    } else if (layout === 'Three Columns') {
       return threeColumnImages;
     }
   };

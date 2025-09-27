@@ -78,6 +78,60 @@ large1
 
 Shipping and Delivery -> Manage Shipping Profiles -> Products -> Manage Products -> Add the product
 
+---
+
+Track quantity must be manually unchecked. Product page on shopify admin -> Variants -> Select EVERY SINGLE VARIANT, UNCHECK TRACK QUANTITY.
+
+---
+
+pricing
+
+Format:
+price
+strikethru price
+
+Standard/Small:
+180
+250
+Standard/Medium:
+210
+290
+Standard/Large:
+250
+340
+
+Two Columns/Small:
+230
+300
+Two Columns/Medium:
+260
+340
+Two Columns/Large:
+300
+390
+
+Three Columns/Small:
+280
+350
+Three Columns/Medium:
+310
+390
+Three Columns/Large:
+350
+440
+
+Vertical/Small:
+180
+250
+Vertical/Medium:
+210
+290
+Vertical/Large:
+250
+340
+
+---
+
 QUESTIONS:
 Where does it get its standard sizes from? See Tree
 Where's the third carousel image on viewing specific product?
