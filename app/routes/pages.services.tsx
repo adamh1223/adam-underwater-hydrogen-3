@@ -1,7 +1,7 @@
 import Sectiontitle from '~/components/global/Sectiontitle';
 import '../styles/routeStyles/services.css';
 import {Button} from '~/components/ui/button';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {
   Card,
   CardContent,
@@ -18,16 +18,97 @@ import {
   CarouselPrevious,
 } from '~/components/ui/carousel';
 import {servicesImages1, servicesImages2} from '~/utils/constants';
+import {useLocation} from '@remix-run/react';
 
 function ServicesPage() {
+  const location = useLocation();
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const retryTimerRef = useRef<number | null>(null);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
+  const getYOffset = () => {
+    if (windowWidth == null) return -180; // sane default until measured
+    if (windowWidth < 601) return -215;
+    if (windowWidth >= 601 && windowWidth < 1280) return -180;
+    return -75;
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (!section) return false;
+    const y =
+      section.getBoundingClientRect().top + window.scrollY + getYOffset();
+    window.scrollTo({top: y, behavior: 'smooth'});
+    return true;
+  };
+
   const handleClick = (
     sectionId: string,
     event: React.MouseEvent<HTMLAnchorElement>,
   ) => {
-    let section = document.getElementById(sectionId);
     event.preventDefault();
-    section && section.scrollIntoView({behavior: 'smooth'});
+    scrollToSection(sectionId);
   };
+
+  useEffect(() => {
+    // clear any pending retry timer if effect re-runs
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+
+    const saved = (() => {
+      try {
+        return sessionStorage.getItem('services-scroll-target');
+      } catch {
+        return null;
+      }
+    })();
+
+    const hashTarget = location.hash ? location.hash.replace('#', '') : null;
+    const target = hashTarget || saved;
+    if (!target) return;
+
+    // Try to scroll; if target not found yet in DOM, retry a few times
+    let attempts = 0;
+    const maxAttempts = 20;
+    const delayMs = 100;
+
+    const tryScroll = () => {
+      attempts++;
+      const ok = scrollToSection(target);
+      if (ok) {
+        try {
+          sessionStorage.removeItem('services-scroll-target');
+        } catch {}
+        return;
+      }
+      if (attempts >= maxAttempts) {
+        // give up
+        try {
+          sessionStorage.removeItem('services-scroll-target');
+        } catch {}
+        return;
+      }
+      retryTimerRef.current = window.setTimeout(tryScroll, delayMs);
+    };
+
+    // small initial delay to let layout happen
+    retryTimerRef.current = window.setTimeout(tryScroll, 50);
+
+    return () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
+  }, [location, windowWidth]);
 
   const [isVideoReady, setIsVideoReady] = useState(false);
 
@@ -83,24 +164,23 @@ function ServicesPage() {
           <a onClick={(evt) => handleClick('coaching', evt)}>1 on 1 Coaching</a>
         </Button> */}
       </div>
-      <Sectiontitle text="Underwater 8K Video" />
-      <section
-        id="video"
-        className="flex flex-col items-center justify-center text-center main"
-      >
-        <div className="media-container">
-          <img
-            src="/print3.jpg"
-            className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
-          />
-          <iframe
-            src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
-            frameBorder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            className={`video ${isVideoReady ? 'visible' : ''}`}
-            title="Background Video"
-          ></iframe>
+      <section id="video">
+        <Sectiontitle text="Underwater 8K Video" />
+        <div className="flex flex-col items-center justify-center text-center main">
+          <div className="media-container">
+            <img
+              src="/print3.jpg"
+              className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
+            />
+            <iframe
+              src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
+              frameBorder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              className={`video ${isVideoReady ? 'visible' : ''}`}
+              title="Background Video"
+            ></iframe>
+          </div>
         </div>
       </section>
       <section id="photo" className="pt-3">

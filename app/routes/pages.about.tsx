@@ -1,5 +1,6 @@
+import {useEffect, useRef, useState} from 'react';
+import {useLocation} from '@remix-run/react';
 import {Button} from '~/components/ui/button';
-import '../styles/routeStyles/about.css';
 import {Card} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
 import {
@@ -9,21 +10,97 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '~/components/ui/carousel';
-import photo1 from '~/assets/1.png';
-import photo2 from '~/assets/2.5.jpg';
-import photo3 from '~/assets/2.png';
-import {Navbar03} from 'components/ui/shadcn-io/navbar-03';
-import NavExample from '~/components/navbar/NavExample';
+import '../styles/routeStyles/about.css';
 
 function AboutPage() {
+  const location = useLocation();
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const retryTimerRef = useRef<number | null>(null);
+
+  // Track window width
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const getYOffset = () => {
+    if (windowWidth == null) return -180;
+    if (windowWidth < 601) return -215;
+    if (windowWidth >= 601 && windowWidth < 1280) return -180;
+    return -75;
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (!section) return false;
+    const y =
+      section.getBoundingClientRect().top + window.scrollY + getYOffset();
+    window.scrollTo({top: y, behavior: 'smooth'});
+    return true;
+  };
+
+  // Local anchor clicks
   const handleClick = (
-    section: string,
+    sectionId: string,
     event: React.MouseEvent<HTMLAnchorElement>,
   ) => {
-    let sectionId = document.getElementById(section);
     event.preventDefault();
-    sectionId && sectionId.scrollIntoView({behavior: 'smooth'});
+    scrollToSection(sectionId);
   };
+
+  // On mount / location change: handle hash or sessionStorage
+  useEffect(() => {
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+
+    const saved = (() => {
+      try {
+        return sessionStorage.getItem('about-scroll-target');
+      } catch {
+        return null;
+      }
+    })();
+
+    const hashTarget = location.hash ? location.hash.replace('#', '') : null;
+    const target = hashTarget || saved;
+    if (!target) return;
+
+    let attempts = 0;
+    const maxAttempts = 20;
+    const delayMs = 100;
+
+    const tryScroll = () => {
+      attempts++;
+      const ok = scrollToSection(target);
+      if (ok) {
+        try {
+          sessionStorage.removeItem('about-scroll-target');
+        } catch {}
+        return;
+      }
+      if (attempts >= maxAttempts) {
+        try {
+          sessionStorage.removeItem('about-scroll-target');
+        } catch {}
+        return;
+      }
+      retryTimerRef.current = window.setTimeout(tryScroll, delayMs);
+    };
+
+    retryTimerRef.current = window.setTimeout(tryScroll, 50);
+
+    return () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
+  }, [location, windowWidth]);
+
   return (
     <>
       <section id="about">
@@ -324,7 +401,6 @@ function AboutPage() {
               </p>
             </Card>
           </Card>
-          
         </div>
       </section>
     </>

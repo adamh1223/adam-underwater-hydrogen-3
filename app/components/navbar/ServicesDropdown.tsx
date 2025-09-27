@@ -1,7 +1,6 @@
 // ServicesDropdown.tsx (Portal version)
 import * as RadixHoverCard from '@radix-ui/react-hover-card';
-import {NavLink} from '@remix-run/react';
-import {Link} from 'react-router-dom';
+import {NavLink, Link} from '@remix-run/react';
 import React from 'react';
 import {Button} from '../ui/button';
 
@@ -20,6 +19,14 @@ function ServicesDropdown({
     menuItems.url.includes(primaryDomainUrl)
       ? new URL(menuItems.url).pathname
       : menuItems.url;
+
+  const writeScrollTarget = (sectionId: string) => {
+    try {
+      sessionStorage.setItem('services-scroll-target', sectionId);
+    } catch (e) {
+      // ignore storage errors (privacy mode, etc.)
+    }
+  };
 
   return (
     <RadixHoverCard.Root openDelay={100} closeDelay={100}>
@@ -40,7 +47,6 @@ function ServicesDropdown({
         </NavLink>
       </RadixHoverCard.Trigger>
 
-      {/* Portal ensures the Content is appended to document.body */}
       <RadixHoverCard.Portal>
         <RadixHoverCard.Content
           sideOffset={0}
@@ -49,13 +55,30 @@ function ServicesDropdown({
         >
           <div className="p-3">
             <Button variant="ghost">
-              <Link to={'/pages/services#video'}>Underwater Video</Link>
+              <Link
+                to={'/pages/services#video'}
+                onClick={() => writeScrollTarget('video')}
+              >
+                Underwater Video
+              </Link>
             </Button>
+
             <Button variant="ghost">
-              <Link to={'/pages/services#photo'}>Underwater Photo</Link>
+              <Link
+                to={'/pages/services#photo'}
+                onClick={() => writeScrollTarget('photo')}
+              >
+                Underwater Photo
+              </Link>
             </Button>
+
             <Button variant="ghost">
-              <Link to={'/pages/services#drone'}>Drone Services</Link>
+              <Link
+                to={'/pages/services#drone'}
+                onClick={() => writeScrollTarget('drone')}
+              >
+                Drone Services
+              </Link>
             </Button>
           </div>
         </RadixHoverCard.Content>

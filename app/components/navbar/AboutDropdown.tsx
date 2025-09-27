@@ -1,7 +1,6 @@
-// AboutDropdown.tsx (Portal version)
+// AboutDropdown.tsx (updated)
 import * as RadixHoverCard from '@radix-ui/react-hover-card';
-import {NavLink} from '@remix-run/react';
-import {Link} from 'react-router-dom';
+import {NavLink, Link} from '@remix-run/react';
 import React from 'react';
 import {Button} from '../ui/button';
 
@@ -20,6 +19,14 @@ function AboutDropdown({
     menuItems.url.includes(primaryDomainUrl)
       ? new URL(menuItems.url).pathname
       : menuItems.url;
+
+  const writeScrollTarget = (sectionId: string) => {
+    try {
+      sessionStorage.setItem('about-scroll-target', sectionId);
+    } catch (e) {
+      // ignore storage errors
+    }
+  };
 
   return (
     <RadixHoverCard.Root openDelay={100} closeDelay={100}>
@@ -40,7 +47,6 @@ function AboutDropdown({
         </NavLink>
       </RadixHoverCard.Trigger>
 
-      {/* Portal ensures the Content is appended to document.body */}
       <RadixHoverCard.Portal>
         <RadixHoverCard.Content
           sideOffset={0}
@@ -49,10 +55,20 @@ function AboutDropdown({
         >
           <div className="p-3">
             <Button variant="ghost">
-              <Link to={'/pages/about'}>About Me</Link>
+              <Link
+                to={'/pages/about'}
+                onClick={() => writeScrollTarget('about')}
+              >
+                About Me
+              </Link>
             </Button>
             <Button variant="ghost">
-              <Link to={'/pages/about#gear'}>My Gear</Link>
+              <Link
+                to={'/pages/about#gear'}
+                onClick={() => writeScrollTarget('gear')}
+              >
+                My Gear
+              </Link>
             </Button>
           </div>
         </RadixHoverCard.Content>
