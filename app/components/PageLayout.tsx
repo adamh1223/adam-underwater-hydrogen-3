@@ -147,11 +147,11 @@ function SearchAside() {
                   }
                   term={term}
                 />
-                <SearchResultsPredictive.Collections
+                {/* <SearchResultsPredictive.Collections
                   collections={collections}
                   closeSearch={closeSearch}
                   term={term}
-                />
+                /> */}
                 <SearchResultsPredictive.Pages
                   pages={pages}
                   closeSearch={closeSearch}
