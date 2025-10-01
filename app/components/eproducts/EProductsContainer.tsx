@@ -23,7 +23,7 @@ function EProductsContainer({
   };
   loading?: 'eager' | 'lazy';
   layout: string | undefined;
-  cart: Promise<CartReturn | null>;
+  cart?: Promise<CartReturn | null>;
 }) {
   const cardClassName =
     layout === 'grid'
@@ -38,8 +38,8 @@ function EProductsContainer({
   console.log(product, '204020');
   const {open} = useAside();
   const disableButton = useIsVideoInCart(
-    cart,
     product?.selectedOrFirstAvailableVariant?.id,
+    cart,
   );
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 

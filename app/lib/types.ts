@@ -27,6 +27,10 @@ export interface ProductImages {
     altText: string;
   };
 }
+export interface SimpleProductImages {
+  url: string;
+  altText: string;
+}
 export type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
 export type DefaultCart = CartApiQueryFragment;

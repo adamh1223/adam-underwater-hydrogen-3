@@ -11,7 +11,7 @@ import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
 import {sanitizeErrors} from '@remix-run/server-runtime/dist/errors';
-import {ProductImages} from '~/lib/types';
+import {ProductImages, SimpleProductImages} from '~/lib/types';
 import Product from '~/routes/products.$handle';
 import {
   Accordion,
@@ -29,7 +29,7 @@ export function ProductForm({
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
-  imagesToShow?: ProductImages[];
+  imagesToShow?: SimpleProductImages[];
   VideoAlreadyInCart: boolean;
 }) {
   const navigate = useNavigate();
@@ -68,8 +68,9 @@ export function ProductForm({
                   return '';
                 };
                 const layoutToCheck = determineLayout(name);
+                console.log(imagesToShow, 'imgstoshow');
                 const variantImagesToShow = imagesToShow?.filter((image) =>
-                  image?.image?.altText?.includes(layoutToCheck),
+                  image?.altText?.includes(layoutToCheck),
                 );
                 console.log(selectedVariant, '181818');
 
@@ -192,9 +193,9 @@ function ProductOptionSwatch({
 }: {
   swatch?: Maybe<ProductOptionValueSwatch> | undefined;
   name: string;
-  variantImagesToShow?: ProductImages[];
+  variantImagesToShow?: SimpleProductImages[];
 }) {
-  const sizes = ['Small', 'Medium', 'Large'];
+  const sizes = ['Small', 'Medium', 'Large', 'XL (Pickup Only)'];
   // Add sizes here in future
   const image = swatch?.image?.previewImage?.url;
   const color = swatch?.color;
@@ -202,8 +203,10 @@ function ProductOptionSwatch({
   // WE ARE NOT GETTING VariantImagesToShow - undefined
 
   if (variantImagesToShow && sizes.includes(name)) {
+    const sizeNameToCheck = name?.split(' ');
+    console.log(sizeNameToCheck, 'sizename');
     const specificSize = variantImagesToShow.find((image) =>
-      image?.image?.altText.includes(name.toLowerCase()),
+      image?.altText.includes(sizeNameToCheck[0].toLowerCase()),
     );
 
     return (
@@ -214,10 +217,7 @@ function ProductOptionSwatch({
           backgroundColor: color || 'transparent',
         }}
       >
-        <img
-          src={specificSize?.image?.url}
-          alt={specificSize?.image?.altText}
-        />
+        <img src={specificSize?.url} alt={specificSize?.altText} />
       </div>
     );
   }

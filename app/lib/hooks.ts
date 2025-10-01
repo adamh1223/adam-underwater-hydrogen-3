@@ -4,13 +4,13 @@ import React, {useState} from 'react';
 import {useEffect} from 'react';
 
 export const useIsVideoInCart = (
-  cart: Promise<CartReturn | null>,
   itemID: string | undefined,
+  cart?: Promise<CartReturn | null>,
 ) => {
   const [disableButton, setDisableButton] = useState(false);
   useEffect(() => {
     cart
-      .then((cartData) => {
+      ?.then((cartData) => {
         if (!cartData) {
           setDisableButton(false);
         }

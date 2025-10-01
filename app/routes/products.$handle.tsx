@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
-import {ProductImages} from '~/lib/types';
+import {ProductImages, SimpleProductImages} from '~/lib/types';
 import {useEffect, useState} from 'react';
 import {RootLoader} from '~/root';
 import {useIsVideoInCart} from '~/lib/hooks';
@@ -140,52 +140,48 @@ export default function Product() {
     selectedOrFirstAvailableVariant,
     tags,
   } = product;
+  console.log(images, 'imgimg');
 
   const WMLink = tags.filter((tag: string) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
 
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
   const {references} = productSizeMetafields || {};
-  const threeColumnImages = references?.nodes?.filter((item: any) => {
-    if (item.image.altText?.includes('3')) {
+
+  const threeColumnImages = images?.nodes?.filter((item: any) => {
+    if (item.altText?.includes('horizontal-3')) {
       return {
-        image: {
-          url: item.image.url,
-          altText: item.image.altText,
-        },
+        url: item.url,
+        altText: item.altText,
       };
     }
   });
-  const twoColumnImages = references?.nodes?.filter((item: any) => {
-    if (item.image.altText?.includes('2')) {
+  const twoColumnImages = images?.nodes?.filter((item: any) => {
+    if (item.altText?.includes('horizontal-2')) {
       return {
-        image: {
-          url: item.image.url,
-          altText: item.image.altText,
-        },
+        url: item.url,
+        altText: item.altText,
       };
     }
   });
-  const standardImages = references?.nodes?.filter((item: any) => {
-    if (item.image.altText?.includes('1')) {
+
+  const standardImages = images?.nodes?.filter((item: any) => {
+    if (item.altText?.includes('horizontal-1')) {
       return {
-        image: {
-          url: item.image.url,
-          altText: item.image.altText,
-        },
+        url: item.url,
+        altText: item.altText,
       };
     }
   });
-  const verticalImages = references?.nodes?.filter((item: any) => {
-    if (item.image.altText?.includes('vertical')) {
+  const verticalImages = images?.nodes?.filter((item: any) => {
+    if (item.altText?.includes('vertical-1')) {
       return {
-        image: {
-          url: item.image.url,
-          altText: item.image.altText,
-        },
+        url: item.url,
+        altText: item.altText,
       };
     }
   });
+
   // This is not working yet somehow^
 
   const determineLayoutImages = (variant: any) => {
@@ -202,7 +198,9 @@ export default function Product() {
       return twoColumnImages;
     } else if (layout === 'Three Columns' && orientation === 'Landscape') {
       return threeColumnImages;
-    } else if (layout === 'Standard' && orientation === 'vertical') {
+    } else if (layout === 'Standard' && orientation === 'Vertical') {
+      console.log(verticalImages, 'vtimg');
+
       return verticalImages;
     }
   };
@@ -228,8 +226,64 @@ export default function Product() {
       }
     })
     .filter(Boolean);
+  const standardVerticalCarouselImages = images.nodes
+    .map((image: any) => {
+      if (image.altText?.includes('vt-car')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+  // SECOND IMAGE
+  const horizontalStandardSecondImg = images.nodes
+    .map((image: any) => {
+      if (image.altText === 'hz-standard-second-img') {
+        return image;
+      }
+    })
+    .filter(Boolean);
+  const horizontalTwoColsSecondImg = images.nodes
+    .map((image: any) => {
+      if (image.altText === 'hz-2-second-img') {
+        return image;
+      }
+    })
+    .filter(Boolean);
+  const horizontalThreeColsSecondImg = images.nodes
+    .map((image: any) => {
+      if (image.altText === 'hz-3-second-img') {
+        return image;
+      }
+    })
+    .filter(Boolean);
+  const verticalStandardSecondImg = images.nodes
+    .map((image: any) => {
+      if (image.altText === 'vt-standard-second-img') {
+        return image;
+      }
+    })
+    .filter(Boolean);
+  const orientation = selectedVariant.title.split(' / ')[0];
+  const layout = selectedVariant.title.split(' / ')[1];
+  console.log(orientation, 'orientation');
 
+  console.log(horizontalStandardSecondImg, 'hzstandard');
+
+  // this adds the second image based on the layout and orientation
+  if (layout === 'Standard' && orientation === 'Landscape') {
+    standardCarouselImages.unshift(horizontalStandardSecondImg.pop());
+  } else if (layout === 'Two Columns' && orientation === 'Landscape') {
+    standardCarouselImages.unshift(horizontalTwoColsSecondImg.pop());
+  } else if (layout === 'Three Columns' && orientation === 'Landscape') {
+    standardCarouselImages.unshift(horizontalThreeColsSecondImg.pop());
+  } else if (layout === 'Standard' && orientation === 'Vertical') {
+    console.log(verticalImages, 'vtimg');
+    standardVerticalCarouselImages.unshift(verticalStandardSecondImg.pop());
+  }
+  // add the main image first to each orientation
+  standardVerticalCarouselImages.unshift(selectedVariant?.image);
+// 
   standardCarouselImages.unshift(selectedVariant?.image);
+
   const isVideo = product.tags[0] === 'EProduct';
   // .includes((word: string) => {
   //   console.log(word, '3000');
@@ -309,8 +363,8 @@ export default function Product() {
   const data = useRouteLoaderData<RootLoader>('root');
 
   const disableButton = useIsVideoInCart(
-    cart,
     selectedOrFirstAvailableVariant?.id,
+    cart,
   );
 
   console.log(disableButton, '5511');
@@ -400,6 +454,8 @@ export default function Product() {
             <IndividualProduct
               productName={title}
               productImages={standardCarouselImages}
+              verticalProductImages={standardVerticalCarouselImages}
+              orientation={orientation}
             ></IndividualProduct>
           )}
           {isVideo && (
@@ -430,7 +486,7 @@ export default function Product() {
               VideoAlreadyInCart={disableButton}
               productOptions={productOptions}
               selectedVariant={selectedVariant}
-              imagesToShow={layoutImagesToUse as ProductImages[]}
+              imagesToShow={layoutImagesToUse as SimpleProductImages[]}
             />
           </div>
         </div>
@@ -1290,7 +1346,7 @@ const PRODUCT_QUERY = `#graphql
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product
-      collections(first: 15) {
+      collections(first: 50) {
         edges {
           node {
             title
@@ -1298,7 +1354,7 @@ const PRODUCT_QUERY = `#graphql
               namespace
               key
               value
-              references(first: 15) {
+              references(first: 50) {
                 nodes {
                   ... on MediaImage {
                     id

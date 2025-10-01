@@ -13,9 +13,16 @@ import '../../styles/routeStyles/product.css';
 function IndividualProduct({
   productName,
   productImages,
+  orientation,
+  verticalProductImages,
 }: {
   productName: string;
+  orientation: string;
   productImages: {
+    url: string;
+    altText: string;
+  }[];
+  verticalProductImages: {
     url: string;
     altText: string;
   }[];
@@ -118,22 +125,23 @@ function IndividualProduct({
     setActiveIndex(0); // update blue border
   };
 
+  const orientationImages =
+    orientation === 'Landscape' ? productImages : verticalProductImages;
   // Reset carousel when productImages change
   useEffect(() => {
     resetCarousel();
-  }, [productImages]);
-
+  }, [orientationImages]);
   return (
     <>
       <div className="grid grid-cols-1">
         <div className="grid grid-cols-1 px-4 product-carousel-container">
           <Carousel
             className="print-carousel-individual mx-3 flex items-center justify-center"
-            key={JSON.stringify(productImages)}
+            key={JSON.stringify(orientationImages)}
             setApi={setCarouselApi} // get the Embla API
           >
             <CarouselContent className="flex">
-              {productImages.map((url, idx) => (
+              {orientationImages.map((url, idx) => (
                 <CarouselItem
                   className="flex items-center justify-center"
                   key={idx}
@@ -157,7 +165,7 @@ function IndividualProduct({
           </Carousel>
 
           <div className="flex carousel-shortcuts-container">
-            {productImages.map((url, idx) => (
+            {orientationImages.map((url, idx) => (
               <>
                 <div className="flex justify-center items-center">
                   <img

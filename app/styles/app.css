@@ -427,8 +427,8 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .product-option-label-swatch {
-  width: 5rem;
-  height: 5rem;
+  width: 6rem;
+  height: 6rem;
   margin: 0.25rem 0;
 }
 

@@ -203,7 +203,7 @@ interface PredictiveSearchLayout {
   layout?: string;
   products: EnhancedPartialSearchResult[];
   collectionHandle?: string;
-  cart: Promise<CartReturn | null>;
+  cart?: Promise<CartReturn | null>;
 }
 function SearchResultsPredictiveProducts({
   term,
