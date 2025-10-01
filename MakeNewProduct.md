@@ -44,6 +44,8 @@ XL (Pickup Only)
 
 INVENTORY NOT TRACKED
 
+Go in and DELETE the variants for vertical 2 columns/3 columns. should just be standard for vertical
+
 ---
 
 Location tags:
