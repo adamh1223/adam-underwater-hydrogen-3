@@ -1,9 +1,36 @@
+Title: Brief Description
+
+Description:
+click on </> to go to code
+
+<p><strong>Shot on:</strong> Canon EOS R5C</p>
+<p><strong>Resolution:</strong> Canon Raw 4096x2160, 45mp</p>
+<br>
+<p>The DJI Inspire 3 is a good drone. The DJI Inspire 3 is a good drone.The DJI Inspire 3 is a good drone.The DJI Inspire 3 is a good drone. <meta charset="utf-8">The DJI Inspire 3 is a good drone. The DJI Inspire 3 is a good drone.</p>
+
 Category:
-Home & Garden -> Decor -> Artwork -> Posters, Prints, & Visual Artwork
+Home & Garden -> Decor -> Artwork -> Posters, Prints, & Visual Artwork -> Prints
+
+Category Metafields:
+Material:
+Canvas
+Wood
+
+Connectivity Technology:
+NFC
+
+Frame Style:
+Canvas
+Framed
+Gallery wrapped
 
 ---
 
 VARIANTS:
+Orientation:
+Landscape
+Vertical
+
 Layout:
 Standard
 Two Columns
@@ -13,6 +40,9 @@ Size:
 Small
 Medium
 Large
+XL (Pickup Only)
+
+INVENTORY NOT TRACKED
 
 ---
 
@@ -59,7 +89,7 @@ standard_seaLions = First image in carousel
 Second and third images in this carousel:
 
 altText:
-carousel
+horizontalCarousel
 
 ---
 
@@ -76,7 +106,37 @@ large1
 
 ---
 
-Shipping and Delivery -> Manage Shipping Profiles -> Products -> Manage Products -> Add the product
+Shipping and Delivery -> Manage Shipping Profiles -> Products -> Manage Products ->
+
+Shipping Profile "Prints"
+
+Landscape / Standard / Small
+Landscape / Standard / Medium
+Landscape / Standard / Large
+(SKIP Landscape / Standard / XL)
+
+Landscape / Two Columns / Small
+Landscape / Two Columns / Medium
+Landscape / Two Columns / Large
+(SKIP Landscape / Two Columns / XL)
+
+Landscape / Three Columns / Small
+Landscape / Three Columns / Medium
+Landscape / Three Columns / Large
+(SKIP Landscape / Three Columns / XL)
+
+Vertical / Standard / Small
+Vertical / Standard / Medium
+Vertical / Standard / Large
+(SKIP Vertical / Standard / XL)
+SKIP THE REST OF VERTICAL
+
+Shipping Profile "Local Prints"
+
+Landscape / Standard / XL
+Landscape / Two Columns / XL
+Landscape / Three Columns / XL
+Vertical / Standard / XL
 
 ---
 
@@ -99,6 +159,9 @@ Standard/Medium:
 Standard/Large:
 250
 340
+Standard/XL:
+270
+365
 
 Two Columns/Small:
 230
@@ -109,6 +172,9 @@ Two Columns/Medium:
 Two Columns/Large:
 300
 390
+Two Columns/XL:
+320
+415
 
 Three Columns/Small:
 280
@@ -119,6 +185,9 @@ Three Columns/Medium:
 Three Columns/Large:
 350
 440
+Three Columns/XL:
+370
+495
 
 Vertical/Small:
 180
@@ -129,13 +198,17 @@ Vertical/Medium:
 Vertical/Large:
 250
 340
+Vertical/XL:
+270
+365
 
 ---
 
 QUESTIONS:
-Where does it get its standard sizes from? See Tree
-Where's the third carousel image on viewing specific product?
-How do we determine which image is second and third when we are just using altText 'carousel'
+Where does it get its standard sizes from? not working. figure that out and list that here
+
+How do we determine which image is second and third when we are just using altText 'horizontalCarousel'
+
 Can we delete other collections besides prints? Like
 
 Home page

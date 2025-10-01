@@ -126,7 +126,7 @@ function IndividualProduct({
   return (
     <>
       <div className="grid grid-cols-1">
-        <div className="flex justify-center px-4 product-carousel-container">
+        <div className="grid grid-cols-1 px-4 product-carousel-container">
           <Carousel
             className="print-carousel-individual mx-3 flex items-center justify-center"
             key={JSON.stringify(productImages)}
@@ -155,19 +155,35 @@ function IndividualProduct({
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
-        </div>
 
-        <div className="flex justify-center gap-2 mb-5 carousel-shortcuts-container">
-          {productImages.map((url, idx) => (
-            <img
-              key={idx}
-              src={url.url}
-              className={`cursor-pointer border-2 h-[75px] w-[130px] object-contain ${
-                idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
-              }`}
-              onClick={() => handleThumbnailClick(idx)}
-            />
-          ))}
+          <div className="flex carousel-shortcuts-container">
+            {productImages.map((url, idx) => (
+              <>
+                <div className="flex justify-center items-center">
+                  <img
+                    key={idx}
+                    src={url.url}
+                    className={`cursor-pointer border-2 shortcut-image h-[75px] w-[130px] object-contain ${
+                      idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
+                    }`}
+                    onClick={() => handleThumbnailClick(idx)}
+                  />
+                </div>
+              </>
+            ))}
+          </div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
       </div>
 
@@ -176,12 +192,12 @@ function IndividualProduct({
         <div
           className="floating-zoom-window fixed border-2 border-gray-300 shadow-xl z-50 bg-no-repeat bg-white pointer-events-none"
           style={{
-            width: '350px',
-            height: '350px',
+            width: '300px',
+            height: '300px',
             backgroundImage: `url(${zoomData.src})`,
             backgroundPosition: `${zoomData.x}% ${zoomData.y}%`,
             backgroundSize: '500%',
-            top: zoomData.mouseY - 330, // above cursor
+            top: zoomData.mouseY - 320, // above cursor
             left: zoomData.mouseX + 10, // to right of cursor
           }}
           onClick={() =>

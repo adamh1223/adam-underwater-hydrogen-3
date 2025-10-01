@@ -655,6 +655,8 @@ span {
   grid-template-columns: 1fr 1fr; /* Creates two columns of equal width */
 }
 
+/* flex justify-center gap-2 mb-5 */
+
 .carousel-item {
   cursor: zoom-in;
 }

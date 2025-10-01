@@ -186,6 +186,7 @@ export default function Product() {
       };
     }
   });
+  // This is not working yet somehow^
 
   const determineLayoutImages = (variant: any) => {
     const orientation = variant.title.split(' / ')[0];
@@ -204,6 +205,8 @@ export default function Product() {
     }
   };
 
+  // When vertical is selected, EVERY IMAGE in the carousel needs to be a vertical image. we need to get rid of the images that usually show up with altText "carousel" because these are horizontal images.
+
   let layoutImagesToUse = determineLayoutImages(selectedVariant);
   // const imageURLs = images.nodes.map((item: {url: string}) => item.url);
   // console.log(product, '12121212');
@@ -217,12 +220,11 @@ export default function Product() {
 
   const standardCarouselImages = images.nodes
     .map((image: any) => {
-      if (image.altText?.includes('carousel')) {
+      if (image.altText?.includes('horizontalCarousel')) {
         return image;
       }
     })
     .filter(Boolean);
-  
 
   standardCarouselImages.unshift(selectedVariant?.image);
   const isVideo = product.tags[0] === 'EProduct';
@@ -360,7 +362,7 @@ export default function Product() {
           </li>
           {!isVideo && (
             <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-              <Link to="/collections/prints">Products</Link>
+              <Link to="/collections/prints">Prints</Link>
             </li>
           )}
           {isVideo && (
@@ -414,9 +416,7 @@ export default function Product() {
                   compareAtPrice={selectedVariant?.compareAtPrice}
                 />
                 <br />
-                <h4 className="text-xl mt-1 pb-4">
-                  {`${locationName}, ${locationState}, ${locationCountry}`}
-                </h4>
+                <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
               </>
             )}
 

@@ -98,7 +98,7 @@ export function Aside({
               <div className="flex justify-center border-b">
                 <img
                   src={imageSource}
-                  style={{height: '80px'}}
+                  style={{height: '90px'}}
                   className="pt-3"
                 ></img>
               </div>
@@ -144,7 +144,7 @@ export function Aside({
               <div className="flex justify-center border-b">
                 <img
                   src={imageSource}
-                  style={{height: '80px'}}
+                  style={{height: '70px'}}
                   className="pt-3"
                 ></img>
               </div>

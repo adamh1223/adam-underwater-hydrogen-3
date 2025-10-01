@@ -6,13 +6,13 @@ const ProductsHeader = () => {
     <>
       <div className="flex justify-center pb-3" id="prints">
         <img
-          src={'/products.png'}
-          style={{height: '120px'}}
-          className="pt-3"
+          src={'/prints.png'}
+          style={{height: '100px'}}
+          className="pt-[25px] pe-2"
         ></img>
       </div>
       <div className="flex justify-center font-extrabold text-3xl py-2">
-        <p>Canvas Wall Art</p>
+        <p>Framed Canvas Wall Art</p>
       </div>
       <p className="flex justify-center font-semibold text-l">
         Bring the ocean into your home
