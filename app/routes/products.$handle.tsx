@@ -194,6 +194,8 @@ export default function Product() {
     console.log(layout, '112233');
     console.log(orientation, '11223344');
 
+    // We DO get orientation 'Vertical' or 'Landscape' this works.
+
     if (layout === 'Standard' && orientation === 'Landscape') {
       return standardImages;
     } else if (layout === 'Two Columns' && orientation === 'Landscape') {
@@ -217,6 +219,7 @@ export default function Product() {
   //     }
   //   },
   // );
+  console.log(selectedVariant, 'selected');
 
   const standardCarouselImages = images.nodes
     .map((image: any) => {
