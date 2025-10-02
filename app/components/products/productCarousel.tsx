@@ -50,7 +50,8 @@ const ProductCarousel = ({
   loading?: 'eager' | 'lazy';
   layout?: string;
 }) => {
-  const {title, images, priceRange, handle, id} = product as collectionProduct;
+  const {title, images, priceRange, handle, id, tags} =
+    product as collectionProduct;
 
   const cardClassName =
     layout === 'grid'
@@ -111,6 +112,57 @@ const ProductCarousel = ({
     evt.stopPropagation();
     scrollToIndex(currentIndex - 1);
   };
+  const locationTag = product.tags.find((t: string) => t?.startsWith?.('loc_'));
+  let locationName: string | undefined;
+  let locationState: string | undefined;
+  let locationCountry: string | undefined;
+
+  const titleCase = (w: string) =>
+    w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+
+  if (locationTag) {
+    const parts = locationTag.split('_');
+
+    const extract = (base: 'locname' | 'locstate' | 'loccountry') => {
+      const capsKey = `${base}caps`;
+      const capsIdx = parts.indexOf(capsKey);
+      const baseIdx = parts.indexOf(base);
+      const idx = capsIdx !== -1 ? capsIdx : baseIdx;
+      if (idx === -1) return undefined;
+
+      // collect tokens after the key until next loc* signifier or end
+      const valueParts: string[] = [];
+      for (let i = idx + 1; i < parts.length; i++) {
+        if (parts[i].startsWith('loc')) break;
+        valueParts.push(parts[i]);
+      }
+      if (valueParts.length === 0) return undefined;
+
+      const raw = valueParts.join(' ').trim();
+      if (raw.toLowerCase() === 'null') return undefined;
+
+      // caps key present -> force ALL CAPS
+      if (capsIdx !== -1) return raw.toUpperCase();
+
+      // locname -> always title-case each token (no short-token uppercasing)
+      if (base === 'locname') {
+        return valueParts.map(titleCase).join(' ');
+      }
+
+      // locstate / loccountry -> uppercase tokens <= 3 chars (CA, USA), otherwise title-case
+      return valueParts
+        .map((w) => (w.length <= 3 ? w.toUpperCase() : titleCase(w)))
+        .join(' ');
+    };
+
+    locationName = extract('locname');
+    locationState = extract('locstate');
+    locationCountry = extract('loccountry');
+  }
+
+  const formattedLocation = [locationName, locationState, locationCountry]
+    .filter(Boolean)
+    .join(', ');
 
   return (
     <article className="group relative">
@@ -177,7 +229,7 @@ const ProductCarousel = ({
 
           {/* Bottom card section */}
           <div
-            className={`bottom-part-card ${layout === 'grid' ? '' : 'ms-9'}`}
+            className={`bottom-part-card ${layout === 'grid' ? '' : 'ms-9 flex justify-start bottom-part-card-list'}`}
           >
             <Link
               className="product-item"
@@ -189,7 +241,8 @@ const ProductCarousel = ({
                 <div
                   className={layout === 'grid' ? 'text-center' : 'text-start'}
                 >
-                  <h5 className="text-lg">{title}</h5>
+                  <h5 className="text-lg font-bold">{title}</h5>
+                  <p className="text-muted-foreground">{formattedLocation}</p>
                 </div>
                 {priceRange?.minVariantPrice && (
                   <div

@@ -6,6 +6,7 @@ import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuer
 import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {useEffect, useState} from 'react';
+import {generateCartDescription, includesTagName} from '~/lib/utils';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
@@ -410,6 +411,7 @@ function OrderLineRow({
     return () => window.removeEventListener('resize', handleResize);
   });
 
+  console.log(lineItem, '484848');
   return (
     <div key={lineItem.id} className="tr">
       {/* <tr key={lineItem.id}> */}
@@ -423,15 +425,43 @@ function OrderLineRow({
               </p>
             </div>
             <div className="flex justify-center">
+              {lineItem.variantTitle != null && (
+                <p className="text-muted-foreground">Framed Canvas Print</p>
+              )}
+              {lineItem.variantTitle === null && (
+                <p className="text-muted-foreground">Stock Footage Video</p>
+              )}
+            </div>
+            <div className="flex justify-center">
               <small>{lineItem.variantTitle}</small>
             </div>
           </div>
 
-          {lineItem?.image && (
-            <div className="flex justify-center">
-              <Image data={lineItem.image} width={250} height={250} />
-            </div>
-          )}
+          {lineItem?.image &&
+            lineItem.image.altText != null &&
+            lineItem.image.altText.includes('horizontal') && (
+              <div className="flex justify-center">
+                <Image data={lineItem.image} width={250} height={200} />
+              </div>
+            )}
+          {/* horizontal print^ */}
+          {lineItem?.image &&
+            lineItem.image.altText != null &&
+            lineItem.image.altText.includes('vert') && (
+              <div className="flex justify-center">
+                <Image data={lineItem.image} width={200} height={250} />
+              </div>
+            )}
+          {/* vertical print^ */}
+          {lineItem?.image &&
+            lineItem.image.altText != null &&
+            !lineItem.image.altText.includes('vert') &&
+            !lineItem.image.altText.includes('horizontal') && (
+              <div className="flex justify-center">
+                <Image data={lineItem.image} width={250} height={200} />
+              </div>
+            )}
+          {/* Stock footage clip^ */}
         </div>
         <div className="price-quantity-total ps-1 pt-3">
           <div className="flex justify-start">

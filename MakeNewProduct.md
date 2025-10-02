@@ -97,8 +97,16 @@ standard_example2
 Main Thumbnail/first image for Product (VIEWING SPECIFIC PRODUCT):
 
 altText:
-standard_seaLions = First image in carousel
+standard_seaLions_horizontal = First image in carousel
 Should be the key photo in the product on shopify
+
+must include "horizontal" for cart rendering
+
+vert-small
+vert-medium
+vert-large
+vert-xl
+The code looks for 'vert' to determine if image is vertical in the cart
 
 For EVERY size, go into shopify admin and add the first key photo of the size and layout on the wall.
 

@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function generateCartDescription(tag: string | undefined) {
   if (tag === 'Prints') {
-    return 'Canvas Print';
+    return 'Framed Canvas Print';
   }
   if (tag === 'Video') {
     return 'Stock Footage Video';

@@ -281,7 +281,7 @@ export default function Product() {
   }
   // add the main image first to each orientation
   standardVerticalCarouselImages.unshift(selectedVariant?.image);
-// 
+  //
   standardCarouselImages.unshift(selectedVariant?.image);
 
   const isVideo = product.tags[0] === 'EProduct';
@@ -442,6 +442,12 @@ export default function Product() {
           <>
             <br />
             <h1 className="capitalize text-3xl font-bold">{title}</h1>
+            {!isVideo && (
+              <p className="text-muted-foreground">Framed Canvas Print</p>
+            )}
+            {isVideo && (
+              <p className="text-muted-foreground">Stock Footage Video</p>
+            )}
             <ProductPrice
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
@@ -470,6 +476,12 @@ export default function Product() {
             {windowWidth && windowWidth >= 1024 && (
               <>
                 <h1 className="capitalize text-3xl font-bold">{title}</h1>
+                {!isVideo && (
+                  <p className="text-muted-foreground">Framed Canvas Print</p>
+                )}
+                {isVideo && (
+                  <p className="text-muted-foreground">Stock Footage Video</p>
+                )}
                 <ProductPrice
                   price={selectedVariant?.price}
                   compareAtPrice={selectedVariant?.compareAtPrice}

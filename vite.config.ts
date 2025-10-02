@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['basket-july-traffic-eventually.tryhydrogen.dev'],
+    allowedHosts: ['disks-garmin-modems-app.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

@@ -15,6 +15,7 @@ Format for Stock Footage Product Description:
 
 1. Clip Thumbnail should NOT have the watermark (WM)
    DO NOT PUT MORE THAN ONE THUMBNAIL,
+   DO NOT INCLUDE THE ALTTEXT "vert" or "horizontal" 
 2. Category "Digital Downloads in Videos"
 3. Price + Compare at price. Price should be 60% of Compare at price
 4. Collections: "Stock"

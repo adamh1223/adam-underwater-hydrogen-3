@@ -38,20 +38,44 @@ export function CartLineItem({
   const cartDescription = generateCartDescription(hasVideoTag || hasPrintTag);
   console.log(cartDescription, '484848');
 
+  console.log(image, 'img3');
   return (
     <Card className="mb-4">
       <CardContent>
         <li key={id} className="cart-line">
-          {image && (
+          {image?.altText != undefined &&
+            image.altText.includes('horizontal') && (
+              <Image
+                alt={title}
+                aspectRatio="5/4"
+                data={image}
+                height={120}
+                loading="lazy"
+                width={120}
+              />
+            )}
+          {image?.altText != undefined && image.altText.includes('vert') && (
             <Image
               alt={title}
-              aspectRatio="1/1"
+              aspectRatio="4/5"
               data={image}
-              height={120}
+              height={200}
               loading="lazy"
-              width={120}
+              width={100}
             />
           )}
+          {image?.altText != undefined &&
+            !image.altText.includes('horizontal') &&
+            !image.altText.includes('vert') && (
+              <Image
+                alt={title}
+                aspectRatio="5/4"
+                data={image}
+                height={120}
+                loading="lazy"
+                width={120}
+              />
+            )}
 
           <div>
             <Link
