@@ -186,6 +186,18 @@
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 15px;
   }
+}
+@media (min-width: 1301px) {
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+@media (min-width: 1201px) and (max-width: 1300px) {
   .carousel-shortcuts-container-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
@@ -371,17 +383,17 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .print-carousel-individual-vertical {
+    margin: 0 60px 20px 70px;
+  }
+}
 @media (min-width: 951px) and (max-width: 1023px) {
   .print-carousel-individual-horizontal {
     margin: 0 120px 20px 130px;
   }
   .print-carousel-individual-vertical {
-    margin: 0 170px 20px 180px;
-  }
-}
-@media (min-width: 1024px) {
-  .print-carousel-individual-vertical {
-    margin: 0 20px 20px 30px;
+    margin: 0 270px 20px 280px;
   }
 }
 @media (min-width: 851px) and (max-width: 950px) {
@@ -389,7 +401,7 @@
     margin: 0 100px 20px 110px;
   }
   .print-carousel-individual-vertical {
-    margin: 0 100px 20px 110px;
+    margin: 0 240px 20px 250px;
   }
 }
 @media (min-width: 720px) and (max-width: 850px) {
@@ -397,7 +409,7 @@
     margin: 0 80px 20px 90px;
   }
   .print-carousel-individual-vertical {
-    margin: 0 80px 20px 90px;
+    margin: 0 170px 20px 180px;
   }
 }
 @media (min-width: 600px) and (max-width: 719px) {
@@ -405,7 +417,7 @@
     margin: 0 40px 20px 50px;
   }
   .print-carousel-individual-vertical {
-    margin: 0 40px 20px 50px;
+    margin: 0 130px 20px 140px;
   }
 }
 @media (max-width: 599px) {
@@ -413,6 +425,6 @@
     margin: 0 10px 20px 10px;
   }
   .print-carousel-individual-vertical {
-    margin: 0 10px 20px 10px;
+    margin: 0 80px 20px 90px;
   }
 }
