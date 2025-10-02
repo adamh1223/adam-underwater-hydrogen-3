@@ -1349,7 +1349,7 @@ const PRODUCT_FRAGMENT = `#graphql
   ${PRODUCT_VARIANT_FRAGMENT}
 ` as const;
 
-const PRODUCT_QUERY = `#graphql
+export const PRODUCT_QUERY = `#graphql
   query Product(
     $country: CountryCode
     $handle: String!

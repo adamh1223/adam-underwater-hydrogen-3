@@ -1,22 +1,28 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
-import {Money, Image, flattenConnection} from '@shopify/hydrogen';
+import {
+  Money,
+  Image,
+  flattenConnection,
+  getSelectedProductOptions,
+} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {useEffect, useState} from 'react';
 import {generateCartDescription, includesTagName} from '~/lib/utils';
+import {PRODUCT_QUERY} from './products.$handle';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
 };
 
-export async function loader({params, context}: LoaderFunctionArgs) {
+export async function loader({params, context, request}: LoaderFunctionArgs) {
   if (!params.id) {
     return redirect('/account/orders');
   }
-
+  const {storefront} = context;
   const orderId = atob(params.id);
   const {data, errors} = await context.customerAccount.query(
     CUSTOMER_ORDER_QUERY,
@@ -32,6 +38,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const {order} = data;
 
   const lineItems = flattenConnection(order.lineItems);
+  const lineItemTitles = lineItems.map((lineItem: any) => lineItem.title);
   const discountApplications = flattenConnection(order.discountApplications);
 
   const fulfillmentStatus =
@@ -46,13 +53,24 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const discountPercentage =
     firstDiscount?.__typename === 'PricingPercentageValue' &&
     firstDiscount?.percentage;
+  console.log(lineItems, '0123');
 
+  const product = await Promise.all([
+    storefront.query(PRODUCT_QUERY, {
+      variables: {
+        handle: lineItemTitles[0],
+        // Needs to grab the proper variant for eproducts
+        selectedOptions: getSelectedProductOptions(request),
+      },
+    }),
+  ]);
   return {
     order,
     lineItems,
     discountValue,
     discountPercentage,
     fulfillmentStatus,
+    product,
   };
 }
 
@@ -63,7 +81,9 @@ export default function OrderRoute() {
     discountValue,
     discountPercentage,
     fulfillmentStatus,
+    product,
   } = useLoaderData<typeof loader>();
+  console.log(product, 'prod');
 
   const {metafield} = order;
   const linkValue = JSON.parse(metafield?.value || '[{}]') as {
@@ -81,6 +101,8 @@ export default function OrderRoute() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
+  console.log(lineItems, '012345');
+
   return (
     <div className="outer-container flex justify-center">
       <div className="card-container flex justify-center w-[90%]">
