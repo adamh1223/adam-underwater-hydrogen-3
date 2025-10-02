@@ -135,51 +135,107 @@ function IndividualProduct({
     <>
       <div className="grid grid-cols-1">
         <div className="grid grid-cols-1 px-4 product-carousel-container">
-          <Carousel
-            className="print-carousel-individual mx-3 flex items-center justify-center"
-            key={JSON.stringify(orientationImages)}
-            setApi={setCarouselApi} // get the Embla API
-          >
-            <CarouselContent className="flex">
+          {orientation === 'Landscape' && (
+            <Carousel
+              className="print-carousel-individual-horizontal mx-3 flex items-center justify-center"
+              key={JSON.stringify(orientationImages)}
+              setApi={setCarouselApi} // get the Embla API
+            >
+              <CarouselContent className="flex">
+                {orientationImages.map((url, idx) => (
+                  <CarouselItem
+                    className="flex items-center justify-center"
+                    key={idx}
+                  >
+                    <div className="p-4 flex items-center justify-center">
+                      <img
+                        src={url.url}
+                        alt=""
+                        className="max-h-full object-contain carousel-item"
+                        onClick={(e) => handleImageClick(e, url.url)}
+                        onMouseMove={(e) => handleMouseMove(e, url.url)}
+                        onMouseLeave={handleMouseLeave}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          )}
+          {orientation === 'Vertical' && (
+            <Carousel
+              className="print-carousel-individual-vertical mx-3 flex items-center justify-center"
+              key={JSON.stringify(orientationImages)}
+              setApi={setCarouselApi} // get the Embla API
+            >
+              <CarouselContent className="flex">
+                {orientationImages.map((url, idx) => (
+                  <CarouselItem
+                    className="flex items-center justify-center"
+                    key={idx}
+                  >
+                    <div className="p-4 flex items-center justify-center">
+                      <img
+                        src={url.url}
+                        alt=""
+                        className="max-h-full object-contain carousel-item"
+                        onClick={(e) => handleImageClick(e, url.url)}
+                        onMouseMove={(e) => handleMouseMove(e, url.url)}
+                        onMouseLeave={handleMouseLeave}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          )}
+
+          {orientation === 'Landscape' && (
+            <div className="flex carousel-shortcuts-container-horizontal">
               {orientationImages.map((url, idx) => (
-                <CarouselItem
-                  className="flex items-center justify-center"
-                  key={idx}
-                >
-                  <div className="p-4 flex items-center justify-center">
+                <>
+                  <div className="flex justify-center items-center">
                     <img
+                      key={idx}
                       src={url.url}
-                      alt=""
-                      className="max-h-full object-contain carousel-item"
-                      onClick={(e) => handleImageClick(e, url.url)}
-                      onMouseMove={(e) => handleMouseMove(e, url.url)}
-                      onMouseLeave={handleMouseLeave}
+                      className={`cursor-pointer border-2 shortcut-image h-[75px] w-[130px] object-contain ${
+                        idx === activeIndex
+                          ? 'border-[hsl(var(--primary))]'
+                          : ''
+                      }`}
+                      onClick={() => handleThumbnailClick(idx)}
                     />
                   </div>
-                </CarouselItem>
+                </>
               ))}
-            </CarouselContent>
-
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-
-          <div className="flex carousel-shortcuts-container">
-            {orientationImages.map((url, idx) => (
-              <>
-                <div className="flex justify-center items-center">
-                  <img
-                    key={idx}
-                    src={url.url}
-                    className={`cursor-pointer border-2 shortcut-image h-[75px] w-[130px] object-contain ${
-                      idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
-                    }`}
-                    onClick={() => handleThumbnailClick(idx)}
-                  />
-                </div>
-              </>
-            ))}
-          </div>
+            </div>
+          )}
+          {orientation === 'Vertical' && (
+            <div className="flex carousel-shortcuts-container-vertical">
+              {orientationImages.map((url, idx) => (
+                <>
+                  <div className="flex justify-center items-center">
+                    <img
+                      key={idx}
+                      src={url.url}
+                      className={`cursor-pointer border-2 shortcut-image h-[120px] w-[90px] object-contain ${
+                        idx === activeIndex
+                          ? 'border-[hsl(var(--primary))]'
+                          : ''
+                      }`}
+                      onClick={() => handleThumbnailClick(idx)}
+                    />
+                  </div>
+                </>
+              ))}
+            </div>
+          )}
           <div></div>
           <div></div>
           <div></div>

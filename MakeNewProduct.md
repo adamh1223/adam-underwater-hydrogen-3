@@ -75,11 +75,22 @@ Main Thumbnail for Products Container (VIEWING ALL PRODUCTS):
 altText:
 standard_seaLions = First image in carousel
 
-Second and Third images in Products Container Carousel (VIEWING ALL PRODUCTS):
 
 altText:
 standard_example1 = Second image in carousel
 standard_example2 = Third image in carousel
+
+
+
+Second and Thirdimages in Products Container Carousel (VIEWING ALL PRODUCTS):
+altText:
+standard_example1
+standard_example2
+
+
+
+
+
 
 ---
 
@@ -87,11 +98,24 @@ Main Thumbnail/first image for Product (VIEWING SPECIFIC PRODUCT):
 
 altText:
 standard_seaLions = First image in carousel
+Should be the key photo in the product on shopify
 
-Second and third images in this carousel:
+For EVERY size, go into shopify admin and add the first key photo of the size and layout on the wall.
 
+last images in this carousel (do not change unless orientation changes):
+
+Horizontal carousel images:
 altText:
 horizontalCarousel
+
+Vertical carousel images:
+altText:
+vt-car
+
+Second image that changes for each layout/orientation:
+Horizontal Standard
+altText:
+hz-standard-second-img
 
 ---
 

@@ -174,21 +174,48 @@
 }
 
 @media (min-width: 1024px) and (max-width: 1200px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 25px;
   }
 }
 @media (min-width: 1201px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 15px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+@media (min-width: 1121px) and (max-width: 1200px) {
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1120px) {
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 @media (min-width: 940px) and (max-width: 1023px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 10px;
@@ -196,9 +223,17 @@
     padding-left: 120px;
     padding-right: 120px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 170px;
+    padding-right: 170px;
+  }
 }
 @media (min-width: 827px) and (max-width: 940px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 10px;
@@ -206,19 +241,35 @@
     padding-left: 70px;
     padding-right: 70px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 120px;
+    padding-right: 120px;
+  }
 }
 @media (min-width: 775px) and (max-width: 826px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 10px;
     padding-bottom: 20px;
     padding-left: 50px;
     padding-right: 50px;
+  }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 90px;
+    padding-right: 90px;
   }
 }
 @media (min-width: 720px) and (max-width: 775px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 10px;
@@ -226,9 +277,17 @@
     padding-left: 30px;
     padding-right: 30px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 60px;
+    padding-right: 60px;
+  }
 }
 @media (min-width: 670px) and (max-width: 719px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 10px;
@@ -236,9 +295,17 @@
     padding-left: 10px;
     padding-right: 10px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 35px;
+    padding-right: 35px;
+  }
 }
 @media (min-width: 630px) and (max-width: 669px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
@@ -246,9 +313,17 @@
     padding-left: 50px;
     padding-right: 50px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 @media (min-width: 590px) and (max-width: 629px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
@@ -256,9 +331,15 @@
     padding-left: 30px;
     padding-right: 30px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+  }
 }
 @media (min-width: 552px) and (max-width: 589px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
@@ -266,38 +347,72 @@
     padding-left: 10px;
     padding-right: 10px;
   }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 @media (max-width: 551px) {
-  .carousel-shortcuts-container {
+  .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    gap: 7px;
+    padding-bottom: 20px;
+  }
+  .carousel-shortcuts-container-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 7px;
     padding-bottom: 20px;
   }
 }
 
 @media (min-width: 951px) and (max-width: 1023px) {
-  .print-carousel-individual {
+  .print-carousel-individual-horizontal {
     margin: 0 120px 20px 130px;
+  }
+  .print-carousel-individual-vertical {
+    margin: 0 170px 20px 180px;
+  }
+}
+@media (min-width: 1024px) {
+  .print-carousel-individual-vertical {
+    margin: 0 20px 20px 30px;
   }
 }
 @media (min-width: 851px) and (max-width: 950px) {
-  .print-carousel-individual {
+  .print-carousel-individual-horizontal {
+    margin: 0 100px 20px 110px;
+  }
+  .print-carousel-individual-vertical {
     margin: 0 100px 20px 110px;
   }
 }
 @media (min-width: 720px) and (max-width: 850px) {
-  .print-carousel-individual {
+  .print-carousel-individual-horizontal {
+    margin: 0 80px 20px 90px;
+  }
+  .print-carousel-individual-vertical {
     margin: 0 80px 20px 90px;
   }
 }
 @media (min-width: 600px) and (max-width: 719px) {
-  .print-carousel-individual {
+  .print-carousel-individual-horizontal {
+    margin: 0 40px 20px 50px;
+  }
+  .print-carousel-individual-vertical {
     margin: 0 40px 20px 50px;
   }
 }
 @media (max-width: 599px) {
-  .print-carousel-individual {
+  .print-carousel-individual-horizontal {
+    margin: 0 10px 20px 10px;
+  }
+  .print-carousel-individual-vertical {
     margin: 0 10px 20px 10px;
   }
 }
