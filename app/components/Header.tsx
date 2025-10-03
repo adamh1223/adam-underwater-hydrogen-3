@@ -24,6 +24,7 @@ import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
 import {useIsLoggedIn} from '~/lib/hooks';
+import {Divide} from 'lucide-react';
 
 interface HeaderProps {
   header: HeaderQuery & {
@@ -250,16 +251,17 @@ function HeaderCtas({
   type NavLink = {
     href: string;
     label: string;
+    icon: string;
   };
   const loginValue = useIsLoggedIn(isLoggedIn);
 
   const links: NavLink[] = [
-    {href: '/', label: 'Home'},
-    {href: 'account/orders', label: 'My Orders'},
-    {href: 'account/favorites', label: 'My Favorites'},
-    {href: 'account/reviews', label: 'My Reviews'},
-    {href: 'account/profile', label: 'My Profile'},
-    {href: 'account/addresses', label: 'My Addresses'},
+    {href: '/', label: 'Home', icon: 'home-icon'},
+    {href: 'account/orders', label: 'My Orders', icon: 'orders-icon'},
+    {href: 'account/favorites', label: 'My Favorites', icon: 'favorite-icon'},
+    {href: 'account/reviews', label: 'My Reviews', icon: 'reviews-icon'},
+    {href: 'account/profile', label: 'My Profile', icon: 'profile-icon'},
+    {href: 'account/addresses', label: 'My Addresses', icon: 'addresses-icon'},
   ];
   console.log(loginValue, 'xyz');
 
@@ -295,29 +297,59 @@ function HeaderCtas({
             className={`
             hovercard-content 
             rounded border-l border-r border-t border-b
-            ${loginValue ? 'w-38' : 'w-40'}
+            ${loginValue ? 'w-46' : 'w-48'}
           `}
           >
             {loginValue ? (
               <>
                 <div className="p-3">
                   {links.map((link) => (
-                    <Button key={link.href} variant="ghost">
-                      <Link to={link.href}>{link.label}</Link>
-                    </Button>
+                    <Link to={link.href}>
+                      <Button
+                        key={link.href}
+                        variant="ghost"
+                        className="cursor-pointer"
+                      >
+                        <div className={`flex justify-start items-center`}>
+                          <img
+                            src={`/${link.icon}.png`}
+                            alt="icon"
+                            style={{height: '1rem'}}
+                          ></img>
+                          &nbsp;
+                          <div className={`ms-1 flex items-center`}>
+                            {link.label}
+                          </div>
+                          &nbsp;
+                        </div>
+                      </Button>
+                    </Link>
                   ))}
                 </div>
                 <hr />
-                <div className="p-3 cursor-pointer">
+                <div className="pt-3 pe-3 pb-3 ps-2 cursor-pointer">
                   <Logout />
                 </div>
               </>
             ) : (
               <>
                 <div className="p-3">
-                  <Button variant="ghost" className="mb-3">
-                    <Link to="/account/login">Sign In/Sign Up</Link>
-                  </Button>
+                  <Link to="/account/login">
+                    <Button variant="ghost" className="mb-3 cursor-pointer">
+                      <div className="flex justify-start items-center me-3">
+                        <img
+                          src={`/signup-icon.png`}
+                          alt="icon"
+                          style={{height: '1rem'}}
+                        ></img>
+                        &nbsp;
+                        <div className={`ms-1 flex items-center`}>
+                          Sign In/Sign Up
+                        </div>
+                        &nbsp;
+                      </div>
+                    </Button>
+                  </Link>
                 </div>
               </>
             )}
@@ -339,7 +371,16 @@ function Logout() {
     >
       &nbsp;
       <Button type="submit" variant="ghost" className="custor-pointer">
-        Sign out
+        <div className="flex justify-start items-center cursor-pointer">
+          <img
+            src={`/signout-icon.png`}
+            alt="icon"
+            style={{height: '1rem'}}
+          ></img>
+          &nbsp;
+          <div className={`ms-1 flex items-center`}>Sign out</div>
+          &nbsp;
+        </div>
       </Button>
     </Form>
   );
