@@ -98,7 +98,7 @@ export function CartLineItem({
               />
             )}
           {windowWidth != undefined &&
-            windowWidth < 1290 &&
+            windowWidth < 1280 &&
             image?.altText != undefined &&
             image.altText.includes('horizontal') && (
               <>
@@ -116,14 +116,12 @@ export function CartLineItem({
                       {image?.altText != undefined &&
                         image.altText.includes('horizontal') &&
                         windowWidth != undefined &&
-                        windowWidth < 1290 && (
-                          <Image
+                        windowWidth < 1280 && (
+                          <img
                             alt={title}
-                            aspectRatio="5/4"
-                            data={image}
-                            height={120}
+                            src={image.url}
                             loading="lazy"
-                            width={120}
+                            className="cart-line-small-horizontal-product-img"
                           />
                         )}
                       <div className="ps-3">
@@ -140,22 +138,24 @@ export function CartLineItem({
                 </div>
 
                 {!hasOnlyDefaultTitle && (
-                  <ul className="pt-3">
-                    {selectedOptions.map((option) => (
-                      <li key={option.name}>
-                        <div className="flex justify-start items-center">
-                          <p className="cart-subheader">
-                            {option.name}: {option.value}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <ul className="pt-3">
+                      {selectedOptions.map((option) => (
+                        <li key={option.name}>
+                          <div className="flex justify-start items-center">
+                            <p className="cart-subheader">
+                              {option.name}: {option.value}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </>
             )}
           {windowWidth != undefined &&
-            windowWidth < 1290 &&
+            windowWidth < 1280 &&
             image?.altText != undefined &&
             !image.altText.includes('horizontal') &&
             !image.altText.includes('vert') && (
@@ -196,7 +196,7 @@ export function CartLineItem({
               </div>
             )}
           {windowWidth != undefined &&
-            windowWidth < 1290 &&
+            windowWidth < 1280 &&
             image?.altText != undefined &&
             image.altText.includes('vert') && (
               <div>
@@ -235,7 +235,7 @@ export function CartLineItem({
                 )}
               </div>
             )}
-          {windowWidth != undefined && windowWidth >= 1290 && (
+          {windowWidth != undefined && windowWidth >= 1280 && (
             <div>
               <Link
                 prefetch="intent"

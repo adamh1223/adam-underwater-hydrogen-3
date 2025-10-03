@@ -271,6 +271,11 @@ button.reset:hover:not(:has(> *)) {
   display: flex;
   padding: 0.75rem 0;
 }
+.cart-line-small-horizontal-product-img {
+  height: 100px;
+  width: 115px;
+  object-fit: cover;
+}
 .cart-line-small-horizontal-product {
   display: grid;
   grid-template-rows: 1fr 1fr;
@@ -381,14 +386,10 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .featured-collection img {
-  height: auto;
   max-height: 100%;
   object-fit: cover;
 }
 
-.recommended-product img {
-  height: auto;
-}
 @media (min-width: 701px) {
   .recommended-products-grid {
     display: grid;
