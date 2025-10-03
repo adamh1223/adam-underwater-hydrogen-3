@@ -107,7 +107,6 @@ function VideoPreview({
           onClick={() => router(`/products/${handle}`)}
         >
           {' '}
-          <h1>this is an h1</h1>
           {/* Aspect ratio for 16:9 */}
           <Link to={`/products/${handle}`} className="cursor-pointer">
             {/* <iframe

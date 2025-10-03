@@ -8,6 +8,7 @@ import type {
 } from 'storefrontapi.generated';
 import VideoPreview from '~/components/video/VideoPreview';
 import Hero from '~/components/hero/Hero';
+import ProductCarousel from '~/components/products/productCarousel';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -63,9 +64,12 @@ export default function Homepage() {
   return (
     <div className="home">
       <Hero></Hero>
-      <section className="pt-24">
+      <section className="pt-5">
         <div className="flex justify-center">
           <img src={'/featured.png'} style={{height: '90px'}} />
+        </div>
+        <div className="flex justify-center font-bold text-xl pb-2">
+          <p>Framed Canvas Wall Art</p>
         </div>
       </section>
       {/* <FeaturedCollection collection={data.featuredCollection} /> */}
@@ -107,34 +111,21 @@ function RecommendedProducts({
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => (
-            <div className="recommended-products-grid">
+            <div className="recommended-products-grid gap-x-5 gap-y-5">
               {response
                 ? response.products.nodes.map((product) => {
                     console.log(product, '111111');
                     const isVideo = product.tags?.includes('Video');
                     return (
-                      <Link
-                        key={product.id}
-                        className="recommended-product"
-                        to={`/products/${product.handle}`}
-                      >
-                        {isVideo ? (
-                          <VideoPreview
-                            handle={product.handle}
-                            thumbnail={product.images.nodes[0]}
-                          ></VideoPreview>
-                        ) : (
-                          <Image
-                            data={product.images.nodes[0]}
-                            aspectRatio="1/1"
-                            sizes="(min-width: 45em) 20vw, 50vw"
+                      <>
+                        {!isVideo && (
+                          <ProductCarousel
+                            product={product}
+                            layout="grid"
+                            key={product.id}
                           />
                         )}
-                        <h4>{product.title}</h4>
-                        <small>
-                          <Money data={product.priceRange.minVariantPrice} />
-                        </small>
-                      </Link>
+                      </>
                     );
                   })
                 : null}
@@ -203,7 +194,13 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 5, sortKey: UPDATED_AT, reverse: true) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
       nodes {
         ...RecommendedProduct
       }

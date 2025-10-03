@@ -1,3 +1,4 @@
+// app/components/productCarousel.tsx
 import React, {useEffect, useState} from 'react';
 import {Card, CardContent} from '../ui/card';
 import {
@@ -9,7 +10,7 @@ import {
 import {Link} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
-import {Money, useOptimisticVariant} from '@shopify/hydrogen';
+import {Money} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {ProductItemFragment, CollectionQuery} from 'storefrontapi.generated';
 import {PartialPredictiveSearchResult} from '../SearchResultsPredictive';
@@ -41,17 +42,42 @@ type collectionPageProduct =
   | collectionProduct
   | (PartialPredictiveSearchResult<'products'> & expandedPartialPredictive);
 
-const ProductCarousel = ({
+/**
+ * NOTE: product prop is now permissive to avoid TS errors when callers pass just an id.
+ * Prefer passing the full product object (collectionProduct) from the parent.
+ */
+export const ProductCarousel = ({
   product,
   loading,
   layout = 'grid',
 }: {
-  product: collectionProduct;
+  // accept full product OR a looser shape (to silence type-checking when your caller doesn't have full objects)
+  product: collectionPageProduct | any;
   loading?: 'eager' | 'lazy';
   layout?: string;
 }) => {
+  // If caller passed a string id by mistake, bail out gracefully
+  if (typeof product === 'string') {
+    console.warn(
+      'ProductCarousel: received a string for `product` prop — expected a product object. Rendering skipped.',
+      product,
+    );
+    return null;
+  }
+
+  // Attempt to coerce/validate into the expected shape
+  const prod = (product as collectionProduct | undefined) ?? undefined;
+
+  if (!prod || (!prod.id && !prod.handle)) {
+    console.warn(
+      'ProductCarousel: product prop does not look like a complete product object. Rendering skipped.',
+      product,
+    );
+    return null;
+  }
+
   const {title, images, priceRange, handle, id, tags} =
-    product as collectionProduct;
+    prod as collectionProduct;
 
   const cardClassName =
     layout === 'grid'
@@ -66,7 +92,7 @@ const ProductCarousel = ({
   const variantUrl = useVariantUrl(handle);
 
   const standardImages = images?.nodes?.filter((item) =>
-    item.altText?.includes('standard'),
+    item?.altText?.includes('standard'),
   );
 
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
@@ -95,24 +121,24 @@ const ProductCarousel = ({
 
     carouselApi.on('select', updateCarouselState);
 
-    // Cleanup function
     return () => void carouselApi.off('select', updateCarouselState);
   }, [carouselApi]);
 
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
 
   const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    console.log(carouselApi, 'api1');
     evt.stopPropagation();
     scrollToIndex(currentIndex + 1);
-    console.log(carouselApi, 'api2');
   };
 
   const decreaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.stopPropagation();
     scrollToIndex(currentIndex - 1);
   };
-  const locationTag = product.tags.find((t: string) => t?.startsWith?.('loc_'));
+
+  const locationTag = (prod.tags || []).find((t: string) =>
+    t?.startsWith?.('loc_'),
+  );
   let locationName: string | undefined;
   let locationState: string | undefined;
   let locationCountry: string | undefined;
@@ -130,26 +156,16 @@ const ProductCarousel = ({
       const idx = capsIdx !== -1 ? capsIdx : baseIdx;
       if (idx === -1) return undefined;
 
-      // collect tokens after the key until next loc* signifier or end
       const valueParts: string[] = [];
       for (let i = idx + 1; i < parts.length; i++) {
         if (parts[i].startsWith('loc')) break;
         valueParts.push(parts[i]);
       }
       if (valueParts.length === 0) return undefined;
-
       const raw = valueParts.join(' ').trim();
       if (raw.toLowerCase() === 'null') return undefined;
-
-      // caps key present -> force ALL CAPS
       if (capsIdx !== -1) return raw.toUpperCase();
-
-      // locname -> always title-case each token (no short-token uppercasing)
-      if (base === 'locname') {
-        return valueParts.map(titleCase).join(' ');
-      }
-
-      // locstate / loccountry -> uppercase tokens <= 3 chars (CA, USA), otherwise title-case
+      if (base === 'locname') return valueParts.map(titleCase).join(' ');
       return valueParts
         .map((w) => (w.length <= 3 ? w.toUpperCase() : titleCase(w)))
         .join(' ');
@@ -169,7 +185,9 @@ const ProductCarousel = ({
       <Card className={cardClassName}>
         <CardContent className={cardContentClassName}>
           <div
-            className={`relative w-full h-full rounded ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+            className={`relative w-full h-full rounded ${
+              layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'
+            }`}
           >
             <Carousel
               setApi={setCarouselApi}
@@ -193,8 +211,8 @@ const ProductCarousel = ({
                         }`}
                       >
                         <img
-                          src={img.url}
-                          alt={img.altText ?? ''}
+                          src={img?.url}
+                          alt={img?.altText ?? ''}
                           className={`rounded ${layout === 'grid' ? 'w-[90%]' : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>
@@ -202,6 +220,7 @@ const ProductCarousel = ({
                   ))}
                 </CarouselContent>
               </Link>
+
               <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
                 <Button
                   onClick={decreaseIndex}
@@ -244,6 +263,7 @@ const ProductCarousel = ({
                   <h5 className="text-lg font-bold">{title}</h5>
                   <p className="text-muted-foreground">{formattedLocation}</p>
                 </div>
+
                 {priceRange?.minVariantPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
@@ -253,8 +273,9 @@ const ProductCarousel = ({
                     </span>
                   </div>
                 )}
+
                 {layout !== 'grid' &&
-                  (product as any).descriptionHtml &&
+                  (prod as any).descriptionHtml &&
                   windowWidth != undefined &&
                   windowWidth > 787 && (
                     <>
@@ -263,13 +284,14 @@ const ProductCarousel = ({
                           <div
                             className="text-sm p-3"
                             dangerouslySetInnerHTML={{
-                              __html: (product as any).descriptionHtml,
+                              __html: (prod as any).descriptionHtml,
                             }}
                           />
                         </Card>
                       </div>
                     </>
                   )}
+
                 <div
                   className={`flex ${layout === 'grid' ? 'justify-center my-2' : 'justify-start mt-2'}`}
                 >
