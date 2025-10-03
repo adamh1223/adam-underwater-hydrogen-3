@@ -128,7 +128,7 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 177.78vh; /* 16:9 aspect ratio */
+  width: 177.78vw; /* 16:9 aspect ratio */
   height: 100vh;
   min-width: 100vw;
   min-height: 56.25vw;

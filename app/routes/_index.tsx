@@ -64,9 +64,9 @@ export default function Homepage() {
   return (
     <div className="home">
       <Hero></Hero>
-      <section className="pt-5">
-        <div className="flex justify-center">
-          <img src={'/featured.png'} style={{height: '90px'}} />
+      <section>
+        <div className="flex justify-center pt-5">
+          <img src={'/featured.png'} className="featured-img" />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>Framed Canvas Wall Art</p>

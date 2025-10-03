@@ -95,7 +95,7 @@ function SearchAside() {
         <SearchFormPredictive>
           {({fetchResults, inputRef}) => (
             <>
-              <div className="flex justify-center mb-5">
+              <div className="flex justify-center mb-5 mx-3">
                 <Input
                   className="search-input w-[220px]"
                   name="q"

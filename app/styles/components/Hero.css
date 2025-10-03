@@ -14,21 +14,21 @@ body {
 /* Ensure the section takes up the full viewport */
 .main {
   position: relative;
-  height: 100vh;
-  width: 100vw;
+  height: 300px;
   overflow: hidden;
 }
 
 /* Media container for both image and video */
 .media-container {
   position: absolute;
+  object-fit: cover;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
   z-index: -1;
-  background-image: url("/images/print1.jpg");
+  background-image: url('/images/print1.jpg');
 }
 
 /* Placeholder image */
@@ -73,4 +73,16 @@ body {
 
 .hero-img {
   border-radius: 25px;
+}
+@media (max-width: 700px) {
+  .hero-img,
+  .featured-img {
+    height: 70px;
+  }
+}
+@media (min-width: 701px) {
+  .hero-img,
+  .featured-img {
+    height: 80px;
+  }
 }
