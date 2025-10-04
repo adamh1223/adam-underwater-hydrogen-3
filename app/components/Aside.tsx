@@ -101,6 +101,7 @@ export function Aside({
                   style={{height: '90px'}}
                   className="pt-3"
                 ></img>
+                
               </div>
             </header>
             <main>{children}</main>

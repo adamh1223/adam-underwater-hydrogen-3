@@ -12,6 +12,7 @@ import {
   getEmptyPredictiveSearchResult,
 } from '~/lib/search';
 import {Button} from '~/components/ui/button';
+import {Input} from '~/components/ui/input';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Search`}];
@@ -43,21 +44,26 @@ export default function SearchPage() {
 
   return (
     <div className="search">
-      <h1>Search</h1>
+      <div className="flex justify-center pt-5">
+        <img src={'/searchstore.png'} style={{height: '95px'}}></img>
+      </div>
       <SearchForm>
         {({inputRef}) => (
           <>
-            <input
-              defaultValue={term}
-              name="q"
-              placeholder="Search…"
-              ref={inputRef}
-              type="search"
-            />
-            &nbsp;
-            <Button size="icon" variant="outline" type="submit">
-              Search
-            </Button>
+            <div className="flex justify-center mt-5">
+              <Input
+                defaultValue={term}
+                name="q"
+                placeholder="Search…"
+                ref={inputRef}
+                type="search"
+                className="w-40"
+              />
+              &nbsp;
+              <Button variant="outline" type="submit">
+                Search
+              </Button>
+            </div>
           </>
         )}
       </SearchForm>

@@ -152,26 +152,30 @@ function SearchAside() {
                   closeSearch={closeSearch}
                   term={term}
                 /> */}
-                <SearchResultsPredictive.Pages
+                {/* <SearchResultsPredictive.Pages
                   pages={pages}
                   closeSearch={closeSearch}
                   term={term}
-                />
-                <SearchResultsPredictive.Articles
+                /> */}
+                {/* <SearchResultsPredictive.Articles
                   articles={articles}
                   closeSearch={closeSearch}
                   term={term}
-                />
+                /> */}
                 {term.current && total ? (
-                  <Link
-                    onClick={closeSearch}
-                    to={`${SEARCH_ENDPOINT}?q=${term.current}`}
-                  >
-                    <p>
-                      View all results for <q>{term.current}</q>
-                      &nbsp; →
-                    </p>
-                  </Link>
+                  <>
+                    <div className="flex justify-center pb-[30px]">
+                      <Link
+                        onClick={closeSearch}
+                        to={`${SEARCH_ENDPOINT}?q=${term.current}`}
+                      >
+                        <Button variant="outline">
+                          View all results for <q>{term.current}</q>
+                          &nbsp; →
+                        </Button>
+                      </Link>
+                    </div>
+                  </>
                 ) : null}
               </>
             );

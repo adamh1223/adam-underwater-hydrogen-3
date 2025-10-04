@@ -217,12 +217,36 @@ function SearchResultsPredictiveProducts({
   return (
     <>
       {products.map((product) => {
-        if (collectionHandle === 'stock') {
+        console.log(product, 'productlog');
+
+        if (product.tags.includes('Prints')) {
           return (
-            <EProductsContainer product={product} layout={layout} cart={cart} />
+            <>
+              <div className="m-5">
+                <div className="flex justify-center pb-2">
+                  Framed Canvas Print:
+                </div>
+                <ProductCarousel product={product} layout="grid" />
+              </div>
+            </>
           );
         }
-        return <ProductCarousel product={product} layout={layout} />;
+        if (product.tags.includes('Video')) {
+          return (
+            <>
+              <div className="mx-5">
+                <div className="flex justify-center pb-2">
+                  Stock Footage Clip:
+                </div>
+                <EProductsContainer
+                  product={product}
+                  layout="grid"
+                  cart={cart}
+                />
+              </div>
+            </>
+          );
+        }
       })}
     </>
   );
