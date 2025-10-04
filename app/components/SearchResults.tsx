@@ -42,7 +42,7 @@ function SearchResultsArticles({
   }
 
   return (
-    <div className="search-result">
+    <div className="search-result pt-3">
       <Sectiontitle text="Articles" />
       <div>
         {articles?.nodes?.map((article) => {
@@ -72,7 +72,7 @@ function SearchResultsPages({term, pages}: PartialSearchResult<'pages'>) {
   }
 
   return (
-    <div className="search-result">
+    <div className="search-result pt-3">
       <Sectiontitle text="Pages" />
       <div>
         {pages?.nodes?.map((page) => {
@@ -105,7 +105,7 @@ function SearchResultsProducts({
   }
 
   return (
-    <div className="search-result">
+    <div className="search-result pt-3">
       <Sectiontitle text="Products" />
       <br />
       <Pagination connection={products}>
