@@ -54,51 +54,23 @@ export function CartLineItem({
         <li
           key={id}
           className={`${
-            windowWidth != undefined &&
-            windowWidth < 1280 &&
             image?.altText != undefined &&
-            image.altText.includes('horizontal')
-              ? 'cart-line-small-horizontal-product'
-              : 'cart-line'
+            image.altText.includes('horizontal') &&
+            'cart-line-horizontal-product'
+          } ${
+            image?.altText != undefined &&
+            !image.altText.includes('horizontal') &&
+            !image.altText.includes('vert') &&
+            'cart-line-stock-product'
+          } ${
+            image?.altText != undefined &&
+            image.altText.includes('vert') &&
+            'cart-line-vertical-product'
           }`}
         >
-          {image?.altText != undefined &&
-            image.altText.includes('horizontal') &&
-            windowWidth != undefined &&
-            windowWidth >= 1280 && (
-              <Image
-                alt={title}
-                aspectRatio="5/4"
-                data={image}
-                height={120}
-                loading="lazy"
-                width={120}
-              />
-            )}
-          {image?.altText != undefined && image.altText.includes('vert') && (
-            <Image
-              alt={title}
-              aspectRatio="4/5"
-              data={image}
-              height={200}
-              loading="lazy"
-              width={100}
-            />
-          )}
-          {image?.altText != undefined &&
-            !image.altText.includes('horizontal') &&
-            !image.altText.includes('vert') && (
-              <Image
-                alt={title}
-                aspectRatio="5/4"
-                data={image}
-                height={120}
-                loading="lazy"
-                width={120}
-              />
-            )}
+          {/* ✔0-600px landscape print in cart */}
           {windowWidth != undefined &&
-            windowWidth < 1280 &&
+            windowWidth <= 600 &&
             image?.altText != undefined &&
             image.altText.includes('horizontal') && (
               <>
@@ -121,7 +93,61 @@ export function CartLineItem({
                             alt={title}
                             src={image.url}
                             loading="lazy"
-                            className="cart-line-small-horizontal-product-img"
+                            className="cart-line-horizontal-product-img"
+                          />
+                        )}
+                      <div className="ps-3">
+                        <strong>{product.title}</strong>
+                        <ProductPrice price={line?.cost?.totalAmount} />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+
+                {!hasOnlyDefaultTitle && (
+                  <div className="pt-1">
+                    {cartDescription && (
+                      <div className="cart-description">{cartDescription}</div>
+                    )}
+                    <ul>
+                      {selectedOptions.map((option) => (
+                        <li key={option.name}>
+                          <div className="flex justify-start items-center">
+                            <p className="cart-subheader">
+                              {option.name}: {option.value}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          {/* ✔601px+ landscape print in cart */}
+          {windowWidth != undefined &&
+            windowWidth > 600 &&
+            image?.altText != undefined &&
+            image.altText.includes('horizontal') && (
+              <>
+                <div>
+                  <Link
+                    prefetch="intent"
+                    to={lineItemUrl}
+                    onClick={() => {
+                      if (layout === 'aside') {
+                        close();
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row">
+                      {image?.altText != undefined &&
+                        image.altText.includes('horizontal') && (
+                          <img
+                            alt={title}
+                            src={image.url}
+                            loading="lazy"
+                            className="cart-line-horizontal-product-img"
                           />
                         )}
                       <div className="ps-3">
@@ -154,88 +180,278 @@ export function CartLineItem({
                 )}
               </>
             )}
+          {/* ✔0px-600px stock clip in cart */}
           {windowWidth != undefined &&
-            windowWidth < 1280 &&
+            windowWidth <= 600 &&
             image?.altText != undefined &&
             !image.altText.includes('horizontal') &&
             !image.altText.includes('vert') && (
-              <div>
-                <Link
-                  prefetch="intent"
-                  to={lineItemUrl}
-                  onClick={() => {
-                    if (layout === 'aside') {
-                      close();
-                    }
-                  }}
-                >
-                  <div className="flex flex-row">
-                    <div>
-                      <strong>{product.title}</strong>
+              <>
+                <div>
+                  <Link
+                    prefetch="intent"
+                    to={lineItemUrl}
+                    onClick={() => {
+                      if (layout === 'aside') {
+                        close();
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row">
+                      {image?.altText != undefined &&
+                        !image.altText.includes('horizontal') &&
+                        !image.altText.includes('vert') && (
+                          <img
+                            alt={title}
+                            src={image.url}
+                            loading="lazy"
+                            className="cart-line-stock-product-img"
+                          />
+                        )}
+                      <div className="ps-3">
+                        <strong>{product.title}</strong>
+                        <ProductPrice price={line?.cost?.totalAmount} />
+                      </div>
                     </div>
-                  </div>
-                  {cartDescription && (
-                    <div className="cart-description">{cartDescription}</div>
-                  )}
-                </Link>
-
-                <ProductPrice price={line?.cost?.totalAmount} />
-                {!hasOnlyDefaultTitle && (
-                  <ul>
-                    {selectedOptions.map((option) => (
-                      <li key={option.name}>
-                        <div className="flex justify-start items-center">
-                          <p className="cart-subheader">
-                            {option.name}: {option.value}
-                          </p>
+                    <div className="pt-1">
+                      {cartDescription && (
+                        <div className="cart-description">
+                          {cartDescription}
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                      )}
+                    </div>
+                  </Link>
+                </div>
+              </>
             )}
+          {/* ✔601px+ stock clip in cart */}
           {windowWidth != undefined &&
-            windowWidth < 1280 &&
+            windowWidth > 600 &&
+            image?.altText != undefined &&
+            !image.altText.includes('horizontal') &&
+            !image.altText.includes('vert') && (
+              <>
+                <div>
+                  <Link
+                    prefetch="intent"
+                    to={lineItemUrl}
+                    onClick={() => {
+                      if (layout === 'aside') {
+                        close();
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row">
+                      {image?.altText != undefined &&
+                        image?.altText != undefined &&
+                        !image.altText.includes('horizontal') &&
+                        !image.altText.includes('vert') && (
+                          <img
+                            alt={title}
+                            src={image.url}
+                            loading="lazy"
+                            className="cart-line-stock-product-img"
+                          />
+                        )}
+                      <div className="ps-3">
+                        <strong>{product.title}</strong>
+                        {cartDescription && (
+                          <div className="cart-description">
+                            {cartDescription}
+                          </div>
+                        )}
+                        <ProductPrice price={line?.cost?.totalAmount} />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+
+                {!hasOnlyDefaultTitle && (
+                  <div>
+                    <ul className="pt-3">
+                      {selectedOptions.map((option) => (
+                        <li key={option.name}>
+                          <div className="flex justify-start items-center">
+                            <p className="cart-subheader">
+                              {option.name}: {option.value}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          {/* ✔0px-600px vertical print in cart */}
+          {windowWidth != undefined &&
+            windowWidth <= 600 &&
             image?.altText != undefined &&
             image.altText.includes('vert') && (
-              <div>
-                <Link
-                  prefetch="intent"
-                  to={lineItemUrl}
-                  onClick={() => {
-                    if (layout === 'aside') {
-                      close();
-                    }
-                  }}
-                >
-                  <div className="flex flex-row">
-                    <div>
-                      <strong>{product.title}</strong>
+              <>
+                <div>
+                  <Link
+                    prefetch="intent"
+                    to={lineItemUrl}
+                    onClick={() => {
+                      if (layout === 'aside') {
+                        close();
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row">
+                      {image?.altText != undefined &&
+                        image.altText.includes('vert') && (
+                          <img
+                            alt={title}
+                            src={image.url}
+                            loading="lazy"
+                            className="cart-line-vertical-product-img"
+                          />
+                        )}
+                      <div className="ps-3">
+                        <strong>{product.title}</strong>
+                        <ProductPrice price={line?.cost?.totalAmount} />
+                      </div>
                     </div>
-                  </div>
-                  {cartDescription && (
-                    <div className="cart-description">{cartDescription}</div>
-                  )}
-                </Link>
+                  </Link>
+                </div>
 
-                <ProductPrice price={line?.cost?.totalAmount} />
                 {!hasOnlyDefaultTitle && (
-                  <ul>
-                    {selectedOptions.map((option) => (
-                      <li key={option.name}>
-                        <div className="flex justify-start items-center">
-                          <p className="cart-subheader">
-                            {option.name}: {option.value}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="pt-1">
+                    {cartDescription && (
+                      <div className="cart-description">{cartDescription}</div>
+                    )}
+                    <ul>
+                      {selectedOptions.map((option) => (
+                        <li key={option.name}>
+                          <div className="flex justify-start items-center">
+                            <p className="cart-subheader">
+                              {option.name}: {option.value}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
-              </div>
+              </>
             )}
-          {windowWidth != undefined && windowWidth >= 1280 && (
+          {/* ✔601px-1279px vertical print in cart */}
+          {windowWidth != undefined &&
+            windowWidth < 1280 &&
+            windowWidth > 600 &&
+            image?.altText != undefined &&
+            image.altText.includes('vert') && (
+              <>
+                <div>
+                  <Link
+                    prefetch="intent"
+                    to={lineItemUrl}
+                    onClick={() => {
+                      if (layout === 'aside') {
+                        close();
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row">
+                      {image?.altText != undefined &&
+                        image.altText.includes('vert') && (
+                          <img
+                            alt={title}
+                            src={image.url}
+                            loading="lazy"
+                            className="cart-line-vertical-product-img"
+                          />
+                        )}
+                      <div className="ps-3">
+                        <strong>{product.title}</strong>
+                        {cartDescription && (
+                          <div className="cart-description">
+                            {cartDescription}
+                          </div>
+                        )}
+                        <ProductPrice price={line?.cost?.totalAmount} />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+
+                {!hasOnlyDefaultTitle && (
+                  <div>
+                    <ul className="pt-3">
+                      {selectedOptions.map((option) => (
+                        <li key={option.name}>
+                          <div className="flex justify-start items-center">
+                            <p className="cart-subheader">
+                              {option.name}: {option.value}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          {/* ✔1280px+ vertical print in cart */}
+          {windowWidth != undefined &&
+            windowWidth >= 1280 &&
+            image?.altText != undefined &&
+            image.altText.includes('vert') && (
+              <>
+                <div>
+                  <Link
+                    prefetch="intent"
+                    to={lineItemUrl}
+                    onClick={() => {
+                      if (layout === 'aside') {
+                        close();
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row">
+                      {image?.altText != undefined &&
+                        image.altText.includes('vert') && (
+                          <img
+                            alt={title}
+                            src={image.url}
+                            loading="lazy"
+                            className="cart-line-vertical-product-img"
+                          />
+                        )}
+                      <div className="ps-3">
+                        <strong>{product.title}</strong>
+                        {cartDescription && (
+                          <div className="cart-description">
+                            {cartDescription}
+                          </div>
+                        )}
+                        <ProductPrice price={line?.cost?.totalAmount} />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+
+                {!hasOnlyDefaultTitle && (
+                  <div>
+                    <ul className="pt-3">
+                      {selectedOptions.map((option) => (
+                        <li key={option.name}>
+                          <div className="flex justify-start items-center">
+                            <p className="cart-subheader">
+                              {option.name}: {option.value}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          {/* 1280px+ All products */}
+          {/* {windowWidth != undefined && windowWidth >= 1280 && (
             <div>
               <Link
                 prefetch="intent"
@@ -271,7 +487,7 @@ export function CartLineItem({
                 </ul>
               )}
             </div>
-          )}
+          )} */}
         </li>
         <CartLineQuantity line={line} hideQuantityButtons={!!hasPrintTag} />
       </CardContent>
