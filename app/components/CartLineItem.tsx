@@ -86,9 +86,7 @@ export function CartLineItem({
                   >
                     <div className="flex flex-row">
                       {image?.altText != undefined &&
-                        image.altText.includes('horizontal') &&
-                        windowWidth != undefined &&
-                        windowWidth < 1280 && (
+                        image.altText.includes('horizontal') && (
                           <img
                             alt={title}
                             src={image.url}

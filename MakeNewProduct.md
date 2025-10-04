@@ -75,32 +75,29 @@ Main Thumbnail for Products Container (VIEWING ALL PRODUCTS):
 altText:
 standard_seaLions = First image in carousel
 
-
 altText:
 standard_example1 = Second image in carousel
 standard_example2 = Third image in carousel
-
-
 
 Second and Thirdimages in Products Container Carousel (VIEWING ALL PRODUCTS):
 altText:
 standard_example1
 standard_example2
 
-
-
-
-
-
 ---
 
 Main Thumbnail/first image for Product (VIEWING SPECIFIC PRODUCT):
 
 altText:
-standard_seaLions_horizontal = First image in carousel
+standard_seaLions_horizontal = First image in regular carousel
 Should be the key photo in the product on shopify
 
 must include "horizontal" for cart rendering
+
+Key photos for two column layout and three column layout need:
+altText:
+two_column_horizontal
+three_column_horizontal
 
 vert-small
 vert-medium
