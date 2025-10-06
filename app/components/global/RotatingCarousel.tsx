@@ -1,0 +1,79 @@
+'use client';
+
+import React, {useState, useRef, useEffect} from 'react';
+import {Dialog, DialogContent, DialogTrigger} from '../ui/dialog';
+import {Button} from '../ui/button';
+import Sectiontitle from './Sectiontitle';
+
+const images = Array.from({length: 20}, (_, i) => `/img${i + 1}.png`);
+
+export default function ThreeDViewModal() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const barRef = useRef<HTMLDivElement>(null);
+  const isHovering = useRef(false);
+
+  const speed = 1; // scroll sensitivity
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isHovering.current || !barRef.current) return;
+
+      const rect = barRef.current.getBoundingClientRect();
+      const relativeX = e.clientX - rect.left;
+      const percent = relativeX / rect.width;
+
+      const index = Math.floor(percent * speed * images.length);
+      setCurrentIndex(Math.min(images.length - 1, Math.max(0, index)));
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [speed]);
+
+  return (
+    <Dialog>
+      {/* Button to open modal */}
+      <DialogTrigger asChild>
+        <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
+          360˚ View
+        </Button>
+      </DialogTrigger>
+
+      {/* Modal content */}
+      <DialogContent className="max-w-5xl bg-background border text-white p-8 rounded-2xl border-none three-d-carousel">
+        <div className="w-full flex flex-col items-center justify-center select-none">
+          <Sectiontitle text="360˚ View" />
+          <hr />
+          <br />
+          {/* Image display */}
+          <div className="w-full h-[60vh] flex items-center justify-center overflow-hidden">
+            <img
+              src={images[currentIndex]}
+              alt={`Frame ${currentIndex + 1}`}
+              className="w-auto h-full object-contain transition-opacity duration-75 ease-out"
+              draggable="false"
+            />
+          </div>
+
+          {/* Scroll bar */}
+          <div
+            ref={barRef}
+            onMouseEnter={() => (isHovering.current = true)}
+            onMouseLeave={() => (isHovering.current = false)}
+            className="relative w-[80%] h-12 mt-8 rounded-full bg-neutral-800 cursor-ew-resize overflow-hidden"
+          >
+            <div
+              className="absolute top-0 left-0 h-full bg-white/70 transition-all duration-75"
+              style={{
+                width: `${(currentIndex / (images.length - 1)) * 100}%`,
+              }}
+            />
+            <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              ← Scroll →
+            </span>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -17,6 +17,7 @@ import {
   RecommendedProducts,
 } from './_index';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import RotatingCarousel from '~/components/global/RotatingCarousel';
 
 async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
@@ -156,6 +157,8 @@ function AboutPage() {
 
   return (
     <>
+      
+
       <section id="about">
         <div className="flex justify-center img-container">
           <img

@@ -9,6 +9,7 @@ import {
 } from '../ui/carousel';
 import {useEffect, useState} from 'react';
 import '../../styles/routeStyles/product.css';
+import RotatingCarousel from '../global/RotatingCarousel';
 
 function IndividualProduct({
   productName,
@@ -236,18 +237,11 @@ function IndividualProduct({
               ))}
             </div>
           )}
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
+          <div className="flex justify-center">
+            <div className="w-64 h-18">
+              <RotatingCarousel />
+            </div>
+          </div>
         </div>
       </div>
 

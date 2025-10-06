@@ -837,3 +837,8 @@ span {
 .bottom-part-card-list {
   align-items: center;
 }
+
+.three-d-carousel {
+  z-index: 7000;
+  border: 0.5px solid gray;
+}
