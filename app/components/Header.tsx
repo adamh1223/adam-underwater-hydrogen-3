@@ -19,7 +19,7 @@ import {useAside} from '~/components/Aside';
 import AboutDropdown from './navbar/AboutDropdown';
 import {Button} from './ui/button';
 import ServicesDropdown from './navbar/ServicesDropdown';
-import {loader} from '~/routes/_index';
+
 import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';

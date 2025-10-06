@@ -142,6 +142,9 @@ function StockForm({
               <div className="flex justify-start one-entry">
                 Second-hand sale of purchased clips is not permitted.
               </div>{' '}
+              <div className="flex justify-start one-entry">
+                All stock footage videos are final sale.
+              </div>{' '}
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center">
