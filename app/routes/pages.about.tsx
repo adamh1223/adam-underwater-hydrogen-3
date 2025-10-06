@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
-import {useLocation} from '@remix-run/react';
+import {useLoaderData, useLocation} from '@remix-run/react';
 import {Button} from '~/components/ui/button';
 import {Card} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
@@ -11,8 +11,59 @@ import {
   CarouselPrevious,
 } from '~/components/ui/carousel';
 import '../styles/routeStyles/about.css';
+import {
+  FEATURED_COLLECTION_QUERY,
+  RECOMMENDED_PRODUCTS_QUERY,
+  RecommendedProducts,
+} from './_index';
+import {LoaderFunctionArgs} from '@remix-run/server-runtime';
+
+async function loader(args: LoaderFunctionArgs) {
+  // Start fetching non-critical data without blocking time to first byte
+  const deferredData = loadDeferredData(args);
+
+  // Await the critical data required to render initial state of the page
+  const criticalData = await loadCriticalData(args);
+
+  return {...deferredData, ...criticalData};
+}
+
+/**
+ * Load data necessary for rendering content above the fold. This is the critical data
+ * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
+ */
+async function loadCriticalData({context}: LoaderFunctionArgs) {
+  const [{collections}] = await Promise.all([
+    context.storefront.query(FEATURED_COLLECTION_QUERY),
+    // Add other queries here, so that they are loaded in parallel
+  ]);
+
+  return {
+    featuredCollection: collections.nodes[0],
+  };
+}
+
+/**
+ * Load data for rendering content below the fold. This data is deferred and will be
+ * fetched after the initial page load. If it's unavailable, the page should still 200.
+ * Make sure to not throw any errors here, as it will cause the page to 500.
+ */
+function loadDeferredData({context}: LoaderFunctionArgs) {
+  const recommendedProducts = context.storefront
+    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .catch((error) => {
+      // Log query errors, but don't throw them so the page can still render
+      console.error(error);
+      return null;
+    });
+
+  return {
+    recommendedProducts,
+  };
+}
 
 function AboutPage() {
+  const data = useLoaderData<typeof loader>();
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const retryTimerRef = useRef<number | null>(null);
@@ -24,6 +75,8 @@ function AboutPage() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  console.log(data, 'recs');
+  // data is null? why
 
   const getYOffset = () => {
     if (windowWidth == null) return -180;
@@ -403,6 +456,7 @@ function AboutPage() {
           </Card>
         </div>
       </section>
+      {/* <RecommendedProducts products={data.recommendedProducts} /> */}
     </>
   );
 }

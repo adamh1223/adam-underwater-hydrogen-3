@@ -10,6 +10,7 @@ import {useAside} from '../Aside';
 import {useIsVideoInCart} from '~/lib/hooks';
 import {CartReturn} from '@shopify/hydrogen';
 import '../../styles/routeStyles/product.css';
+import {ProductPrice} from '../ProductPrice';
 
 type shopifyImage = {url: string; altText: string};
 function EProductsContainer({
@@ -35,12 +36,12 @@ function EProductsContainer({
       ? 'flex flex-col h-full p-4'
       : 'ps-3 pt-3 pb-3 gap-y-4 list-view-large-row h-full';
   const variantUrl = useVariantUrl(product.handle);
-  console.log(product, '204020');
   const {open} = useAside();
   const disableButton = useIsVideoInCart(
     product?.selectedOrFirstAvailableVariant?.id,
     cart,
   );
+  console.log(product, '204020');
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   useEffect(() => {
@@ -101,6 +102,8 @@ function EProductsContainer({
   const formattedLocation = [locationName, locationState, locationCountry]
     .filter(Boolean)
     .join(', ');
+  console.log(product, 'prpr');
+
   return (
     <>
       {/* {EProducts?.map((product) => { */}
@@ -182,8 +185,10 @@ function EProductsContainer({
                       <span
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
-                        From
-                        <Money data={product?.priceRange?.minVariantPrice} />
+                        <ProductPrice
+                          price={product?.priceRange?.minVariantPrice}
+                        />
+                        {/* We need to get the compareat price in here */}
                       </span>
                     </Link>
                   </div>

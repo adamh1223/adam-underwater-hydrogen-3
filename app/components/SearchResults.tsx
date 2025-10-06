@@ -4,6 +4,7 @@ import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
 import ProductCarousel from './products/productCarousel';
 import EProductsContainer from './eproducts/EProductsContainer';
 import Sectiontitle from './global/Sectiontitle';
+import { EnhancedPartialSearchResult } from '~/lib/types';
 
 type SearchItems = RegularSearchReturn['result']['items'];
 type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
@@ -103,6 +104,8 @@ function SearchResultsProducts({
   if (!products?.nodes.length) {
     return null;
   }
+  console.log(products, 'products');
+  // images are not coming in here^
 
   return (
     <div className="search-result pt-3">
@@ -120,6 +123,9 @@ function SearchResultsProducts({
             const price = product?.selectedOrFirstAvailableVariant?.price;
             const image = product?.selectedOrFirstAvailableVariant?.image;
             console.log(product, 'prod');
+            {
+              /* not getting product images on this console.log^ But we DO GET images on searchresultspredictive console.log */
+            }
             if (product.tags.includes('Prints')) {
               return (
                 <>
@@ -129,7 +135,6 @@ function SearchResultsProducts({
                     </div>
                     <ProductCarousel product={product} layout="grid" />
                   </div>
-                  {/* not getting product images */}
                 </>
               );
             }

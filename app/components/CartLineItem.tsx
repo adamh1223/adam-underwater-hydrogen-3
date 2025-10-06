@@ -48,6 +48,7 @@ export function CartLineItem({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
+  console.log(line?.cost?.compareAtAmountPerQuantity, 'compareat');
   return (
     <Card className="mb-4">
       <CardContent>
@@ -96,7 +97,12 @@ export function CartLineItem({
                         )}
                       <div className="ps-3">
                         <strong>{product.title}</strong>
-                        <ProductPrice price={line?.cost?.totalAmount} />
+                        <ProductPrice
+                          price={line?.cost?.totalAmount}
+                          compareAtPrice={
+                            line?.cost?.compareAtAmountPerQuantity
+                          }
+                        />
                       </div>
                     </div>
                   </Link>
@@ -155,7 +161,12 @@ export function CartLineItem({
                             {cartDescription}
                           </div>
                         )}
-                        <ProductPrice price={line?.cost?.totalAmount} />
+                        <ProductPrice
+                          price={line?.cost?.totalAmount}
+                          compareAtPrice={
+                            line?.cost?.compareAtAmountPerQuantity
+                          }
+                        />
                       </div>
                     </div>
                   </Link>
@@ -165,13 +176,15 @@ export function CartLineItem({
                   <div>
                     <ul className="pt-3">
                       {selectedOptions.map((option) => (
-                        <li key={option.name}>
-                          <div className="flex justify-start items-center">
-                            <p className="cart-subheader">
-                              {option.name}: {option.value}
-                            </p>
-                          </div>
-                        </li>
+                        <>
+                          <li key={option.name}>
+                            <div className="flex justify-start items-center">
+                              <p className="cart-subheader">
+                                {option.name}: {option.value}
+                              </p>
+                            </div>
+                          </li>
+                        </>
                       ))}
                     </ul>
                   </div>
@@ -208,7 +221,12 @@ export function CartLineItem({
                         )}
                       <div className="ps-3">
                         <strong>{product.title}</strong>
-                        <ProductPrice price={line?.cost?.totalAmount} />
+                        <ProductPrice
+                          price={line?.cost?.totalAmount}
+                          compareAtPrice={
+                            line?.cost?.compareAtAmountPerQuantity
+                          }
+                        />
                       </div>
                     </div>
                     <div className="pt-1">
@@ -258,7 +276,12 @@ export function CartLineItem({
                             {cartDescription}
                           </div>
                         )}
-                        <ProductPrice price={line?.cost?.totalAmount} />
+                        <ProductPrice
+                          price={line?.cost?.totalAmount}
+                          compareAtPrice={
+                            line?.cost?.compareAtAmountPerQuantity
+                          }
+                        />
                       </div>
                     </div>
                   </Link>
@@ -309,7 +332,12 @@ export function CartLineItem({
                         )}
                       <div className="ps-3">
                         <strong>{product.title}</strong>
-                        <ProductPrice price={line?.cost?.totalAmount} />
+                        <ProductPrice
+                          price={line?.cost?.totalAmount}
+                          compareAtPrice={
+                            line?.cost?.compareAtAmountPerQuantity
+                          }
+                        />
                       </div>
                     </div>
                   </Link>
@@ -369,7 +397,12 @@ export function CartLineItem({
                             {cartDescription}
                           </div>
                         )}
-                        <ProductPrice price={line?.cost?.totalAmount} />
+                        <ProductPrice
+                          price={line?.cost?.totalAmount}
+                          compareAtPrice={
+                            line?.cost?.compareAtAmountPerQuantity
+                          }
+                        />
                       </div>
                     </div>
                   </Link>
@@ -425,7 +458,12 @@ export function CartLineItem({
                             {cartDescription}
                           </div>
                         )}
-                        <ProductPrice price={line?.cost?.totalAmount} />
+                        <ProductPrice
+                          price={line?.cost?.totalAmount}
+                          compareAtPrice={
+                            line?.cost?.compareAtAmountPerQuantity
+                          }
+                        />
                       </div>
                     </div>
                   </Link>

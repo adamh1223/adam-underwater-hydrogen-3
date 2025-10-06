@@ -14,7 +14,7 @@ export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
 };
 
-export async function loader(args: LoaderFunctionArgs) {
+async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
 
@@ -101,7 +101,7 @@ function FeaturedCollection({
   );
 }
 
-function RecommendedProducts({
+export function RecommendedProducts({
   products,
 }: {
   products: Promise<RecommendedProductsQuery | null>;
@@ -138,7 +138,7 @@ function RecommendedProducts({
   );
 }
 
-const FEATURED_COLLECTION_QUERY = `#graphql
+export const FEATURED_COLLECTION_QUERY = `#graphql
   fragment FeaturedCollection on Collection {
     id
     title
@@ -170,7 +170,7 @@ const FEATURED_COLLECTION_QUERY = `#graphql
   }
 ` as const;
 
-const RECOMMENDED_PRODUCTS_QUERY = `#graphql
+export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   fragment RecommendedProduct on Product {
     id
     title
