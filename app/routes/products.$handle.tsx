@@ -146,6 +146,8 @@ export default function Product() {
   const parsedWMLink = WMLink?.split('_')[1];
 
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
+  console.log(productSizeMetafields, 'pmf');
+
   const {references} = productSizeMetafields || {};
 
   const threeColumnImages = images?.nodes?.filter((item: any) => {
@@ -208,6 +210,7 @@ export default function Product() {
   // When vertical is selected, EVERY IMAGE in the carousel needs to be a vertical image. we need to get rid of the images that usually show up with altText "carousel" because these are horizontal images.
 
   let layoutImagesToUse = determineLayoutImages(selectedVariant);
+
   // const imageURLs = images.nodes.map((item: {url: string}) => item.url);
   // console.log(product, '12121212');
   // const imagesToUse = images.nodes.map(
@@ -217,7 +220,7 @@ export default function Product() {
   //     }
   //   },
   // );
-  console.log(selectedVariant, 'selected');
+  console.log(images, '10img');
 
   const standardCarouselImages = images.nodes
     .map((image: any) => {
@@ -226,6 +229,152 @@ export default function Product() {
       }
     })
     .filter(Boolean);
+
+  // horizontal sm
+  const threeSixtyCarouselHorizontalSmallImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-hor-small')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // horizontal md
+  const threeSixtyCarouselHorizontalMediumImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-hor-medium')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // horizontal lg
+  const threeSixtyCarouselHorizontalLargeImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-hor-large')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // horizontal xl
+  const threeSixtyCarouselHorizontalXLImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-hor-xl')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // vertical sm
+  const threeSixtyCarouselVerticalSmallImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-vert-small')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // vertical md
+  const threeSixtyCarouselVerticalMediumImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-vert-medium')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // vertical lg
+  const threeSixtyCarouselVerticalLargeImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-vert-large')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // vertical xl
+  const threeSixtyCarouselVerticalXLImages = images.nodes
+    .map((image: any) => {
+      if (image.url?.includes('360-carousel-vert-xl')) {
+        return image;
+      }
+    })
+    .filter(Boolean);
+
+  // const threeDImagesToUse =
+  const determineThreeDImages = (variant: any) => {
+    const orientation = variant.title.split(' / ')[0];
+    const layout = variant.title.split(' / ')[1];
+    const size = variant.title.split(' / ')[2];
+
+    // Standard Only, Horizontal and vertical all sizes
+    // no two columns, no three columns any size
+
+    // Standard, Landscape, small
+    if (
+      layout === 'Standard' &&
+      orientation === 'Landscape' &&
+      size === 'Small'
+    ) {
+      return threeSixtyCarouselHorizontalSmallImages;
+    } else if (
+      layout === 'Standard' &&
+      orientation === 'Landscape' &&
+      size === 'Medium'
+    ) {
+      // Standard, Landscape, medium
+      return threeSixtyCarouselHorizontalMediumImages;
+    } else if (
+      layout === 'Standard' &&
+      orientation === 'Landscape' &&
+      size === 'Large'
+    ) {
+      // Standard, Landscape, large
+      return threeSixtyCarouselHorizontalLargeImages;
+    } else if (
+      layout === 'Standard' &&
+      orientation === 'Landscape' &&
+      size === 'XL (Pickup Only)'
+    ) {
+      // Standard, Landscape, xl
+      return threeSixtyCarouselHorizontalXLImages;
+    } else if (
+      layout === 'Standard' &&
+      orientation === 'Vertical' &&
+      size === 'Small'
+    ) {
+      // Standard, Vertical, small
+      return threeSixtyCarouselVerticalSmallImages;
+    } else if (
+      layout === 'Standard' &&
+      orientation === 'Vertical' &&
+      size === 'Medium'
+    ) {
+      // Standard, Vertical, medium
+      return threeSixtyCarouselVerticalMediumImages;
+    } else if (
+      layout === 'Standard' &&
+      orientation === 'Vertical' &&
+      size === 'Large'
+    ) {
+      // Standard, Vertical, large
+      return threeSixtyCarouselVerticalLargeImages;
+    } else if (
+      layout === 'Standard' &&
+      orientation === 'Vertical' &&
+      size === 'XL (Pickup Only)'
+    ) {
+      // Standard, Vertical, xl
+      return threeSixtyCarouselVerticalXLImages;
+    } else {
+      return null;
+    }
+  };
+
+  let threeDImagesToUse = determineThreeDImages(selectedVariant);
+  console.log(threeDImagesToUse, '3dimgs');
+
   const standardVerticalCarouselImages = images.nodes
     .map((image: any) => {
       if (image.altText?.includes('vt-car')) {
@@ -462,6 +611,7 @@ export default function Product() {
               productImages={standardCarouselImages}
               verticalProductImages={standardVerticalCarouselImages}
               orientation={orientation}
+              threeDViewImages={threeDImagesToUse}
             ></IndividualProduct>
           )}
           {isVideo && (
@@ -1311,7 +1461,7 @@ const PRODUCT_FRAGMENT = `#graphql
     }
     encodedVariantExistence
     encodedVariantAvailability
-    images(first: 50) {
+    images(first: 200) {
       nodes {
         url
         altText
@@ -1358,7 +1508,7 @@ export const PRODUCT_QUERY = `#graphql
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product
-      collections(first: 50) {
+      collections(first: 200) {
         edges {
           node {
             title
@@ -1366,7 +1516,7 @@ export const PRODUCT_QUERY = `#graphql
               namespace
               key
               value
-              references(first: 50) {
+              references(first: 200) {
                 nodes {
                   ... on MediaImage {
                     id

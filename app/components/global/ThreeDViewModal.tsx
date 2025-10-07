@@ -5,9 +5,16 @@ import {Dialog, DialogContent, DialogTrigger} from '../ui/dialog';
 import {Button} from '../ui/button';
 import Sectiontitle from './Sectiontitle';
 
-const images = Array.from({length: 20}, (_, i) => `/img${i + 1}.png`);
+type ImageData = {
+  url: string;
+  altText?: string;
+};
 
-export default function ThreeDViewModal() {
+interface ThreeDViewModalProps {
+  images: ImageData[];
+}
+
+export default function ThreeDViewModal({images}: ThreeDViewModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const barRef = useRef<HTMLDivElement>(null);
   const isHovering = useRef(false);
@@ -16,7 +23,7 @@ export default function ThreeDViewModal() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isHovering.current || !barRef.current) return;
+      if (!isHovering.current || !barRef.current || images.length === 0) return;
 
       const rect = barRef.current.getBoundingClientRect();
       const relativeX = e.clientX - rect.left;
@@ -28,7 +35,7 @@ export default function ThreeDViewModal() {
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [speed]);
+  }, [speed, images.length]);
 
   return (
     <Dialog>
@@ -48,33 +55,42 @@ export default function ThreeDViewModal() {
           <Sectiontitle text="360˚ View" />
           <hr />
           <br />
+
           {/* Image display */}
           <div className="w-full h-[60vh] flex items-center justify-center overflow-hidden">
-            <img
-              src={images[currentIndex]}
-              alt={`Frame ${currentIndex + 1}`}
-              className="w-auto h-full object-contain transition-opacity duration-75 ease-out"
-              draggable="false"
-            />
+            {images.length > 0 ? (
+              <img
+                src={images[currentIndex].url}
+                alt={
+                  images[currentIndex].altText || `Frame ${currentIndex + 1}`
+                }
+                className="w-auto h-full object-contain transition-opacity duration-75 ease-out"
+                draggable="false"
+              />
+            ) : (
+              <p>No 360° images available.</p>
+            )}
           </div>
 
           {/* Scroll bar */}
-          <div
-            ref={barRef}
-            onMouseEnter={() => (isHovering.current = true)}
-            onMouseLeave={() => (isHovering.current = false)}
-            className="relative w-[50%] h-12 mt-8 rounded-full bg-neutral-800 cursor-ew-resize overflow-hidden"
-          >
+          {images.length > 1 && (
             <div
-              className="absolute top-0 left-0 h-full bg-white/70 transition-all duration-75"
-              style={{
-                width: `${(currentIndex / (images.length - 1)) * 100}%`,
-              }}
-            />
-            <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              ← Scroll →
-            </span>
-          </div>
+              ref={barRef}
+              onMouseEnter={() => (isHovering.current = true)}
+              onMouseLeave={() => (isHovering.current = false)}
+              className="relative w-[50%] h-12 mt-8 rounded-full bg-neutral-800 cursor-ew-resize overflow-hidden"
+            >
+              <div
+                className="absolute top-0 left-0 h-full bg-white/70 transition-all duration-75"
+                style={{
+                  width: `${(currentIndex / (images.length - 1)) * 100}%`,
+                }}
+              />
+              <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                ← Scroll →
+              </span>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

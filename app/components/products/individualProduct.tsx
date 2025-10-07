@@ -9,13 +9,15 @@ import {
 } from '../ui/carousel';
 import {useEffect, useState} from 'react';
 import '../../styles/routeStyles/product.css';
-import RotatingCarousel from '../global/RotatingCarousel';
+import RotatingCarousel from '../global/ThreeDViewModal';
+import ThreeDViewModal from '../global/ThreeDViewModal';
 
 function IndividualProduct({
   productName,
   productImages,
   orientation,
   verticalProductImages,
+  threeDViewImages,
 }: {
   productName: string;
   orientation: string;
@@ -24,6 +26,10 @@ function IndividualProduct({
     altText: string;
   }[];
   verticalProductImages: {
+    url: string;
+    altText: string;
+  }[];
+  threeDViewImages: {
     url: string;
     altText: string;
   }[];
@@ -132,6 +138,15 @@ function IndividualProduct({
   useEffect(() => {
     resetCarousel();
   }, [orientationImages]);
+
+  // const threeSixtyCarouselImages = productImages.nodes
+  //   .map((image: any) => {
+  //     if (image.url?.includes('360-carousel-')) {
+  //       return image;
+  //     }
+  //   })
+  //   .filter(Boolean);
+  console.log(productImages, '123prodimgs');
   return (
     <>
       <div className="grid grid-cols-1">
@@ -239,7 +254,7 @@ function IndividualProduct({
           )}
           <div className="flex justify-center mt-5">
             <div className="w-64 h-18 flex justify-center">
-              <RotatingCarousel />
+              <ThreeDViewModal images={threeDViewImages} />
             </div>
           </div>
           <div></div>
