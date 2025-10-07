@@ -34,7 +34,10 @@ export default function ThreeDViewModal() {
     <Dialog>
       {/* Button to open modal */}
       <DialogTrigger asChild>
-        <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
+        <Button
+          className="mt-4 bg-secondary hover:bg-primary border text-white w-48"
+          size="lg"
+        >
           360˚ View
         </Button>
       </DialogTrigger>
@@ -60,7 +63,7 @@ export default function ThreeDViewModal() {
             ref={barRef}
             onMouseEnter={() => (isHovering.current = true)}
             onMouseLeave={() => (isHovering.current = false)}
-            className="relative w-[80%] h-12 mt-8 rounded-full bg-neutral-800 cursor-ew-resize overflow-hidden"
+            className="relative w-[50%] h-12 mt-8 rounded-full bg-neutral-800 cursor-ew-resize overflow-hidden"
           >
             <div
               className="absolute top-0 left-0 h-full bg-white/70 transition-all duration-75"
