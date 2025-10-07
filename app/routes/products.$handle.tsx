@@ -367,8 +367,12 @@ export default function Product() {
     ) {
       // Standard, Vertical, xl
       return threeSixtyCarouselVerticalXLImages;
+    } else if (layout === 'Two Columns') {
+      return {};
+    } else if (layout === 'Three Columns') {
+      return {};
     } else {
-      return null;
+      return {};
     }
   };
 
@@ -1461,7 +1465,7 @@ const PRODUCT_FRAGMENT = `#graphql
     }
     encodedVariantExistence
     encodedVariantAvailability
-    images(first: 200) {
+    images(first: 250) {
       nodes {
         url
         altText
@@ -1508,7 +1512,7 @@ export const PRODUCT_QUERY = `#graphql
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product
-      collections(first: 200) {
+      collections(first: 250) {
         edges {
           node {
             title
@@ -1516,7 +1520,7 @@ export const PRODUCT_QUERY = `#graphql
               namespace
               key
               value
-              references(first: 200) {
+              references(first: 250) {
                 nodes {
                   ... on MediaImage {
                     id
