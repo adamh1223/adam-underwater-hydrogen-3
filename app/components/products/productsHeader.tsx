@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Card} from '../ui/card';
 import Hero from '../hero/Hero';
+import Sectiontitle from '../global/Sectiontitle';
 
 const ProductsHeader = () => {
   return (
@@ -13,9 +14,9 @@ const ProductsHeader = () => {
         ></img>
       </div>
       <div className="flex justify-center font-extrabold text-3xl py-2">
-        <p>Framed Canvas Wall Art</p>
+        <Sectiontitle text="Framed Canvas Wall Art" />
       </div>
-      <p className="flex justify-center font-semibold text-l">
+      <p className="flex justify-center font-semibold text-l pb-4">
         Bring the ocean into your home
       </p>
       {/* <div className="flex flex-col items-center justify-center text-center main">
