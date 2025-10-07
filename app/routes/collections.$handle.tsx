@@ -35,6 +35,8 @@ import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {capitalizeFirstLetter} from '~/utils/grammer';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import Product from './products.$handle';
+import {Checkbox} from '~/components/ui/checkbox';
+import ToggleSwitch from '~/components/global/ToggleSwitch';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -154,38 +156,77 @@ export default function Collection() {
     <div>
       {collection.handle === 'prints' && <ProductsHeader />}
       {collection.handle === 'stock' && <EProductsHeader />}
-      <SearchFormPredictive>
-        {({fetchResults, inputRef}) => {
-          const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-            setSearchText(e.target.value);
-            fetchResults(e);
-          };
 
-          return (
-            <>
-              <div className="flex justify-center">
-                <Input
-                  className="search-input w-[300px]"
-                  name="q"
-                  onChange={handleInput}
-                  onFocus={handleInput}
-                  placeholder="Search Product"
-                  ref={inputRef}
-                  type="search"
-                  value={searchText ?? ''}
-                  list={queriesDatalistId}
-                />
-              </div>
-              &nbsp;
-            </>
-          );
-        }}
-      </SearchFormPredictive>
       {/* SOMETHING HERE IS NOT WORKING WITH PRODUCT COUNT */}
-      <div className="flex justify-between items-center pt-5 px-9">
-        <h4 className="font-medium text-xl p-5">
-          {totalProductCount} product{totalProductCount > 1 && 's'}
-        </h4>
+      {collection.handle === 'prints' && (
+        <div>
+          <p className="text-lg flex justify-center pb-3">
+            Filter By Orientation:
+          </p>
+          <div className="flex justify-center pb-3">
+            <ToggleSwitch />
+          </div>
+          <div className="flex justify-center">
+            <div className="flex justify-center w-100 md:w-132 lg:w-148">
+              <p>
+                Many horizontal prints <strong>are also available</strong> in
+                vertical on the product page
+              </p>
+            </div>
+          </div>
+          {/* <div className="flex justify-start items-center">
+              <Checkbox />
+
+              <p className="ms-1">Horizontal</p>
+            </div>
+            <div className="flex justify-start items-center">
+              <Checkbox />
+              <p className="ms-1">Vertical</p>
+            </div> */}
+        </div>
+      )}
+      <div className="flex justify-between items-center px-9">
+        <div className="flex flex-col items-end">
+          <div className="flex flex-col items-end">
+            <h4 className="font-medium text-xl">
+              {totalProductCount} product{totalProductCount > 1 && 's'}
+            </h4>
+          </div>
+        </div>
+        <div className="flex justify-center items-center">
+          <div className="flex flex-col items-center mt-[25px]">
+            <SearchFormPredictive>
+              {({fetchResults, inputRef}) => {
+                const handleInput = (
+                  e: React.ChangeEvent<HTMLInputElement>,
+                ) => {
+                  setSearchText(e.target.value);
+                  fetchResults(e);
+                };
+
+                return (
+                  <>
+                    <div className="flex justify-center items-center">
+                      <Input
+                        className="search-input w-[300px]"
+                        name="q"
+                        onChange={handleInput}
+                        onFocus={handleInput}
+                        placeholder="Search Product"
+                        ref={inputRef}
+                        type="search"
+                        value={searchText ?? ''}
+                        list={queriesDatalistId}
+                      />
+                    </div>
+                    &nbsp;
+                  </>
+                );
+              }}
+            </SearchFormPredictive>
+          </div>
+        </div>
+
         <div className="flex gap-x-4 p-5">
           <Button
             variant={layout === 'grid' ? 'default' : 'ghost'}
@@ -203,6 +244,7 @@ export default function Collection() {
           </Button>
         </div>
       </div>
+
       <Separator className="mt-4" />
       <div className={layoutClassName}>
         {searchText && (

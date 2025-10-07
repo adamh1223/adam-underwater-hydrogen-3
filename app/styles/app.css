@@ -842,3 +842,37 @@ span {
   z-index: 7000;
   border: 0.5px solid gray;
 }
+
+.toggle-container {
+  display: flex;
+  border: 2px solid #555;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 300px;
+  height: 40px;
+  background-color: #333;
+  transition: border-color 0.3s ease;
+}
+
+.toggle-option {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  background-color: #333;
+  border-right: 1px solid #555;
+  outline: none;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.toggle-option.selected {
+  background-color: #ccc; /* Light gray for selected */
+  color: black;
+}
+
+.toggle-option:not(.selected):hover {
+  background-color: #444;
+}

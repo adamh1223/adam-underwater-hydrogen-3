@@ -34,8 +34,11 @@ function Hero() {
         <div className="pb-3" id="prints">
           <img src={'/vp3.png'} className="p-3 hero-img"></img>
         </div>
-        <Button size="lg" className="mt-5">
-          <Link to="/pages/work">My Work</Link>
+        <Button size="lg" className="mt-5 w-48">
+          <Link to="/pages/work">Video</Link>
+        </Button>
+        <Button size="lg" className="mt-5 w-48">
+          <Link to="/collections/prints">View All Prints</Link>
         </Button>
       </div>
       <div className="media-container">
