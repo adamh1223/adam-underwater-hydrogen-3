@@ -14,7 +14,7 @@ body {
 /* Ensure the section takes up the full viewport */
 .main {
   position: relative;
-  height: 300px;
+  height: 400px;
   overflow: hidden;
 }
 

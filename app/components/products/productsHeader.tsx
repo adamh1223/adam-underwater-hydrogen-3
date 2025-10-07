@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Card} from '../ui/card';
+import Hero from '../hero/Hero';
 
 const ProductsHeader = () => {
   return (
@@ -17,6 +18,23 @@ const ProductsHeader = () => {
       <p className="flex justify-center font-semibold text-l">
         Bring the ocean into your home
       </p>
+      {/* <div className="flex flex-col items-center justify-center text-center main">
+        <div className="media-container">
+          <img
+            src="/print3.jpg"
+            className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
+          />
+          <iframe
+            src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
+            frameBorder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            className={`video ${isVideoReady ? 'visible' : ''}`}
+            title="Background Video"
+          ></iframe>
+        </div>
+      </div> */}
+      <Hero />
 
       <div className="flex justify-center returns">
         <Card className="my-7 p-5">
