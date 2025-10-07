@@ -253,12 +253,13 @@ function IndividualProduct({
             </div>
           )}
           {threeDViewImages.length > 1 && (
-            <div className="flex justify-center mt-5">
+            <div className="flex justify-center mt-3 mb-5">
               <div className="w-64 h-18 flex justify-center">
                 <ThreeDViewModal images={threeDViewImages} />
               </div>
             </div>
           )}
+
           <div></div>
           <div></div>
           <div></div>

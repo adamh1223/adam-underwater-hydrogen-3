@@ -42,7 +42,7 @@ export default function ThreeDViewModal({images}: ThreeDViewModalProps) {
       {/* Button to open modal */}
       <DialogTrigger asChild>
         <Button
-          className="mt-4 bg-secondary hover:bg-primary border text-white w-48"
+          className="mt-4 bg-secondary hover:bg-primary border text-white w-100 md:w-144 lg:w-112 xl:w-152"
           size="lg"
         >
           360˚ View
