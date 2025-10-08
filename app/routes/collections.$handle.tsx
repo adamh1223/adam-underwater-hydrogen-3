@@ -37,6 +37,7 @@ import {EnhancedPartialSearchResult} from '~/lib/types';
 import Product from './products.$handle';
 import {Checkbox} from '~/components/ui/checkbox';
 import ToggleSwitch from '~/components/global/ToggleSwitch';
+import Collections from './collections._index';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -66,7 +67,7 @@ async function loadCriticalData({
   const url = new URL(request.url);
   const searchTerm = url.searchParams.get('q')?.trim() || '';
   const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+    pageBy: 250,
   });
 
   if (!handle) {
@@ -116,6 +117,25 @@ export default function Collection() {
   const currentSearchTerm = searchParams.get('q') || '';
   const [searchText, setSearchText] = useState<string | undefined>();
 
+  console.log(collection.products, 'cpcp');
+  // const isHorOnly = collection?.nodes?.map((p: any) =>
+  //   p.tags.includes('horOnly'),
+  // );
+  // const isHorPrimary = collection?.nodes?.map((p: any) =>
+  //   p.tags.includes('horPrimary'),
+  // );
+  const test = {
+    nodes: [],
+    pageInfo: collection.products.pageInfo,
+  };
+  // collection.products.nodes = isHorPrimary;
+  // const isVertOnly = collection?.nodes?.map((p: any) =>
+  //   p.tags.includes('vertOnly'),
+  // );
+  // const isVertPrimary = collection?.nodes?.map((p: any) =>
+  //   p.tags.includes('vertPrimary'),
+  // );
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
     if (searchText && searchText?.length > 4) {
@@ -152,6 +172,32 @@ export default function Collection() {
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
+  const [filterState, setFilterState] = useState('All');
+  const [productState, setProductState] = useState(collection.products);
+
+  useEffect(() => {
+    let tag: string[] = [];
+    if (filterState === 'All') {
+      tag = ['isHorOnly', 'isHorPrimary', 'isVertOnly', 'isVertPrimary'];
+    }
+    if (filterState === 'Horizontal') {
+      tag = ['isHorOnly', 'isHorPrimary'];
+    }
+    if (filterState === 'Vertical') {
+      tag = ['isVertOnly', 'isVertPrimary'];
+    }
+
+    const filteredCollection = collection?.nodes?.map((p: any) =>
+      p.tags.includes(tag),
+    );
+    setProductState((state: any) => ({
+      ...state,
+      nodes: filteredCollection,
+    }));
+  }, [filterState]);
+
+  console.log(productState, 'filterstate');
+
   return (
     <div>
       {collection.handle === 'prints' && <ProductsHeader />}
@@ -164,7 +210,7 @@ export default function Collection() {
             Filter By Orientation:
           </p>
           <div className="flex justify-center pb-3">
-            <ToggleSwitch />
+            <ToggleSwitch updateState={setFilterState} />
           </div>
           <div className="flex justify-center">
             <div className="flex justify-center w-100 md:w-132 lg:w-148">
@@ -326,7 +372,7 @@ export default function Collection() {
         )}
         {!searchText && (
           <PaginatedResourceSection
-            connection={collection.products}
+            connection={productState}
             resourcesClassName="products-grid"
           >
             {({
