@@ -437,13 +437,54 @@ export default function Product() {
   //
   standardCarouselImages.unshift(selectedVariant?.image);
 
-  const isVideo = product.tags[0] === 'EProduct';
+  const isVideo = product.tags.includes('EProduct');
   // .includes((word: string) => {
   //   console.log(word, '3000');
 
   //   return word === 'Video';
   // });
   console.log(selectedVariant, '2000');
+  let isHorOnly = product.tags
+    .map((tag: any) => {
+      if (tag.includes('horOnly')) {
+        return tag;
+      }
+    })
+    .filter(Boolean);
+
+  let isHorPrimary = product.tags
+    .map((tag: any) => {
+      if (tag.includes('horPrimary')) {
+        return tag;
+      }
+    })
+    .filter(Boolean);
+  let isVertOnly = product.tags
+    .map((tag: any) => {
+      if (tag.includes('vertOnly')) {
+        return tag;
+      }
+    })
+    .filter(Boolean);
+  let isVertPrimary = product.tags
+    .map((tag: any) => {
+      if (tag.includes('vertPrimary')) {
+        return tag;
+      }
+    })
+    .filter(Boolean);
+  console.log(isHorOnly, '7788isHorOnly');
+  console.log(isHorPrimary, '7788isHorPrimary');
+  console.log(isVertOnly, '7788isVertOnly');
+  console.log(isVertPrimary, '7788isVertPrimary');
+
+  // const standardCarouselImages = images.nodes
+  //   .map((image: any) => {
+  //     if (image.altText?.includes('horizontalCarousel')) {
+  //       return image;
+  //     }
+  //   })
+  //   .filter(Boolean);
 
   const locationTag = product.tags.find((t: string) => t?.startsWith?.('loc_'));
   let locationName: string | undefined;

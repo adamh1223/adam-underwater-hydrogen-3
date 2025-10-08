@@ -9,7 +9,7 @@ import {
 } from '../ui/carousel';
 import {Link} from '@remix-run/react';
 import {Button} from '../ui/button';
-import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
+import {ChevronLeftIcon, ChevronRightIcon, Divide} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {ProductItemFragment, CollectionQuery} from 'storefrontapi.generated';
@@ -180,20 +180,25 @@ export const ProductCarousel = ({
     .filter(Boolean)
     .join(', ');
 
-  const horOnlyProduct = prod.tags.includes('horOnly');
-  const vertOnlyProduct = prod.tags.includes('vertOnly');
-  const horPrimaryProduct = prod.tags.includes('horPrimary');
-  const vertPrimaryProduct = prod.tags.includes('vertPrimary');
+  let isHorOnly = prod.tags.includes('vertOnly');
+
+  let isHorPrimary = prod.tags.includes('horPrimary');
+  let isVertOnly = prod.tags.includes('vertOnly');
+  let isVertPrimary = prod.tags.includes('horPrimary');
   console.log(prod, 'prods');
 
-  console.log(horOnlyProduct, '1144horOnly');
-  console.log(vertOnlyProduct, '1144vertOnly');
-  console.log(horPrimaryProduct, '1144horPrimary');
-  console.log(vertPrimaryProduct, '1144vertPrimary');
+  console.log(isHorOnly, '1144horOnly');
+  console.log(isVertOnly, '1144vertOnly');
+  console.log(isHorPrimary, '1144horPrimary');
+  console.log(isVertPrimary, '1144vertPrimary');
 
   return (
     <article className="group relative">
       <Card className={cardClassName}>
+        {isHorOnly && <div>horOnly</div>}
+        {isHorPrimary && <div>horPrimary</div>}
+        {isVertOnly && <div>vertOnly</div>}
+        {isVertPrimary && <div>vertPrimary</div>}
         <CardContent className={cardContentClassName}>
           <div
             className={`relative w-full h-full rounded ${
