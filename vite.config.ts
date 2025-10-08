@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['kodak-forms-neural-eleven.tryhydrogen.dev'],
+    allowedHosts: ['louis-cold-photograph-hill.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

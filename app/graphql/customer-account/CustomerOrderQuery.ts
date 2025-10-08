@@ -31,6 +31,7 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     price {
       ...OrderMoney
     }
+    variantId
     
     discountAllocations {
       allocatedAmount {

@@ -55,12 +55,39 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     firstDiscount?.percentage;
   console.log(lineItems, '0123');
 
+  const variantQuery = `#graphql
+    query Variant($id: ID!) {
+      node(id: $id) {
+        ... on ProductVariant {
+          id
+          selectedOptions {
+            name
+            value
+          }
+          product {
+            handle
+          }
+        }
+      }
+    }
+  `;
+
+  const variantResponse = await storefront.query(variantQuery, {
+    variables: {
+      id: lineItems[0]?.variantId,
+    },
+  });
+
+  const productVariant = variantResponse?.node;
+  const productHandle = productVariant?.product?.handle;
+  const selectedOptions = productVariant?.selectedOptions;
+
   const product = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {
-        handle: lineItemTitles[0],
+        handle: productHandle,
         // Needs to grab the proper variant for eproducts
-        selectedOptions: getSelectedProductOptions(request),
+        selectedOptions: selectedOptions,
       },
     }),
   ]);
@@ -71,6 +98,10 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     discountPercentage,
     fulfillmentStatus,
     product,
+    variantResponse,
+    productVariant,
+    productHandle,
+    selectedOptions,
   };
 }
 
@@ -82,8 +113,30 @@ export default function OrderRoute() {
     discountPercentage,
     fulfillmentStatus,
     product,
+    variantResponse,
+    productVariant,
+    productHandle,
+    selectedOptions,
   } = useLoaderData<typeof loader>();
+  console.log(variantResponse, '555vr');
+  console.log(productVariant, '555pr');
+  console.log(productHandle, '555ph');
+  console.log(selectedOptions, '555so');
   console.log(product, 'prod');
+
+  const tagDownloadLink = product?.map((p) => {
+    console.log(p.product, 'p123');
+    const productWithDownloadTag = p?.product?.tags?.filter((tag: any) =>
+      tag.includes('download'),
+    );
+    if (productWithDownloadTag) {
+      return {
+        url: productWithDownloadTag[0],
+        name: p.product.title,
+      };
+    }
+  });
+  console.log(tagDownloadLink, 'tgd');
 
   const {metafield} = order;
   const linkValue = JSON.parse(metafield?.value || '[{}]') as {
