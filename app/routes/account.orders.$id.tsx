@@ -72,36 +72,36 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     }
   `;
 
-  const variantResponse = await storefront.query(variantQuery, {
-    variables: {
-      id: lineItems[0]?.variantId,
-    },
-  });
-
-  const productVariant = variantResponse?.node;
-  const productHandle = productVariant?.product?.handle;
-  const selectedOptions = productVariant?.selectedOptions;
-
-  const product = await Promise.all([
-    storefront.query(PRODUCT_QUERY, {
+  const variantIds = lineItems.map((li) => li?.variantId).filter(Boolean);
+  const variantResponses = await Promise.all(
+    variantIds.map((id) =>
+      storefront.query(variantQuery, {
+        variables: {
+          id,
+        },
+      }),
+    ),
+  );
+  const productVariants = variantResponses.map((variant) => variant?.node);
+  const productPromises = productVariants.map((pv) => {
+    const handle = pv?.product?.handle;
+    const selectedOptions = pv?.selectedOptions;
+    return storefront.query(PRODUCT_QUERY, {
       variables: {
-        handle: productHandle,
-        // Needs to grab the proper variant for eproducts
-        selectedOptions: selectedOptions,
+        handle,
+        selectedOptions,
       },
-    }),
-  ]);
+    });
+  });
+  const productResponses = await Promise.all(productPromises);
+
   return {
     order,
     lineItems,
     discountValue,
     discountPercentage,
     fulfillmentStatus,
-    product,
-    variantResponse,
-    productVariant,
-    productHandle,
-    selectedOptions,
+    productResponses,
   };
 }
 
@@ -112,37 +112,22 @@ export default function OrderRoute() {
     discountValue,
     discountPercentage,
     fulfillmentStatus,
-    product,
-    variantResponse,
-    productVariant,
-    productHandle,
-    selectedOptions,
+    productResponses,
   } = useLoaderData<typeof loader>();
-  console.log(variantResponse, '555vr');
-  console.log(productVariant, '555pr');
-  console.log(productHandle, '555ph');
-  console.log(selectedOptions, '555so');
-  console.log(product, 'prod');
 
-  const tagDownloadLink = product?.map((p) => {
-    console.log(p.product, 'p123');
-    const productWithDownloadTag = p?.product?.tags?.filter((tag: any) =>
-      tag.includes('download'),
-    );
-    if (productWithDownloadTag) {
-      return {
-        url: productWithDownloadTag[0],
-        name: p.product.title,
-      };
-    }
-  });
-  console.log(tagDownloadLink, 'tgd');
-
-  const {metafield} = order;
-  const linkValue = JSON.parse(metafield?.value || '[{}]') as {
-    text: string;
-    url: string;
-  }[];
+  const tagDownloadLinks = productResponses
+    ?.map((p) => {
+      const productWithDownloadTag = p?.product?.tags?.filter((tag: any) =>
+        tag.includes('download'),
+      );
+      if (productWithDownloadTag?.length) {
+        return {
+          url: productWithDownloadTag[0],
+          text: p.product.title,
+        };
+      }
+    })
+    .filter(Boolean);
 
   console.log(order, '5678');
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
@@ -185,7 +170,7 @@ export default function OrderRoute() {
                               lineItem={
                                 lineItem as unknown as OrderLineItemFullFragment
                               }
-                              downloadLinks={linkValue}
+                              downloadLinks={tagDownloadLinks}
                             />
                             // ATTENTION: conditionally render the download button only on eproduct line items
                           ))}
@@ -331,7 +316,7 @@ export default function OrderRoute() {
                             lineItem={
                               lineItem as unknown as OrderLineItemFullFragment
                             }
-                            downloadLinks={linkValue}
+                            downloadLinks={tagDownloadLinks}
                           />
                         ))}
                       </div>
