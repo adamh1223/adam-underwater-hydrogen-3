@@ -180,6 +180,17 @@ export const ProductCarousel = ({
     .filter(Boolean)
     .join(', ');
 
+  const horOnlyProduct = prod.tags.includes('horOnly');
+  const vertOnlyProduct = prod.tags.includes('vertOnly');
+  const horPrimaryProduct = prod.tags.includes('horPrimary');
+  const vertPrimaryProduct = prod.tags.includes('vertPrimary');
+  console.log(prod, 'prods');
+
+  console.log(horOnlyProduct, '1144horOnly');
+  console.log(vertOnlyProduct, '1144vertOnly');
+  console.log(horPrimaryProduct, '1144horPrimary');
+  console.log(vertPrimaryProduct, '1144vertPrimary');
+
   return (
     <article className="group relative">
       <Card className={cardClassName}>
@@ -213,7 +224,7 @@ export const ProductCarousel = ({
                         <img
                           src={img?.url}
                           alt={img?.altText ?? ''}
-                          className={`rounded ${layout === 'grid' ? 'w-[90%]' : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
+                          className={`rounded ${layout === 'grid' ? 'w-[60%]' : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>
                     </CarouselItem>
