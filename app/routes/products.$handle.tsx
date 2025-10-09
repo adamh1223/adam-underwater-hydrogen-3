@@ -231,7 +231,7 @@ export default function Product() {
   // horizontal sm
   const threeSixtyCarouselHorizontalSmallImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-hor-small')) {
+      if (image.url?.includes('360-hz-small-')) {
         return image;
       }
     })
@@ -240,7 +240,7 @@ export default function Product() {
   // horizontal md
   const threeSixtyCarouselHorizontalMediumImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-hor-medium')) {
+      if (image.url?.includes('360-hz-medium-')) {
         return image;
       }
     })
@@ -249,7 +249,7 @@ export default function Product() {
   // horizontal lg
   const threeSixtyCarouselHorizontalLargeImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-hor-large')) {
+      if (image.url?.includes('360-hz-large-')) {
         return image;
       }
     })
@@ -258,7 +258,7 @@ export default function Product() {
   // horizontal xl
   const threeSixtyCarouselHorizontalXLImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-hor-xl')) {
+      if (image.url?.includes('360-hz-xl-')) {
         return image;
       }
     })
@@ -267,7 +267,7 @@ export default function Product() {
   // vertical sm
   const threeSixtyCarouselVerticalSmallImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-vert-small')) {
+      if (image.url?.includes('360-vt-small-')) {
         return image;
       }
     })
@@ -276,7 +276,7 @@ export default function Product() {
   // vertical md
   const threeSixtyCarouselVerticalMediumImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-vert-medium')) {
+      if (image.url?.includes('360-vt-medium-')) {
         return image;
       }
     })
@@ -285,7 +285,7 @@ export default function Product() {
   // vertical lg
   const threeSixtyCarouselVerticalLargeImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-vert-large')) {
+      if (image.url?.includes('360-vt-large-')) {
         return image;
       }
     })
@@ -294,7 +294,7 @@ export default function Product() {
   // vertical xl
   const threeSixtyCarouselVerticalXLImages = images.nodes
     .map((image: any) => {
-      if (image.url?.includes('360-carousel-vert-xl')) {
+      if (image.url?.includes('360-vt-xl-')) {
         return image;
       }
     })
@@ -387,7 +387,7 @@ export default function Product() {
   // SECOND IMAGE
   const horizontalStandardSecondImg = images.nodes
     .map((image: any) => {
-      if (image.url.includes('hz-standard-second-img')) {
+      if (image.url.includes('hz-1-second-img')) {
         return image;
       }
     })
