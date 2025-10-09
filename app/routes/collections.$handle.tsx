@@ -142,9 +142,6 @@ export default function Collection() {
       console.log('searched');
     }
   };
-  const [totalProductCount, setTotalProductCount] = useState(
-    collection.products?.nodes?.length,
-  );
 
   // Add other queries here, so that they are loaded in parallel
 
@@ -174,29 +171,38 @@ export default function Collection() {
   const queriesDatalistId = useId();
   const [filterState, setFilterState] = useState('All');
   const [productState, setProductState] = useState(collection.products);
-
+  const [totalProductCount, setTotalProductCount] = useState(
+    productState.nodes?.length,
+  );
   useEffect(() => {
     let tag: string[] = [];
-    if (filterState === 'All') {
-      tag = ['isHorOnly', 'isHorPrimary', 'isVertOnly', 'isVertPrimary'];
-    }
-    if (filterState === 'Horizontal') {
-      tag = ['isHorOnly', 'isHorPrimary'];
-    }
-    if (filterState === 'Vertical') {
-      tag = ['isVertOnly', 'isVertPrimary'];
-    }
 
-    const filteredCollection = collection?.nodes?.map((p: any) =>
-      p.tags.includes(tag),
-    );
+    console.log(collection.products.nodes, 'cnodes');
+    const filteredCollection = collection?.products?.nodes?.filter((p: any) => {
+      if (filterState === 'All') {
+        return (
+          p.tags.includes('horOnly') ||
+          p.tags.includes('horPrimary') ||
+          p.tags.includes('vertOnly') ||
+          p.tags.includes('vertPrimary')
+        );
+      }
+      if (filterState === 'Horizontal') {
+        return p.tags.includes('horOnly') || p.tags.includes('horPrimary');
+      }
+      if (filterState === 'Vertical') {
+        return p.tags.includes('vertOnly') || p.tags.includes('vertPrimary');
+      }
+    });
+
     setProductState((state: any) => ({
       ...state,
       nodes: filteredCollection,
     }));
+    setTotalProductCount(filteredCollection.length);
   }, [filterState]);
 
-  console.log(productState, 'filterstate');
+  console.log(productState, 'productstate');
 
   return (
     <div>
@@ -372,7 +378,7 @@ export default function Collection() {
         )}
         {!searchText && (
           <PaginatedResourceSection
-            connection={collection.products}
+            connection={productState}
             resourcesClassName="products-grid"
           >
             {({

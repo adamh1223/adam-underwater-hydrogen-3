@@ -67,6 +67,7 @@ export const ProductCarousel = ({
 
   // Attempt to coerce/validate into the expected shape
   const prod = (product as collectionProduct | undefined) ?? undefined;
+  console.log(product, 'logproduct');
 
   if (!prod || (!prod.id && !prod.handle)) {
     console.warn(
@@ -95,7 +96,6 @@ export const ProductCarousel = ({
     item?.url?.includes('outer-carousel-'),
   );
   console.log(standardImages, 'outer');
-  
 
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -182,11 +182,22 @@ export const ProductCarousel = ({
     .filter(Boolean)
     .join(', ');
 
-  let isHorOnly = prod.tags.includes('vertOnly');
+  let isHorOnly = prod.tags.includes('horOnly');
 
   let isHorPrimary = prod.tags.includes('horPrimary');
   let isVertOnly = prod.tags.includes('vertOnly');
-  let isVertPrimary = prod.tags.includes('horPrimary');
+  let isVertPrimary = prod.tags.includes('vertPrimary');
+  // const carouselHeight = isHorOnly || isHorPrimary ? 'w-88' : 'w-4';
+  let carouselHeight = '';
+  if (isHorOnly) {
+    carouselHeight = 'w-80';
+  } else if (isHorPrimary) {
+    carouselHeight = 'w-80';
+  } else if (isVertOnly) {
+    carouselHeight = 'w-52';
+  } else if (isVertPrimary) {
+    carouselHeight = 'w-52';
+  }
   console.log(prod, 'prods');
 
   console.log(isHorOnly, '1144horOnly');
@@ -197,10 +208,6 @@ export const ProductCarousel = ({
   return (
     <article className="group relative">
       <Card className={cardClassName}>
-        {isHorOnly && <div>horOnly</div>}
-        {isHorPrimary && <div>horPrimary</div>}
-        {isVertOnly && <div>vertOnly</div>}
-        {isVertPrimary && <div>vertPrimary</div>}
         <CardContent className={cardContentClassName}>
           <div
             className={`relative w-full h-full rounded ${
@@ -231,7 +238,7 @@ export const ProductCarousel = ({
                         <img
                           src={img?.url}
                           alt={img?.altText ?? ''}
-                          className={`rounded ${layout === 'grid' ? 'w-[60%]' : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
+                          className={`rounded ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>
                     </CarouselItem>

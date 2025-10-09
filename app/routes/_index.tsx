@@ -14,12 +14,14 @@ export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
 };
 
-async function loader(args: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
+  console.log(deferredData, '44dfd');
 
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
+  console.log(criticalData, '44crd');
 
   return {...deferredData, ...criticalData};
 }
@@ -60,6 +62,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
+  console.log(FeaturedCollection, '44data2');
 
   return (
     <div className="home">
@@ -73,7 +76,7 @@ export default function Homepage() {
         </div>
       </section>
       {/* <FeaturedCollection collection={data.featuredCollection} /> */}
-      {/* <RecommendedProducts products={data.recommendedProducts} /> */}
+      <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );
 }
@@ -182,7 +185,7 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
       }
     }
     tags
-    images(first: 1) {
+    images(first: 250) {
       nodes {
         id
         url
@@ -195,12 +198,6 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     products(first: 5, sortKey: UPDATED_AT, reverse: true) {
-      pageInfo {
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
-      }
       nodes {
         ...RecommendedProduct
       }
