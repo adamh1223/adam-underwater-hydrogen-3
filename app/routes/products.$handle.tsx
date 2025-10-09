@@ -413,10 +413,10 @@ export default function Product() {
       }
     })
     .filter(Boolean);
+    // WE ARE NOT GETTING VT SECOND IMG EVEN THO IT MATCHES. BUT IT DOES WORK ON HORPRIMARY. NOT VERTPRIMARY
 
   const orientation = selectedVariant.title.split(' / ')[0];
   const layout = selectedVariant.title.split(' / ')[1];
-  console.log(standardVerticalCarouselImages, 'stvt');
 
   // this adds the second image based on the layout and orientation
   if (layout === 'Standard' && orientation === 'Landscape') {
@@ -593,6 +593,10 @@ export default function Product() {
     evt.stopPropagation();
     scrollToIndex(currentIndex - 1);
   };
+  console.log(standardVerticalCarouselImages, '999standardvertical');
+  console.log(verticalSecondImg, '999vertical2nd');
+  console.log(standardVerticalCarouselImages, '999standardvertical');
+  console.log(standardVerticalCarouselImages, '999standardvertical');
   return (
     <>
       <section className="product px-[40px] pt-[20px]">
@@ -646,6 +650,7 @@ export default function Product() {
             <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
           </>
         )}
+
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
           {standardCarouselImages && standardCarouselImages?.length > 1 && (
             <IndividualProduct
