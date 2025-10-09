@@ -413,7 +413,9 @@ export default function Product() {
       }
     })
     .filter(Boolean);
-    // WE ARE NOT GETTING VT SECOND IMG EVEN THO IT MATCHES. BUT IT DOES WORK ON HORPRIMARY. NOT VERTPRIMARY
+  console.log(verticalSecondImg, 'vvv');
+
+  // WE ARE NOT GETTING VT SECOND IMG EVEN THO IT MATCHES. BUT IT DOES WORK ON HORPRIMARY. NOT VERTPRIMARY
 
   const orientation = selectedVariant.title.split(' / ')[0];
   const layout = selectedVariant.title.split(' / ')[1];
@@ -650,7 +652,7 @@ export default function Product() {
             <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
           </>
         )}
-
+        {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
           {standardCarouselImages && standardCarouselImages?.length > 1 && (
             <IndividualProduct
