@@ -222,7 +222,7 @@ export default function Product() {
 
   const standardCarouselImages = images.nodes
     .map((image: any) => {
-      if (image.altText?.includes('horizontalCarousel')) {
+      if (image.url?.includes('hr-car')) {
         return image;
       }
     })
@@ -379,7 +379,7 @@ export default function Product() {
 
   const standardVerticalCarouselImages = images.nodes
     .map((image: any) => {
-      if (image.altText?.includes('vt-car')) {
+      if (image.url.includes('vt-car')) {
         return image;
       }
     })
@@ -387,7 +387,7 @@ export default function Product() {
   // SECOND IMAGE
   const horizontalStandardSecondImg = images.nodes
     .map((image: any) => {
-      if (image.altText === 'hz-standard-second-img') {
+      if (image.url.includes('hz-standard-second-img')) {
         return image;
       }
     })
@@ -416,6 +416,7 @@ export default function Product() {
 
   const orientation = selectedVariant.title.split(' / ')[0];
   const layout = selectedVariant.title.split(' / ')[1];
+  console.log(standardVerticalCarouselImages, 'stvt');
 
   // this adds the second image based on the layout and orientation
   if (layout === 'Standard' && orientation === 'Landscape') {

@@ -94,6 +94,8 @@ export const ProductCarousel = ({
   const standardImages = images?.nodes?.filter((item) =>
     item?.url?.includes('outer-carousel-'),
   );
+  console.log(standardImages, 'outer');
+  
 
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
