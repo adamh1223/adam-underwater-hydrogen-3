@@ -92,7 +92,7 @@ export const ProductCarousel = ({
   const variantUrl = useVariantUrl(handle);
 
   const standardImages = images?.nodes?.filter((item) =>
-    item?.altText?.includes('standard'),
+    item?.url?.includes('outer-carousel-'),
   );
 
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);

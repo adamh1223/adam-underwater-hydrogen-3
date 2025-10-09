@@ -372,7 +372,7 @@ export default function Collection() {
         )}
         {!searchText && (
           <PaginatedResourceSection
-            connection={productState}
+            connection={collection.products}
             resourcesClassName="products-grid"
           >
             {({

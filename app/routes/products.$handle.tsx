@@ -149,8 +149,8 @@ export default function Product() {
   console.log(productSizeMetafields, 'pmf');
 
   const {references} = productSizeMetafields || {};
-
-  const threeColumnImages = images?.nodes?.filter((item: any) => {
+  // THREE COLUMN SIZES
+  const threeColumnSizes = images?.nodes?.filter((item: any) => {
     if (item.altText?.includes('horizontal-3')) {
       return {
         url: item.url,
@@ -158,7 +158,8 @@ export default function Product() {
       };
     }
   });
-  const twoColumnImages = images?.nodes?.filter((item: any) => {
+  // TWO COLUMN SIZES
+  const twoColumnSizes = images?.nodes?.filter((item: any) => {
     if (item.altText?.includes('horizontal-2')) {
       return {
         url: item.url,
@@ -166,8 +167,8 @@ export default function Product() {
       };
     }
   });
-
-  const standardImages = images?.nodes?.filter((item: any) => {
+  // STANDARD HORIZONTAL SIZES
+  const standardHorizontalSizes = images?.nodes?.filter((item: any) => {
     if (item.altText?.includes('horizontal-1')) {
       return {
         url: item.url,
@@ -175,7 +176,8 @@ export default function Product() {
       };
     }
   });
-  const verticalImages = images?.nodes?.filter((item: any) => {
+  // VERTICAL SIZES
+  const verticalSizes = images?.nodes?.filter((item: any) => {
     if (item.altText?.includes('vertical-1')) {
       return {
         url: item.url,
@@ -183,8 +185,6 @@ export default function Product() {
       };
     }
   });
-
-  // This is not working yet somehow^
 
   const determineLayoutImages = (variant: any) => {
     const orientation = variant.title.split(' / ')[0];
@@ -195,19 +195,17 @@ export default function Product() {
     // We DO get orientation 'Vertical' or 'Landscape' this works.
 
     if (layout === 'Standard' && orientation === 'Landscape') {
-      return standardImages;
+      return standardHorizontalSizes;
     } else if (layout === 'Two Columns' && orientation === 'Landscape') {
-      return twoColumnImages;
+      return twoColumnSizes;
     } else if (layout === 'Three Columns' && orientation === 'Landscape') {
-      return threeColumnImages;
+      return threeColumnSizes;
     } else if (layout === 'Standard' && orientation === 'Vertical') {
-      console.log(verticalImages, 'vtimg');
+      console.log(verticalSizes, 'vtimg');
 
-      return verticalImages;
+      return verticalSizes;
     }
   };
-
-  // When vertical is selected, EVERY IMAGE in the carousel needs to be a vertical image. we need to get rid of the images that usually show up with altText "carousel" because these are horizontal images.
 
   let layoutImagesToUse = determineLayoutImages(selectedVariant);
 
@@ -396,30 +394,28 @@ export default function Product() {
     .filter(Boolean);
   const horizontalTwoColsSecondImg = images.nodes
     .map((image: any) => {
-      if (image.altText === 'hz-2-second-img') {
+      if (image.url.includes('hz-2-second-img')) {
         return image;
       }
     })
     .filter(Boolean);
   const horizontalThreeColsSecondImg = images.nodes
     .map((image: any) => {
-      if (image.altText === 'hz-3-second-img') {
+      if (image.url.includes('hz-3-second-img')) {
         return image;
       }
     })
     .filter(Boolean);
-  const verticalStandardSecondImg = images.nodes
+  const verticalSecondImg = images.nodes
     .map((image: any) => {
-      if (image.altText === 'vt-standard-second-img') {
+      if (image.url.includes('vt-second-img')) {
         return image;
       }
     })
     .filter(Boolean);
+
   const orientation = selectedVariant.title.split(' / ')[0];
   const layout = selectedVariant.title.split(' / ')[1];
-  console.log(orientation, 'orientation');
-
-  console.log(horizontalStandardSecondImg, 'hzstandard');
 
   // this adds the second image based on the layout and orientation
   if (layout === 'Standard' && orientation === 'Landscape') {
@@ -429,8 +425,8 @@ export default function Product() {
   } else if (layout === 'Three Columns' && orientation === 'Landscape') {
     standardCarouselImages.unshift(horizontalThreeColsSecondImg.pop());
   } else if (layout === 'Standard' && orientation === 'Vertical') {
-    console.log(verticalImages, 'vtimg');
-    standardVerticalCarouselImages.unshift(verticalStandardSecondImg.pop());
+    console.log(verticalSizes, 'vtimg');
+    standardVerticalCarouselImages.unshift(verticalSecondImg.pop());
   }
   // add the main image first to each orientation
   standardVerticalCarouselImages.unshift(selectedVariant?.image);
