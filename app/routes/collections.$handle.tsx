@@ -203,6 +203,15 @@ export default function Collection() {
   }, [filterState]);
 
   console.log(productState, 'productstate');
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
 
   return (
     <div>
@@ -237,65 +246,140 @@ export default function Collection() {
             </div> */}
         </div>
       )}
-      <div className="flex justify-between items-center px-9">
-        <div className="flex flex-col items-end">
-          <div className="flex flex-col items-end">
-            <h4 className="font-medium text-xl">
-              {totalProductCount} product{totalProductCount > 1 && 's'}
-            </h4>
+      {windowWidth != undefined && windowWidth > 600 && (
+        <div className="counter-search-toggle-container">
+          <div className="product-counter-container">
+            <div className="flex flex-col items-end">
+              <h4 className="font-medium text-xl">
+                {totalProductCount} product{totalProductCount > 1 && 's'}
+              </h4>
+            </div>
+          </div>
+          <div className="search-product-container">
+            <div className="flex flex-col items-center mt-[25px]">
+              <SearchFormPredictive>
+                {({fetchResults, inputRef}) => {
+                  const handleInput = (
+                    e: React.ChangeEvent<HTMLInputElement>,
+                  ) => {
+                    setSearchText(e.target.value);
+                    fetchResults(e);
+                  };
+
+                  return (
+                    <>
+                      <div className="flex justify-center items-center">
+                        <Input
+                          className="search-input w-[300px]"
+                          name="q"
+                          onChange={handleInput}
+                          onFocus={handleInput}
+                          placeholder="Search Product"
+                          ref={inputRef}
+                          type="search"
+                          value={searchText ?? ''}
+                          list={queriesDatalistId}
+                        />
+                      </div>
+                      &nbsp;
+                    </>
+                  );
+                }}
+              </SearchFormPredictive>
+            </div>
+          </div>
+
+          <div className="grid-list-toggle-container">
+            <Button
+              variant={layout === 'grid' ? 'default' : 'ghost'}
+              size="icon"
+              onClick={handleLayoutChange}
+            >
+              <LuLayoutGrid />
+            </Button>
+            <Button
+              variant={layout === 'list' ? 'default' : 'ghost'}
+              size="icon"
+              onClick={handleLayoutChange}
+            >
+              <LuList />
+            </Button>
           </div>
         </div>
-        <div className="flex justify-center items-center">
-          <div className="flex flex-col items-center mt-[25px]">
-            <SearchFormPredictive>
-              {({fetchResults, inputRef}) => {
-                const handleInput = (
-                  e: React.ChangeEvent<HTMLInputElement>,
-                ) => {
-                  setSearchText(e.target.value);
-                  fetchResults(e);
-                };
+      )}
+      {windowWidth != undefined && windowWidth <= 600 && (
+        <>
+          <div className="counter-search-toggle-container">
+            <div className="top-row">
+              <div className="search-center">
+                <div className="search-product-container">
+                  <div className="flex flex-col items-center mt-[25px]">
+                    <SearchFormPredictive>
+                      {({fetchResults, inputRef}) => {
+                        const handleInput = (
+                          e: React.ChangeEvent<HTMLInputElement>,
+                        ) => {
+                          setSearchText(e.target.value);
+                          fetchResults(e);
+                        };
 
-                return (
-                  <>
-                    <div className="flex justify-center items-center">
-                      <Input
-                        className="search-input w-[300px]"
-                        name="q"
-                        onChange={handleInput}
-                        onFocus={handleInput}
-                        placeholder="Search Product"
-                        ref={inputRef}
-                        type="search"
-                        value={searchText ?? ''}
-                        list={queriesDatalistId}
-                      />
-                    </div>
-                    &nbsp;
-                  </>
-                );
-              }}
-            </SearchFormPredictive>
+                        return (
+                          <>
+                            <div className="flex justify-center items-center">
+                              <Input
+                                className="search-input w-[300px]"
+                                name="q"
+                                onChange={handleInput}
+                                onFocus={handleInput}
+                                placeholder="Search Product"
+                                ref={inputRef}
+                                type="search"
+                                value={searchText ?? ''}
+                                list={queriesDatalistId}
+                              />
+                            </div>
+                            &nbsp;
+                          </>
+                        );
+                      }}
+                    </SearchFormPredictive>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bottom-row">
+              <div className="product-count">
+                <div className="product-counter-container">
+                  <div className="flex flex-col items-end">
+                    <h4 className="font-medium text-xl">
+                      {totalProductCount} product{totalProductCount > 1 && 's'}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+              <div className="layout-toggle">
+                <div className="grid-list-toggle-container">
+                  <Button
+                    variant={layout === 'grid' ? 'default' : 'ghost'}
+                    size="icon"
+                    onClick={handleLayoutChange}
+                  >
+                    <LuLayoutGrid />
+                  </Button>
+                  <Button
+                    variant={layout === 'list' ? 'default' : 'ghost'}
+                    size="icon"
+                    onClick={handleLayoutChange}
+                  >
+                    <LuList />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div className="flex gap-x-4 p-5">
-          <Button
-            variant={layout === 'grid' ? 'default' : 'ghost'}
-            size="icon"
-            onClick={handleLayoutChange}
-          >
-            <LuLayoutGrid />
-          </Button>
-          <Button
-            variant={layout === 'list' ? 'default' : 'ghost'}
-            size="icon"
-            onClick={handleLayoutChange}
-          >
-            <LuList />
-          </Button>
-        </div>
-      </div>
+        </>
+      )}
 
       <Separator className="mt-4" />
       <div className={layoutClassName}>
