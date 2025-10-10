@@ -190,13 +190,17 @@ export const ProductCarousel = ({
   // const carouselHeight = isHorOnly || isHorPrimary ? 'w-88' : 'w-4';
   let carouselHeight = '';
   if (isHorOnly) {
-    carouselHeight = 'w-80';
+    carouselHeight = 'w-120';
   } else if (isHorPrimary) {
-    carouselHeight = 'w-80';
-  } else if (isVertOnly) {
-    carouselHeight = 'w-52';
-  } else if (isVertPrimary) {
-    carouselHeight = 'w-52';
+    carouselHeight = 'w-120';
+  } else if (isVertOnly && layout === 'grid') {
+    carouselHeight = 'w-58';
+  } else if (isVertPrimary && layout === 'grid') {
+    carouselHeight = 'w-58';
+  } else if (isVertOnly && layout === 'list') {
+    carouselHeight = 'w-28';
+  } else if (isVertPrimary && layout === 'list') {
+    carouselHeight = 'w-28';
   }
   console.log(prod, 'prods');
 
@@ -211,12 +215,14 @@ export const ProductCarousel = ({
         <CardContent className={cardContentClassName}>
           <div
             className={`relative w-full h-full rounded ${
-              layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'
+              layout === 'grid'
+                ? 'top-part-card-grid'
+                : 'top-part-card-list flex items-center'
             }`}
           >
             <Carousel
               setApi={setCarouselApi}
-              className="w-full max-w-7xl transform-none me-4"
+              className="w-full max-w-7xl transform-none"
             >
               <Link
                 className="product-item"
@@ -231,8 +237,8 @@ export const ProductCarousel = ({
                       key={idx}
                     >
                       <div
-                        className={`flex items-center justify-center w-full ${
-                          layout === 'grid' ? 'p-4' : 'p-4 ms-3'
+                        className={`flex items-center justify-center ${layout === 'grid' && 'w-full'} ${layout === 'list' && (isVertOnly || isVertPrimary) && 'w-[65%]'} ${
+                          layout === 'grid' ? 'p-4' : 'p-2 ms-3'
                         }`}
                       >
                         <img

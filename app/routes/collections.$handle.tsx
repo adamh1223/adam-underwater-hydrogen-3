@@ -163,9 +163,7 @@ export default function Collection() {
   };
 
   const layoutClassName =
-    layout === 'grid'
-      ? 'mt-6 mx-8 grid gap-x-4 md:grid-cols-2 px-5 pb-5'
-      : 'mt-6 grid';
+    layout === 'grid' ? 'prods-grid gap-x-5 gap-y-5' : 'mt-6 grid';
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
@@ -476,7 +474,7 @@ export default function Collection() {
               index: number;
             }) => {
               return (
-                <div className="relative">
+                <>
                   {collection.handle === 'prints' && (
                     <ProductCarousel product={product} layout={layout} />
                   )}
@@ -487,7 +485,7 @@ export default function Collection() {
                       cart={cart}
                     />
                   )}
-                </div>
+                </>
               );
             }}
           </PaginatedResourceSection>

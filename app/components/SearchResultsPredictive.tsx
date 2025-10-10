@@ -226,7 +226,7 @@ function SearchResultsPredictiveProducts({
                 <div className="flex justify-center pb-2">
                   Framed Canvas Print:
                 </div>
-                <ProductCarousel product={product} layout="grid" />
+                <ProductCarousel product={product} layout='grid' />
               </div>
             </>
           );
