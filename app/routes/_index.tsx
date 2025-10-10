@@ -119,9 +119,11 @@ export function RecommendedProducts({
                 ? response.products.nodes.map((product) => {
                     console.log(product, '111111');
                     const isVideo = product.tags?.includes('Video');
+                    const isRecommendedProduct =
+                      product.tags?.includes('recommended');
                     return (
                       <>
-                        {!isVideo && (
+                        {!isVideo && isRecommendedProduct && (
                           <ProductCarousel
                             product={product}
                             layout="grid"
