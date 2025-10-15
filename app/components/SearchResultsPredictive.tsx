@@ -146,12 +146,7 @@ function SearchResultsPredictiveCollections({
             <li className="predictive-search-result-item" key={collection.id}>
               <Link onClick={closeSearch} to={collectionUrl}>
                 {collection.image?.url && (
-                  <Image
-                    alt={collection.image.altText ?? ''}
-                    src={collection.image.url}
-                    width={50}
-                    height={50}
-                  />
+                  <Image src={collection.image.url} width={50} height={50} />
                 )}
                 <div>
                   <span>{collection.title}</span>
@@ -226,7 +221,7 @@ function SearchResultsPredictiveProducts({
                 <div className="flex justify-center pb-2">
                   Framed Canvas Print:
                 </div>
-                <ProductCarousel product={product} layout='grid' />
+                <ProductCarousel product={product} layout="grid" />
               </div>
             </>
           );

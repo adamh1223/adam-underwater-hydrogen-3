@@ -1,8 +1,22 @@
-
-
 .EProductVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* width: 177.78vh;
+  height: 100vh; */
+  min-width: 10vw;
+  min-height: 5.6vw;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
+}
+
+@media (min-width: 700px) {
+
+}
+@media (max-width: 699px) {
+  
 }
 
 /* Make the video visible smoothly */

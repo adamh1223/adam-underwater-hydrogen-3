@@ -70,7 +70,7 @@ export function ProductForm({
                 const layoutToCheck = determineLayout(name);
                 console.log(imagesToShow, 'imgstoshow');
                 const variantImagesToShow = imagesToShow?.filter((image) =>
-                  image?.altText?.includes(layoutToCheck),
+                  image?.url?.includes(layoutToCheck),
                 );
                 console.log(selectedVariant, '181818');
 

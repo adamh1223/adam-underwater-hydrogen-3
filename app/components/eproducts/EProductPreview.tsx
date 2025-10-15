@@ -76,23 +76,24 @@ function EProductPreview({
     if (isVideoReady && isHovered) {
       setImageClass('hidden');
     } else {
+      console.log(isHovered, 'hovered');
+
       setImageClass('');
     }
   }, [isVideoReady, isHovered]);
 
   return (
     <div
-      className=""
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsVideoReady(false);
-        if (!isVideoReady) {
-          setTimeout(() => setIsVideoReady(false), 100);
-        }
-      }}
+      // onMouseLeave={() => {
+      //   setIsHovered(false);
+      //   setIsVideoReady(false);
+      //   if (!isVideoReady) {
+      //     setTimeout(() => setIsVideoReady(false), 100);
+      //   }
+      // }}
       // comment out above and uncomment out below to test eproductpreview bug
-      // onMouseLeave={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(true)}
     >
       <>
         {featuredImage && (

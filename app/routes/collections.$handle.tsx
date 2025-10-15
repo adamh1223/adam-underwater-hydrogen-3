@@ -211,6 +211,10 @@ export default function Collection() {
     return () => window.removeEventListener('resize', handleResize);
   });
 
+  useEffect(() => {
+    setProductState(collection.products);
+  }, [collection.handle]);
+
   return (
     <div>
       {collection.handle === 'prints' && <ProductsHeader />}
