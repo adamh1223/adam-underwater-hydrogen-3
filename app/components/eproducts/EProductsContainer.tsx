@@ -187,6 +187,10 @@ function EProductsContainer({
                       >
                         <ProductPrice
                           price={product?.priceRange?.minVariantPrice}
+                          compareAtPrice={
+                            product?.selectedOrFirstAvailableVariant
+                              ?.compareAtPrice
+                          }
                         />
                         {/* We need to get the compareat price in here */}
                       </span>

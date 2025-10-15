@@ -46,7 +46,7 @@
 .drone-title img {
   width: 90%;
   max-width: 400px;
-  
+
   border-radius: 10px;
   transition: transform 0.5s ease-in-out; /* Ensure smooth animation */
 }
@@ -84,7 +84,7 @@ body {
 }
 
 /* Ensure the section takes up the full viewport */
-.main {
+.main-services {
   position: relative;
   height: 100vh;
   width: 100vw;
@@ -141,7 +141,7 @@ body {
   opacity: 1;
 }
 
-.subheader {
+.subheader-services {
   font-size: 25px;
   width: 100%;
   display: flex;

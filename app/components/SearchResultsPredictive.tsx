@@ -47,6 +47,7 @@ export function SearchResultsPredictive({
 }: SearchResultsPredictiveProps) {
   const aside = useAside();
   const {term, inputRef, fetcher, total, items} = usePredictiveSearch();
+  console.log(inputRef, 'inputref');
 
   /*
    * Utility that resets the search input

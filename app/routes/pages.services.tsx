@@ -166,7 +166,7 @@ function ServicesPage() {
       </div>
       <section id="video">
         <Sectiontitle text="Underwater 8K Video" />
-        <div className="flex flex-col items-center justify-center text-center main">
+        <div className="flex flex-col items-center justify-center text-center main-services">
           <div className="media-container">
             <img
               src="/print3.jpg"
@@ -280,7 +280,7 @@ function ServicesPage() {
       <section id="drone">
         <Sectiontitle text="Drone Video & Photo" />
         <br />
-        <div className="subheader flex justify-center">
+        <div className="subheader-services flex justify-center">
           Commercial FAA drone operator with 5 years of experience in aerial
           cinematography.
         </div>
@@ -326,10 +326,10 @@ function ServicesPage() {
           {/* /522510112 */}
         </div>
         <br />
-        <div className="subheader flex justify-center">
+        <div className="subheader-services flex justify-center">
           Check out my drone website at{' '}
         </div>
-        <div className="subheader flex justify-center">
+        <div className="subheader-services flex justify-center">
           <a
             href="https://gifts.worldwildlife.org/"
             target="_blank"

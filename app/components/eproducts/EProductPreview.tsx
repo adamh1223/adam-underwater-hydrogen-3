@@ -51,17 +51,17 @@ function EProductPreview({
     };
   }, [isHovered]);
 
-  const divStyles = isVideoReady ? 'relative w-full pb-[52.7%]' : 'h-0 w-0';
+  const divStyles = isVideoReady ? 'relative w-full' : 'h-0 w-0';
   // This pb is messing things up, we have to find another way to do this
   const iframeStyles = isVideoReady
     ? {
         width: '100%',
         height: '94%',
-        position: 'absolute', // Absolute positioning to fill the container
+        // position: 'absolute',
         top: '0',
         left: '0',
-        objectFit: 'cover',
-        objectPosition: 'center', // Centers the video within the iframe
+        // objectFit: 'cover',
+        // objectPosition: 'center',
         pointerEvents: 'none',
         cursor: 'pointer',
       }
@@ -93,7 +93,7 @@ function EProductPreview({
       //   }
       // }}
       // comment out above and uncomment out below to test eproductpreview bug
-      onMouseLeave={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <>
         {featuredImage && (
@@ -119,9 +119,6 @@ function EProductPreview({
               allow="autoplay; loop;"
               // @ts-expect-error ignore for now
               style={iframeStyles}
-              onLoad={() =>
-                console.log('The video is loaded', isHovered, isVideoReady)
-              }
               className={`EProductVideo ${
                 isVideoReady ? 'visible' : 'tinyVideo'
               } cursor-pointer`}

@@ -7,7 +7,7 @@ const EProductsHeader = () => {
       <div className="flex justify-center ps-1">
         <img src={'/stock2.png'} className="pt-2 stock-footage-page-header" />
       </div>
-      <p className="subheader">
+      <p className="subheader-stock">
         Bring your videos to life with professionally shot underwater footage.
       </p>
     </>

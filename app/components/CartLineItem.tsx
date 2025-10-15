@@ -58,6 +58,21 @@ export function CartLineItem({
     !image?.url.includes('vertOnly');
   const isVerticalProduct =
     image?.url?.includes('vertOnly') || image?.url.includes('vertPrimary');
+  const compareAtPerQuantity =
+    line?.cost?.compareAtAmountPerQuantity && line?.quantity
+      ? (
+          parseInt(line?.cost?.compareAtAmountPerQuantity.amount) *
+          line?.quantity
+        ).toPrecision(2)
+      : 0.0;
+
+  const updatedCompareAt = {
+    ...line?.cost?.compareAtAmountPerQuantity,
+    currencyCode: line?.cost?.compareAtAmountPerQuantity?.currencyCode || 'USD',
+    amount: compareAtPerQuantity?.toString(),
+  };
+  console.log(updatedCompareAt, 'updatedcompareat');
+
   return (
     <Card className="mb-4">
       <CardContent>
@@ -95,12 +110,13 @@ export function CartLineItem({
                       )}
                       <div className="ps-3">
                         <strong>{product.title}</strong>
-                        <ProductPrice
-                          price={line?.cost?.totalAmount}
-                          compareAtPrice={
-                            line?.cost?.compareAtAmountPerQuantity
-                          }
-                        />
+                        {line?.cost?.compareAtAmountPerQuantity &&
+                          line?.quantity && (
+                            <ProductPrice
+                              price={line?.cost?.totalAmount}
+                              compareAtPrice={updatedCompareAt}
+                            />
+                          )}
                       </div>
                     </div>
                   </Link>
@@ -159,9 +175,7 @@ export function CartLineItem({
                         )}
                         <ProductPrice
                           price={line?.cost?.totalAmount}
-                          compareAtPrice={
-                            line?.cost?.compareAtAmountPerQuantity
-                          }
+                          compareAtPrice={updatedCompareAt}
                         />
                       </div>
                     </div>
@@ -213,7 +227,7 @@ export function CartLineItem({
                       <strong>{product.title}</strong>
                       <ProductPrice
                         price={line?.cost?.totalAmount}
-                        compareAtPrice={line?.cost?.compareAtAmountPerQuantity}
+                        compareAtPrice={updatedCompareAt}
                       />
                     </div>
                   </div>
@@ -257,7 +271,7 @@ export function CartLineItem({
                       )}
                       <ProductPrice
                         price={line?.cost?.totalAmount}
-                        compareAtPrice={line?.cost?.compareAtAmountPerQuantity}
+                        compareAtPrice={updatedCompareAt}
                       />
                     </div>
                   </div>
@@ -309,9 +323,7 @@ export function CartLineItem({
                         <strong>{product.title}</strong>
                         <ProductPrice
                           price={line?.cost?.totalAmount}
-                          compareAtPrice={
-                            line?.cost?.compareAtAmountPerQuantity
-                          }
+                          compareAtPrice={updatedCompareAt}
                         />
                       </div>
                     </div>
@@ -372,9 +384,7 @@ export function CartLineItem({
                         )}
                         <ProductPrice
                           price={line?.cost?.totalAmount}
-                          compareAtPrice={
-                            line?.cost?.compareAtAmountPerQuantity
-                          }
+                          compareAtPrice={updatedCompareAt}
                         />
                       </div>
                     </div>
@@ -431,9 +441,7 @@ export function CartLineItem({
                         )}
                         <ProductPrice
                           price={line?.cost?.totalAmount}
-                          compareAtPrice={
-                            line?.cost?.compareAtAmountPerQuantity
-                          }
+                          compareAtPrice={updatedCompareAt}
                         />
                       </div>
                     </div>

@@ -541,6 +541,10 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
         amount
         currencyCode
       }
+      compareAtPrice {
+      amount
+      currencyCode
+    }
     }
     images(first: 20) {
       nodes {
