@@ -3,20 +3,38 @@
   margin: 50px 0 50px 0;
 }
 
-.clip {
-  width: 80vw;
-  height: 30vh;
-}
-
 .vp-center {
   display: flex;
   align-items: top;
 }
-
+@media (max-width: 499px) {
+  .clip {
+    width: 80vw;
+    height: 25vh;
+  }
+}
+@media (min-width: 500px) and (max-width: 599px) {
+  .clip {
+    width: 80vw;
+    height: 25vh;
+  }
+}
+@media (min-width: 600px) and (max-width: 699px) {
+  .clip {
+    width: 80vw;
+    height: 30vh;
+  }
+}
+@media (min-width: 700px) and (max-width: 828px) {
+  .clip {
+    width: 80vw;
+    height: 35vh;
+  }
+}
 @media (min-width: 829px) {
   .clip {
     width: 80vw;
-    height: 50vh;
+    height: 45vh;
   }
 }
 @media (min-width: 1180px) {

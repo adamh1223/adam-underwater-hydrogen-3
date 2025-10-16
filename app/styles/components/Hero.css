@@ -86,3 +86,10 @@ body {
     height: 80px;
   }
 }
+
+.title-wrapper {
+  background-color: var(--color-background);
+  border-radius: 10px;
+  padding: 10px;
+  opacity: 95%;
+}

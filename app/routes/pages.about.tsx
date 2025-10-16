@@ -457,6 +457,15 @@ export function AboutPage() {
           </Card>
         </div>
       </section>
+      <section>
+        <div className="flex justify-center pt-5">
+          <img src={'/featured.png'} className="featured-img" />
+        </div>
+        <div className="flex justify-center font-bold text-xl pb-2">
+          <p>Framed Canvas Wall Art</p>
+        </div>
+      </section>
+
       {/* <RecommendedProducts products={data.recommendedProducts} /> */}
     </>
   );
