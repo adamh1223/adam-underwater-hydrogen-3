@@ -1,5 +1,5 @@
-import {useEffect, useRef, useState} from 'react';
-import {useLoaderData, useLocation} from '@remix-run/react';
+import {Suspense, useEffect, useRef, useState} from 'react';
+import {Await, useLoaderData, useLocation} from '@remix-run/react';
 import {Button} from '~/components/ui/button';
 import {Card} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
@@ -15,56 +15,65 @@ import {
   FEATURED_COLLECTION_QUERY,
   RECOMMENDED_PRODUCTS_QUERY,
   RecommendedProducts,
+  loadCriticalData,
+  loadDeferredData,
+  loader,
 } from './_index';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import RotatingCarousel from '~/components/global/ThreeDViewModal';
 
-async function loader(args: LoaderFunctionArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
+// export async function loader(args: LoaderFunctionArgs) {
+//   // Start fetching non-critical data without blocking time to first byte
+//   const deferredData = loadDeferredData(args);
 
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
+//   // Await the critical data required to render initial state of the page
+//   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData};
-}
+//   return {deferredData, criticalData};
+// }
 
 /**
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [{collections}] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+// async function loadCriticalData({context}: LoaderFunctionArgs) {
+//   const [{collections}] = await Promise.all([
+//     context.storefront.query(FEATURED_COLLECTION_QUERY),
+//     // Add other queries here, so that they are loaded in parallel
+//   ]);
 
-  return {
-    featuredCollection: collections.nodes[0],
-  };
-}
+//   return {
+//     featuredCollection: collections.nodes[0],
+//   };
+// }
 
 /**
  * Load data for rendering content below the fold. This data is deferred and will be
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
+// async function loadDeferredData(context: LoaderFunctionArgs) {
+//   const recommendedProducts = context.context.storefront
+//     .query(RECOMMENDED_PRODUCTS_QUERY)
+//     .catch((error) => {
+//       // Log query errors, but don't throw them so the page can still render
+//       console.error(error, '00000000000000000000000000000000000000000000000');
+//       return null;
+//     })
+//     .then((data) => data);
 
-  return {
-    recommendedProducts,
-  };
-}
+//   return {
+//     recommendedProducts,
+//   };
+// }
 
-export function AboutPage() {
+export default function AboutPage() {
   const data = useLoaderData<typeof loader>();
+  console.log(
+    data?.recommendedProducts.then((data2) => console.log(data2, 'aboutdata2')),
+    'aboutdata',
+  );
+
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const retryTimerRef = useRef<number | null>(null);
@@ -76,7 +85,7 @@ export function AboutPage() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  console.log(data, 'recs');
+
   // data is null? why
 
   const getYOffset = () => {
@@ -465,10 +474,13 @@ export function AboutPage() {
           <p>Framed Canvas Wall Art</p>
         </div>
       </section>
-
-      {/* <RecommendedProducts products={data.recommendedProducts} /> */}
+      <Suspense fallback={<h1>loading</h1>}>
+        <Await resolve={data?.recommendedProducts}>
+          {(resolved) => <RecommendedProducts products={resolved} />}
+        </Await>
+      </Suspense>
     </>
   );
 }
 
-export default AboutPage;
+// export default AboutPage;

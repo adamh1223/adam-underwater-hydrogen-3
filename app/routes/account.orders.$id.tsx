@@ -72,7 +72,7 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     }
   `;
 
-  const variantIds = lineItems.map((li) => li?.variantId).filter(Boolean);
+  const variantIds = lineItems.map((li: any) => li?.variantId).filter(Boolean);
   const variantResponses = await Promise.all(
     variantIds.map((id) =>
       storefront.query(variantQuery, {

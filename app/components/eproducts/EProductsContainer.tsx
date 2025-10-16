@@ -192,6 +192,7 @@ function EProductsContainer({
                               ?.compareAtPrice
                           }
                         />
+
                         {/* We need to get the compareat price in here */}
                       </span>
                     </Link>

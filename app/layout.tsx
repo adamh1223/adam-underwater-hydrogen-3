@@ -15,7 +15,7 @@ import {RootLoader} from './root';
 export default function Layout() {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
-console.log(data, '404040');
+  console.log(data, '404040');
 
   return (
     <html lang="en">
@@ -37,6 +37,7 @@ console.log(data, '404040');
             shop={data.shop}
             consent={data.consent}
           >
+            {/* @ts-expect-error default shopify setup */}
             <PageLayout {...data}>
               <Outlet />
             </PageLayout>
