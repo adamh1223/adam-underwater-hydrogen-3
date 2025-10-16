@@ -61,9 +61,6 @@ export default function ThreeDViewModal({images}: ThreeDViewModalProps) {
             {images.length > 0 ? (
               <img
                 src={images[currentIndex].url}
-                alt={
-                  images[currentIndex].altText || `Frame ${currentIndex + 1}`
-                }
                 className="w-auto h-full object-contain transition-opacity duration-75 ease-out"
                 draggable="false"
               />

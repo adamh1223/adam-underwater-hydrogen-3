@@ -243,7 +243,6 @@ export const ProductCarousel = ({
                       >
                         <img
                           src={img?.url}
-                          alt={img?.altText ?? ''}
                           className={`rounded ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>

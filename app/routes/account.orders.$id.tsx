@@ -470,6 +470,23 @@ function OrderLineRow({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
+  const isHorizontalProduct =
+    lineItem?.image?.url?.includes('horPrimary') ||
+    lineItem?.image?.url.includes('horOnly');
+  const isStockClip =
+    !lineItem?.image?.url.includes('horOnly') &&
+    !lineItem?.image?.url.includes('horPrimary') &&
+    !lineItem?.image?.url.includes('vertPrimary') &&
+    !lineItem?.image?.url.includes('vertOnly');
+  const isVerticalProduct =
+    lineItem?.image?.url?.includes('vertOnly') ||
+    lineItem?.image?.url.includes('vertPrimary');
+
+  const isPrint =
+    lineItem?.image?.url.includes('horOnly') ||
+    lineItem?.image?.url.includes('horPrimary') ||
+    lineItem?.image?.url.includes('vertPrimary') ||
+    lineItem?.image?.url.includes('vertOnly');
 
   console.log(lineItem, '484848');
   return (
@@ -485,10 +502,10 @@ function OrderLineRow({
               </p>
             </div>
             <div className="flex justify-center">
-              {lineItem.variantTitle != null && (
+              {isPrint && (
                 <p className="text-muted-foreground">Framed Canvas Print</p>
               )}
-              {lineItem.variantTitle === null && (
+              {isStockClip && (
                 <p className="text-muted-foreground">Stock Footage Video</p>
               )}
             </div>
@@ -497,30 +514,23 @@ function OrderLineRow({
             </div>
           </div>
 
-          {lineItem?.image &&
-            lineItem.image.altText != null &&
-            lineItem.image.altText.includes('horizontal') && (
-              <div className="flex justify-center">
-                <Image data={lineItem.image} width={250} height={200} />
-              </div>
-            )}
+          {lineItem?.image && isHorizontalProduct && (
+            <div className="flex justify-center">
+              <Image data={lineItem.image} width={250} height={200} />
+            </div>
+          )}
           {/* horizontal print^ */}
-          {lineItem?.image &&
-            lineItem.image.altText != null &&
-            lineItem.image.altText.includes('vert') && (
-              <div className="flex justify-center">
-                <Image data={lineItem.image} width={200} height={250} />
-              </div>
-            )}
+          {lineItem?.image && isVerticalProduct && (
+            <div className="flex justify-center">
+              <Image data={lineItem.image} width={200} height={250} />
+            </div>
+          )}
           {/* vertical print^ */}
-          {lineItem?.image &&
-            lineItem.image.altText != null &&
-            !lineItem.image.altText.includes('vert') &&
-            !lineItem.image.altText.includes('horizontal') && (
-              <div className="flex justify-center">
-                <Image data={lineItem.image} width={250} height={200} />
-              </div>
-            )}
+          {lineItem?.image && isStockClip && (
+            <div className="flex justify-center">
+              <Image data={lineItem.image} width={250} height={200} />
+            </div>
+          )}
           {/* Stock footage clip^ */}
         </div>
         <div className="price-quantity-total ps-1 pt-3">

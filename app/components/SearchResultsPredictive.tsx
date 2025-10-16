@@ -106,12 +106,7 @@ function SearchResultsPredictiveArticles({
             <li className="predictive-search-result-item" key={article.id}>
               <Link onClick={closeSearch} to={articleUrl}>
                 {article.image?.url && (
-                  <Image
-                    alt={article.image.altText ?? ''}
-                    src={article.image.url}
-                    width={50}
-                    height={50}
-                  />
+                  <Image src={article.image.url} width={50} height={50} />
                 )}
                 <div>
                   <span>{article.title}</span>
