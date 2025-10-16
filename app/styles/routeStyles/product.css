@@ -170,10 +170,10 @@
     margin: 0 3.5px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 -6px;
+    margin: 0 0 0 6px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 -6px 0 0;
+    margin: 0 6px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
     margin: 0 0 0 27px;
@@ -196,10 +196,10 @@
     margin: 0 14px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 -6px;
+    margin: 0 0 0 10px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 -6px 0 0;
+    margin: 0 10px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
     margin: 0 0 0 80px;
@@ -222,10 +222,10 @@
     margin: 0 8px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 -6px;
+    margin: 0 0 0 3px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 -6px 0 0;
+    margin: 0 3px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
     margin: 0 0 0 -8px;
@@ -248,10 +248,10 @@
     margin: 0 13px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 -6px;
+    margin: 0 0 0 3px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 -6px 0 0;
+    margin: 0 3px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
     margin: 0 0 0 -3px;
