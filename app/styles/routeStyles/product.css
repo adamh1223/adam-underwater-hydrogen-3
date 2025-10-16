@@ -130,24 +130,265 @@
     align-items: center;
   }
 }
-@media (min-width: 1250px) {
-  .left-arrow-carousel-list {
-    margin: 0 12px;
-  }
-}
-@media (min-width: 1250px) {
-  .right-arrow-carousel-list {
-    margin: 0;
-  }
-}
-@media (max-width: 1249px) {
-  .left-arrow-carousel-list {
+@media (max-width: 499px) {
+  .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
-}
-@media (max-width: 1249px) {
-  .right-arrow-carousel-list {
+  .right-arrow-carousel-list-horizontal {
     margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 10px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 -30px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 0;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 0;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 0 0 0;
+  }
+}
+@media (min-width: 500px) and (max-width: 599px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 15px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 3.5px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 -6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 -6px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 27px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 27px 0 0;
+  }
+}
+@media (min-width: 600px) and (max-width: 699px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 25px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 14px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 -6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 -6px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 80px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 80px 0 0;
+  }
+}
+@media (min-width: 700px) and (max-width: 767px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 20px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 8px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 -6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 -6px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 -8px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 -8px 0 0;
+  }
+}
+@media (min-width: 768px) and (max-width: 849px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 25px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 13px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 -6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 -6px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 -3px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 -3px 0 0;
+  }
+}
+@media (min-width: 850px) and (max-width: 957px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 31px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 20px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 -6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 -6px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 10px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 10px 0 0;
+  }
+}
+@media (min-width: 958px) and (max-width: 1049px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 25px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 14px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 -6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 -6px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 42px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 42px 0 0;
+  }
+}
+@media (min-width: 1050px) and (max-width: 1149px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 30px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 19px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 -2px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 -2px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 60px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 60px 0 0;
+  }
+}
+@media (min-width: 1150px) and (max-width: 1249px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 35px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 24px;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 0;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 90px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 90px 0 0;
+  }
+}
+
+@media (min-width: 1250px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 56px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 43px 0 0;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 115px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 105px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 6px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 110px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 110px 0 0;
   }
 }
 

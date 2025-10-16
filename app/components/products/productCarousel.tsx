@@ -82,7 +82,7 @@ export const ProductCarousel = ({
 
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-5'
+      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-5 pb-3'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3 cursor-pointer';
 
   const cardContentClassName =
@@ -187,6 +187,8 @@ export const ProductCarousel = ({
   let isHorPrimary = prod.tags.includes('horPrimary');
   let isVertOnly = prod.tags.includes('vertOnly');
   let isVertPrimary = prod.tags.includes('vertPrimary');
+  let isHorizontal = isHorOnly || isHorPrimary;
+  let isVertical = isVertOnly || isVertPrimary;
   // const carouselHeight = isHorOnly || isHorPrimary ? 'w-88' : 'w-4';
   let carouselHeight = '';
   if (isHorOnly) {
@@ -212,7 +214,7 @@ export const ProductCarousel = ({
   return (
     <article className="group relative">
       <Card className={cardClassName}>
-        <CardContent className={cardContentClassName}>
+        <div className={cardContentClassName}>
           <div
             className={`relative w-full h-full rounded ${
               layout === 'grid'
@@ -237,8 +239,8 @@ export const ProductCarousel = ({
                       key={idx}
                     >
                       <div
-                        className={`flex items-center justify-center ${layout === 'grid' && 'w-full'} ${layout === 'list' && (isVertOnly || isVertPrimary) && 'w-[65%]'} ${
-                          layout === 'grid' ? 'p-4' : 'p-2 ms-3'
+                        className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
+                          layout === 'grid' ? 'pt-2 pb-2 ps-4 pe-4' : 'p-2 ms-3'
                         }`}
                       >
                         <img
@@ -254,20 +256,14 @@ export const ProductCarousel = ({
               <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
                 <Button
                   onClick={decreaseIndex}
-                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${
-                    layout === 'list' ? 'left-arrow-carousel-list' : 'mx-[-4px]'
-                  }`}
+                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${layout === 'list' && isHorizontal && 'left-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'left-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'left-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'left-arrow-carousel-grid-vertical'}`}
                   variant="secondary"
                 >
                   <ChevronLeftIcon className="h-6 w-6 text-white" />
                 </Button>
                 <Button
                   onClick={increaseIndex}
-                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${
-                    layout === 'list'
-                      ? 'right-arrow-carousel-list'
-                      : 'mx-[-4px]'
-                  }`}
+                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${layout === 'list' && isHorizontal && 'right-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'right-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'right-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'right-arrow-carousel-grid-vertical'}`}
                   variant="secondary"
                 >
                   <ChevronRightIcon className="h-6 w-6 text-white" />
@@ -330,7 +326,7 @@ export const ProductCarousel = ({
               </div>
             </Link>
           </div>
-        </CardContent>
+        </div>
       </Card>
     </article>
   );
