@@ -5,6 +5,7 @@ import {redirect} from '@remix-run/server-runtime';
 import {Link} from '@remix-run/react';
 
 type shopifyImage = {url: string; altText: string};
+
 function EProductPreview({
   EProduct,
   extraClassName,
@@ -13,116 +14,53 @@ function EProductPreview({
   extraClassName?: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const [imageSize, setImageSize] = useState({width: 0, height: 0});
-  const imgRef = useRef<HTMLImageElement>(null);
-  const handleVideoLoad = () => {
-    if (isHovered) {
-      setTimeout(() => {
-        setIsVideoReady(true); // Switch to video only when loaded
-      }, 800);
-    }
-  };
-
-  const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
-  const parsedWMLink = WMLink?.split('_')[1];
-
-  useEffect(() => {
-    if (imgRef.current) {
-      setImageSize({
-        width: imgRef.current.clientWidth,
-        height: imgRef.current.clientHeight,
-      });
-    }
-  }, [isHovered]);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const videoRef = useRef<HTMLIFrameElement>(null);
 
   const {featuredImage, id} = EProduct;
-  const [isVideoReady, setIsVideoReady] = useState(false);
-  console.log(isVideoReady, '2222');
+  const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
+  const parsedWMLink = WMLink?.split('_')[1];
+  console.log(EProduct, 'epep');
+
+  const handleVideoLoad = () => {
+    setIsVideoReady(true);
+  };
 
   useEffect(() => {
-    const iframe = document.querySelector('iframe');
-    if (iframe && isHovered) {
-      iframe.addEventListener('load', handleVideoLoad);
-    }
-    return () => {
-      if (iframe && isHovered) {
-        iframe.removeEventListener('load', handleVideoLoad);
-      }
-    };
+    if (!isHovered) setIsVideoReady(false);
   }, [isHovered]);
-
-  const divStyles = isVideoReady ? 'relative w-full' : 'h-0 w-0';
-  // This pb is messing things up, we have to find another way to do this
-  const iframeStyles = isVideoReady
-    ? {
-        width: '100%',
-        height: '94%',
-        // position: 'absolute',
-        top: '0',
-        left: '0',
-        // objectFit: 'cover',
-        // objectPosition: 'center',
-        pointerEvents: 'none',
-        cursor: 'pointer',
-      }
-    : {
-        height: '0px',
-        width: '0px',
-      };
-  // console.log(iframeStyles);
-
-  const [imageClass, setImageClass] = useState('');
-  useEffect(() => {
-    if (isVideoReady && isHovered) {
-      setImageClass('hidden');
-    } else {
-      console.log(isHovered, 'hovered');
-
-      setImageClass('');
-    }
-  }, [isVideoReady, isHovered]);
 
   return (
     <div
+      className={`EProductPreviewContainer ${extraClassName || ''}`}
       onMouseEnter={() => setIsHovered(true)}
-      // onMouseLeave={() => {
-      //   setIsHovered(false);
-      //   setIsVideoReady(false);
-      //   if (!isVideoReady) {
-      //     setTimeout(() => setIsVideoReady(false), 100);
-      //   }
-      // }}
-      // comment out above and uncomment out below to test eproductpreview bug
       onMouseLeave={() => setIsHovered(false)}
     >
-      <>
-        {featuredImage && (
-          <img
-            ref={imgRef}
-            src={featuredImage.url}
-            alt="name"
-            sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
-            className={`${imageClass} cursor-pointer`}
-            onPointerDown={() => redirect(`/stock/${id}`)}
-          />
-        )}
-      </>
+      {/* Base Image */}
+      {featuredImage && (
+        <img
+          src={featuredImage.url}
+          alt={featuredImage.altText || 'Product image'}
+          className="EProductImage"
+          onPointerDown={() => redirect(`/stock/${id}`)}
+        />
+      )}
+
+      {/* Video overlay */}
       {isHovered && (
-        <div className={divStyles} onClick={() => redirect(`/stock/${id}`)}>
-          {' '}
-          {/* Aspect ratio for 16:9 */}
-          <Link to={`/stock/${id}`} className="cursor-pointer">
+        <div
+          className="EProductVideoWrapper"
+          onClick={() => redirect(`/products/${EProduct.handle}`)}
+        >
+          <Link to={`/products/${EProduct.handle}`}>
             <iframe
-              // Make number after video dynamic ${WMVideoLink}
+              ref={videoRef}
               src={`https://player.vimeo.com/video/${parsedWMLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
-              // <div style="padding:52.73% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1045853480?title=0&amp;byline=0&amp;portrait=0&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="3M"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
               allow="autoplay; loop;"
-              // @ts-expect-error ignore for now
-              style={iframeStyles}
-              className={`EProductVideo ${
-                isVideoReady ? 'visible' : 'tinyVideo'
-              } cursor-pointer`}
-              onPointerDown={() => redirect(`/stock/${id}`)}
+              className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
+              title="Product video"
+              onLoad={handleVideoLoad}
+              onPointerDown={() => redirect(`/products/${EProduct.handle}`)}
             ></iframe>
           </Link>
         </div>
