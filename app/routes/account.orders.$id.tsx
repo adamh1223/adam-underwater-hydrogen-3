@@ -163,17 +163,34 @@ export default function OrderRoute() {
                       <Card className="p-5">
                         <div>
                           {/* <tbody> */}
-                          {lineItems.map((lineItem, lineItemIndex) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <OrderLineRow
-                              key={lineItemIndex}
-                              lineItem={
-                                lineItem as unknown as OrderLineItemFullFragment
-                              }
-                              downloadLinks={tagDownloadLinks}
-                            />
-                            // ATTENTION: conditionally render the download button only on eproduct line items
-                          ))}
+                          {lineItems.length <= 1 &&
+                            lineItems.map((lineItem, lineItemIndex) => (
+                              // eslint-disable-next-line react/no-array-index-key
+
+                              <OrderLineRow
+                                key={lineItemIndex}
+                                lineItem={
+                                  lineItem as unknown as OrderLineItemFullFragment
+                                }
+                                downloadLinks={tagDownloadLinks}
+                              />
+
+                              // ATTENTION: conditionally render the download button only on eproduct line items
+                            ))}
+                          {lineItems.length > 1 &&
+                            lineItems.map((lineItem, lineItemIndex) => (
+                              // eslint-disable-next-line react/no-array-index-key
+                              <Card className="p-3 mb-5">
+                                <OrderLineRow
+                                  key={lineItemIndex}
+                                  lineItem={
+                                    lineItem as unknown as OrderLineItemFullFragment
+                                  }
+                                  downloadLinks={tagDownloadLinks}
+                                />
+                              </Card>
+                              // ATTENTION: conditionally render the download button only on eproduct line items
+                            ))}
                         </div>
                       </Card>
                     </div>
@@ -303,7 +320,7 @@ export default function OrderRoute() {
               )}
               {windowWidth && windowWidth < 604 && (
                 <>
-                  <div className="upper-part-small grid grid-cols-1 flex justify-start px-[100px]">
+                  <div className="upper-part-small grid grid-cols-1 flex justify-start">
                     <div className="table">
                       {/* <table> */}
 
@@ -311,13 +328,15 @@ export default function OrderRoute() {
                         {/* <tbody> */}
                         {lineItems.map((lineItem, lineItemIndex) => (
                           // eslint-disable-next-line react/no-array-index-key
-                          <OrderLineRow
-                            key={lineItemIndex}
-                            lineItem={
-                              lineItem as unknown as OrderLineItemFullFragment
-                            }
-                            downloadLinks={tagDownloadLinks}
-                          />
+                          <Card className="p-3 mb-5">
+                            <OrderLineRow
+                              key={lineItemIndex}
+                              lineItem={
+                                lineItem as unknown as OrderLineItemFullFragment
+                              }
+                              downloadLinks={tagDownloadLinks}
+                            />
+                          </Card>
                         ))}
                       </div>
                     </div>
@@ -533,7 +552,7 @@ function OrderLineRow({
           )}
           {/* Stock footage clip^ */}
         </div>
-        <div className="price-quantity-total ps-1 pt-3">
+        <div className="price-quantity-total ps-3 pt-3">
           <div className="flex justify-start">
             Price: &nbsp;
             <Money data={lineItem.price!} />
