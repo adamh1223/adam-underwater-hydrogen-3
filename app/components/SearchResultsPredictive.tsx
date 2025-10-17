@@ -195,6 +195,7 @@ interface PredictiveSearchLayout {
   products: EnhancedPartialSearchResult[];
   collectionHandle?: string;
   cart?: Promise<CartReturn | null>;
+  showProductHeader?: Boolean;
 }
 function SearchResultsPredictiveProducts({
   term,
@@ -202,6 +203,7 @@ function SearchResultsPredictiveProducts({
   products,
   collectionHandle,
   cart,
+  showProductHeader = false,
 }: PredictiveSearchLayout) {
   if (!products.length) return null;
 
@@ -213,28 +215,42 @@ function SearchResultsPredictiveProducts({
         if (product.tags.includes('Prints')) {
           return (
             <>
-              <div className="m-5">
-                <div className="flex justify-center pb-2">
-                  Framed Canvas Print:
+              {showProductHeader && (
+                <div className="m-5">
+                  <div className="flex justify-center pb-2">
+                    Framed Canvas Print:
+                  </div>
+                  <ProductCarousel product={product} layout="grid" />
                 </div>
+              )}
+              {!showProductHeader && (
                 <ProductCarousel product={product} layout="grid" />
-              </div>
+              )}
             </>
           );
         }
         if (product.tags.includes('Video')) {
           return (
             <>
-              <div className="mx-5">
-                <div className="flex justify-center pb-2">
-                  Stock Footage Clip:
+              {showProductHeader && (
+                <div className="mx-5">
+                  <div className="flex justify-center pb-2">
+                    Stock Footage Clip:
+                  </div>
+                  <EProductsContainer
+                    product={product}
+                    layout="grid"
+                    cart={cart}
+                  />
                 </div>
+              )}
+              {!showProductHeader && (
                 <EProductsContainer
                   product={product}
                   layout="grid"
                   cart={cart}
                 />
-              </div>
+              )}
             </>
           );
         }

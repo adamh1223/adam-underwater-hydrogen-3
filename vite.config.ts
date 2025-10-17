@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['manga-drew-cultures-sierra.tryhydrogen.dev'],
+    allowedHosts: ['informative-excluded-permalink-lib.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

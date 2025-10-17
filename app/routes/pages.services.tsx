@@ -18,9 +18,21 @@ import {
   CarouselPrevious,
 } from '~/components/ui/carousel';
 import {servicesImages1, servicesImages2} from '~/utils/constants';
-import {useLocation} from '@remix-run/react';
-
+import {useLoaderData, useLocation} from '@remix-run/react';
+import {LoaderFunctionArgs, json} from '@remix-run/server-runtime';
+export async function loader({context}: LoaderFunctionArgs) {
+  const {storefront} = context;
+  const {collection} = await storefront.query(COLLECTION_QUERY, {
+    variables: {handle: 'photography_images'},
+  });
+  const images = collection.metafield.references.edges;
+  return {collection};
+}
+// same issue as recommended products
 function ServicesPage() {
+  const {collection} = useLoaderData<typeof loader>() || {};
+  console.log(collection, 'collection');
+
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const retryTimerRef = useRef<number | null>(null);
@@ -362,5 +374,35 @@ function ServicesPage() {
     </>
   );
 }
-
+const COLLECTION_QUERY = `#graphql
+query photographyImagesCollection ($handle: String!) {
+  collection (handle: $handle) {
+    id
+    title
+    metafield(namespace: "custom", key: "photography_images") {
+      value
+      type
+      reference {
+        ... on MediaImage {
+          image {
+            url
+            altText
+            }
+          }
+        }
+      references(first: 20) {
+        edges {
+          node {
+            ... on MediaImage {
+              image {
+                url
+                altText
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+}`;
 export default ServicesPage;

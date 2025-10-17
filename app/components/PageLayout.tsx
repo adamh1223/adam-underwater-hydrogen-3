@@ -145,7 +145,9 @@ function SearchAside() {
                   products={
                     products as unknown as EnhancedPartialSearchResult[]
                   }
+                  showProductHeader
                   term={term}
+                  // aside search results predictive
                 />
                 {/* <SearchResultsPredictive.Collections
                   collections={collections}

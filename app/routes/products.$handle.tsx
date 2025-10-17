@@ -46,6 +46,7 @@ import {
 import {ThreeUpCarousel} from '~/components/global/ThreeUpCarousel';
 import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarousel';
 import {Button} from '~/components/ui/button';
+import {RECOMMENDED_PRODUCTS_QUERY, RecommendedProducts} from './_index';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -83,10 +84,11 @@ async function loadCriticalData({
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}] = await Promise.all([
+  const [{product, recommendedProducts}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
+    storefront.query(RECOMMENDED_PRODUCTS_QUERY),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
@@ -96,6 +98,7 @@ async function loadCriticalData({
 
   return {
     product,
+    recommendedProducts,
     cart: cart.get(),
   };
 }
@@ -111,9 +114,10 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
 
   return {};
 }
-
+// Use the same fix for about page recommended products
 export default function Product() {
-  const {product, cart} = useLoaderData<typeof loader>();
+  const {product, recommendedProducts, cart} = useLoaderData<typeof loader>();
+  console.log(recommendedProducts, 'recs');
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(

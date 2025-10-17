@@ -63,8 +63,8 @@ function IndividualProduct({
     if (!zoomData.visible) return;
 
     const {left, top, width, height} = e.currentTarget.getBoundingClientRect();
-    const x = ((e.pageX - left) / width) * 100;
-    const y = ((e.pageY - top) / height) * 100;
+    const x = ((e.pageX - left) / width) * 50;
+    const y = ((e.pageY - top) / height) * 50;
 
     setZoomData((prev) => ({
       ...prev,
@@ -84,8 +84,8 @@ function IndividualProduct({
     } else {
       const {left, top, width, height} =
         e.currentTarget.getBoundingClientRect();
-      const x = ((e.pageX - left) / width) * 100;
-      const y = ((e.pageY - top) / height) * 100;
+      const x = ((e.pageX - left) / width) * 50;
+      const y = ((e.pageY - top) / height) * 50;
 
       setZoomData({
         src,
@@ -300,6 +300,7 @@ function IndividualProduct({
             backgroundPosition: `${zoomData.x}% ${zoomData.y}%`,
             backgroundSize: '500%',
             top: zoomData.mouseY - 320, // above cursor
+            // Do some math to adjust ceiling of zoom window
             left: zoomData.mouseX + 10, // to right of cursor
           }}
           onClick={() =>
