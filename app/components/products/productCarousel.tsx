@@ -88,7 +88,7 @@ export const ProductCarousel = ({
   const cardContentClassName =
     layout === 'grid'
       ? 'flex flex-col h-full'
-      : 'px-8 md:px-6 gap-y-4 grid list-view-large-row';
+      : 'px-8 md:px-6 gap-y-4 grid list-view-large-row pt-4 pb-4';
 
   const variantUrl = useVariantUrl(handle);
 
@@ -240,7 +240,9 @@ export const ProductCarousel = ({
                     >
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
-                          layout === 'grid' ? 'pt-2 pb-2 ps-4 pe-4' : 'p-2 ms-3'
+                          layout === 'grid'
+                            ? 'pt-[12px] pb-[12px] ps-4 pe-4'
+                            : 'p-2 ms-3'
                         }`}
                       >
                         <img

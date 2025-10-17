@@ -44,7 +44,7 @@
 }
 @media (min-width: 1250px) {
   .carousel-img-list-view {
-    max-height: 200px;
+    max-height: 250px;
   }
 }
 @media (max-width: 786px) {
@@ -176,10 +176,10 @@
     margin: 0 6px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 27px;
+    margin: 0 0 0 40px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 27px 0 0;
+    margin: 0 40px 0 0;
   }
 }
 @media (min-width: 600px) and (max-width: 699px) {
@@ -202,10 +202,10 @@
     margin: 0 10px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 80px;
+    margin: 0 0 0 90px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 80px 0 0;
+    margin: 0 90px 0 0;
   }
 }
 @media (min-width: 700px) and (max-width: 767px) {
@@ -228,10 +228,10 @@
     margin: 0 3px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 -8px;
+    margin: 0 0 0 4px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 -8px 0 0;
+    margin: 0 4px 0 0;
   }
 }
 @media (min-width: 768px) and (max-width: 849px) {
@@ -254,10 +254,10 @@
     margin: 0 3px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 -3px;
+    margin: 0 0 0 8px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 -3px 0 0;
+    margin: 0 8px 0 0;
   }
 }
 @media (min-width: 850px) and (max-width: 957px) {
@@ -274,16 +274,16 @@
     margin: 0 20px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 -6px;
+    margin: 0 0 0 6px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 -6px 0 0;
+    margin: 0 6px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 10px;
+    margin: 0 0 0 22px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 10px 0 0;
+    margin: 0 22px 0 0;
   }
 }
 @media (min-width: 958px) and (max-width: 1049px) {
@@ -300,16 +300,16 @@
     margin: 0 14px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 -6px;
+    margin: 0 0 0 8px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 -6px 0 0;
+    margin: 0 8px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 42px;
+    margin: 0 0 0 53px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 42px 0 0;
+    margin: 0 53px 0 0;
   }
 }
 @media (min-width: 1050px) and (max-width: 1149px) {
@@ -326,16 +326,16 @@
     margin: 0 19px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 -2px;
+    margin: 0 0 0 8px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 -2px 0 0;
+    margin: 0 8px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 60px;
+    margin: 0 0 0 75px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 60px 0 0;
+    margin: 0 75px 0 0;
   }
 }
 @media (min-width: 1150px) and (max-width: 1249px) {
@@ -352,43 +352,69 @@
     margin: 0 24px;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 0;
+    margin: 0 0 0 9px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 0;
+    margin: 0 9px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 90px;
+    margin: 0 0 0 98px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 90px 0 0;
+    margin: 0 98px 0 0;
   }
 }
 
-@media (min-width: 1250px) {
+@media (min-width: 1250px) and (max-width: 1320px) {
   .left-arrow-carousel-list-horizontal {
-    margin: 0 56px;
+    margin: 0 -15px;
   }
   .right-arrow-carousel-list-horizontal {
-    margin: 0 43px 0 0;
+    margin: 0 -27px;
   }
   .left-arrow-carousel-list-vertical {
-    margin: 0 115px;
+    margin: 0 100px;
   }
   .right-arrow-carousel-list-vertical {
-    margin: 0 105px 0 0;
+    margin: 0 85px 0 0;
   }
   .left-arrow-carousel-grid-horizontal {
-    margin: 0 0 0 6px;
+    margin: 0 0 0 12px;
   }
   .right-arrow-carousel-grid-horizontal {
-    margin: 0 6px 0 0;
+    margin: 0 12px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 110px;
+    margin: 0 0 0 125px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 110px 0 0;
+    margin: 0 125px 0 0;
+  }
+}
+@media (min-width: 1321px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0 -15px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0 -27px;
+  }
+  .left-arrow-carousel-list-vertical {
+    margin: 0 110px;
+  }
+  .right-arrow-carousel-list-vertical {
+    margin: 0 95px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 20px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 20px 0 0;
+  }
+  .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 140px;
+  }
+  .right-arrow-carousel-grid-vertical {
+    margin: 0 140px 0 0;
   }
 }
 
