@@ -163,7 +163,7 @@ export default function Collection() {
   };
 
   const layoutClassName =
-    layout === 'grid' ? 'prods-grid gap-x-5 gap-y-5' : 'mt-6 grid';
+    layout === 'grid' ? 'prods-grid gap-x-5' : 'mt-6 grid';
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();

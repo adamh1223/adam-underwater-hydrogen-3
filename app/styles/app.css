@@ -439,13 +439,13 @@ button.reset:hover:not(:has(> *)) {
   .recommended-products-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3;
+    column-gap: 20px;
     padding: 20px 50px 0 50px;
   }
   .prods-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3;
+    column-gap: 20px;
     padding: 20px 50px 0 50px;
   }
 }
@@ -453,13 +453,13 @@ button.reset:hover:not(:has(> *)) {
   .recommended-products-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 3;
+    column-gap: 20px;
     padding: 20px 50px 0 50px;
   }
   .prods-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 3;
+    column-gap: 20px;
     padding: 20px 50px 0 50px;
   }
 }
