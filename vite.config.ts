@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['pittsburgh-dos-dining-city.tryhydrogen.dev'],
+    allowedHosts: ['indicator-zip-attributes-prairie.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

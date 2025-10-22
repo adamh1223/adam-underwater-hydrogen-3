@@ -24,7 +24,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData};
+  return {deferredData, criticalData};
 }
 
 async function loadCriticalData({context}: LoaderFunctionArgs) {
@@ -55,95 +55,95 @@ export default function AboutPage() {
   const data = useLoaderData<typeof loader>();
   console.log(data, 'data');
 
-  const location = useLocation();
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
-  const retryTimerRef = useRef<number | null>(null);
+  // const location = useLocation();
+  // const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  // const retryTimerRef = useRef<number | null>(null);
 
-  // Track window width
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // // Track window width
+  // useEffect(() => {
+  //   const handleResize = () => setWindowWidth(window.innerWidth);
+  //   window.addEventListener('resize', handleResize);
+  //   handleResize();
+  //   return () => window.removeEventListener('resize', handleResize);
+  // }, []);
 
-  const getYOffset = () => {
-    if (windowWidth == null) return -180;
-    if (windowWidth < 601) return -215;
-    if (windowWidth >= 601 && windowWidth < 1280) return -180;
-    return -75;
-  };
+  // const getYOffset = () => {
+  //   if (windowWidth == null) return -180;
+  //   if (windowWidth < 601) return -215;
+  //   if (windowWidth >= 601 && windowWidth < 1280) return -180;
+  //   return -75;
+  // };
 
-  const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (!section) return false;
-    const y =
-      section.getBoundingClientRect().top + window.scrollY + getYOffset();
-    window.scrollTo({top: y, behavior: 'smooth'});
-    return true;
-  };
+  // const scrollToSection = (sectionId: string) => {
+  //   const section = document.getElementById(sectionId);
+  //   if (!section) return false;
+  //   const y =
+  //     section.getBoundingClientRect().top + window.scrollY + getYOffset();
+  //   window.scrollTo({top: y, behavior: 'smooth'});
+  //   return true;
+  // };
 
-  const handleClick = (
-    sectionId: string,
-    event: React.MouseEvent<HTMLAnchorElement>,
-  ) => {
-    event.preventDefault();
-    scrollToSection(sectionId);
-  };
+  // const handleClick = (
+  //   sectionId: string,
+  //   event: React.MouseEvent<HTMLAnchorElement>,
+  // ) => {
+  //   event.preventDefault();
+  //   scrollToSection(sectionId);
+  // };
 
-  useEffect(() => {
-    if (retryTimerRef.current) {
-      clearTimeout(retryTimerRef.current);
-      retryTimerRef.current = null;
-    }
+  // useEffect(() => {
+  //   if (retryTimerRef.current) {
+  //     clearTimeout(retryTimerRef.current);
+  //     retryTimerRef.current = null;
+  //   }
 
-    const saved = (() => {
-      try {
-        return sessionStorage.getItem('about-scroll-target');
-      } catch {
-        return null;
-      }
-    })();
+  //   const saved = (() => {
+  //     try {
+  //       return sessionStorage.getItem('about-scroll-target');
+  //     } catch {
+  //       return null;
+  //     }
+  //   })();
 
-    const hashTarget = location.hash ? location.hash.replace('#', '') : null;
-    const target = hashTarget || saved;
-    if (!target) return;
+  //   const hashTarget = location.hash ? location.hash.replace('#', '') : null;
+  //   const target = hashTarget || saved;
+  //   if (!target) return;
 
-    let attempts = 0;
-    const maxAttempts = 20;
-    const delayMs = 100;
+  //   let attempts = 0;
+  //   const maxAttempts = 20;
+  //   const delayMs = 100;
 
-    const tryScroll = () => {
-      attempts++;
-      const ok = scrollToSection(target);
-      if (ok) {
-        try {
-          sessionStorage.removeItem('about-scroll-target');
-        } catch {}
-        return;
-      }
-      if (attempts >= maxAttempts) {
-        try {
-          sessionStorage.removeItem('about-scroll-target');
-        } catch {}
-        return;
-      }
-      retryTimerRef.current = window.setTimeout(tryScroll, delayMs);
-    };
+  //   const tryScroll = () => {
+  //     attempts++;
+  //     const ok = scrollToSection(target);
+  //     if (ok) {
+  //       try {
+  //         sessionStorage.removeItem('about-scroll-target');
+  //       } catch {}
+  //       return;
+  //     }
+  //     if (attempts >= maxAttempts) {
+  //       try {
+  //         sessionStorage.removeItem('about-scroll-target');
+  //       } catch {}
+  //       return;
+  //     }
+  //     retryTimerRef.current = window.setTimeout(tryScroll, delayMs);
+  //   };
 
-    retryTimerRef.current = window.setTimeout(tryScroll, 50);
+  //   retryTimerRef.current = window.setTimeout(tryScroll, 50);
 
-    return () => {
-      if (retryTimerRef.current) {
-        clearTimeout(retryTimerRef.current);
-        retryTimerRef.current = null;
-      }
-    };
-  }, [location, windowWidth]);
+  //   return () => {
+  //     if (retryTimerRef.current) {
+  //       clearTimeout(retryTimerRef.current);
+  //       retryTimerRef.current = null;
+  //     }
+  //   };
+  // }, [location, windowWidth]);
 
   return (
     <>
-      <section id="about">
+      {/* <section id="about">
         <div className="flex justify-center img-container">
           <img
             src={'/about2.png'}
@@ -450,7 +450,7 @@ export default function AboutPage() {
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>Framed Canvas Wall Art</p>
         </div>
-      </section>
+      </section> */}
 
       <RecommendedProducts products={data?.recommendedProducts} />
     </>

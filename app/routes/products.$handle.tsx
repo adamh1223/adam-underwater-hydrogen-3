@@ -46,7 +46,8 @@ import {
 import {ThreeUpCarousel} from '~/components/global/ThreeUpCarousel';
 import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarousel';
 import {Button} from '~/components/ui/button';
-import {RECOMMENDED_PRODUCTS_QUERY, RecommendedProducts} from './_index';
+import {RECOMMENDED_PRODUCTS_QUERY} from '~/lib/homeQueries';
+import SimpleRecommendedProducts from '~/components/products/simpleRecommendedProducts';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -84,7 +85,7 @@ async function loadCriticalData({
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product, recommendedProducts}] = await Promise.all([
+  const [{product}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
@@ -98,7 +99,6 @@ async function loadCriticalData({
 
   return {
     product,
-    recommendedProducts,
     cart: cart.get(),
   };
 }
@@ -112,12 +112,22 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
   // Put any API calls that is not critical to be available on first page render
   // For example: product reviews, product recommendations, social feeds.
 
-  return {};
+  const recommendedProducts = context.storefront
+    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .catch((error) => {
+      // Log query errors, but don't throw them so the page can still render
+      console.error(error, '00000000000000000000000000000000000000000000000');
+      return null;
+    });
+
+  return {
+    recommendedProducts,
+  };
 }
 // Use the same fix for about page recommended products
 export default function Product() {
   const {product, recommendedProducts, cart} = useLoaderData<typeof loader>();
-  console.log(recommendedProducts, 'recs');
+  console.log(recommendedProducts, 'product456');
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -440,7 +450,7 @@ export default function Product() {
   //
   standardCarouselImages.unshift(selectedVariant?.image);
 
-  const isVideo = product.tags.includes('EProduct');
+  const isVideo = product.tags.includes('Video');
   // .includes((word: string) => {
   //   console.log(word, '3000');
 
@@ -1416,30 +1426,17 @@ export default function Product() {
             </div>
           </div>
           <div className="you-may-also-like-container flex justify-center mt-3">
-            {!isVideo && (
-              <ThreeUpCarousel
-                images={[
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                ]}
+            {/* {!isVideo && (
+              <SimpleRecommendedProducts
+                products={recommendedProducts}
+                isVideo={!isVideo}
               />
-            )}
-            {isVideo && (
-              <ThreeUpEProductCarousel
-                images={[
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                  '/print3.jpg',
-                ]}
-              />
-            )}
+            )} */}
+
+            <SimpleRecommendedProducts
+              products={recommendedProducts}
+              isVideo={isVideo}
+            />
           </div>
         </section>
 

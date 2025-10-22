@@ -17,7 +17,11 @@ import {
 import {RootLoader, loader} from '~/root';
 import Product from '~/routes/products.$handle';
 
-export function ThreeUpEProductCarousel({images}: {images: string[]}) {
+export function ThreeUpEProductCarousel({
+  images,
+}: {
+  images: string[] | undefined;
+}) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -36,13 +40,12 @@ export function ThreeUpEProductCarousel({images}: {images: string[]}) {
       <CarouselContent>
         {windowWidth && windowWidth >= 1024 && (
           <>
-            {images.map((img, idx) => (
+            {images?.map((img, idx) => (
               <CarouselItem key={idx} className="basis-1/3">
                 {/* 👇 add group here */}
                 <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72">
                   <img
                     src={img}
-                    alt={`Image ${idx + 1}`}
                     className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
                   />
                 </div>
@@ -52,13 +55,12 @@ export function ThreeUpEProductCarousel({images}: {images: string[]}) {
         )}
         {windowWidth && windowWidth < 1024 && windowWidth >= 720 && (
           <>
-            {images.map((img, idx) => (
+            {images?.map((img, idx) => (
               <CarouselItem key={idx} className="basis-1/2">
                 {/* 👇 add group here */}
                 <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72">
                   <img
                     src={img}
-                    alt={`Image ${idx + 1}`}
                     className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
                   />
                 </div>
@@ -68,13 +70,12 @@ export function ThreeUpEProductCarousel({images}: {images: string[]}) {
         )}
         {windowWidth && windowWidth < 720 && (
           <>
-            {images.map((img, idx) => (
+            {images?.map((img, idx) => (
               <CarouselItem key={idx}>
                 {/* 👇 add group here */}
                 <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-52 w-80">
                   <img
                     src={img}
-                    alt={`Image ${idx + 1}`}
                     className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
                   />
                 </div>

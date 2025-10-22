@@ -20,17 +20,52 @@ import {
 import {servicesImages1, servicesImages2} from '~/utils/constants';
 import {useLoaderData, useLocation} from '@remix-run/react';
 import {LoaderFunctionArgs, json} from '@remix-run/server-runtime';
-export async function loader({context}: LoaderFunctionArgs) {
-  const {storefront} = context;
-  const {collection} = await storefront.query(COLLECTION_QUERY, {
-    variables: {handle: 'photography_images'},
-  });
-  const images = collection.metafield.references.edges;
-  return {collection};
-}
+import RecommendedProducts from '~/components/products/recommendedProducts';
+import {
+  FEATURED_COLLECTION_QUERY,
+  RECOMMENDED_PRODUCTS_QUERY,
+} from '~/lib/homeQueries';
+// export async function loader({context}: LoaderFunctionArgs) {
+//   const {storefront} = context;
+//   const {collection} = await storefront.query(COLLECTION_QUERY, {
+//     variables: {handle: 'photography_images'},
+//   });
+//   const images = collection.metafield.references.edges;
+//   return {collection};
+// }
 // same issue as recommended products
+export async function loader(args: LoaderFunctionArgs) {
+  const deferredData = loadDeferredData(args);
+  const criticalData = await loadCriticalData(args);
+
+  return {...deferredData, ...criticalData};
+}
+
+async function loadCriticalData({context}: LoaderFunctionArgs) {
+  const [{collections}] = await Promise.all([
+    context.storefront.query(FEATURED_COLLECTION_QUERY),
+  ]);
+
+  return {
+    featuredCollection: collections.nodes[0],
+  };
+}
+
+function loadDeferredData({context}: LoaderFunctionArgs) {
+  const recommendedProducts = context.storefront
+    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .catch((error) => {
+      // Log query errors, but don't throw them so the page can still render
+      console.error(error, '00000000000000000000000000000000000000000000000');
+      return null;
+    });
+
+  return {
+    recommendedProducts,
+  };
+}
 function ServicesPage() {
-  const {collection} = useLoaderData<typeof loader>() || {};
+  const collection = useLoaderData<typeof loader>() || {};
   console.log(collection, 'collection');
 
   const location = useLocation();
@@ -352,6 +387,16 @@ function ServicesPage() {
           </a>
         </div>
       </section>
+      <section>
+        <div className="flex justify-center pt-5">
+          <img src={'/featured.png'} className="featured-img" />
+        </div>
+        <div className="flex justify-center font-bold text-xl pb-2">
+          <p>Framed Canvas Wall Art</p>
+        </div>
+      </section>
+
+      <RecommendedProducts products={collection?.recommendedProducts} />
       {/* <section id="coaching">
         <Sectiontitle text="1 on 1 Coaching" />
         <ul className="subheader">

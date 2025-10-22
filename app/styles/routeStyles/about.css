@@ -201,3 +201,16 @@
   margin: 20px 20px 20px 20px; /* Pushes it to the bottom */
   text-align: center;
 }
+
+@media (max-width: 700px) {
+  .hero-img,
+  .featured-img {
+    height: 70px;
+  }
+}
+@media (min-width: 701px) {
+  .hero-img,
+  .featured-img {
+    height: 80px;
+  }
+}

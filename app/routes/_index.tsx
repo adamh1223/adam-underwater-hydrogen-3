@@ -9,6 +9,11 @@ import type {
 import VideoPreview from '~/components/video/VideoPreview';
 import Hero from '~/components/hero/Hero';
 import ProductCarousel from '~/components/products/productCarousel';
+import {
+  FEATURED_COLLECTION_QUERY,
+  RECOMMENDED_PRODUCTS_QUERY,
+} from '~/lib/homeQueries';
+import RecommendedProducts from '~/components/products/recommendedProducts';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -62,7 +67,7 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
-  console.log(FeaturedCollection, '44data2');
+  console.log(data, '44data2');
 
   return (
     <div className="home">
@@ -103,106 +108,3 @@ function FeaturedCollection({
     </>
   );
 }
-
-export function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
-  return (
-    <div className="recommended-products">
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid gap-x-5 gap-y-5">
-              {response
-                ? response.products.nodes.map((product) => {
-                    console.log(product, '111111');
-                    const isVideo = product.tags?.includes('Video');
-                    const isRecommendedProduct =
-                      product.tags?.includes('recommended');
-                    return (
-                      <>
-                        {!isVideo && isRecommendedProduct && (
-                          <ProductCarousel
-                            product={product}
-                            layout="grid"
-                            key={product.id}
-                          />
-                        )}
-                      </>
-                    );
-                  })
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
-  );
-}
-
-export const FEATURED_COLLECTION_QUERY = `#graphql
-  fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    handle
-    metafield(namespace: "custom", key: "multiple_images"){
-      references(first: 10) {
-        nodes {
-          ... on MediaImage {
-            image {url}
-          }
-        }
-      }
-    }
-  }
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
-    }
-  }
-` as const;
-
-export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    tags
-    images(first: 250) {
-      nodes {
-        id
-        url
-        altText
-        width
-        height
-      }
-    }
-  }
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    products(first: 5, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...RecommendedProduct
-      }
-    }
-  }
-` as const;

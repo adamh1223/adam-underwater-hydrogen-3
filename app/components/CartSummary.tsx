@@ -33,6 +33,16 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
     setHideExtraInfo(!!clipNames?.length);
   }, [clipNames]);
   const [isOrderReady, setIsOrderReady] = useState(!clipNames?.length);
+
+  useEffect(() => {
+    if (isOrderReady) {
+      const timer = setTimeout(() => {
+        setHideExtraInfo(false);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOrderReady]);
+
   return (
     <>
       <div aria-labelledby="cart-summary" className={className}>

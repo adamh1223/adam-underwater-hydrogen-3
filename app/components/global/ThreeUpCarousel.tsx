@@ -17,8 +17,7 @@ import {
 import {RootLoader, loader} from '~/root';
 import Product from '~/routes/products.$handle';
 
-
-export function ThreeUpCarousel({images}: {images: string[]}) {
+export function ThreeUpCarousel({images}: {images: string[] | undefined}) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -29,8 +28,6 @@ export function ThreeUpCarousel({images}: {images: string[]}) {
     return () => window.removeEventListener('resize', handleResize);
   });
 
-
-  
   return (
     <Carousel
       className="you-may-like-carousel w-full max-w-5xl"

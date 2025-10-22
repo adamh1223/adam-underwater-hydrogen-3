@@ -200,6 +200,12 @@ export default function Collection() {
     setTotalProductCount(filteredCollection.length);
   }, [filterState]);
 
+  useEffect(() => {
+    console.log(collection.products, 'clp');
+
+    setTotalProductCount(collection.products.nodes.length);
+  }, [collection.handle]);
+
   console.log(productState, 'productstate');
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
