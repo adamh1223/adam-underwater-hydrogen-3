@@ -104,3 +104,16 @@
     align-items: center;
   }
 } */
+
+@media (max-width: 700px) {
+  .hero-img,
+  .featured-img {
+    height: 70px;
+  }
+}
+@media (min-width: 701px) {
+  .hero-img,
+  .featured-img {
+    height: 80px;
+  }
+}
