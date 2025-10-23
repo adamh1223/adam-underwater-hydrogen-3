@@ -95,9 +95,9 @@ function SearchAside() {
         <SearchFormPredictive>
           {({fetchResults, inputRef}) => (
             <>
-              <div className="flex justify-center mb-5 mx-3">
+              <div className="flex justify-center mb-5 mx-3 bg-background">
                 <Input
-                  className="search-input w-[220px]"
+                  className="overflow-clip search-input w-[220px]"
                   name="q"
                   onChange={fetchResults}
                   onFocus={fetchResults}

@@ -206,7 +206,7 @@ export const ProductCarousel = ({
   }
   console.log(prod, 'prods');
 
-  console.log(isHorOnly, '1144horOnly');
+  console.log(product, '789product');
   console.log(isVertOnly, '1144vertOnly');
   console.log(isHorPrimary, '1144horPrimary');
   console.log(isVertPrimary, '1144vertPrimary');

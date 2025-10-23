@@ -366,7 +366,6 @@ button.reset:hover:not(:has(> *)) {
 */
 .predictive-search {
   height: calc(100vh - var(--header-height) - 80px);
-  overflow-y: auto;
 }
 
 .predictive-search-form {

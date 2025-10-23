@@ -319,6 +319,7 @@ fragment MoneyProductItem on MoneyV2 {
     title
     handle
     tags
+    descriptionHtml
     featuredImage {
       altText
       url
