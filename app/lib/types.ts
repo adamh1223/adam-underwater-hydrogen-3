@@ -34,3 +34,12 @@ export interface SimpleProductImages {
 export type CartLine = OptimisticCartLine<CartApiQueryFragment>;
 
 export type DefaultCart = CartApiQueryFragment;
+
+export interface ThreeUpCarouselProps {
+  products?: {
+    id: string;
+    handle: string;
+    imageURL: string;
+    title: string;
+  }[];
+}

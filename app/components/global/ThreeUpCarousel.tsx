@@ -16,8 +16,9 @@ import {
 } from '@remix-run/react';
 import {RootLoader, loader} from '~/root';
 import Product from '~/routes/products.$handle';
+import {ThreeUpCarouselProps} from '~/lib/types';
 
-export function ThreeUpCarousel({images}: {images: string[] | undefined}) {
+export function ThreeUpCarousel({products}: ThreeUpCarouselProps) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -36,48 +37,51 @@ export function ThreeUpCarousel({images}: {images: string[] | undefined}) {
       <CarouselContent>
         {windowWidth && windowWidth >= 1024 && (
           <>
-            {images.map((img, idx) => (
+            {products?.map((product, idx) => (
               <CarouselItem key={idx} className="basis-1/3">
-                {/* 👇 add group here */}
-                <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72">
-                  <img
-                    src={img}
-                    alt={`Image ${idx + 1}`}
-                    className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
-                  />
-                </div>
+                {/* add link here */}
+                <Link to={`/products/${product.handle}`}>
+                  <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72 cursor-pointer">
+                    <img
+                      src={product.imageURL}
+                      className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
+                    />
+                  </div>
+                </Link>
               </CarouselItem>
             ))}
           </>
         )}
         {windowWidth && windowWidth < 1024 && windowWidth >= 720 && (
           <>
-            {images.map((img, idx) => (
+            {products?.map((product, idx) => (
               <CarouselItem key={idx} className="basis-1/2">
-                {/* 👇 add group here */}
-                <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72">
-                  <img
-                    src={img}
-                    alt={`Image ${idx + 1}`}
-                    className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
-                  />
-                </div>
+                {/* add link heproduct*/}
+                <Link to={`/products/${product.handle}`}>
+                  <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72 cursor-pointer">
+                    <img
+                      src={product.imageURL}
+                      className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
+                    />
+                  </div>
+                </Link>
               </CarouselItem>
             ))}
           </>
         )}
         {windowWidth && windowWidth < 720 && (
           <>
-            {images.map((img, idx) => (
+            {products?.map((product, idx) => (
               <CarouselItem key={idx}>
-                {/* 👇 add group here */}
-                <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-52 w-80">
-                  <img
-                    src={img}
-                    alt={`Image ${idx + 1}`}
-                    className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
-                  />
-                </div>
+                {/* add link here */}
+                <Link to={`/products/${product.handle}`}>
+                  <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-52 w-80 cursor-pointer">
+                    <img
+                      src={product.imageURL}
+                      className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
+                    />
+                  </div>
+                </Link>
               </CarouselItem>
             ))}
           </>

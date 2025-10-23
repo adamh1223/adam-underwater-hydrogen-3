@@ -1436,6 +1436,7 @@ export default function Product() {
             <SimpleRecommendedProducts
               products={recommendedProducts}
               isVideo={isVideo}
+              currentProductID={product.id}
             />
           </div>
         </section>

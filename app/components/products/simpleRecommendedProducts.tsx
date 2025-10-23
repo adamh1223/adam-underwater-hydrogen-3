@@ -8,9 +8,11 @@ import {ThreeUpCarousel} from '../global/ThreeUpCarousel';
 function SimpleRecommendedProducts({
   products,
   isVideo,
+  currentProductID,
 }: {
   products: Promise<RecommendedProductsQuery | null>;
   isVideo: Boolean;
+  currentProductID: String;
 }) {
   return (
     <div className="recommended-products">
@@ -27,26 +29,37 @@ function SimpleRecommendedProducts({
               ? filteredVideoProducts
               : filteredPrintProducts;
 
-            console.log(isVideo, 'isvideo');
+            const productsBesidesCurrent = productsToUse?.filter(
+              (product) => product.id != currentProductID,
+            );
+            console.log(productsToUse, 'productstouse');
 
-            const images = productsToUse?.map((product) => {
+            const products = productsBesidesCurrent?.map((product) => {
               console.log(product.images.nodes, 'prodimgnodes');
-
+              const productID = product.id;
+              const productName = product.handle;
               const imageFound = product.images.nodes.filter((image) => {
                 return image.url.includes('outer-carousel-main-youmayalsolike');
               });
-              console.log(imageFound, 'imgfound2');
+              const imageURL = imageFound[0]?.url;
+              const productTitle = product.title;
 
-              return imageFound[0]?.url;
+              return {
+                id: productID,
+                handle: productName,
+                imageURL,
+                title: productTitle,
+              };
             });
-            console.log(images, 'images2');
+
+            console.log(products, '555');
 
             return (
               <div className="recommended-products-grid gap-x-5 gap-y-5">
                 {response ? (
                   <>
-                    {!isVideo && <ThreeUpCarousel images={images} />}
-                    {isVideo && <ThreeUpEProductCarousel images={images} />}
+                    {!isVideo && <ThreeUpCarousel products={products} />}
+                    {isVideo && <ThreeUpEProductCarousel products={products} />}
                   </> //     const images = products.nodes.filter((image: any) =>
                 ) : //       image.url.includes('outer-carousel-main'),
                 //     );
