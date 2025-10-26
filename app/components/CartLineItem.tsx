@@ -238,6 +238,21 @@ export function CartLineItem({
                   </div>
                 </Link>
               </div>
+              {!hasOnlyDefaultTitle && (
+                <div>
+                  <ul className="pt-3">
+                    {selectedOptions.map((option) => (
+                      <li key={option.name}>
+                        <div className="flex justify-start items-center">
+                          <p className="cart-subheader">
+                            {option.name}: {option.value}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </>
           )}
           {/* ✔601px+ stock clip in cart */}

@@ -4,7 +4,7 @@ import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
 import ProductCarousel from './products/productCarousel';
 import EProductsContainer from './eproducts/EProductsContainer';
 import Sectiontitle from './global/Sectiontitle';
-import { EnhancedPartialSearchResult } from '~/lib/types';
+import {EnhancedPartialSearchResult} from '~/lib/types';
 
 type SearchItems = RegularSearchReturn['result']['items'];
 type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
