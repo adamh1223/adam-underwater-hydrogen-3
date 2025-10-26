@@ -437,7 +437,7 @@ button.reset:hover:not(:has(> *)) {
 @media (min-width: 701px) {
   .recommended-products-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     column-gap: 20px;
     padding: 20px 50px 0 50px;
   }
@@ -445,6 +445,7 @@ button.reset:hover:not(:has(> *)) {
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: 20px;
+    row-gap: 20px;
     padding: 20px 50px 0 50px;
   }
 }
@@ -459,6 +460,7 @@ button.reset:hover:not(:has(> *)) {
     display: grid;
     grid-template-columns: 1fr;
     column-gap: 20px;
+    row-gap: 20px;
     padding: 20px 50px 0 50px;
   }
 }
@@ -772,6 +774,22 @@ span {
   .you-may-like-carousel {
     width: 80vw;
   }
+}
+
+/* Make sure carousel content acts like a centered flex row */
+.you-may-like-carousel .carousel__content,
+.you-may-like-carousel .carousel-content,
+.you-may-like-carousel .carousel-track {
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+}
+
+/* Prevent slides from shrinking if library applies different defaults */
+.you-may-like-carousel .carousel__slide,
+.you-may-like-carousel .carousel-item,
+.you-may-like-carousel .splide__slide {
+  flex-shrink: 0 !important;
 }
 
 @media (max-width: 767px) {

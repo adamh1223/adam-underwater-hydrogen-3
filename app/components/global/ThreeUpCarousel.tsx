@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Card, CardContent} from '../ui/card';
+import {Card} from '../ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -7,19 +7,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel';
-import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {
-  useLoaderData,
-  type MetaFunction,
-  Link,
-  useRouteLoaderData,
-} from '@remix-run/react';
-import {RootLoader, loader} from '~/root';
-import Product from '~/routes/products.$handle';
+import {Link} from '@remix-run/react';
 import {ThreeUpCarouselProps} from '~/lib/types';
 
 export function ThreeUpCarousel({products}: ThreeUpCarouselProps) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -27,68 +20,153 @@ export function ThreeUpCarousel({products}: ThreeUpCarouselProps) {
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
+
+  // Helper for slide width
+  function slideStyleForCount(count: number) {
+    const percent = 100 / count;
+    return {flex: `0 0 ${percent}%`, maxWidth: `${percent}%`};
+  }
+
+  // Determine slides per view + alignment logic
+  let slidesPerView = 1;
+  let carouselAlign: 'start' | 'center' = 'start';
+  if (windowWidth && windowWidth >= 1024) {
+    slidesPerView = 3;
+  } else if (windowWidth && windowWidth >= 720) {
+    slidesPerView = 2;
+  } else {
+    slidesPerView = 1;
+    carouselAlign = 'center'; // only center single-slide mode
+  }
 
   return (
-    <Carousel
-      className="you-may-like-carousel w-full max-w-5xl"
-      opts={{loop: true, align: 'start', slidesToScroll: 1}}
-    >
-      <CarouselContent>
-        {windowWidth && windowWidth >= 1024 && (
-          <>
-            {products?.map((product, idx) => (
-              <CarouselItem key={idx} className="basis-1/3">
-                {/* add link here */}
-                <Link to={`/products/${product.handle}`}>
-                  <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72 cursor-pointer">
-                    <img
-                      src={product.imageURL}
-                      className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
-                    />
-                  </div>
-                </Link>
-              </CarouselItem>
-            ))}
-          </>
-        )}
-        {windowWidth && windowWidth < 1024 && windowWidth >= 720 && (
-          <>
-            {products?.map((product, idx) => (
-              <CarouselItem key={idx} className="basis-1/2">
-                {/* add link heproduct*/}
-                <Link to={`/products/${product.handle}`}>
-                  <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-44 w-72 cursor-pointer">
-                    <img
-                      src={product.imageURL}
-                      className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
-                    />
-                  </div>
-                </Link>
-              </CarouselItem>
-            ))}
-          </>
-        )}
-        {windowWidth && windowWidth < 720 && (
-          <>
-            {products?.map((product, idx) => (
-              <CarouselItem key={idx}>
-                {/* add link here */}
-                <Link to={`/products/${product.handle}`}>
-                  <div className="group p-4 flex items-center justify-center overflow-hidden rounded h-52 w-80 cursor-pointer">
-                    <img
-                      src={product.imageURL}
-                      className="w-full h-full object-cover rounded transition-transform duration-500 ease-in-out group-hover:scale-105"
-                    />
-                  </div>
-                </Link>
-              </CarouselItem>
-            ))}
-          </>
-        )}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+    <div className="w-full flex justify-center">
+      <Carousel
+        className="you-may-like-carousel w-full max-w-6xl"
+        opts={{loop: true, align: carouselAlign, slidesToScroll: 1}}
+      >
+        <CarouselContent className="!flex !items-stretch !justify-start">
+          {/* ≥ 1024px (3 slides) */}
+          {windowWidth && windowWidth >= 1024 && (
+            <>
+              {products?.map((product, idx) => (
+                <CarouselItem
+                  key={idx}
+                  className="flex justify-center items-stretch"
+                  style={slideStyleForCount(3)}
+                >
+                  <Link
+                    to={`/products/${product.handle}`}
+                    className="w-full flex justify-center"
+                  >
+                    {/* keep group on the Card so children can use group-hover */}
+                    <Card className="group w-full max-w-[420px] mx-2 p-4 overflow-visible">
+                      <p className="text-center text-muted-foreground px-2">
+                        Framed Canvas Print:
+                      </p>
+                      <div className="flex justify-center">
+                        <p className="text-center px-2">
+                          <strong>{product.title}</strong>
+                        </p>
+                      </div>
+                      <div className="p-4 flex items-center justify-center rounded h-auto w-full">
+                        {/* aspect container scales on group hover (the container itself grows/shrinks) */}
+                        <div className="w-full aspect-[4/3] flex items-center justify-center overflow-visible rounded bg-background transition-transform duration-500 ease-in-out group-hover:scale-105">
+                          <img
+                            src={product.imageURL}
+                            alt={product.title}
+                            className="max-h-full object-contain rounded"
+                          />
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </>
+          )}
+
+          {/* 720–1023px (2 slides) */}
+          {windowWidth && windowWidth < 1024 && windowWidth >= 720 && (
+            <>
+              {products?.map((product, idx) => (
+                <CarouselItem
+                  key={idx}
+                  className="flex justify-center items-stretch"
+                  style={slideStyleForCount(2)}
+                >
+                  <Link
+                    to={`/products/${product.handle}`}
+                    className="w-full flex justify-center"
+                  >
+                    <Card className="group w-full max-w-[420px] mx-2 p-4 overflow-visible">
+                      <p className="text-center text-muted-foreground px-2">
+                        Framed Canvas Print:
+                      </p>
+                      <div className="flex justify-center">
+                        <p className="text-center px-2">
+                          <strong>{product.title}</strong>
+                        </p>
+                      </div>
+                      <div className="p-4 flex items-center justify-center rounded h-auto w-full">
+                        <div className="w-full aspect-[4/3] flex items-center justify-center overflow-visible rounded bg-background transition-transform duration-500 ease-in-out group-hover:scale-105">
+                          <img
+                            src={product.imageURL}
+                            alt={product.title}
+                            className=" max-h-full object-contain rounded"
+                          />
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </>
+          )}
+
+          {/* < 720px (1 slide) */}
+          {windowWidth && windowWidth < 720 && (
+            <>
+              {products?.map((product, idx) => (
+                <CarouselItem
+                  key={idx}
+                  className="flex justify-center items-stretch"
+                  style={slideStyleForCount(1)}
+                >
+                  <Link
+                    to={`/products/${product.handle}`}
+                    className="w-full flex justify-center"
+                  >
+                    <Card className="group w-full max-w-[420px] mx-2 p-4 overflow-visible">
+                      <p className="text-center text-muted-foreground px-2">
+                        Framed Canvas Print:
+                      </p>
+                      <div className="flex justify-center">
+                        <p className="text-center px-2">
+                          <strong>{product.title}</strong>
+                        </p>
+                      </div>
+                      <div className="p-4 flex items-center justify-center rounded h-auto w-full">
+                        <div className="w-full aspect-[4/3] flex items-center justify-center overflow-visible rounded bg-background transition-transform duration-500 ease-in-out group-hover:scale-105">
+                          <img
+                            src={product.imageURL}
+                            alt={product.title}
+                            className=" max-h-full object-contain rounded"
+                          />
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </>
+          )}
+        </CarouselContent>
+
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
   );
 }

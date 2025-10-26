@@ -20,11 +20,17 @@ function SimpleRecommendedProducts({
         <Await resolve={products}>
           {(response) => {
             const filteredVideoProducts = response?.products.nodes.filter(
-              (product) => product.tags.includes('Video'),
+              (product) =>
+                product.tags.includes('Video') &&
+                product.images.nodes[0].url.includes('youmayalsolike'),
             );
+
             const filteredPrintProducts = response?.products.nodes.filter(
-              (product) => !product.tags.includes('Video'),
+              (product) =>
+                !product.tags.includes('Video') &&
+                product.images.nodes[0].url.includes('youmayalsolike'),
             );
+            console.log(response?.products, 'ps');
             const productsToUse = isVideo
               ? filteredVideoProducts
               : filteredPrintProducts;
