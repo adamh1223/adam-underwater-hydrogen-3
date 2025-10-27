@@ -241,7 +241,10 @@ function EProductsContainer({
                         open('cart');
                       }}
                     >
-                      Add To Cart
+                      <div className='eproducts-add-to-cart-btn-text'>
+
+                    Add To Cart
+                      </div>
                     </AddToCartButton>
                   </div>
                 )}

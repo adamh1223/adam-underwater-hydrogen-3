@@ -1100,3 +1100,8 @@ span {
 .add-to-cart-btn-compare-at-price {
   text-decoration: line-through;
 }
+
+.eproducts-add-to-cart-btn-text {
+  font-size: 15px;
+  font-weight: 550;
+}
