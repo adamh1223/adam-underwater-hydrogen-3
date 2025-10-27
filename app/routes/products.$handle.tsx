@@ -203,8 +203,6 @@ export default function Product() {
   const determineLayoutImages = (variant: any) => {
     const orientation = variant.title.split(' / ')[0];
     const layout = variant.title.split(' / ')[1];
-    console.log(layout, '112233');
-    console.log(orientation, '11223344');
 
     // We DO get orientation 'Vertical' or 'Landscape' this works.
 
@@ -319,6 +317,10 @@ export default function Product() {
     const orientation = variant.title.split(' / ')[0];
     const layout = variant.title.split(' / ')[1];
     const size = variant.title.split(' / ')[2];
+    console.log(size, '1122334455');
+    console.log(layout, '112233');
+    console.log(orientation, '11223344');
+    console.log(variant, '112233445566');
 
     // Standard Only, Horizontal and vertical all sizes
     // no two columns, no three columns any size
@@ -1307,9 +1309,11 @@ export default function Product() {
                         <CarouselNext inTheBox />
                       </Carousel>
                     </div>
-                    <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
-                      Each framed print comes with heavy duty hanging wire
-                      attached
+                    <div className="in-the-box-description flex justify-center pb-2">
+                      <div className="max-w-[85%]">
+                        Each framed print comes with heavy duty hanging wire
+                        attached
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1349,9 +1353,11 @@ export default function Product() {
                         <CarouselNext inTheBox />
                       </Carousel>
                     </div>
-                    <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
-                      Try tapping your phone to the bottom right corner of the
-                      frame
+                    <div className="in-the-box-description flex justify-center pb-2">
+                      <div className="max-w-[85%]">
+                        Try tapping your phone to the bottom right corner of the
+                        frame
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1392,8 +1398,11 @@ export default function Product() {
                         <CarouselNext inTheBox />
                       </Carousel>
                     </div>
-                    <div className="in-the-box-description flex justify-center pt-4 pb-2 px-5">
-                      Each print comes with 2 sets of picture hangers and nails
+                    <div className="in-the-box-description flex justify-center pb-2">
+                      <div className="max-w-[85%]">
+                        Each print comes with 2 sets of picture hangers and
+                        nails
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

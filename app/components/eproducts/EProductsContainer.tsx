@@ -26,6 +26,8 @@ function EProductsContainer({
   layout: string | undefined;
   cart?: Promise<CartReturn | null>;
 }) {
+  console.log(layout, 'layout');
+
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'

@@ -10,9 +10,7 @@ import type {
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
-import {sanitizeErrors} from '@remix-run/server-runtime/dist/errors';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
-import Product from '~/routes/products.$handle';
 import {
   Accordion,
   AccordionContent,
@@ -34,12 +32,19 @@ export function ProductForm({
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
-  console.log(productOptions, '001100');
+
+  // ✅ Format price to 2 decimals safely
+  const formattedPrice = selectedVariant?.price?.amount
+    ? parseFloat(selectedVariant.price.amount).toFixed(2)
+    : null;
+  const formattedCompareAtPrice = selectedVariant?.compareAtPrice?.amount
+    ? parseFloat(selectedVariant.compareAtPrice.amount).toFixed(2)
+    : null;
+  console.log(formattedCompareAtPrice, 'fmt');
 
   return (
     <div className="product-form">
       {productOptions.map((option) => {
-        // If there is only a single value in the option values, don't display the option
         if (option.optionValues.length === 1) return null;
 
         return (
@@ -59,52 +64,38 @@ export function ProductForm({
                   isDifferentProduct,
                   swatch,
                 } = value;
+
                 const determineLayout = (name: string) => {
-                  if (name === 'three columns') {
-                    return '3';
-                  } else if (name === 'two columns') {
-                    return '2';
-                  }
+                  if (name === 'three columns') return '3';
+                  if (name === 'two columns') return '2';
                   return '';
                 };
+
                 const layoutToCheck = determineLayout(name);
-                console.log(imagesToShow, 'imgstoshow');
                 const variantImagesToShow = imagesToShow?.filter((image) =>
                   image?.url?.includes(layoutToCheck),
                 );
-                console.log(selectedVariant, '181818');
 
                 if (isDifferentProduct) {
-                  // SEO
-                  // When the variant is a combined listing child product
-                  // that leads to a different url, we need to render it
-                  // as an anchor tag
                   return (
-                    <>
-                      <Link
-                        className="product-options-item"
-                        key={option.name + name}
-                        prefetch="intent"
-                        preventScrollReset
-                        replace
-                        to={`/products/${handle}?${variantUriQuery}`}
-                        style={{
-                          border: selected
-                            ? '1px solid black'
-                            : '1px solid transparent',
-                          opacity: available ? 1 : 0.3,
-                        }}
-                      >
-                        <ProductOptionSwatch swatch={swatch} name={name} />
-                      </Link>
-                    </>
+                    <Link
+                      className="product-options-item"
+                      key={option.name + name}
+                      prefetch="intent"
+                      preventScrollReset
+                      replace
+                      to={`/products/${handle}?${variantUriQuery}`}
+                      style={{
+                        border: selected
+                          ? '1px solid black'
+                          : '1px solid transparent',
+                        opacity: available ? 1 : 0.3,
+                      }}
+                    >
+                      <ProductOptionSwatch swatch={swatch} name={name} />
+                    </Link>
                   );
                 } else {
-                  // SEO
-                  // When the variant is an update to the search param,
-                  // render it as a button with javascript navigating to
-                  // the variant so that SEO bots do not index these as
-                  // duplicated links
                   return (
                     <button
                       type="button"
@@ -156,7 +147,8 @@ export function ProductForm({
           </div>
         </>
       )}
-      <div className="flex justify-center">
+
+      <div className="flex justify-center p-3">
         <AddToCartButton
           disabled={
             !selectedVariant ||
@@ -178,9 +170,29 @@ export function ProductForm({
               : []
           }
         >
-          {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+          <div>
+            <div className="add-to-cart-btn-product-name">
+              {selectedVariant?.product?.title}
+            </div>
+            <div className="add-to-cart-btn-variant">
+              {productOptions?.length > 1 && selectedVariant?.title}
+            </div>
+            {selectedVariant?.availableForSale ? (
+              <div className="add-to-cart-btn-text">
+                Add to cart: ${formattedPrice} &nbsp;
+                {formattedCompareAtPrice != null && (
+                  <span className="add-to-cart-btn-compare-at-price">
+                    ${formattedCompareAtPrice}
+                  </span>
+                )}
+              </div>
+            ) : (
+              'Sold out'
+            )}
+          </div>
         </AddToCartButton>
       </div>
+
       <br />
     </div>
   );
@@ -196,15 +208,11 @@ function ProductOptionSwatch({
   variantImagesToShow?: SimpleProductImages[];
 }) {
   const sizes = ['Small', 'Medium', 'Large', 'XL (Pickup Only)'];
-  // Add sizes here in future
   const image = swatch?.image?.previewImage?.url;
   const color = swatch?.color;
-  console.log(variantImagesToShow, 'hihihi');
-  // WE ARE NOT GETTING VariantImagesToShow - undefined
 
   if (variantImagesToShow && sizes.includes(name)) {
     const sizeNameToCheck = name?.split(' ');
-    console.log(sizeNameToCheck, 'sizename');
     const specificSize = variantImagesToShow.find((image) =>
       image?.altText.includes(sizeNameToCheck[0].toLowerCase()),
     );

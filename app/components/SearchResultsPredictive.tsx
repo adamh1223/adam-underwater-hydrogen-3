@@ -239,7 +239,7 @@ function SearchResultsPredictiveProducts({
                   </div>
                   <EProductsContainer
                     product={product}
-                    layout="grid"
+                    layout={layout}
                     cart={cart}
                   />
                 </div>
@@ -247,7 +247,7 @@ function SearchResultsPredictiveProducts({
               {!showProductHeader && (
                 <EProductsContainer
                   product={product}
-                  layout="grid"
+                  layout={layout}
                   cart={cart}
                 />
               )}

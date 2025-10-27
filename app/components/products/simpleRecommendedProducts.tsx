@@ -61,7 +61,7 @@ function SimpleRecommendedProducts({
             console.log(products, '555');
 
             return (
-              <div className="recommended-products-grid gap-x-5 gap-y-5">
+              <div className="recommended-products-grid-simple gap-x-5 gap-y-5">
                 {response ? (
                   <>
                     {!isVideo && <ThreeUpCarousel products={products} />}

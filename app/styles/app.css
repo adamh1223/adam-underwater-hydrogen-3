@@ -441,6 +441,12 @@ button.reset:hover:not(:has(> *)) {
     column-gap: 20px;
     padding: 20px 50px 0 50px;
   }
+  .recommended-products-grid-simple {
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 20px;
+    padding: 20px 50px 0 50px;
+  }
   .prods-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -451,6 +457,12 @@ button.reset:hover:not(:has(> *)) {
 }
 @media (max-width: 700px) {
   .recommended-products-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 20px;
+    padding: 20px 50px 0 50px;
+  }
+  .recommended-products-grid-simple {
     display: grid;
     grid-template-columns: 1fr;
     column-gap: 20px;
@@ -819,6 +831,91 @@ span {
   }
 }
 
+/* === Force equal widths for "In the Box" items on mobile ===
+   Put this AFTER your existing rules in app.css
+*/
+@media (max-width: 767px) {
+  /* Center all grid items in the parent grid */
+  .in-the-box-section .grid {
+    justify-items: center; /* Centers grid children horizontally */
+  }
+
+  /* Each "in-the-box" container spans most of the screen width */
+  .in-the-box {
+    width: 80% !important;
+    min-width: 0 !important; /* prevent flex-basis/content sizing from growing */
+    display: flex !important;
+    justify-content: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Ensure the Card fills its container and stays centered */
+  .in-the-box > .card,
+  .in-the-box .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Prevent inner wrappers or carousels from shrinking or pushing */
+  .in-the-box .w-full.max-w-sm,
+  .in-the-box .max-w-sm {
+    max-width: none !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  /* Keep the aspect ratio container centered and prevent shifting */
+  .in-the-box .aspect-\[4\/3\] {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  /* --- Description Styling Fix --- */
+  .in-the-box .in-the-box-description {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-top: 0.5rem !important;
+  }
+
+  /* Inner description block (the div inside in-the-box-description) */
+  .in-the-box .in-the-box-description > div,
+  .in-the-box .in-the-box-description .max-w-\[85\%\] {
+    width: 90% !important;
+    max-width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure title + text inside card stay centered vertically and horizontally */
+  .in-the-box .in-the-box-description h3,
+  .in-the-box .in-the-box-description p {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
 .size-image {
   width: 50px;
 }
@@ -979,4 +1076,27 @@ span {
   .layout-toggle {
     justify-self: end;
   }
+}
+
+.add-to-cart-btn {
+  padding: 10px 20px 10px 20px;
+}
+
+.add-to-cart-btn-variant {
+  font-size: 12px;
+}
+
+.add-to-cart-btn-text {
+  font-size: 23px;
+  font-weight: 650;
+  display: flex;
+  justify-content: center;
+}
+
+.add-to-cart-btn-product-name {
+  font-size: 16px;
+}
+
+.add-to-cart-btn-compare-at-price {
+  text-decoration: line-through;
 }
