@@ -451,7 +451,6 @@ export default function AboutPage() {
           <p>Framed Canvas Wall Art</p>
         </div>
       </section>
-
       <RecommendedProducts products={data?.recommendedProducts} />
     </>
   );

@@ -686,10 +686,6 @@ span {
   }
 }
 
-.extra-info {
-  padding: 25px 0 0 0;
-}
-
 @media (min-width: 1024px) and (max-width: 1279px) {
   .items-top {
     height: 580px;

@@ -25,6 +25,7 @@ import {
   FEATURED_COLLECTION_QUERY,
   RECOMMENDED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
+import HeroServices from '~/components/hero/HeroServices';
 // export async function loader({context}: LoaderFunctionArgs) {
 //   const {storefront} = context;
 //   const {collection} = await storefront.query(COLLECTION_QUERY, {
@@ -211,25 +212,7 @@ function ServicesPage() {
           <a onClick={(evt) => handleClick('coaching', evt)}>1 on 1 Coaching</a>
         </Button> */}
       </div>
-      <section id="video">
-        <Sectiontitle text="Underwater 8K Video" />
-        <div className="flex flex-col items-center justify-center text-center main-services">
-          <div className="media-container">
-            <img
-              src="/print3.jpg"
-              className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
-            />
-            <iframe
-              src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
-              frameBorder="0"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowFullScreen
-              className={`video ${isVideoReady ? 'visible' : ''}`}
-              title="Background Video"
-            ></iframe>
-          </div>
-        </div>
-      </section>
+      <HeroServices />
       <section id="photo" className="pt-3">
         <Sectiontitle text="Underwater 45mp Photo" />
         <div className="flex justify-center">
@@ -240,12 +223,18 @@ function ServicesPage() {
                 <div className="flex items-center justify-center h-full">
                   <div className="grid lg:grid-cols-3 grid-cols-2 gap-4 p-4">
                     {servicesImages1.map((imageURL, index) => (
-                      <Card key={index} className="group overflow-hidden">
-                        <CardContent className="p-0 cursor-pointer">
-                          <img
-                            src={imageURL}
-                            className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
-                          />
+                      <Card
+                        key={index}
+                        className="group overflow-hidden aspect-[4/3]" // Ensures consistent aspect ratio
+                      >
+                        <CardContent className="p-0 cursor-pointer h-full w-full">
+                          <div className="h-full w-full overflow-hidden">
+                            <img
+                              src={imageURL}
+                              alt=""
+                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
@@ -258,32 +247,32 @@ function ServicesPage() {
                 <div className="flex items-center justify-center h-full">
                   <div className="grid lg:grid-cols-3 grid-cols-2 gap-4 p-4">
                     {servicesImages2.map((imageURL, index) => (
-                      <Card key={index} className="group overflow-hidden">
-                        <CardContent className="p-0 cursor-pointer">
-                          <img
-                            src={imageURL}
-                            className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
-                          />
+                      <Card
+                        key={index}
+                        className="group overflow-hidden aspect-[4/3]"
+                      >
+                        <CardContent className="p-0 cursor-pointer h-full w-full">
+                          <div className="h-full w-full overflow-hidden">
+                            <img
+                              src={imageURL}
+                              alt=""
+                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
                 </div>
               </CarouselItem>
-
-              {/* Third item */}
-              <CarouselItem>
-                <div className="p-4 flex items-center justify-center">
-                  <img src={'/images/gear3.png'} alt="" />
-                </div>
-              </CarouselItem>
             </CarouselContent>
 
-            <CarouselPrevious className="" />
+            <CarouselPrevious />
             <CarouselNext />
           </Carousel>
         </div>
       </section>
+
       {/* <section id="dives">
         <Sectiontitle text="Guided Dives" />
         <ul className="subheader">

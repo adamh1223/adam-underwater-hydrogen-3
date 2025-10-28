@@ -142,7 +142,8 @@ export function ProductForm({
               Framing Service - FREE
             </h3>
             <p className="text-center">
-              All prints come professionally stretched over a wooden frame
+              All prints come professionally stretched over a 1.5" thick wooden
+              frame
             </p>
           </div>
         </>
@@ -192,6 +193,11 @@ export function ProductForm({
           </div>
         </AddToCartButton>
       </div>
+      {productOptions?.length > 1 && (
+        <div className="flex justify-center pt-3">
+          Expected Delivery: Monday, November 3
+        </div>
+      )}
 
       <br />
     </div>

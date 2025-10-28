@@ -284,8 +284,6 @@ function IndividualProduct({
           <div></div>
           <div></div>
           <div></div>
-          <div></div>
-          <div></div>
         </div>
       </div>
 
