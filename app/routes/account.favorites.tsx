@@ -58,15 +58,15 @@ export async function loader(args: LoaderFunctionArgs) {
   const customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
 
   console.log(customer, '0101010010101010101001010101010100110101');
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
   const wishlistProducts = JSON.parse(
-    customer.data.customer.metafield.value,
+    customer.data.customer.metafield?.value,
   ) as string[];
-  // const customerId = await context.customerAccount.query(test, {
-  //   variables: {token},
-  // });
-  // console.log(customerId, '19082374091827309581720394871209348id');
+  
   const productNodes = await Promise.all(
-    wishlistProducts.map((id) =>
+    wishlistProducts?.map((id) =>
       context.storefront.query(productQuery, {
         variables: {
           id,
@@ -76,7 +76,7 @@ export async function loader(args: LoaderFunctionArgs) {
   );
   console.log(productNodes, '40404040044004040404040404040404040');
 
-  const products = productNodes.map(({node}) => {
+  const products = productNodes?.map(({node}) => {
     console.log(node, '30303030030303030303030303003030303030303');
 
     return {...node};
@@ -122,7 +122,7 @@ export default function Favorites() {
   console.log(products, '20001');
   return (
     <>
-      {products.map((product) => {
+      {products?.map((product) => {
         console.log(product, 'productlog');
 
         if (product.tags.includes('Prints')) {

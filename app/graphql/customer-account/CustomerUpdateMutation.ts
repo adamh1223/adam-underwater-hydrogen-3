@@ -22,3 +22,22 @@ export const CUSTOMER_UPDATE_MUTATION = `#graphql
     }
   }
 ` as const;
+
+export const CUSTOMER_UPDATE_WISHLIST =
+  `mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
+  metafieldsSet(metafields: $metafields) {
+    metafields {
+      key
+      namespace
+      value
+      createdAt
+      updatedAt
+    }
+    userErrors {
+      field
+      message
+      code
+    }
+  }
+}
+` as const;

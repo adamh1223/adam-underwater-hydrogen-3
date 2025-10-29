@@ -216,6 +216,8 @@ export const ProductCarousel = ({
     try {
       const form = new FormData();
       form.append('productId', prod.id);
+      console.log(form, 'form');
+
       const response = await fetch('/api/favorites', {
         method: 'POST',
         body: form,
