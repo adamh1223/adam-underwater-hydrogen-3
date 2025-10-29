@@ -7,7 +7,7 @@ import {
   CarouselItem,
   CarouselApi,
 } from '../ui/carousel';
-import {Link} from '@remix-run/react';
+import {Link, useLoaderData} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon, Divide} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
@@ -16,6 +16,7 @@ import {ProductItemFragment, CollectionQuery} from 'storefrontapi.generated';
 import {PartialPredictiveSearchResult} from '../SearchResultsPredictive';
 import {CurrencyCode} from '@shopify/hydrogen/storefront-api-types';
 import '../../styles/routeStyles/product.css';
+import {LoaderFunctionArgs} from '@remix-run/server-runtime';
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
@@ -46,6 +47,7 @@ type collectionPageProduct =
  * NOTE: product prop is now permissive to avoid TS errors when callers pass just an id.
  * Prefer passing the full product object (collectionProduct) from the parent.
  */
+
 export const ProductCarousel = ({
   product,
   loading,
@@ -210,10 +212,26 @@ export const ProductCarousel = ({
   console.log(isVertOnly, '1144vertOnly');
   console.log(isHorPrimary, '1144horPrimary');
   console.log(isVertPrimary, '1144vertPrimary');
+  const addToFavorites = async () => {
+    try {
+      const form = new FormData();
+      form.append('productId', prod.id);
+      const response = await fetch('/api/favorites', {
+        method: 'POST',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+      const json = await response.json();
+      console.log(json, '777777777777777777777777777777777777json');
+    } catch (error) {}
+  };
 
   return (
     <article className="group relative">
       <Card className={cardClassName}>
+        <Button variant="default" onClick={addToFavorites}>
+          Favorite
+        </Button>
         <div className={cardContentClassName}>
           <div
             className={`relative w-full h-full rounded ${

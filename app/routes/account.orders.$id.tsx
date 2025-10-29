@@ -13,6 +13,7 @@ import {Button} from '~/components/ui/button';
 import {useEffect, useState} from 'react';
 import {generateCartDescription, includesTagName} from '~/lib/utils';
 import {PRODUCT_QUERY} from './products.$handle';
+import { variantQuery } from '~/lib/customerQueries';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
@@ -55,22 +56,7 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     firstDiscount?.percentage;
   console.log(lineItems, '0123');
 
-  const variantQuery = `#graphql
-    query Variant($id: ID!) {
-      node(id: $id) {
-        ... on ProductVariant {
-          id
-          selectedOptions {
-            name
-            value
-          }
-          product {
-            handle
-          }
-        }
-      }
-    }
-  `;
+  
 
   const variantIds = lineItems.map((li: any) => li?.variantId).filter(Boolean);
   const variantResponses = await Promise.all(

@@ -1,24 +1,78 @@
-export const CUSTOMER_WISHLIST = `#graphql
-query getWishList ($token: String!) {
-customer(customerAccessToken: $token) {
-    firstName
-    metafield(namespace: "custom", key: "wishlist") {
-        reference {
-        
-          ... on Product {
-            title
-          }
-        
+export const CUSTOMER_WISHLIST = `
+  query {
+    customer {
+      id
+      firstName
+      metafield(namespace: "custom", key: "wishlist") {
+        id
+        namespace
+        key
+        type
+        value
       }
     }
-}
-}
+  }
 `;
-export const test = `#graphql
-query testCustomer($token: String!) {
-    customer(customerAccessToken: $token) {
-        id
-        firstName
-        
+
+export const variantQuery = `#graphql
+    query Variant($id: ID!) {
+      node(id: $id) {
+        ... on ProductVariant {
+          id
+          selectedOptions {
+            name
+            value
+          }
+          product {
+            handle
+          }
+        }
+      }
     }
-}`;
+  `;
+
+export const productQuery = `#graphql
+    query Product($id: ID!) {
+      node(id: $id) {
+        ... on Product {
+         id
+    title
+    tags
+    vendor
+    handle
+    descriptionHtml
+    description
+    featuredImage{
+      url
+    }
+    encodedVariantExistence
+    encodedVariantAvailability
+    images(first: 250) {
+      nodes {
+        url
+        altText
+      }
+    }
+    options {
+      name
+      optionValues {
+        name
+        swatch {
+          color
+          image {
+            previewImage {
+              url
+              altText
+            }
+          }
+        }
+      }
+    }
+    seo {
+      description
+      title
+    }
+        }
+      }
+    }
+  `;
