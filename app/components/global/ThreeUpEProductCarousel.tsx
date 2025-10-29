@@ -9,6 +9,7 @@ import {
 } from '../ui/carousel';
 import {Link} from '@remix-run/react';
 import {ThreeUpCarouselProps} from '~/lib/types';
+import {Button} from '../ui/button';
 
 export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
@@ -79,6 +80,11 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                           />
                         </div>
                       </div>
+                      <div className="flex justify-center cursor-pointer">
+                        <Button variant="default" className="cursor-pointer">
+                          View Product
+                        </Button>
+                      </div>
                     </Card>
                   </Link>
                 </CarouselItem>
@@ -117,6 +123,11 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                           />
                         </div>
                       </div>
+                      <div className="flex justify-center cursor-pointer">
+                        <Button variant="default" className="cursor-pointer">
+                          View Product
+                        </Button>
+                      </div>
                     </Card>
                   </Link>
                 </CarouselItem>
@@ -154,6 +165,11 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                             className="max-w-full max-h-full object-contain rounded"
                           />
                         </div>
+                      </div>
+                      <div className="flex justify-center cursor-pointer">
+                        <Button variant="default" className="cursor-pointer">
+                          View Product
+                        </Button>
                       </div>
                     </Card>
                   </Link>

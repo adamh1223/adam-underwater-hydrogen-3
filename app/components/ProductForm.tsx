@@ -18,6 +18,7 @@ import {
   AccordionTrigger,
 } from '~/components/ui/accordion';
 import {Card} from '~/components/ui/card';
+import {useMemo} from 'react';
 
 export function ProductForm({
   productOptions,
@@ -33,14 +34,38 @@ export function ProductForm({
   const navigate = useNavigate();
   const {open} = useAside();
 
-  // ✅ Format price to 2 decimals safely
+  // ✅ Format price safely
   const formattedPrice = selectedVariant?.price?.amount
     ? parseFloat(selectedVariant.price.amount).toFixed(2)
     : null;
   const formattedCompareAtPrice = selectedVariant?.compareAtPrice?.amount
     ? parseFloat(selectedVariant.compareAtPrice.amount).toFixed(2)
     : null;
-  console.log(formattedCompareAtPrice, 'fmt');
+
+  // ✅ Function to add business days
+  const addBusinessDays = (date: Date, days: number): Date => {
+    const result = new Date(date);
+    let added = 0;
+    while (added < days) {
+      result.setDate(result.getDate() + 1);
+      const day = result.getDay();
+      // Skip weekends (0=Sun, 6=Sat)
+      if (day !== 0 && day !== 6) added++;
+    }
+    return result;
+  };
+
+  // ✅ Compute expected delivery date (7 business days from now)
+  const expectedDelivery = useMemo(() => {
+    const today = new Date();
+    const deliveryDate = addBusinessDays(today, 7);
+
+    return deliveryDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    });
+  }, []);
 
   return (
     <div className="product-form">
@@ -193,9 +218,11 @@ export function ProductForm({
           </div>
         </AddToCartButton>
       </div>
+
       {productOptions?.length > 1 && (
-        <div className="flex justify-center pt-3">
-          Expected Delivery: Monday, November 3
+        <div className="flex justify-center pt-3 expected-delivery">
+          Expected Delivery: &nbsp;
+          <strong>{expectedDelivery}</strong>
         </div>
       )}
 

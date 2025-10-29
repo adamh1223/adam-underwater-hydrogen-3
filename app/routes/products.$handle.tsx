@@ -1272,7 +1272,7 @@ export default function Product() {
                 <div className="flex-1 h-px bg-muted" />
               </div>
             </div>
-            <div className="my-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-x-0 md:gap-x-5 lg:gap-x-5">
+            <div className="my-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-x-0 md:gap-x-5 lg:gap-x-5 sm:mx-[40px] md:mx-[40px] lg:mx-[50px] xl:mx-[120px]">
               <div className="in-the-box in-the-box-1 flex justify-center">
                 <Card>
                   <CardHeader>
