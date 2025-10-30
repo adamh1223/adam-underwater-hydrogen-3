@@ -233,6 +233,26 @@ export const ProductCarousel = ({
   return (
     <article className="group relative">
       <Card className={cardClassName}>
+        {layout === 'list' && (
+          <div className="cursor-pointer absolute top-[20px] left-[40px] z-50 p-1">
+            <Button
+              variant="outline"
+              onClick={addToFavorites}
+              className="cursor-pointer"
+            >
+              {/* {pending ? (
+                  <ReloadIcon className="animate-spin" />
+                ) : isFavorite ? (
+                  <FaHeart />
+                ) : (
+                  <FaRegHeart />
+                )} */}
+              {/* <ReloadIcon className="animate-spin" />
+              <FaHeart /> */}
+              <FaRegHeart />
+            </Button>
+          </div>
+        )}
         <div className={cardContentClassName}>
           <div
             className={`relative w-full h-full rounded ${
@@ -241,20 +261,26 @@ export const ProductCarousel = ({
                 : 'top-part-card-list flex items-center'
             }`}
           >
-            <div className="absolute top-2 right-2 z-50 p-1">
-              <Button variant="outline" onClick={addToFavorites}>
-                {/* {pending ? (
+            {layout === 'grid' && (
+              <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
+                <Button
+                  variant="outline"
+                  onClick={addToFavorites}
+                  className="cursor-pointer"
+                >
+                  {/* {pending ? (
                   <ReloadIcon className="animate-spin" />
                 ) : isFavorite ? (
                   <FaHeart />
                 ) : (
                   <FaRegHeart />
                 )} */}
-                <ReloadIcon className="animate-spin" />
-                <FaHeart />
-                <FaRegHeart />
-              </Button>
-            </div>
+                  <ReloadIcon className="animate-spin" />
+                  <FaHeart />
+                  <FaRegHeart />
+                </Button>
+              </div>
+            )}
             <Carousel
               setApi={setCarouselApi}
               className="w-full max-w-7xl transform-none"
@@ -321,7 +347,11 @@ export const ProductCarousel = ({
                 <div
                   className={layout === 'grid' ? 'text-center' : 'text-start'}
                 >
-                  <h5 className="text-lg font-bold">{title}</h5>
+                  <h5
+                    className={`text-lg font-bold ${layout === 'list' && 'max-w-[85%]'}`}
+                  >
+                    {title}
+                  </h5>
                   <p className="text-muted-foreground">{formattedLocation}</p>
                 </div>
 

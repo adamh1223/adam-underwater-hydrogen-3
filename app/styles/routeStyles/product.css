@@ -93,6 +93,10 @@
 .bottom-part-card-grid {
   width: 100%;
 }
+.top-part-card-grid {
+  display: flex;
+  align-items: center;
+}
 
 /* .top-part-card-list {
   display: flex;
