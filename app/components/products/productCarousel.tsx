@@ -250,7 +250,7 @@ export const ProductCarousel = ({
                 ) : (
                   <FaRegHeart />
                 )} */}
-
+                <ReloadIcon className="animate-spin" />
                 <FaHeart />
                 <FaRegHeart />
               </Button>
