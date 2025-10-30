@@ -1135,3 +1135,19 @@ span {
     font-size: 13px;
   }
 }
+
+.title-button-wrapper {
+  display: inline-flex;
+  align-items: flex-start; /* top align instead of center */
+  gap: 0.5rem;
+  position: relative;
+  width: auto;
+  vertical-align: top;
+}
+
+
+
+.heart-btn:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}

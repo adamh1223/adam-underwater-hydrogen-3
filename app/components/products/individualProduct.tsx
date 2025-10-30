@@ -11,6 +11,13 @@ import {useEffect, useState} from 'react';
 import '../../styles/routeStyles/product.css';
 import RotatingCarousel from '../global/ThreeDViewModal';
 import ThreeDViewModal from '../global/ThreeDViewModal';
+import {FaRegHeart} from 'react-icons/fa';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip';
 
 function IndividualProduct({
   productName,
@@ -150,7 +157,7 @@ function IndividualProduct({
   return (
     <>
       <div className="grid grid-cols-1">
-        <div className="grid grid-cols-1 px-4 product-carousel-container">
+        <div className="grid grid-cols-1 px-4 product-carousel-container relative">
           {orientation === 'Landscape' && (
             <Carousel
               className="print-carousel-individual-horizontal mx-3 flex items-center justify-center"

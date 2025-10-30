@@ -6,6 +6,14 @@ import {ChevronRightIcon} from 'lucide-react';
 import {RootLoader} from '~/root';
 import '../../styles/routeStyles/work.css';
 
+import {FaRegHeart} from 'react-icons/fa';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip';
+
 function IndividualVideoProduct({
   productName,
   featuredImage,
@@ -21,7 +29,8 @@ function IndividualVideoProduct({
       {/* <div className="px-5 flex items-center justify-center">
         <img src={featuredImage} alt="" className="max-h-full object-contain" />
       </div> */}
-      <div className="clip-wrapper flex justify-center position-relative">
+
+      <div className="clip-wrapper flex justify-center relative">
         <iframe
           className="clip"
           src={`https://player.vimeo.com/video/${WMLink}?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`}

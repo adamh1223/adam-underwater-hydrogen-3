@@ -19,6 +19,12 @@ import '../../styles/routeStyles/product.css';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {FaHeart, FaRegHeart} from 'react-icons/fa';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip';
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
@@ -235,22 +241,39 @@ export const ProductCarousel = ({
       <Card className={cardClassName}>
         {layout === 'list' && (
           <div className="cursor-pointer absolute top-[20px] right-[40px] z-50 p-1">
-            <Button
+            {/* <Button
               variant="outline"
               onClick={addToFavorites}
               className="cursor-pointer"
             >
-              {/* {pending ? (
+              <FaRegHeart />
+            </Button> */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={addToFavorites}
+                    className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                  >
+                    {/* {pending ? (
                   <ReloadIcon className="animate-spin" />
                 ) : isFavorite ? (
                   <FaHeart />
                 ) : (
                   <FaRegHeart />
                 )} */}
-              {/* <ReloadIcon className="animate-spin" />
+                    {/* <ReloadIcon className="animate-spin" />
               <FaHeart /> */}
-              <FaRegHeart />
-            </Button>
+                    {/* <ReloadIcon className="animate-spin" />
+                        <FaHeart /> */}
+                    <FaRegHeart />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-sm">
+                  Save to Favorites
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
         <div className={cardContentClassName}>
@@ -263,22 +286,48 @@ export const ProductCarousel = ({
           >
             {layout === 'grid' && (
               <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
-                <Button
+                {/* <Button
                   variant="outline"
                   onClick={addToFavorites}
                   className="cursor-pointer"
                 >
-                  {/* {pending ? (
+                  {pending ? (
+                  <ReloadIcon className="animate-spin" />
+                ) : isFavorite ? (
+                  <FaHeart />
+                ) : (
+                  <FaRegHeart />
+                )}
+                  <ReloadIcon className="animate-spin" />
+                  <FaHeart />
+                  <FaRegHeart />
+                </Button> */}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={addToFavorites}
+                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                      >
+                        {/* {pending ? (
                   <ReloadIcon className="animate-spin" />
                 ) : isFavorite ? (
                   <FaHeart />
                 ) : (
                   <FaRegHeart />
                 )} */}
-                  <ReloadIcon className="animate-spin" />
-                  <FaHeart />
-                  <FaRegHeart />
-                </Button>
+                        {/* <ReloadIcon className="animate-spin" />
+              <FaHeart /> */}
+                        {/* <ReloadIcon className="animate-spin" />
+                        <FaHeart /> */}
+                        <FaRegHeart />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-sm">
+                      Save to Favorites
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             )}
             <Carousel

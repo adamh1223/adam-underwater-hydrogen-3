@@ -48,6 +48,13 @@ import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarous
 import {Button} from '~/components/ui/button';
 import {RECOMMENDED_PRODUCTS_QUERY} from '~/lib/homeQueries';
 import SimpleRecommendedProducts from '~/components/products/simpleRecommendedProducts';
+import {FaRegHeart} from 'react-icons/fa';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -654,7 +661,23 @@ export default function Product() {
         {windowWidth && windowWidth < 1024 && (
           <>
             <br />
-            <h1 className="capitalize text-3xl font-bold">{title}</h1>
+
+            <div className="title-button-wrapper">
+              <span className="capitalize text-3xl font-bold">{title}</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="heart-btn cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50">
+                      <FaRegHeart />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-sm">
+                    Save to Favorites
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
             {!isVideo && (
               <p className="text-muted-foreground">Framed Canvas Print</p>
             )}
@@ -690,7 +713,24 @@ export default function Product() {
           <div className="product-main">
             {windowWidth && windowWidth >= 1024 && (
               <>
-                <h1 className="capitalize text-3xl font-bold">{title}</h1>
+                <div className="title-button-wrapper">
+                  <span className="capitalize text-3xl font-bold title-text">
+                    {title}
+                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="heart-btn cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50">
+                          <FaRegHeart />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm">
+                        Save to Favorites
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+
                 {!isVideo && (
                   <p className="text-muted-foreground">Framed Canvas Print</p>
                 )}
