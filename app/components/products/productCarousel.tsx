@@ -17,6 +17,8 @@ import {PartialPredictiveSearchResult} from '../SearchResultsPredictive';
 import {CurrencyCode} from '@shopify/hydrogen/storefront-api-types';
 import '../../styles/routeStyles/product.css';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {ReloadIcon} from '@radix-ui/react-icons';
+import {FaHeart, FaRegHeart} from 'react-icons/fa';
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
@@ -231,9 +233,6 @@ export const ProductCarousel = ({
   return (
     <article className="group relative">
       <Card className={cardClassName}>
-        <Button variant="default" onClick={addToFavorites}>
-          Favorite
-        </Button>
         <div className={cardContentClassName}>
           <div
             className={`relative w-full h-full rounded ${
@@ -242,6 +241,20 @@ export const ProductCarousel = ({
                 : 'top-part-card-list flex items-center'
             }`}
           >
+            <div className="absolute top-2 right-2 z-50 p-1">
+              <Button variant="outline" onClick={addToFavorites}>
+                {/* {pending ? (
+                  <ReloadIcon className="animate-spin" />
+                ) : isFavorite ? (
+                  <FaHeart />
+                ) : (
+                  <FaRegHeart />
+                )} */}
+
+                <FaHeart />
+                <FaRegHeart />
+              </Button>
+            </div>
             <Carousel
               setApi={setCarouselApi}
               className="w-full max-w-7xl transform-none"
