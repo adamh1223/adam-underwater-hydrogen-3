@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['img-effect-finished-translated.tryhydrogen.dev'],
+    allowedHosts: ['citation-reliability-mon-provinces.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

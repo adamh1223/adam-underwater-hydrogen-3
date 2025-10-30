@@ -11,6 +11,7 @@ import {useIsVideoInCart} from '~/lib/hooks';
 import {CartReturn} from '@shopify/hydrogen';
 import '../../styles/routeStyles/product.css';
 import {ProductPrice} from '../ProductPrice';
+import {Button} from '../ui/button';
 
 type shopifyImage = {url: string; altText: string};
 function EProductsContainer({
@@ -31,7 +32,7 @@ function EProductsContainer({
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'
-      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 h-full';
+      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 h-full gap-y-3';
 
   const cardContentClassName =
     layout === 'grid'
@@ -114,7 +115,7 @@ function EProductsContainer({
           const productId = product.id;
           const dollarsAmount = formatCurrency(price);
           return ( */}
-      <article className="group relative mb-5">
+      <article className={`group relative ${layout === 'list' && 'pb-5'}`}>
         <Card className={cardClassName}>
           <div className={cardContentClassName}>
             <div
@@ -152,7 +153,9 @@ function EProductsContainer({
                   : `bottom-part-card-list`
               }
             >
-              <div className="bottom-part-card-inside mx-5">
+              <div
+                className={`bottom-part-card-inside ${layout === 'list' && 'px-5'}`}
+              >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                 >
@@ -226,7 +229,11 @@ function EProductsContainer({
                   )}
                 {product?.selectedOrFirstAvailableVariant?.id && (
                   <div
-                    className={`flex  product-add-to-cart-container ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                    className={`flex product-add-to-cart-container w-full mx-auto ${
+                      layout === 'grid'
+                        ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                        : 'p-a-t-c-container-list justify-start'
+                    }`}
                   >
                     <AddToCartButton
                       lines={[
@@ -241,11 +248,19 @@ function EProductsContainer({
                         open('cart');
                       }}
                     >
-                      <div className='eproducts-add-to-cart-btn-text'>
-
-                    Add To Cart
+                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                        Add To Cart
                       </div>
                     </AddToCartButton>
+                    <Link to={`/products/${product.handle}`}>
+                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                        <div
+                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                        >
+                          View Product
+                        </div>
+                      </button>
+                    </Link>
                   </div>
                 )}
               </div>

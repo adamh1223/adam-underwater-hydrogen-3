@@ -31,7 +31,6 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     padding-left: 25px;
-    padding-right: 25px;
   }
 }
 @media (max-width: 599px) {
@@ -39,7 +38,6 @@
     display: grid;
     grid-template-columns: 3fr 1fr;
     padding-left: 17px;
-    padding-right: 17px;
   }
 }
 @media (min-width: 1250px) {
@@ -84,6 +82,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
   }
   .bottom-part-card-list {
     display: flex;
@@ -91,17 +90,15 @@
     justify-content: start;
   }
 }
+.bottom-part-card-grid {
+  width: 100%;
+}
 
 /* .top-part-card-list {
   display: flex;
   justify-content: center;
   align-items: center;
 } */
-.top-part-card-grid {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 @media (max-width: 880px) {
   .top-part-card-list {
