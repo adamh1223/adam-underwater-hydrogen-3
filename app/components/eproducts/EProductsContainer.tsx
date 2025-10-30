@@ -12,6 +12,8 @@ import {CartReturn} from '@shopify/hydrogen';
 import '../../styles/routeStyles/product.css';
 import {ProductPrice} from '../ProductPrice';
 import {Button} from '../ui/button';
+import {ReloadIcon} from '@radix-ui/react-icons';
+import {FaHeart, FaRegHeart} from 'react-icons/fa';
 
 type shopifyImage = {url: string; altText: string};
 function EProductsContainer({
@@ -117,7 +119,39 @@ function EProductsContainer({
           return ( */}
       <article className={`group relative ${layout === 'list' && 'pb-5'}`}>
         <Card className={cardClassName}>
+          {layout === 'list' && (
+            <div className="cursor-pointer absolute top-[7px] right-[40px] z-50 p-1">
+              <Button variant="outline" className="cursor-pointer">
+                {/* {pending ? (
+                  <ReloadIcon className="animate-spin" />
+                ) : isFavorite ? (
+                  <FaHeart />
+                ) : (
+                  <FaRegHeart />
+                )} */}
+                {/* <ReloadIcon className="animate-spin" />
+              <FaHeart /> */}
+                <FaRegHeart />
+              </Button>
+            </div>
+          )}
           <div className={cardContentClassName}>
+            {layout === 'grid' && (
+              <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
+                <Button variant="outline" className="cursor-pointer">
+                  {/* {pending ? (
+                  <ReloadIcon className="animate-spin" />
+                ) : isFavorite ? (
+                  <FaHeart />
+                ) : (
+                  <FaRegHeart />
+                )} */}
+                  <ReloadIcon className="animate-spin" />
+                  <FaHeart />
+                  <FaRegHeart />
+                </Button>
+              </div>
+            )}
             <div
               className={`relative h-full evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
             >

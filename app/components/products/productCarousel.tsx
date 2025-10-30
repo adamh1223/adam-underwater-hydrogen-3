@@ -234,7 +234,7 @@ export const ProductCarousel = ({
     <article className="group relative">
       <Card className={cardClassName}>
         {layout === 'list' && (
-          <div className="cursor-pointer absolute top-[20px] left-[40px] z-50 p-1">
+          <div className="cursor-pointer absolute top-[20px] right-[40px] z-50 p-1">
             <Button
               variant="outline"
               onClick={addToFavorites}
