@@ -559,6 +559,7 @@ function CartLineQuantity({
               value={prevQuantity}
               variant="ghost"
               size="icon"
+              className="cursor-pointer"
             >
               <span>&#8722; </span>
             </Button>
@@ -571,6 +572,7 @@ function CartLineQuantity({
               value={nextQuantity}
               disabled={!!isOptimistic}
               variant="ghost"
+              className="cursor-pointer"
             >
               <span>&#43;</span>
             </Button>
@@ -615,7 +617,7 @@ function CartLineRemoveButton({
           disabled={disabled}
           type="submit"
           variant="ghost"
-          className="remove-button"
+          className="remove-button cursor-pointer"
           size="sm"
         >
           <p className="remove-button-text">Remove</p>
@@ -626,7 +628,7 @@ function CartLineRemoveButton({
           disabled={disabled}
           type="submit"
           variant="ghost"
-          className="remove-button"
+          className="remove-button cursor-pointer"
           size="lg"
         >
           <p className="remove-button-text">Remove</p>
