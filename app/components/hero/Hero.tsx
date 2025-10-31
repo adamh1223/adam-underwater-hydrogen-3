@@ -35,7 +35,7 @@ function Hero() {
           <img src={'/vp3.png'} className="p-3 hero-img"></img>
         </div>
         <Button size="lg" className="mt-5 w-48">
-          <Link to="/pages/work">Video</Link>
+          <Link to="/pages/work">Cinematography</Link>
         </Button>
         <Button size="lg" className="mt-5 w-48">
           <Link to="/collections/prints">View All Prints</Link>

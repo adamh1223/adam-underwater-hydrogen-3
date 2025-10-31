@@ -17,7 +17,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '~/components/ui/carousel';
-import {servicesImages1, servicesImages2} from '~/utils/constants';
+import {
+  servicesImages1,
+  servicesImages2,
+  servicesImages11,
+  servicesImages12,
+  servicesImages13,
+  servicesImages21,
+  servicesImages22,
+  servicesImages23,
+} from '~/utils/constants';
 import {useLoaderData, useLocation} from '@remix-run/react';
 import {LoaderFunctionArgs, json} from '@remix-run/server-runtime';
 import RecommendedProducts from '~/components/products/recommendedProducts';
@@ -26,6 +35,14 @@ import {
   RECOMMENDED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
 import HeroServices from '~/components/hero/HeroServices';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog';
+
 // export async function loader({context}: LoaderFunctionArgs) {
 //   const {storefront} = context;
 //   const {collection} = await storefront.query(COLLECTION_QUERY, {
@@ -70,6 +87,8 @@ function ServicesPage() {
   console.log(collection, 'collection');
 
   const location = useLocation();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const retryTimerRef = useRef<number | null>(null);
   useEffect(() => {
@@ -178,6 +197,23 @@ function ServicesPage() {
     };
   }, []);
 
+  const photographyArrowLeftSmallViewport =
+    windowWidth != undefined && windowWidth < 768
+      ? 'photography-arrow-left-small'
+      : '';
+  const photographyArrowRightSmallViewport =
+    windowWidth != undefined && windowWidth < 768
+      ? 'photography-arrow-right-small'
+      : '';
+  const photographyArrowLeftMediumViewport =
+    windowWidth != undefined && windowWidth >= 768 && windowWidth < 1024
+      ? 'photography-arrow-left-medium'
+      : '';
+  const photographyArrowRightMediumViewport =
+    windowWidth != undefined && windowWidth >= 768 && windowWidth < 1024
+      ? 'photography-arrow-right-medium'
+      : '';
+
   return (
     <>
       <div className="flex justify-center pb-5">
@@ -216,59 +252,206 @@ function ServicesPage() {
       <section id="photo" className="pt-3">
         <Sectiontitle text="Underwater 45mp Photo" />
         <div className="flex justify-center">
-          <Carousel className="w-[85%]">
+          <Carousel className="w-[85%] photography-carousel">
             <CarouselContent>
-              {/* First item */}
-              <CarouselItem>
-                <div className="flex items-center justify-center h-full">
-                  <div className="grid lg:grid-cols-3 grid-cols-2 gap-4 p-4">
-                    {servicesImages1.map((imageURL, index) => (
-                      <Card
-                        key={index}
-                        className="group overflow-hidden aspect-[4/3]" // Ensures consistent aspect ratio
-                      >
-                        <CardContent className="p-0 cursor-pointer h-full w-full">
-                          <div className="h-full w-full overflow-hidden">
-                            <img
-                              src={imageURL}
-                              alt=""
-                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </CarouselItem>
+              {/* large and medium viewport */}
+              {windowWidth != undefined && windowWidth >= 768 && (
+                <>
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 p-4">
+                        {servicesImages1.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]" // Ensures consistent aspect ratio
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  onClick={() => setSelectedImage(imageURL)}
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
 
-              {/* Second item */}
-              <CarouselItem>
-                <div className="flex items-center justify-center h-full">
-                  <div className="grid lg:grid-cols-3 grid-cols-2 gap-4 p-4">
-                    {servicesImages2.map((imageURL, index) => (
-                      <Card
-                        key={index}
-                        className="group overflow-hidden aspect-[4/3]"
-                      >
-                        <CardContent className="p-0 cursor-pointer h-full w-full">
-                          <div className="h-full w-full overflow-hidden">
-                            <img
-                              src={imageURL}
-                              alt=""
-                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              </CarouselItem>
+                  {/* Second item */}
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 grid-cols-2 gap-4 p-4">
+                        {servicesImages2.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]"
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  onClick={() => setSelectedImage(imageURL)}
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                </>
+              )}
+              {/* small viewport */}
+              {windowWidth != undefined && windowWidth < 768 && (
+                <>
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 p-4">
+                        {servicesImages11.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]"
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 p-4">
+                        {servicesImages12.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]"
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 p-4">
+                        {servicesImages13.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]"
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 p-4">
+                        {servicesImages21.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]"
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 p-4">
+                        {servicesImages22.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]"
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                  <CarouselItem>
+                    <div className="flex items-center justify-center h-full">
+                      <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 p-4">
+                        {servicesImages23.map((imageURL, index) => (
+                          <Card
+                            key={index}
+                            className="group overflow-hidden aspect-[4/3]"
+                          >
+                            <CardContent className="p-0 cursor-pointer h-full w-full">
+                              <div className="h-full w-full overflow-hidden">
+                                <img
+                                  src={imageURL}
+                                  alt=""
+                                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                </>
+              )}
             </CarouselContent>
 
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious
+              className={`${photographyArrowLeftSmallViewport} ${photographyArrowLeftMediumViewport}`}
+            />
+            <CarouselNext
+              className={`${photographyArrowRightSmallViewport} ${photographyArrowRightMediumViewport}`}
+            />
           </Carousel>
         </div>
       </section>
@@ -405,6 +588,29 @@ function ServicesPage() {
           <li>The first coaching session is 50% off.</li>
         </ul>
       </section> */}
+      {/* Modal for Enlarged Image */}
+      <Dialog
+        open={!!selectedImage}
+        onOpenChange={() => setSelectedImage(null)}
+      >
+        <DialogContent className="flex justify-center items-center bg-transparent border-0 shadow-none mt-[30px] z-1000">
+          <div className="relative bg-background rounded border p-[50px] flex justify-center items-center">
+            <DialogClose asChild>
+              <button
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </DialogClose>
+            <img
+              src={selectedImage}
+              alt="Enlarged view"
+              className="max-w-[70vw] max-h-[70vh] object-contain rounded"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

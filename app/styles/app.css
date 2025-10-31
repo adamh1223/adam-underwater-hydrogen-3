@@ -1182,3 +1182,16 @@ span {
   background: var(--accent);
   color: var(--accent-foreground);
 }
+
+.photography-arrow-left-small {
+  left: calc(var(--spacing) * -6);
+}
+.photography-arrow-right-small {
+  right: calc(var(--spacing) * -6);
+}
+.photography-arrow-left-medium {
+  left: calc(var(--spacing) * -10);
+}
+.photography-arrow-right-medium {
+  right: calc(var(--spacing) * -10);
+}
