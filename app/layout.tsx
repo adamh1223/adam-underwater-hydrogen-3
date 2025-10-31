@@ -12,6 +12,9 @@ import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {RootLoader} from './root';
 
+// ✅ Import TooltipProvider from Shadcn UI
+import {TooltipProvider} from '~/components/ui/tooltip';
+
 export default function Layout() {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
@@ -25,26 +28,31 @@ export default function Layout() {
         <link rel="stylesheet" href={tailwindCss}></link>
         <link rel="stylesheet" href={appStyles}></link>
         {/* <link rel="preconnect" href="https://fonts.googleapis.com"></link>
-<link rel="preconnect" href="https://fonts.gstatic.com" ></link>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"></link> */}
+        <link rel="preconnect" href="https://fonts.gstatic.com"></link>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+          rel="stylesheet"
+        ></link> */}
         <Meta />
         <Links />
       </head>
-      <body className={`dark`}>
-        {data ? (
-          <Analytics.Provider
-            cart={data.cart}
-            shop={data.shop}
-            consent={data.consent}
-          >
-            {/* @ts-expect-error default shopify setup */}
-            <PageLayout {...data}>
-              <Outlet />
-            </PageLayout>
-          </Analytics.Provider>
-        ) : (
-          <Outlet />
-        )}
+      <body className="dark">
+        <TooltipProvider delayDuration={200}>
+          {data ? (
+            <Analytics.Provider
+              cart={data.cart}
+              shop={data.shop}
+              consent={data.consent}
+            >
+              {/* @ts-expect-error default shopify setup */}
+              <PageLayout {...data}>
+                <Outlet />
+              </PageLayout>
+            </Analytics.Provider>
+          ) : (
+            <Outlet />
+          )}
+        </TooltipProvider>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>

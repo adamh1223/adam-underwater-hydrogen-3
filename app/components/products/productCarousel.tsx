@@ -269,7 +269,7 @@ export const ProductCarousel = ({
                     <FaRegHeart />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="text-sm">
+                <TooltipContent side="top" className="text-sm z-1000">
                   Save to Favorites
                 </TooltipContent>
               </Tooltip>
@@ -323,7 +323,7 @@ export const ProductCarousel = ({
                         <FaRegHeart />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm">
+                    <TooltipContent side="top" className="text-sm z-1000">
                       Save to Favorites
                     </TooltipContent>
                   </Tooltip>

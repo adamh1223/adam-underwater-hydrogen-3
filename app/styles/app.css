@@ -1036,8 +1036,8 @@ span {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-left: 50px;
+    padding-right: 15px;
   }
   .product-counter-container {
     display: flex;
@@ -1062,7 +1062,8 @@ span {
   .counter-search-toggle-container {
     display: grid;
     grid-template-rows: auto auto;
-    padding: 20px 40px;
+    padding-left: 40px;
+    padding-right: 40px;
   }
   .product-counter-container {
     display: flex;
@@ -1076,7 +1077,6 @@ span {
   }
   .grid-list-toggle-container {
     display: flex;
-    padding: 15px;
     gap: 1px;
   }
   /* Top row */

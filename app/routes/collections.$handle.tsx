@@ -38,6 +38,12 @@ import Product from './products.$handle';
 import {Checkbox} from '~/components/ui/checkbox';
 import ToggleSwitch from '~/components/global/ToggleSwitch';
 import Collections from './collections._index';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -255,7 +261,7 @@ export default function Collection() {
         </div>
       )}
       {windowWidth != undefined && windowWidth > 600 && (
-        <div className="counter-search-toggle-container">
+        <div className="counter-search-toggle-container ">
           <div className="product-counter-container">
             <div className="flex flex-col items-end">
               <h4 className="font-medium text-xl">
@@ -278,7 +284,7 @@ export default function Collection() {
                     <>
                       <div className="flex justify-center items-center">
                         <Input
-                          className="search-input w-[300px]"
+                          className="search-input w-[260px]"
                           name="q"
                           onChange={handleInput}
                           onFocus={handleInput}
@@ -297,21 +303,54 @@ export default function Collection() {
             </div>
           </div>
 
-          <div className="grid-list-toggle-container">
-            <Button
-              variant={layout === 'grid' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={handleLayoutChange}
-            >
-              <LuLayoutGrid />
-            </Button>
-            <Button
-              variant={layout === 'list' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={handleLayoutChange}
-            >
-              <LuList />
-            </Button>
+          <div className="grid-list-toggle-container flex gap-x-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={
+                      layout === 'grid'
+                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                    }
+                    onClick={() => {
+                      if (layout !== 'grid') {
+                        handleLayoutChange();
+                      }
+                    }}
+                  >
+                    <LuLayoutGrid />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-sm z-1000">
+                  Grid View
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={
+                      layout === 'list'
+                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md ms-1'
+                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer ms-1'
+                    }
+                    onClick={() => {
+                      if (layout !== 'list') {
+                        handleLayoutChange();
+                      }
+                    }}
+                  >
+                    <LuList />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-sm z-1000">
+                  List View
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       )}
@@ -335,7 +374,7 @@ export default function Collection() {
                           <>
                             <div className="flex justify-center items-center">
                               <Input
-                                className="search-input w-[300px]"
+                                className="search-input w-[260px]"
                                 name="q"
                                 onChange={handleInput}
                                 onFocus={handleInput}
@@ -367,21 +406,54 @@ export default function Collection() {
                 </div>
               </div>
               <div className="layout-toggle">
-                <div className="grid-list-toggle-container">
-                  <Button
-                    variant={layout === 'grid' ? 'default' : 'ghost'}
-                    size="icon"
-                    onClick={handleLayoutChange}
-                  >
-                    <LuLayoutGrid />
-                  </Button>
-                  <Button
-                    variant={layout === 'list' ? 'default' : 'ghost'}
-                    size="icon"
-                    onClick={handleLayoutChange}
-                  >
-                    <LuList />
-                  </Button>
+                <div className="grid-list-toggle-container flex gap-x-4">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className={
+                            layout === 'grid'
+                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                          }
+                          onClick={() => {
+                            if (layout !== 'grid') {
+                              handleLayoutChange();
+                            }
+                          }}
+                        >
+                          <LuLayoutGrid />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        Grid View
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className={
+                            layout === 'list'
+                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md ms-1'
+                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer ms-1'
+                          }
+                          onClick={() => {
+                            if (layout !== 'list') {
+                              handleLayoutChange();
+                            }
+                          }}
+                        >
+                          <LuList />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm">
+                        List View
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </div>
