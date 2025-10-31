@@ -64,7 +64,7 @@ export async function loader(args: LoaderFunctionArgs) {
   const wishlistProducts = JSON.parse(
     customer.data.customer.metafield?.value,
   ) as string[];
-  
+
   const productNodes = await Promise.all(
     wishlistProducts?.map((id) =>
       context.storefront.query(productQuery, {
@@ -128,11 +128,13 @@ export default function Favorites() {
         if (product.tags.includes('Prints')) {
           return (
             <>
-              <div className="m-5">
-                <div className="flex justify-center pb-2">
-                  Framed Canvas Print:
+              <div className="prods-grid-favorites gap-x-5">
+                <div>
+                  <div className="flex justify-center pb-2">
+                    Framed Canvas Print:
+                  </div>
+                  <ProductCarousel product={product} layout="grid" />
                 </div>
-                <ProductCarousel product={product} layout="grid" />
               </div>
             </>
           );

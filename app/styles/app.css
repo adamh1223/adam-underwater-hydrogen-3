@@ -454,6 +454,13 @@ button.reset:hover:not(:has(> *)) {
     row-gap: 20px;
     padding: 20px 50px 0 50px;
   }
+  .prods-grid-favorites {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+    row-gap: 20px;
+    padding: 0 50px 0 50px;
+  }
 }
 @media (max-width: 700px) {
   .recommended-products-grid {
@@ -474,6 +481,13 @@ button.reset:hover:not(:has(> *)) {
     column-gap: 20px;
     row-gap: 20px;
     padding: 20px 50px 0 50px;
+  }
+  .prods-grid-favorites {
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 20px;
+    row-gap: 20px;
+    padding: 0 50px 0 50px;
   }
 }
 
@@ -783,6 +797,26 @@ span {
     width: 80vw;
   }
 }
+@media (max-width: 550px) {
+  .inthebox-carousel {
+    width: 63vw;
+  }
+}
+@media (min-width: 551px) and (max-width: 720px) {
+  .inthebox-carousel {
+    width: 55vw;
+  }
+}
+@media (min-width: 720px) and (max-width: 1023px) {
+  .inthebox-carousel {
+    width: 75vw;
+  }
+}
+@media (min-width: 1024px) {
+  .inthebox-carousel {
+    width: 80vw;
+  }
+}
 
 /* Make sure carousel content acts like a centered flex row */
 .you-may-like-carousel .carousel__content,
@@ -804,7 +838,6 @@ span {
   .in-the-box-1 {
   }
   .in-the-box-2 {
-    margin: 20px 0;
   }
   .in-the-box-3 {
   }
@@ -815,7 +848,6 @@ span {
   .in-the-box-2 {
   }
   .in-the-box-3 {
-    margin: 20px 0 0 0;
   }
 }
 @media (min-width: 1024px) {
@@ -844,6 +876,7 @@ span {
     justify-content: center !important;
     margin-left: auto !important;
     margin-right: auto !important;
+    row-gap: 10px;
   }
 
   /* Ensure the Card fills its container and stays centered */
@@ -1144,8 +1177,6 @@ span {
   width: auto;
   vertical-align: top;
 }
-
-
 
 .heart-btn:hover {
   background: var(--accent);

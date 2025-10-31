@@ -55,6 +55,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
+import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -622,6 +623,36 @@ export default function Product() {
   console.log(verticalSecondImg, '999vertical2nd');
   console.log(standardVerticalCarouselImages, '999standardvertical');
   console.log(standardVerticalCarouselImages, '999standardvertical');
+  const cards = [
+    {
+      icon: '/1x-icon-2.png',
+      title: 'Canvas Print',
+      description:
+        'Each framed print comes with heavy duty hanging wire attached',
+      image: '/gear1.png',
+    },
+    {
+      icon: '/1x-icon-2.png',
+      title: 'NFC Tags',
+      description:
+        'Try tapping your phone to the bottom right corner of the frame',
+      image: '/gear1.png',
+    },
+    {
+      icon: '/2x-icon.png',
+      title: 'Hangers and nails',
+      description: 'Each print comes with 2 sets of picture hangers and nails',
+      image: '/hangers-image.png',
+    },
+    {
+      icon: '/4x-icon.png',
+      title: 'Command Strips',
+      description:
+        'Each shipment comes with velcro 4 command strips to secure the print flush on the wall.',
+      image: '/gear1.png',
+    },
+  ];
+
   return (
     <>
       <section className="product px-[40px] pt-[20px]">
@@ -1312,7 +1343,7 @@ export default function Product() {
                 <div className="flex-1 h-px bg-muted" />
               </div>
             </div>
-            <div className="my-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-x-0 md:gap-x-5 lg:gap-x-5 sm:mx-[40px] md:mx-[40px] lg:mx-[50px] xl:mx-[120px]">
+            {/* <div className="my-5 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-x-0 md:gap-x-5 lg:gap-x-5 sm:gap-y-0 md:gap-y-5 lg:gap-y-5 sm:mx-[40px] md:mx-[40px] lg:mx-[50px] xl:mx-[120px]">
               <div className="in-the-box in-the-box-1 flex justify-center">
                 <Card>
                   <CardHeader>
@@ -1447,6 +1478,54 @@ export default function Product() {
                   </CardContent>
                 </Card>
               </div>
+              <div className="in-the-box in-the-box-4 flex justify-center">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-start">
+                      <img src={'/4x-icon.png'} style={{height: '2.2rem'}} />
+                    </div>
+                    <div className="flex justify-center">
+                      <strong>Command Strips</strong>
+                    </div>
+                    <hr />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-center">
+                      <Carousel className="w-full max-w-sm px-[25px]">
+                        <CarouselContent>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear1.png'} alt="Gear 1" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear2.png'} alt="Gear 2" />
+                            </div>
+                          </CarouselItem>
+                          <CarouselItem>
+                            <div className="p-4 flex items-center justify-center">
+                              <img src={'/gear3.png'} alt="Gear 3" />
+                            </div>
+                          </CarouselItem>
+                        </CarouselContent>
+
+                        <CarouselPrevious inTheBox />
+                        <CarouselNext inTheBox />
+                      </Carousel>
+                    </div>
+                    <div className="in-the-box-description flex justify-center pb-2">
+                      <div className="max-w-[85%]">
+                        Each shipment comes with velcro 4 command strips to
+                        secure the print flush on the wall.
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div> */}
+            <div className="gap-x-5 py-5 px-[70px]">
+              <ThreeUpCarouselBox cards={cards} />
             </div>
           </section>
         )}

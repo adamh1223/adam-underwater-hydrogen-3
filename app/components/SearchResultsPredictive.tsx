@@ -233,13 +233,13 @@ function SearchResultsPredictiveProducts({
           return (
             <>
               {showProductHeader && (
-                <div className="mx-5">
+                <div className="mx-5 mb-5">
                   <div className="flex justify-center pb-2">
                     Stock Footage Clip:
                   </div>
                   <EProductsContainer
                     product={product}
-                    layout={layout}
+                    layout="grid"
                     cart={cart}
                   />
                 </div>
