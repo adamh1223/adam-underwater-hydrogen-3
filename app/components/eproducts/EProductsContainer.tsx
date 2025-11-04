@@ -44,7 +44,7 @@ function EProductsContainer({
 
   const cardContentClassName =
     layout === 'grid'
-      ? 'flex flex-col h-full p-4'
+      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'
       : 'ps-3 pt-3 pb-3 gap-y-4 list-view-large-row h-full';
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();

@@ -1195,3 +1195,21 @@ span {
 .photography-arrow-right-medium {
   right: calc(var(--spacing) * -10);
 }
+
+.thumbnail-crop {
+  width: 100%;
+
+  object-fit: cover;
+  object-position: center;
+  clip-path: inset(0 0 15px 0); /* Crops 20px from top and bottom */
+}
+
+.EProductVideo {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* Make the video visible smoothly */
+.EProductVideo.visible {
+  opacity: 1;
+}
