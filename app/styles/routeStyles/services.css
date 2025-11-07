@@ -19,7 +19,6 @@
 .drone-titles {
   display: flex;
   justify-content: space-between; /* Creates two equal halves */
-  align-items: center;
   width: 94%;
   margin: 0 auto;
 }

@@ -42,6 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
+import VideoPreview from '~/components/global/VideoPreview';
 
 // export async function loader({context}: LoaderFunctionArgs) {
 //   const {storefront} = context;
@@ -518,11 +519,12 @@ function ServicesPage() {
               8.1K Full Frame, Pro Res Raw up to 60fps
             </p>
             <CardContent className="p-0">
-              <img
+              {/* <img
                 src={'/inspire3.jpg'}
                 alt="DJI Inspire 3"
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
-              />
+              /> */}
+              <VideoPreview/>
             </CardContent>
           </Card>
           {/* /627592883 */}
@@ -535,11 +537,12 @@ function ServicesPage() {
               6K Global Shutter, R3D Raw up to 75fps
             </p>
             <CardContent className="p-0">
-              <img
+              {/* <img
                 src={'/inspire3.jpg'}
                 alt="DJI Inspire 3"
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
-              />
+              /> */}
+              <VideoPreview />
             </CardContent>
           </Card>
           {/* /522510112 */}
