@@ -44,6 +44,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -55,8 +56,16 @@ export async function loader(args: LoaderFunctionArgs) {
 
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
+  const customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
 
-  return {...deferredData, ...criticalData};
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
+  const wishlistProducts = JSON.parse(
+    customer.data.customer.metafield?.value,
+  ) as string[];
+
+  return {...deferredData, ...criticalData, wishlistProducts};
 }
 
 /**
@@ -118,7 +127,10 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 
 export default function Collection() {
-  const {collection, searchTerm, cart} = useLoaderData<typeof loader>();
+  const {collection, searchTerm, cart, wishlistProducts} =
+    useLoaderData<typeof loader>();
+  console.log(wishlistProducts, '4444444444wishlistproducts');
+
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
   const [searchText, setSearchText] = useState<string | undefined>();
@@ -555,16 +567,22 @@ export default function Collection() {
               };
               index: number;
             }) => {
+              const isInWishlist = wishlistProducts.includes(product.id);
               return (
                 <>
                   {collection.handle === 'prints' && (
-                    <ProductCarousel product={product} layout={layout} />
+                    <ProductCarousel
+                      product={product}
+                      layout={layout}
+                      isInWishlist={isInWishlist}
+                    />
                   )}
                   {collection.handle === 'stock' && (
                     <EProductsContainer
                       product={product}
                       layout={layout}
                       cart={cart}
+                      isInWishlist={isInWishlist}
                     />
                   )}
                 </>
