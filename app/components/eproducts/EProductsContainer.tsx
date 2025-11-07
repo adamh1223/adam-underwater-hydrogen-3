@@ -7,7 +7,7 @@ import EProductPreview from './EProductPreview';
 import {Money} from '@shopify/hydrogen';
 import {Link} from '@remix-run/react';
 import {useAside} from '../Aside';
-import {useIsVideoInCart} from '~/lib/hooks';
+import {useIsLoggedIn, useIsVideoInCart} from '~/lib/hooks';
 import {CartReturn} from '@shopify/hydrogen';
 import '../../styles/routeStyles/product.css';
 import {ProductPrice} from '../ProductPrice';
@@ -27,6 +27,8 @@ function EProductsContainer({
   loading,
   layout,
   cart,
+  isLoggedIn = undefined,
+  isInWishlist = false,
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
     selectedOrFirstAvailableVariant?: {id: string};
@@ -34,12 +36,14 @@ function EProductsContainer({
   loading?: 'eager' | 'lazy';
   layout: string | undefined;
   cart?: Promise<CartReturn | null>;
+  isLoggedIn: Promise<boolean> | undefined;
+  isInWishlist: boolean;
 }) {
   console.log(layout, 'layout');
 
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'
+      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-5'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 h-full gap-y-3';
 
   const cardContentClassName =
@@ -114,6 +118,49 @@ function EProductsContainer({
     .filter(Boolean)
     .join(', ');
   console.log(product, 'prpr');
+  const loginValue = useIsLoggedIn(isLoggedIn);
+  const [wishlistItem, setWishlistItem] = useState(isInWishlist);
+  const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
+  const addToFavorites = async () => {
+    try {
+      setPendingWishlistChange(true);
+      const form = new FormData();
+      form.append('productId', product.id);
+      console.log(form, 'form');
+
+      const response = await fetch('/api/add_favorites', {
+        method: 'POST',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+      const json = await response.json();
+      setWishlistItem(true);
+      setPendingWishlistChange(false);
+    } catch (error) {
+      setWishlistItem(false);
+      setPendingWishlistChange(false);
+    }
+  };
+  const removeFromFavorites = async () => {
+    try {
+      setPendingWishlistChange(true);
+      const form = new FormData();
+      form.append('productId', product.id);
+      console.log(form, 'form');
+
+      const response = await fetch('/api/remove_favorites', {
+        method: 'PUT',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+      const json = await response.json();
+      setWishlistItem(false);
+      setPendingWishlistChange(false);
+    } catch (error) {
+      setWishlistItem(true);
+      setPendingWishlistChange(false);
+    }
+  };
 
   return (
     <>
@@ -130,23 +177,38 @@ function EProductsContainer({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50">
-                      {/* {pending ? (
-                  <ReloadIcon className="animate-spin" />
-                ) : isFavorite ? (
-                  <FaHeart />
-                ) : (
-                  <FaRegHeart />
-                )} */}
-                      {/* <ReloadIcon className="animate-spin" />
-              <FaHeart /> */}
-                      {/* <ReloadIcon className="animate-spin" />
-                        <FaHeart /> */}
-                      <FaRegHeart />
+                    <button
+                      onClick={
+                        wishlistItem ? removeFromFavorites : addToFavorites
+                      }
+                      disabled={!loginValue}
+                      className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                    >
+                      {pendingWishlistChange ? (
+                        <ReloadIcon className="animate-spin" />
+                      ) : (
+                        <>
+                          {wishlistItem ? (
+                            <FaHeart />
+                          ) : (
+                            <>
+                              {loginValue ? (
+                                <FaRegHeart />
+                              ) : (
+                                <Link to="/account/login">
+                                  <FaRegHeart />
+                                </Link>
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-sm z-1000">
-                    Save to Favorites
+                    {wishlistItem
+                      ? 'Remove from Favorites'
+                      : 'Save to Favorites'}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -158,30 +220,45 @@ function EProductsContainer({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50">
-                        {/* {pending ? (
-                  <ReloadIcon className="animate-spin" />
-                ) : isFavorite ? (
-                  <FaHeart />
-                ) : (
-                  <FaRegHeart />
-                )} */}
-                        {/* <ReloadIcon className="animate-spin" />
-              <FaHeart /> */}
-                        {/* <ReloadIcon className="animate-spin" />
-                        <FaHeart /> */}
-                        <FaRegHeart />
+                      <button
+                        onClick={
+                          wishlistItem ? removeFromFavorites : addToFavorites
+                        }
+                        disabled={!loginValue}
+                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                      >
+                        {pendingWishlistChange ? (
+                          <ReloadIcon className="animate-spin" />
+                        ) : (
+                          <>
+                            {wishlistItem ? (
+                              <FaHeart />
+                            ) : (
+                              <>
+                                {loginValue ? (
+                                  <FaRegHeart />
+                                ) : (
+                                  <Link to="/account/login">
+                                    <FaRegHeart />
+                                  </Link>
+                                )}
+                              </>
+                            )}
+                          </>
+                        )}
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="text-sm z-1000">
-                      Save to Favorites
+                      {wishlistItem
+                        ? 'Remove from Favorites'
+                        : 'Save to Favorites'}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
             )}
             <div
-              className={`relative h-full evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+              className={`relative evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
             >
               {/* {thumbnail && (
                       <img

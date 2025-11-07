@@ -25,6 +25,7 @@ import '../components/navbar/styles/Navbar.css';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {Divide} from 'lucide-react';
+import {log} from 'util';
 
 interface HeaderProps {
   header: HeaderQuery & {
@@ -208,6 +209,8 @@ export function HeaderMenu({
                 break;
 
               default:
+                console.log(url, '888url');
+
                 renderContent = (
                   <NavLink
                     className="relative z-10"

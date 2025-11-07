@@ -48,7 +48,7 @@ export async function loader(args: LoaderFunctionArgs) {
   await context.customerAccount.handleAuthStatus();
   // const token = await loadCriticalData(args);
   const customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
-
+  const isLoggedIn = context.customerAccount.isLoggedIn();
   console.log(customer, '0101010010101010101001010101010100110101');
   if (!customer.data.customer.metafield?.value) {
     return [];
@@ -77,7 +77,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const wishlist = {};
   console.log(wishlist, '1111111111111111111');
-  return {products};
+  return {products, isLoggedIn};
 }
 // async function loadCriticalData({context}: LoaderFunctionArgs) {
 //   const token = await context.customerAccount.getAccessToken();
@@ -108,7 +108,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
 export default function Favorites() {
   const {customer} = useOutletContext<{customer: CustomerFragment}>();
-  const {products} = useLoaderData<typeof loader>();
+  const {products, isLoggedIn} = useLoaderData<typeof loader>();
 
   console.log(customer.id, '2000');
   console.log(products, '20001');
@@ -135,6 +135,7 @@ export default function Favorites() {
                   product={product}
                   layout="grid"
                   isInWishlist={true}
+                  isLoggedIn={isLoggedIn}
                 />
               </>
             );
@@ -143,7 +144,12 @@ export default function Favorites() {
             return (
               <>
                 <div className="mx-5">
-                  <EProductsContainer product={product} layout="grid" />
+                  <EProductsContainer
+                    product={product}
+                    layout="grid"
+                    isInWishlist={true}
+                    isLoggedIn={isLoggedIn}
+                  />
                 </div>
               </>
             );

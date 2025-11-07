@@ -52,11 +52,29 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
+
   const deferredData = loadDeferredData(args);
 
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-  const customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+  let customer = null;
+  try {
+    customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      ...deferredData,
+      ...criticalData,
+      wishlistProducts: [],
+      isLoggedIn: undefined,
+    };
+  }
+  console.log(customer, '1234123412341234customer');
+
+  const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
   if (!customer.data.customer.metafield?.value) {
     return [];
@@ -65,7 +83,7 @@ export async function loader(args: LoaderFunctionArgs) {
     customer.data.customer.metafield?.value,
   ) as string[];
 
-  return {...deferredData, ...criticalData, wishlistProducts};
+  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
 
 /**
@@ -127,9 +145,9 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 
 export default function Collection() {
-  const {collection, searchTerm, cart, wishlistProducts} =
+  const {collection, searchTerm, cart, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
-  console.log(wishlistProducts, '4444444444wishlistproducts');
+  console.log(isLoggedIn, '444444444isloggedin');
 
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
@@ -575,6 +593,7 @@ export default function Collection() {
                       product={product}
                       layout={layout}
                       isInWishlist={isInWishlist}
+                      isLoggedIn={isLoggedIn}
                     />
                   )}
                   {collection.handle === 'stock' && (
@@ -583,6 +602,7 @@ export default function Collection() {
                       layout={layout}
                       cart={cart}
                       isInWishlist={isInWishlist}
+                      isLoggedIn={isLoggedIn}
                     />
                   )}
                 </>

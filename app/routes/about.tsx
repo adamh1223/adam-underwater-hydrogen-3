@@ -23,8 +23,8 @@ import RecommendedProducts from '~/components/products/recommendedProducts';
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-
-  return {deferredData, criticalData};
+  const isLoggedIn = args.context.customerAccount.isLoggedIn();
+  return {deferredData, criticalData, isLoggedIn};
 }
 
 async function loadCriticalData({context}: LoaderFunctionArgs) {
@@ -452,7 +452,10 @@ export default function AboutPage() {
         </div>
       </section> */}
 
-      <RecommendedProducts products={data?.recommendedProducts} />
+      <RecommendedProducts
+        products={data?.recommendedProducts}
+        isLoggedIn={data.isLoggedIn}
+      />
     </>
   );
 }

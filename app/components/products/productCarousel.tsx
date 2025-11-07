@@ -7,7 +7,7 @@ import {
   CarouselItem,
   CarouselApi,
 } from '../ui/carousel';
-import {Link, useLoaderData} from '@remix-run/react';
+import {Link, NavLink, useLoaderData} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon, Divide} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip';
+import {useIsLoggedIn} from '~/lib/hooks';
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
@@ -61,12 +62,14 @@ export const ProductCarousel = ({
   loading,
   layout = 'grid',
   isInWishlist = false,
+  isLoggedIn = undefined,
 }: {
   // accept full product OR a looser shape (to silence type-checking when your caller doesn't have full objects)
   product: collectionPageProduct | any;
   loading?: 'eager' | 'lazy';
   layout?: string;
   isInWishlist: boolean;
+  isLoggedIn: Promise<boolean> | undefined;
 }) => {
   console.log(product.handle, isInWishlist, '8989898989');
 
@@ -266,6 +269,8 @@ export const ProductCarousel = ({
       setPendingWishlistChange(false);
     }
   };
+  const loginValue = useIsLoggedIn(isLoggedIn);
+  console.log(loginValue, 'loginvalue');
 
   return (
     <article className="group relative">
@@ -344,6 +349,7 @@ export const ProductCarousel = ({
                         onClick={
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }
+                        disabled={!loginValue}
                         className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                       >
                         {/* {pending ? (
@@ -359,7 +365,21 @@ export const ProductCarousel = ({
                         {pendingWishlistChange ? (
                           <ReloadIcon className="animate-spin" />
                         ) : (
-                          <>{wishlistItem ? <FaHeart /> : <FaRegHeart />}</>
+                          <>
+                            {wishlistItem ? (
+                              <FaHeart />
+                            ) : (
+                              <>
+                                {loginValue ? (
+                                  <FaRegHeart />
+                                ) : (
+                                  <Link to="/account/login">
+                                    <FaRegHeart />
+                                  </Link>
+                                )}
+                              </>
+                            )}
+                          </>
                         )}
                       </button>
                     </TooltipTrigger>
