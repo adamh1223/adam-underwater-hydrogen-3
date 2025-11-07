@@ -60,12 +60,16 @@ export const ProductCarousel = ({
   product,
   loading,
   layout = 'grid',
+  isInWishlist = false,
 }: {
   // accept full product OR a looser shape (to silence type-checking when your caller doesn't have full objects)
   product: collectionPageProduct | any;
   loading?: 'eager' | 'lazy';
   layout?: string;
+  isInWishlist: boolean;
 }) => {
+  console.log(product.handle, isInWishlist, '8989898989');
+
   // If caller passed a string id by mistake, bail out gracefully
   if (typeof product === 'string') {
     console.warn(
@@ -111,6 +115,8 @@ export const ProductCarousel = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [wishlistItem, setWishlistItem] = useState(isInWishlist);
+  const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
 
   useEffect(() => {
     function handleResize() {
@@ -222,18 +228,43 @@ export const ProductCarousel = ({
   console.log(isVertPrimary, '1144vertPrimary');
   const addToFavorites = async () => {
     try {
+      setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', prod.id);
       console.log(form, 'form');
 
-      const response = await fetch('/api/favorites', {
+      const response = await fetch('/api/add_favorites', {
         method: 'POST',
         body: form,
         headers: {Accept: 'application/json'},
       });
       const json = await response.json();
-      console.log(json, '777777777777777777777777777777777777json');
-    } catch (error) {}
+      setWishlistItem(true);
+      setPendingWishlistChange(false);
+    } catch (error) {
+      setWishlistItem(false);
+      setPendingWishlistChange(false);
+    }
+  };
+  const removeFromFavorites = async () => {
+    try {
+      setPendingWishlistChange(true);
+      const form = new FormData();
+      form.append('productId', prod.id);
+      console.log(form, 'form');
+
+      const response = await fetch('/api/remove_favorites', {
+        method: 'PUT',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+      const json = await response.json();
+      setWishlistItem(false);
+      setPendingWishlistChange(false);
+    } catch (error) {
+      setWishlistItem(true);
+      setPendingWishlistChange(false);
+    }
   };
 
   return (
@@ -252,7 +283,9 @@ export const ProductCarousel = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={addToFavorites}
+                    onClick={
+                      wishlistItem ? removeFromFavorites : addToFavorites
+                    }
                     className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                   >
                     {/* {pending ? (
@@ -264,8 +297,10 @@ export const ProductCarousel = ({
                 )} */}
                     {/* <ReloadIcon className="animate-spin" />
               <FaHeart /> */}
-                    {/* <ReloadIcon className="animate-spin" />
-                        <FaHeart /> */}
+                    {/* <ReloadIcon className="animate-spin" /> */}
+
+                    <FaHeart />
+
                     <FaRegHeart />
                   </button>
                 </TooltipTrigger>
@@ -306,7 +341,9 @@ export const ProductCarousel = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
-                        onClick={addToFavorites}
+                        onClick={
+                          wishlistItem ? removeFromFavorites : addToFavorites
+                        }
                         className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                       >
                         {/* {pending ? (
@@ -318,13 +355,18 @@ export const ProductCarousel = ({
                 )} */}
                         {/* <ReloadIcon className="animate-spin" />
               <FaHeart /> */}
-                        {/* <ReloadIcon className="animate-spin" />
-                        <FaHeart /> */}
-                        <FaRegHeart />
+
+                        {pendingWishlistChange ? (
+                          <ReloadIcon className="animate-spin" />
+                        ) : (
+                          <>{wishlistItem ? <FaHeart /> : <FaRegHeart />}</>
+                        )}
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="text-sm z-1000">
-                      Save to Favorites
+                      {wishlistItem
+                        ? 'Remove from Favorites'
+                        : 'Save to Favorites'}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

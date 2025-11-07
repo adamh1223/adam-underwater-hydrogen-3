@@ -3,18 +3,25 @@ import {
   CUSTOMER_UPDATE_MUTATION,
   CUSTOMER_UPDATE_WISHLIST,
 } from '~/graphql/customer-account/CustomerUpdateMutation';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
     const {customerAccount} = context;
-    const productId = (await request.formData()).get('productId');
-    const data = await context.customerAccount.query(`#graphql
-    query {
-        customer {
-            id
-        }
-    }
-    `);
+    const productId = (await request.formData()).get('productId') as string;
+    const data = await context.customerAccount.query(CUSTOMER_WISHLIST);
+    console.log(
+      data.data.customer.metafield.value,
+      '0000000000000011111111111111data',
+    );
+    const existingWishlist = JSON.parse(
+      data.data.customer.metafield.value,
+    ) as string[];
+
+    const modifiedWishlist = existingWishlist.filter(
+      (item) => item != productId,
+    );
+
     const customerId = data.data.customer.id;
     console.log(customerId, 'customerid');
 
@@ -25,7 +32,7 @@ export async function action({request, context}: ActionFunctionArgs) {
           namespace: 'custom',
           ownerId: customerId,
           type: 'list.product_reference',
-          value: JSON.stringify([productId]),
+          value: JSON.stringify(modifiedWishlist),
         },
       },
     });

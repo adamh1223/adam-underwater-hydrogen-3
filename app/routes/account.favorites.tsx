@@ -37,15 +37,7 @@ import {
 } from '~/lib/customerQueries';
 import ProductCarousel from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
-
-export type ActionResponse = {
-  addressId?: string | null;
-  createdAddress?: AddressFragment;
-  defaultAddress?: string | null;
-  deletedAddress?: string | null;
-  error: Record<AddressFragment['id'], string> | null;
-  updatedAddress?: AddressFragment;
-};
+import {useEffect} from 'react';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Favorites'}];
@@ -122,36 +114,42 @@ export default function Favorites() {
   console.log(products, '20001');
   return (
     <>
-      {products?.map((product) => {
-        console.log(product, 'productlog');
-
-        if (product.tags.includes('Prints')) {
-          return (
-            <>
-              <div className="prods-grid-favorites gap-x-5">
-                <div>
-                  <div className="flex justify-center pb-2">
-                    Framed Canvas Print:
-                  </div>
-                  <ProductCarousel product={product} layout="grid" />
-                </div>
+      <div className="prods-grid gap-x-5">
+        {products?.map((product) => {
+          console.log(product, 'productlog');
+          {
+            product.tags.includes('prints') ? (
+              <div className="flex justify-center pb-2">
+                Framed Canvas Print:
               </div>
-            </>
-          );
-        }
-        if (product.tags.includes('Video')) {
-          return (
-            <>
-              <div className="mx-5">
-                <div className="flex justify-center pb-2">
-                  Stock Footage Clip:
-                </div>
-                <EProductsContainer product={product} layout="grid" />
+            ) : (
+              <div className="flex justify-center pb-2">
+                Stock Footage Clip:
               </div>
-            </>
-          );
-        }
-      })}
+            );
+          }
+          if (product.tags.includes('Prints')) {
+            return (
+              <>
+                <ProductCarousel
+                  product={product}
+                  layout="grid"
+                  isInWishlist={true}
+                />
+              </>
+            );
+          }
+          if (product.tags.includes('Video')) {
+            return (
+              <>
+                <div className="mx-5">
+                  <EProductsContainer product={product} layout="grid" />
+                </div>
+              </>
+            );
+          }
+        })}
+      </div>
     </>
   );
 }
