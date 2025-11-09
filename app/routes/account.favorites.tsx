@@ -143,14 +143,12 @@ export default function Favorites() {
           if (product.tags.includes('Video')) {
             return (
               <>
-                <div className="mx-5">
-                  <EProductsContainer
-                    product={product}
-                    layout="grid"
-                    isInWishlist={true}
-                    isLoggedIn={isLoggedIn}
-                  />
-                </div>
+                <EProductsContainer
+                  product={product}
+                  layout="grid"
+                  isInWishlist={true}
+                  isLoggedIn={isLoggedIn}
+                />
               </>
             );
           }

@@ -497,7 +497,9 @@ export const ProductCarousel = ({
                 <div
                   className={`flex ${layout === 'grid' ? 'justify-center my-2' : 'justify-start mt-2'}`}
                 >
-                  <Button variant="default">View Product</Button>
+                  <Button variant="default" className="cursor-pointer">
+                    View Product
+                  </Button>
                 </div>
               </div>
             </Link>
