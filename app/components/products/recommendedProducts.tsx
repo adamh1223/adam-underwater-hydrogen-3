@@ -5,8 +5,12 @@ import ProductCarousel from './productCarousel';
 
 function RecommendedProducts({
   products,
+  wishlistProducts,
+  isLoggedIn,
 }: {
   products: Promise<RecommendedProductsQuery | null>;
+  wishlistProducts: string[];
+  isLoggedIn: Promise<boolean> | undefined;
 }) {
   return (
     <div className="recommended-products">
@@ -20,6 +24,7 @@ function RecommendedProducts({
                     const isVideo = product.tags?.includes('Video');
                     const isRecommendedProduct =
                       product.tags?.includes('recommended');
+                    const isInWishlist = wishlistProducts?.includes(product.id);
                     return (
                       <>
                         {!isVideo && isRecommendedProduct && (
@@ -27,6 +32,8 @@ function RecommendedProducts({
                             product={product}
                             layout="grid"
                             key={product.id}
+                            isInWishlist={isInWishlist}
+                            isLoggedIn={isLoggedIn}
                           />
                         )}
                       </>

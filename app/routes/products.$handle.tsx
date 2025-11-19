@@ -46,7 +46,7 @@ import {
 import {ThreeUpCarousel} from '~/components/global/ThreeUpCarousel';
 import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarousel';
 import {Button} from '~/components/ui/button';
-import {RECOMMENDED_PRODUCTS_QUERY} from '~/lib/homeQueries';
+import {GET_REVIEW_QUERY, RECOMMENDED_PRODUCTS_QUERY} from '~/lib/homeQueries';
 import SimpleRecommendedProducts from '~/components/products/simpleRecommendedProducts';
 import {FaRegHeart} from 'react-icons/fa';
 import {
@@ -56,6 +56,7 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip';
 import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
+import ReviewForm from '~/components/form/ReviewForm';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -100,6 +101,9 @@ async function loadCriticalData({
     storefront.query(RECOMMENDED_PRODUCTS_QUERY),
     // Add other queries here, so that they are loaded in parallel
   ]);
+  const reviews = await context.storefront.query(GET_REVIEW_QUERY, {
+    variables: {productId: product.id},
+  });
 
   if (!product?.id) {
     throw new Response(null, {status: 404});
@@ -107,6 +111,7 @@ async function loadCriticalData({
 
   return {
     product,
+    reviews,
     cart: cart.get(),
   };
 }
@@ -134,8 +139,9 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
 }
 // Use the same fix for about page recommended products
 export default function Product() {
-  const {product, recommendedProducts, cart} = useLoaderData<typeof loader>();
-  console.log(recommendedProducts, 'product456');
+  const {product, recommendedProducts, cart, reviews} =
+    useLoaderData<typeof loader>();
+  console.log(reviews, 'reviews');
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -1540,7 +1546,9 @@ export default function Product() {
               <div className="flex-1 h-px bg-muted" />
             </div>
           </div>
-          <div className="my-5">This is where reviews will go</div>
+          <div className="my-5">
+            <ReviewForm productId={product.id} />
+          </div>
         </section>
         <section className="you-may-also-like mt-3">
           {/* section title */}

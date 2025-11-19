@@ -61,3 +61,41 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     }
   }
 ` as const;
+
+export const POST_REVIEW_MUTATION = `#graphql 
+  mutation MetafieldsSet($metafields: MetafieldsSetInput!) {
+  metafieldsSet(metafields: $metafields) {
+        metafields {
+            id
+            value
+        }
+    }
+  }
+`;
+export const GET_REVIEW_QUERY = `#graphql 
+  query getReview ($productId: ID!) {
+    product(id: $productId) {
+        metafield (namespace: "custom", key: "reviews") {
+            id
+            value
+        }
+    }
+  }
+`;
+
+export const ADMIN_METAFIELD_SET = `#graphql
+  mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
+    metafieldsSet(metafields: $metafields) {
+      metafields {
+        id
+        key
+        namespace
+        value
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;

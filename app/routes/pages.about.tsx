@@ -19,12 +19,39 @@ import {
   RECOMMENDED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
+//   need the customer variable, add these lines for other instances of recommended products
+  let customer = null;
+  try {
+    customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      ...deferredData,
+      ...criticalData,
+      wishlistProducts: [],
+      isLoggedIn: undefined,
+    };
+  }
+  console.log(customer, '1234123412341234customer');
 
-  return {...deferredData, ...criticalData};
+  const isLoggedIn = args.context.customerAccount.isLoggedIn();
+
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
+  const wishlistProducts = JSON.parse(
+    customer.data.customer.metafield?.value,
+  ) as string[];
+
+  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
 
 async function loadCriticalData({context}: LoaderFunctionArgs) {
@@ -451,7 +478,11 @@ export default function AboutPage() {
           <p>Framed Canvas Wall Art</p>
         </div>
       </section>
-      <RecommendedProducts products={data?.recommendedProducts} />
+      <RecommendedProducts
+        products={data?.recommendedProducts}
+        wishlistProducts={data?.wishlistProducts}
+        isLoggedIn={data?.isLoggedIn}
+      />
     </>
   );
 }
