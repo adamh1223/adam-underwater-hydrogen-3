@@ -57,6 +57,8 @@ import {
 } from '~/components/ui/tooltip';
 import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 import ReviewForm from '~/components/form/ReviewForm';
+import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
+import ProductReviewsDisplay from '~/components/global/ProductReviewsDisplay';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -108,9 +110,16 @@ async function loadCriticalData({
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
-
+  let customer = null;
+  if (await context.customerAccount.isLoggedIn()) {
+    const {data, errors} = await context.customerAccount.query(
+      CUSTOMER_DETAILS_QUERY,
+    );
+    customer = data;
+  }
   return {
     product,
+    customer,
     reviews,
     cart: cart.get(),
   };
@@ -139,9 +148,12 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
 }
 // Use the same fix for about page recommended products
 export default function Product() {
-  const {product, recommendedProducts, cart, reviews} =
+  const {product, recommendedProducts, cart, reviews, customer} =
     useLoaderData<typeof loader>();
+  const customerId = customer?.customer?.id;
+  const customerName = `${customer?.customer?.firstName} ${customer?.customer?.lastName}`;
   console.log(reviews, 'reviews');
+  console.log(customer, 'customer');
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -658,6 +670,9 @@ export default function Product() {
       image: '/gear1.png',
     },
   ];
+
+  const parsedReviews = JSON.parse(reviews?.product?.metafield?.value) as [];
+  console.log(parsedReviews, 'parsedReviews');
 
   return (
     <>
@@ -1547,7 +1562,17 @@ export default function Product() {
             </div>
           </div>
           <div className="my-5">
-            <ReviewForm productId={product.id} />
+            <ReviewForm
+              productId={product.id}
+              customerId={customerId}
+              customerName={customerName}
+            />
+            <div>
+              posted reviews will be HERE
+              {parsedReviews?.map((review: any) => (
+                <ProductReviewsDisplay review={review} />
+              ))}
+            </div>
           </div>
         </section>
         <section className="you-may-also-like mt-3">

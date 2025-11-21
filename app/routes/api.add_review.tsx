@@ -6,6 +6,10 @@ export async function action({request, context}: ActionFunctionArgs) {
     const form = await request.formData();
     const productId = form.get('productId') as string;
     const reviewText = form.get('review') as string;
+    const customerId = form.get('customerId') as string;
+    const stars = form.get('stars') as string;
+    const title = form.get('title') as string;
+    const customerName = form.get('customerName') as string;
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -67,6 +71,10 @@ export async function action({request, context}: ActionFunctionArgs) {
       {
         text: reviewText,
         createdAt: new Date().toISOString(),
+        customerId,
+        stars,
+        title,
+        customerName,
       },
     ];
 
@@ -96,15 +104,23 @@ export async function action({request, context}: ActionFunctionArgs) {
         }),
       },
     );
-
-    const responseText = await mutationResponse.text();
-    console.log('ADMIN RAW RESPONSE:', responseText);
-
-    const mutationJson = await mutationResponse.json();
+    let mutationJSON = {} as any;
+    try {
+      const responseText = await mutationResponse.text();
+      try {
+        mutationJSON = JSON.parse(responseText);
+      } catch (error) {
+        console.error(error);
+        mutationJSON = {};
+      }
+    } catch (error) {
+      console.error(error);
+      mutationJSON = {};
+    }
 
     const errors =
-      mutationJson?.data?.metafieldsSet?.userErrors ??
-      mutationJson?.errors ??
+      mutationJSON?.data?.metafieldsSet?.userErrors ??
+      mutationJSON?.errors ??
       null;
 
     if (errors && errors.length > 0) {
