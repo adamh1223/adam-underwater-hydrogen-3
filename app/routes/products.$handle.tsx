@@ -1635,14 +1635,7 @@ export default function Product() {
             </div>
           </div>
           <div className="my-5">
-            <ReviewForm
-              productId={product.id}
-              customerId={customerId}
-              customerName={customerName}
-            />
-            <div>review form above this</div>
             <div>
-              posted reviews will be HERE
               {parsedReviews?.map((review: any, index: number) => (
                 <ProductReviewsDisplay
                   key={review?.createdAt ?? index}
@@ -1653,6 +1646,11 @@ export default function Product() {
                 />
               ))}
             </div>
+            <ReviewForm
+              productId={product.id}
+              customerId={customerId}
+              customerName={customerName}
+            />
           </div>
         </section>
         <section className="you-may-also-like mt-3">

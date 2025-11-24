@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useRouteLoaderData} from '@remix-run/react';
-import {Card} from '../ui/card';
+import {Card, CardContent, CardHeader} from '../ui/card';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {Button} from '../ui/button';
 import {Input} from '../ui/input';
@@ -85,7 +85,7 @@ const ProductReviewsDisplay = ({
 
   return (
     <>
-      <Card>
+      <Card className="mb-5">
         {isEditing ? (
           <>
             <Input
@@ -127,41 +127,59 @@ const ProductReviewsDisplay = ({
           </>
         ) : (
           <>
-            <div>
-              <Rating value={parsedStars} readOnly>
-                {Array.from({length: 5}).map((_, index) => (
-                  <RatingButton key={index} className="stars" />
-                ))}
-              </Rating>
-              <p>Written by {displayAuthor}</p>
-              <p>{displayTitle}</p>
-              <p>{displayText}</p>
+            <div className="review-container">
+              <div className="ps-5 py-3 review-left-side">
+                <Rating value={parsedStars} readOnly>
+                  {Array.from({length: 5}).map((_, index) => (
+                    <RatingButton key={index} className="stars" />
+                  ))}
+                </Rating>
+                <p>Written by {displayAuthor}</p>
+                <Card className="mt-3 mb-1">
+                  <CardHeader>
+                    <p>
+                      <strong>{displayTitle}</strong>
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <p>{displayText}</p>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="review-right-side-container">
+                {isCurrentUserReview ? (
+                  <>
+                    <div className="pe-5 p-3 flex justify-end">
+                      <div className="review-right-side">
+                        <div className="pb-3 flex justify-center ">
+                          Your Review
+                        </div>
+                        <div className="">
+                          <Button
+                            variant="destructive"
+                            onClick={handleRemove}
+                            disabled={isRemoving}
+                            className="mb-2 cursor-pointer w-32 "
+                          >
+                            {isRemoving ? 'Removing...' : 'Remove Review'}
+                          </Button>
+                        </div>
+                        <div className="">
+                          <Button
+                            variant="secondary"
+                            onClick={() => setIsEditing((prev) => !prev)}
+                            disabled={isSaving}
+                            className="cursor-pointer w-32"
+                          >
+                            {isEditing ? 'Cancel edit' : 'Edit Review'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+              </div>
             </div>
-            {isCurrentUserReview ? (
-              <>
-                <div className="flex justify-end">
-                  <div>
-                    <h1>YOUR REVIEW</h1>
-                    <Button
-                      variant="destructive"
-                      onClick={handleRemove}
-                      disabled={isRemoving}
-                      className="mb-2 cursor-pointer"
-                    >
-                      {isRemoving ? 'Removing...' : 'Remove Review'}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => setIsEditing((prev) => !prev)}
-                      disabled={isSaving}
-                      className="mb-2 ml-2 cursor-pointer"
-                    >
-                      {isEditing ? 'Cancel edit' : 'Edit Review'}
-                    </Button>
-                  </div>
-                </div>
-              </>
-            ) : null}
           </>
         )}
       </Card>

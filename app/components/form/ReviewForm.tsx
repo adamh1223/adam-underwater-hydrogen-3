@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Input} from '../ui/input';
 import {Button} from '../ui/button';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
+import Sectiontitle from '../global/Sectiontitle';
 
 function ReviewForm({
   productId,
@@ -49,28 +50,38 @@ function ReviewForm({
 
   return (
     <>
+      <Sectiontitle text="Leave Product Review" />
+      <br />
       <Input
-        name="title"
+        name="Review Title"
         placeholder="title here"
         onChange={handleChange}
         disabled={!isLoggedIn}
       ></Input>
+      <br />
       <Input
         name="review"
-        placeholder="hi"
+        placeholder="message"
         onChange={handleChange}
         disabled={!isLoggedIn}
       ></Input>
-
-      <Rating value={stars} onValueChange={setStars}>
-        {Array.from({length: 5}).map((_, index) => (
-          <RatingButton key={index} className="stars" />
-        ))}
-      </Rating>
-
-      <Button onClick={handleSubmit} disabled={!isLoggedIn}>
-        Submit
-      </Button>
+      <br />
+      <div className="flex items-center">
+        <Rating value={stars} onValueChange={setStars}>
+          {Array.from({length: 5}).map((_, index) => (
+            <RatingButton key={index} className="stars" />
+          ))}
+        </Rating>
+      </div>
+      <div className="mt-3">
+        <Button
+          onClick={handleSubmit}
+          disabled={!isLoggedIn}
+          className="cursor-pointer"
+        >
+          Submit
+        </Button>
+      </div>
       {!isLoggedIn && (
         <p className="text-sm text-muted-foreground mt-2">
           Please sign in to leave a review.

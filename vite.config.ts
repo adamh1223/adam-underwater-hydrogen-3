@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['signature-take-introduce-tongue.tryhydrogen.dev'],
+    allowedHosts: ['baptist-goes-debate-meyer.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

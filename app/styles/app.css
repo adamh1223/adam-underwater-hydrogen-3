@@ -1217,3 +1217,13 @@ span {
 .stars {
   color: rgb(214, 183, 72);
 }
+
+.review-container {
+  display: grid;
+  grid-template-columns: 4fr 1fr;
+}
+
+.review-right-side {
+  display: grid;
+  grid-template-columns: 1fr;
+}
