@@ -1567,16 +1567,13 @@ export default function Product() {
               customerId={customerId}
               customerName={customerName}
             />
+            <div>review form above this</div>
             <div>
               posted reviews will be HERE
-              {parsedReviews?.map((review: any) => (
+              {parsedReviews?.map((review: any, index: number) => (
                 <ProductReviewsDisplay
+                  key={review?.createdAt ?? index}
                   review={review}
-                  title={review.title}
-                  productId={review.productId}
-                  customerId={review.customerId}
-                  stars={review.stars}
-                  customerName={review.customerName}
                 />
               ))}
             </div>
