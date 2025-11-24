@@ -86,27 +86,6 @@ const ProductReviewsDisplay = ({
   return (
     <>
       <Card>
-        {isCurrentUserReview ? (
-          <>
-            <h1>YOUR REVIEW</h1>
-            <Button
-              variant="destructive"
-              onClick={handleRemove}
-              disabled={isRemoving}
-              className="mb-2 cursor-pointer"
-            >
-              {isRemoving ? 'Removing...' : 'Remove Review'}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setIsEditing((prev) => !prev)}
-              disabled={isSaving}
-              className="mb-2 ml-2 cursor-pointer"
-            >
-              {isEditing ? 'Cancel edit' : 'Edit Review'}
-            </Button>
-          </>
-        ) : null}
         {isEditing ? (
           <>
             <Input
@@ -125,7 +104,7 @@ const ProductReviewsDisplay = ({
             />
             <Rating value={editStars} onValueChange={setEditStars}>
               {Array.from({length: 5}).map((_, index) => (
-                <RatingButton key={index} />
+                <RatingButton key={index} className="stars" />
               ))}
             </Rating>
             <div className="mt-3 flex gap-2">
@@ -148,14 +127,41 @@ const ProductReviewsDisplay = ({
           </>
         ) : (
           <>
-            <Rating value={parsedStars} readOnly>
-              {Array.from({length: 5}).map((_, index) => (
-                <RatingButton key={index} />
-              ))}
-            </Rating>
-            <p>Written by {displayAuthor}</p>
-            <p>{displayTitle}</p>
-            <p>{displayText}</p>
+            <div>
+              <Rating value={parsedStars} readOnly>
+                {Array.from({length: 5}).map((_, index) => (
+                  <RatingButton key={index} className="stars" />
+                ))}
+              </Rating>
+              <p>Written by {displayAuthor}</p>
+              <p>{displayTitle}</p>
+              <p>{displayText}</p>
+            </div>
+            {isCurrentUserReview ? (
+              <>
+                <div className="flex justify-end">
+                  <div>
+                    <h1>YOUR REVIEW</h1>
+                    <Button
+                      variant="destructive"
+                      onClick={handleRemove}
+                      disabled={isRemoving}
+                      className="mb-2 cursor-pointer"
+                    >
+                      {isRemoving ? 'Removing...' : 'Remove Review'}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsEditing((prev) => !prev)}
+                      disabled={isSaving}
+                      className="mb-2 ml-2 cursor-pointer"
+                    >
+                      {isEditing ? 'Cancel edit' : 'Edit Review'}
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : null}
           </>
         )}
       </Card>

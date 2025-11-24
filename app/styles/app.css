@@ -1213,3 +1213,7 @@ span {
 .EProductVideo.visible {
   opacity: 1;
 }
+
+.stars {
+  color: rgb(214, 183, 72);
+}

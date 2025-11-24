@@ -64,7 +64,7 @@ function ReviewForm({
 
       <Rating value={stars} onValueChange={setStars}>
         {Array.from({length: 5}).map((_, index) => (
-          <RatingButton key={index} />
+          <RatingButton key={index} className="stars" />
         ))}
       </Rating>
 
