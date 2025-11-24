@@ -50,17 +50,18 @@ function ReviewForm({
   return (
     <>
       <Input
-        name="review"
-        placeholder="hi"
-        onChange={handleChange}
-        disabled={!isLoggedIn}
-      ></Input>
-      <Input
         name="title"
         placeholder="title here"
         onChange={handleChange}
         disabled={!isLoggedIn}
       ></Input>
+      <Input
+        name="review"
+        placeholder="hi"
+        onChange={handleChange}
+        disabled={!isLoggedIn}
+      ></Input>
+
       <Rating value={stars} onValueChange={setStars}>
         {Array.from({length: 5}).map((_, index) => (
           <RatingButton key={index} />

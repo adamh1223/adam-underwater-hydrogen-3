@@ -682,6 +682,7 @@ export default function Product() {
     parsedReviews = [];
   }
   console.log(parsedReviews, 'parsedReviews');
+
   const [reviewsList, setReviewsList] = useState(parsedReviews);
 
   const handleRemoveReview = async (reviewToRemove: any) => {
@@ -712,6 +713,40 @@ export default function Product() {
     }
   };
 
+  const handleEditReview = async (
+    reviewToEdit: any,
+    updates: {text: string; title: string; stars: number},
+  ) => {
+    if (!customerId || !reviewToEdit?.createdAt) return;
+
+    const form = new FormData();
+    form.append('productId', product.id);
+    form.append('customerId', customerId);
+    form.append('createdAt', reviewToEdit.createdAt);
+    form.append('review', updates.text);
+    form.append('stars', updates.stars.toString());
+    form.append('title', updates.title);
+    form.append('customerName', customerName);
+
+    try {
+      const response = await fetch('/api/edit_review', {
+        method: 'POST',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+
+      if (!response.ok) {
+        console.error('Failed to edit review', await response.text());
+        return;
+      }
+
+      const data = await response.json();
+      const updatedReviews = data?.reviews ?? [];
+      setReviewsList(updatedReviews);
+    } catch (error) {
+      console.error('Error editing review', error);
+    }
+  };
   return (
     <>
       <section className="product px-[40px] pt-[20px]">
@@ -1614,6 +1649,7 @@ export default function Product() {
                   review={review}
                   currentCustomerId={customerId}
                   onRemove={handleRemoveReview}
+                  onEdit={handleEditReview}
                 />
               ))}
             </div>
