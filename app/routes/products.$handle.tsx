@@ -150,8 +150,10 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
 export default function Product() {
   const {product, recommendedProducts, cart, reviews, customer} =
     useLoaderData<typeof loader>();
-  const customerId = customer?.customer?.id;
-  const customerName = `${customer?.customer?.firstName} ${customer?.customer?.lastName}`;
+  const customerId = customer?.customer?.id ?? '';
+  const customerFirstName = customer?.customer?.firstName ?? '';
+  const customerLastName = customer?.customer?.lastName ?? '';
+  const customerName = `${customerFirstName} ${customerLastName}`.trim();
   console.log(reviews, 'reviews');
   console.log(customer, 'customer');
 
@@ -671,8 +673,44 @@ export default function Product() {
     },
   ];
 
-  const parsedReviews = JSON.parse(reviews?.product?.metafield?.value) as [];
+  let parsedReviews: any[] = [];
+  try {
+    const rawReviews = reviews?.product?.metafield?.value;
+    parsedReviews = rawReviews ? (JSON.parse(rawReviews) as any[]) : [];
+  } catch (error) {
+    console.error('Unable to parse product reviews metafield', error);
+    parsedReviews = [];
+  }
   console.log(parsedReviews, 'parsedReviews');
+  const [reviewsList, setReviewsList] = useState(parsedReviews);
+
+  const handleRemoveReview = async (reviewToRemove: any) => {
+    if (!customerId || !reviewToRemove?.createdAt) return;
+
+    const form = new FormData();
+    form.append('productId', product.id);
+    form.append('customerId', customerId);
+    form.append('createdAt', reviewToRemove.createdAt);
+
+    try {
+      const response = await fetch('/api/remove_review', {
+        method: 'POST',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+
+      if (!response.ok) {
+        console.error('Failed to remove review', await response.text());
+        return;
+      }
+
+      const data = await response.json();
+      const updatedReviews = data?.reviews ?? [];
+      setReviewsList(updatedReviews);
+    } catch (error) {
+      console.error('Error removing review', error);
+    }
+  };
 
   return (
     <>
@@ -1574,6 +1612,8 @@ export default function Product() {
                 <ProductReviewsDisplay
                   key={review?.createdAt ?? index}
                   review={review}
+                  currentCustomerId={customerId}
+                  onRemove={handleRemoveReview}
                 />
               ))}
             </div>

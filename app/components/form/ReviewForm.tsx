@@ -13,8 +13,9 @@ function ReviewForm({
   customerName: string | undefined;
 }) {
   const [review, setReview] = useState<string | undefined>();
-  const [stars, setStars] = useState<number | undefined>();
+  const [stars, setStars] = useState<number>(0);
   const [title, setTitle] = useState<string | undefined>();
+  const isLoggedIn = Boolean(customerId);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value} = e.target;
     if (name === 'title') {
@@ -42,19 +43,23 @@ function ReviewForm({
       const json = await response.json();
     } catch (error) {}
   };
-  if (!customerId) {
-    return null;
-  }
+
   console.log(review, '444review');
   console.log(title, '444title');
 
   return (
     <>
-      <Input name="review" placeholder="hi" onChange={handleChange}></Input>
+      <Input
+        name="review"
+        placeholder="hi"
+        onChange={handleChange}
+        disabled={!isLoggedIn}
+      ></Input>
       <Input
         name="title"
         placeholder="title here"
         onChange={handleChange}
+        disabled={!isLoggedIn}
       ></Input>
       <Rating value={stars} onValueChange={setStars}>
         {Array.from({length: 5}).map((_, index) => (
@@ -62,7 +67,14 @@ function ReviewForm({
         ))}
       </Rating>
 
-      <Button onClick={handleSubmit}>Submit</Button>
+      <Button onClick={handleSubmit} disabled={!isLoggedIn}>
+        Submit
+      </Button>
+      {!isLoggedIn && (
+        <p className="text-sm text-muted-foreground mt-2">
+          Please sign in to leave a review.
+        </p>
+      )}
     </>
   );
 }
