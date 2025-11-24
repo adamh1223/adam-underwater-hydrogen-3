@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['springer-session-important-attorneys.tryhydrogen.dev'],
+    allowedHosts: ['periodically-tones-issued-declared.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

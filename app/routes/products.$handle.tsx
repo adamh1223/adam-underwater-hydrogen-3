@@ -1570,7 +1570,14 @@ export default function Product() {
             <div>
               posted reviews will be HERE
               {parsedReviews?.map((review: any) => (
-                <ProductReviewsDisplay review={review} />
+                <ProductReviewsDisplay
+                  review={review}
+                  title={review.title}
+                  productId={review.productId}
+                  customerId={review.customerId}
+                  stars={review.stars}
+                  customerName={review.customerName}
+                />
               ))}
             </div>
           </div>
