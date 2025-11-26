@@ -1,5 +1,6 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
+import {uploadImage} from '~/routes/api.supabase';
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   let binary = '';
@@ -22,7 +23,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const stars = form.get('stars') as string;
     const title = form.get('title') as string;
     const customerName = form.get('customerName') as string;
-    const imageFile = form.get('image') as File | null;
+    const imageFiles = form.get('image') as File[] | null;
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -108,12 +109,21 @@ export async function action({request, context}: ActionFunctionArgs) {
       }
     }
 
-    let imageDataUrl: string | undefined;
-    if (imageFile && typeof imageFile === 'object') {
-      const arrayBuffer = await imageFile.arrayBuffer();
-      const base64 = Buffer.from(arrayBuffer).toString('base64');
-      const mimeType = imageFile.type || 'application/octet-stream';
-      imageDataUrl = `data:${mimeType};base64,${base64}`;
+    // let imageDataUrl: string | undefined;
+    // if (imageFile && typeof imageFile === 'object') {
+    //   const arrayBuffer = await imageFile.arrayBuffer();
+    //   const base64 = Buffer.from(arrayBuffer).toString('base64');
+    //   const mimeType = imageFile.type || 'application/octet-stream';
+    //   imageDataUrl = `data:${mimeType};base64,${base64}`;
+    // }
+    let customerImages;
+
+    if (imageFiles?.length) {
+      const promisedImages = imageFiles?.map(async (file: File) => {
+        return await uploadImage(file);
+      });
+
+      customerImages = await Promise.all(promisedImages);
     }
 
     // Append new review
@@ -126,7 +136,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         stars,
         title,
         customerName,
-        imageDataUrl,
+        customerImages,
       },
     ];
 

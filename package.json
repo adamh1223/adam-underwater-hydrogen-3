@@ -30,6 +30,7 @@
     "@remix-run/server-runtime": "^2.16.1",
     "@shopify/hydrogen": "^2025.4.1",
     "@shopify/remix-oxygen": "^2.0.12",
+    "@supabase/supabase-js": "^2.45.4",
     "@trycourier/courier": "^6.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
