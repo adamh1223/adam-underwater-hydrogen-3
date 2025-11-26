@@ -21,6 +21,8 @@ declare global {
   interface Env extends HydrogenEnv {
     // declare additional Env parameter use in the fetch handler and Remix loader context here
     SHOPIFY_ADMIN_TOKEN: string;
+    SUPABASE_KEY: string;
+    SUPABASE_URL: string;
   }
 }
 
