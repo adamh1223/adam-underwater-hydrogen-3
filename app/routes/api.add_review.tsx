@@ -1,6 +1,18 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  return btoa(binary);
+}
+
 export async function action({request, context}: ActionFunctionArgs) {
   try {
     const form = await request.formData();
@@ -10,6 +22,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const stars = form.get('stars') as string;
     const title = form.get('title') as string;
     const customerName = form.get('customerName') as string;
+    const imageFile = form.get('image') as File | null;
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -52,7 +65,37 @@ export async function action({request, context}: ActionFunctionArgs) {
       },
     );
 
-    const existingJson = await existingResponse.json();
+    const existingText = await existingResponse.text();
+
+    if (!existingResponse.ok) {
+      console.error(
+        'Admin API fetch failed:',
+        existingResponse.status,
+        existingText,
+      );
+      return json(
+        {
+          error: 'Failed to read existing reviews',
+          status: existingResponse.status,
+        },
+        {status: 500},
+      );
+    }
+
+    let existingJson: any = {};
+    try {
+      existingJson = JSON.parse(existingText);
+    } catch (error) {
+      console.error(
+        'Failed to parse existing reviews JSON:',
+        error,
+        existingText,
+      );
+      return json(
+        {error: 'Invalid reviews data returned by Admin API'},
+        {status: 500},
+      );
+    }
 
     let existingReviews: any[] = [];
 
@@ -65,6 +108,14 @@ export async function action({request, context}: ActionFunctionArgs) {
       }
     }
 
+    let imageDataUrl: string | undefined;
+    if (imageFile && typeof imageFile === 'object') {
+      const arrayBuffer = await imageFile.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      const mimeType = imageFile.type || 'application/octet-stream';
+      imageDataUrl = `data:${mimeType};base64,${base64}`;
+    }
+
     // Append new review
     const updatedReviews = [
       ...existingReviews,
@@ -75,6 +126,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         stars,
         title,
         customerName,
+        imageDataUrl,
       },
     ];
 
