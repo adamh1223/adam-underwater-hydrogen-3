@@ -111,7 +111,9 @@ function ReviewForm({
               alt="Selected review attachment"
               className="h-12 w-12 object-cover rounded"
             />
-            <span className="truncate max-w-[160px]">{selectedImage?.name}</span>
+            <span className="truncate max-w-[160px]">
+              {selectedImage?.name}
+            </span>
           </div>
         )}
       </div>

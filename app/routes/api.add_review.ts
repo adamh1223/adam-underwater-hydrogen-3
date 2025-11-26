@@ -1,7 +1,43 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
+// import {createClient} from '@supabase/supabase-js';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 import {uploadImage} from '~/lib/supabase.server';
+// const BUCKET = 'main-bucket';
+// function getSupabase(env: Env) {
+//   const url = env.SUPABASE_URL;
+//   const key = env.SUPABASE_KEY;
 
+//   if (!url || !key) {
+//     throw new Error('Supabase credentials are not configured');
+//   }
+
+//   return createClient(url, key, {
+//     // Auth is not needed for simple storage uploads in this flow.
+//     auth: {
+//       autoRefreshToken: false,
+//       persistSession: false,
+//     },
+//   });
+// }
+
+// export const uploadImage = async (env: Env, image: File) => {
+//   const supabase = getSupabase(env);
+//   const objectName = `${Date.now()}-${image.name}`;
+
+//   const {data, error} = await supabase.storage
+//     .from(BUCKET)
+//     .upload(objectName, image, {
+//       cacheControl: '3600',
+//     });
+
+//   if (error || !data) {
+//     throw new Error(
+//       `Image upload failed: ${error?.message ?? 'unknown error'}`,
+//     );
+//   }
+
+//   return supabase.storage.from(BUCKET).getPublicUrl(objectName).data.publicUrl;
+// };
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   let binary = '';
   const bytes = new Uint8Array(buffer);
@@ -23,7 +59,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const stars = form.get('stars') as string;
     const title = form.get('title') as string;
     const customerName = form.get('customerName') as string;
-    const imageFiles = form.get('image') as File[] | null;
+    const imageFile = form.get('image') as File | null;
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -116,15 +152,14 @@ export async function action({request, context}: ActionFunctionArgs) {
     //   const mimeType = imageFile.type || 'application/octet-stream';
     //   imageDataUrl = `data:${mimeType};base64,${base64}`;
     // }
-    let customerImages;
-
-    if (imageFiles?.length) {
-      const promisedImages = imageFiles?.map((file: File) =>
-        uploadImage(context.env, file),
-      );
-
-      customerImages = await Promise.all(promisedImages);
+    let customerImage = await uploadImage(context.env, imageFile);
+    if (imageFile) {
+      // const promisedImages = imageFiles?.map((file: File) =>
+      //   uploadImage(context.env, file),
+      // );
+      // customerImages = await Promise.all(promisedImages);
     }
+    console.log(customerImage, 'customerimages');
 
     // Append new review
     const updatedReviews = [
@@ -136,7 +171,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         stars,
         title,
         customerName,
-        customerImages,
+        customerImage,
       },
     ];
 

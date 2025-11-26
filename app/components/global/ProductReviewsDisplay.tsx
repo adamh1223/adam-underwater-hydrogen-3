@@ -12,7 +12,7 @@ interface Review {
   stars?: number | string;
   title?: string;
   customerName?: string;
-  imageDataUrl?: string;
+  customerImage?: string;
 }
 interface ProductReviewsDisplayProps {
   review: Review;
@@ -38,7 +38,7 @@ const ProductReviewsDisplay = ({
   }>('routes/products.$handle');
   const loaderCustomerId = routeData?.customer?.customer?.id;
   const resolvedCurrentCustomerId = currentCustomerId ?? loaderCustomerId;
-  const {title, stars, customerName, text, customerId, imageDataUrl} = review;
+  const {title, stars, customerName, text, customerId, customerImage} = review;
   const parsedStars =
     typeof stars === 'string' ? parseInt(stars, 10) : (stars ?? 0);
   const displayTitle = title?.trim() ? title : 'Review';
@@ -144,10 +144,10 @@ const ProductReviewsDisplay = ({
                   </CardHeader>
                   <CardContent>
                     <p>{displayText}</p>
-                    {imageDataUrl ? (
+                    {customerImage ? (
                       <div className="mt-4">
                         <img
-                          src={imageDataUrl}
+                          src={customerImage}
                           alt={`${displayTitle} image attachment`}
                           className="max-h-64 rounded object-contain"
                         />

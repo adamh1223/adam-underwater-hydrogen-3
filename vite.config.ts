@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['speed-public-offering-raymond.tryhydrogen.dev'],
+    allowedHosts: ['amounts-likewise-packard-none.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
@@ -51,7 +51,13 @@ export default defineConfig({
        * Include 'example-dep' in the array below.
        * @see https://vitejs.dev/config/dep-optimization-options
        */
-      include: ['@trycourier/courier'],
+      include: [
+        '@trycourier/courier',
+        '@supabase/supabase-js',
+        '@supabase/postgrest-js',
+        '@supabase/gotrue-js',
+        '@supabase/storage-js',
+      ],
     },
   },
   resolve: {
