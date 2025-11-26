@@ -1,6 +1,6 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
-import {uploadImage} from '~/routes/api.supabase';
+import {uploadImage} from '~/lib/supabase.server';
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   let binary = '';
@@ -119,9 +119,9 @@ export async function action({request, context}: ActionFunctionArgs) {
     let customerImages;
 
     if (imageFiles?.length) {
-      const promisedImages = imageFiles?.map(async (file: File) => {
-        return await uploadImage(file);
-      });
+      const promisedImages = imageFiles?.map((file: File) =>
+        uploadImage(context.env, file),
+      );
 
       customerImages = await Promise.all(promisedImages);
     }
