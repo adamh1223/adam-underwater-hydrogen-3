@@ -19,7 +19,13 @@ export default async function handleRequest(
     connectSrc: [
       'wss://patient-mite-notably.ngrok-free.app:3000',
       'https://api.courier.com/send',
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/',
+    ],
+    imgSrc: [
+      "'self'",
+      'data:',
+      'blob:',
+      'https://cdn.shopify.com',
+      'https://fpoxvfuxgtlyphowqdgf.supabase.co',
     ],
     frameSrc: ['https://player.vimeo.com/', 'https://vimeo.com/'],
   });

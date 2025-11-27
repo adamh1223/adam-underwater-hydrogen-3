@@ -672,7 +672,6 @@ export default function Product() {
       image: '/gear1.png',
     },
   ];
-
   let parsedReviews: any[] = [];
   try {
     const rawReviews = reviews?.product?.metafield?.value;
@@ -711,6 +710,9 @@ export default function Product() {
     } catch (error) {
       console.error('Error removing review', error);
     }
+  };
+  const updateExistingReviews = (newReviews: any[]) => {
+    setReviewsList(newReviews);
   };
 
   const handleEditReview = async (
@@ -1636,7 +1638,7 @@ export default function Product() {
           </div>
           <div className="my-5">
             <div>
-              {parsedReviews?.map((review: any, index: number) => (
+              {reviewsList?.map((review: any, index: number) => (
                 <ProductReviewsDisplay
                   key={review?.createdAt ?? index}
                   review={review}
@@ -1650,6 +1652,7 @@ export default function Product() {
               productId={product.id}
               customerId={customerId}
               customerName={customerName}
+              updateExistingReviews={updateExistingReviews}
             />
           </div>
         </section>

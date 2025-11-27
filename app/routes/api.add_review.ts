@@ -152,7 +152,11 @@ export async function action({request, context}: ActionFunctionArgs) {
     //   const mimeType = imageFile.type || 'application/octet-stream';
     //   imageDataUrl = `data:${mimeType};base64,${base64}`;
     // }
-    let customerImage = await uploadImage(context.env, imageFile);
+    let customerImage;
+    if (imageFile) {
+      customerImage = await uploadImage(context.env, imageFile);
+    }
+
     if (imageFile) {
       // const promisedImages = imageFiles?.map((file: File) =>
       //   uploadImage(context.env, file),

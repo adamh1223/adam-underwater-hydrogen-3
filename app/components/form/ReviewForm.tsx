@@ -1,24 +1,41 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Input} from '../ui/input';
 import {Button} from '../ui/button';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import Sectiontitle from '../global/Sectiontitle';
+import {ReloadIcon} from '@radix-ui/react-icons';
+import {toast, Toaster} from 'sonner';
 
 function ReviewForm({
   productId,
   customerId,
   customerName,
+  updateExistingReviews,
 }: {
   productId: string;
   customerId: string | undefined;
   customerName: string | undefined;
+  updateExistingReviews: (reviews: any[]) => void;
 }) {
+  const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
   const [review, setReview] = useState<string | undefined>();
   const [stars, setStars] = useState<number>(0);
   const [title, setTitle] = useState<string | undefined>();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [reviewSubmittedMessage, setReviewSubmittedMessage] = useState<
+    string | undefined
+  >();
+  useEffect(() => {
+    if (reviewSubmittedMessage) {
+      const timer = setTimeout(() => {
+        setReviewSubmittedMessage(undefined);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [reviewSubmittedMessage]);
   const isLoggedIn = Boolean(customerId);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value} = e.target;
@@ -43,6 +60,7 @@ function ReviewForm({
   };
   const handleSubmit = async () => {
     try {
+      setPendingReviewSubmit(true);
       const form = new FormData();
       //   form.append('productId', product.id);
       form.append('review', review as string);
@@ -62,7 +80,16 @@ function ReviewForm({
         headers: {Accept: 'application/json'},
       });
       const json = await response.json();
+      updateExistingReviews(json.reviews);
+      setPendingReviewSubmit(false);
+      setReview('');
+      setStars(0);
+      setTitle('');
+      setSelectedImage(null);
+      setImagePreview(null);
+      setReviewSubmittedMessage('Review Submitted!');
     } catch (error) {}
+    setPendingReviewSubmit(false);
   };
 
   console.log(review, '444review');
@@ -72,67 +99,77 @@ function ReviewForm({
     <>
       <Sectiontitle text="Leave Product Review" />
       <br />
-      <Input
-        name="title"
-        placeholder="title here"
-        onChange={handleChange}
-        disabled={!isLoggedIn}
-      ></Input>
-      <br />
-      <Input
-        name="review"
-        placeholder="message"
-        onChange={handleChange}
-        disabled={!isLoggedIn}
-      ></Input>
-      <br />
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-        disabled={!isLoggedIn}
-      />
-      <div className="flex items-center gap-3 mb-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={triggerFileSelect}
-          disabled={!isLoggedIn}
-          className="cursor-pointer"
-        >
-          Upload image
-        </Button>
-        {imagePreview && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <img
-              src={imagePreview}
-              alt="Selected review attachment"
-              className="h-12 w-12 object-cover rounded"
-            />
-            <span className="truncate max-w-[160px]">
-              {selectedImage?.name}
-            </span>
+      {!reviewSubmittedMessage ? (
+        <>
+          <Input
+            name="title"
+            placeholder="title here"
+            onChange={handleChange}
+            disabled={!isLoggedIn}
+          ></Input>
+          <br />
+          <Input
+            name="review"
+            placeholder="message"
+            onChange={handleChange}
+            disabled={!isLoggedIn}
+          ></Input>
+          <br />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={!isLoggedIn}
+          />
+          <div className="flex items-center gap-3 mb-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={triggerFileSelect}
+              disabled={!isLoggedIn}
+              className="cursor-pointer"
+            >
+              Upload image
+            </Button>
+            {imagePreview && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <img
+                  src={imagePreview}
+                  alt="Selected review attachment"
+                  className="h-12 w-12 object-cover rounded"
+                />
+                <span className="truncate max-w-[160px]">
+                  {selectedImage?.name}
+                </span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <div className="flex items-center">
-        <Rating value={stars} onValueChange={setStars}>
-          {Array.from({length: 5}).map((_, index) => (
-            <RatingButton key={index} className="stars" />
-          ))}
-        </Rating>
-      </div>
-      <div className="mt-3">
-        <Button
-          onClick={handleSubmit}
-          disabled={!isLoggedIn}
-          className="cursor-pointer"
-        >
-          Submit
-        </Button>
-      </div>
+          <div className="flex items-center">
+            <Rating value={stars} onValueChange={setStars}>
+              {Array.from({length: 5}).map((_, index) => (
+                <RatingButton key={index} className="stars" />
+              ))}
+            </Rating>
+          </div>
+          <div className="mt-3">
+            <Button
+              onClick={handleSubmit}
+              disabled={!isLoggedIn}
+              className="cursor-pointer"
+            >
+              {pendingReviewSubmit ? (
+                <ReloadIcon className="animate-spin" />
+              ) : (
+                'Submit'
+              )}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div>{reviewSubmittedMessage}</div>
+      )}
       {!isLoggedIn && (
         <p className="text-sm text-muted-foreground mt-2">
           Please sign in to leave a review.

@@ -14,6 +14,7 @@ import {RootLoader} from './root';
 
 // ✅ Import TooltipProvider from Shadcn UI
 import {TooltipProvider} from '~/components/ui/tooltip';
+import {Toaster} from './components/ui/sonner';
 
 export default function Layout() {
   const nonce = useNonce();
@@ -55,6 +56,7 @@ export default function Layout() {
         </TooltipProvider>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
+   
       </body>
     </html>
   );
