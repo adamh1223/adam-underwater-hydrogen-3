@@ -777,9 +777,9 @@ export default function Product() {
 
   const getYOffset = () => {
     if (windowWidth == null) return -180;
-    if (windowWidth < 601) return -215;
-    if (windowWidth >= 601 && windowWidth < 1280) return -180;
-    return -75;
+    if (windowWidth < 601) return -280;
+    if (windowWidth >= 601 && windowWidth < 1280) return -250;
+    if (windowWidth >= 1280) return -130;
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -1031,14 +1031,21 @@ export default function Product() {
                           aria-label={`Maximum rating of 5 stars`}
                         >
                           {Array.from({length: 5}).map((_, index) => (
-                            <RatingButton key={index} className="h-5 w-5 p-0.5" />
+                            <RatingButton
+                              key={index}
+                              className="h-5 w-5 p-0.5"
+                            />
                           ))}
                         </Rating>
                         <div
                           className="absolute inset-0 overflow-hidden text-yellow-400"
                           style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                         >
-                          <Rating readOnly value={5} className="text-yellow-400">
+                          <Rating
+                            readOnly
+                            value={5}
+                            className="text-yellow-400"
+                          >
                             {Array.from({length: 5}).map((_, index) => (
                               <RatingButton
                                 key={index}
