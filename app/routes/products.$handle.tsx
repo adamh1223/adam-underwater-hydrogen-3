@@ -22,6 +22,7 @@ import {
   ArrowRight,
   ChevronLeftIcon,
   ChevronRightIcon,
+  StarIcon,
 } from 'lucide-react';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
@@ -59,7 +60,6 @@ import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 import ReviewForm from '~/components/form/ReviewForm';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import ProductReviewsDisplay from '~/components/global/ProductReviewsDisplay';
-import { Rating } from 'components/ui/shadcn-io/rating';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -685,6 +685,17 @@ export default function Product() {
 
   const [reviewsList, setReviewsList] = useState(parsedReviews);
 
+  const reviewsCount = reviewsList.length;
+  const averageRating =
+    reviewsCount > 0
+      ? reviewsList.reduce(
+          (sum, review) => sum + Number(review?.stars ?? 0),
+          0,
+        ) / reviewsCount
+      : 0;
+  const formattedAverageRating =
+    reviewsCount > 0 ? averageRating.toFixed(1) : '0.0';
+
   const handleRemoveReview = async (reviewToRemove: any) => {
     if (!customerId || !reviewToRemove?.createdAt) return;
 
@@ -816,8 +827,42 @@ export default function Product() {
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
-            <div className='average-product-rating'>
-              <Rating />
+            <div className="average-product-rating">
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex items-center"
+                  aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                >
+                  {Array.from({length: 5}).map((_, index) => {
+                    const fillPercentage = Math.max(
+                      0,
+                      Math.min(1, averageRating - index),
+                    );
+
+                    return (
+                      <span
+                        key={index}
+                        className="relative inline-block h-5 w-5 text-muted-foreground"
+                        aria-hidden="true"
+                      >
+                        <StarIcon className="h-5 w-5" />
+                        {fillPercentage > 0 ? (
+                          <span
+                            className="absolute inset-0 overflow-hidden text-yellow-400"
+                            style={{width: `${fillPercentage * 100}%`}}
+                          >
+                            <StarIcon className="h-5 w-5 fill-current" />
+                          </span>
+                        ) : null}
+                      </span>
+                    );
+                  })}
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {formattedAverageRating} (
+                  {reviewsCount === 1 ? '1 review' : `${reviewsCount} reviews`})
+                </span>
+              </div>
             </div>
             <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
           </>
