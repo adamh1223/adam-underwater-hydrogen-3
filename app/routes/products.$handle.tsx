@@ -59,7 +59,7 @@ import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 import ReviewForm from '~/components/form/ReviewForm';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import ProductReviewsDisplay from '~/components/global/ProductReviewsDisplay';
-import { Rating } from 'components/ui/shadcn-io/rating';
+import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -685,6 +685,17 @@ export default function Product() {
 
   const [reviewsList, setReviewsList] = useState(parsedReviews);
 
+  const reviewsCount = reviewsList.length;
+  const averageRating =
+    reviewsCount > 0
+      ? reviewsList.reduce(
+          (sum, review) => sum + Number(review?.stars ?? 0),
+          0,
+        ) / reviewsCount
+      : 0;
+  const formattedAverageRating =
+    reviewsCount > 0 ? averageRating.toFixed(1) : '0.0';
+
   const handleRemoveReview = async (reviewToRemove: any) => {
     if (!customerId || !reviewToRemove?.createdAt) return;
 
@@ -816,8 +827,39 @@ export default function Product() {
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
-            <div className='average-product-rating'>
-              <Rating />
+            <div className="average-product-rating">
+              <div className="flex items-center gap-2">
+                <div className="relative flex items-center" aria-hidden="true">
+                  <Rating
+                    readOnly
+                    value={5}
+                    className="text-muted-foreground"
+                    aria-label={`Maximum rating of 5 stars`}
+                  >
+                    {Array.from({length: 5}).map((_, index) => (
+                      <RatingButton key={index} className="h-5 w-5 p-0.5" />
+                    ))}
+                  </Rating>
+                  <div
+                    className="absolute inset-0 overflow-hidden text-yellow-400"
+                    style={{width: `${(averageRating / 5) * 100}%`}}
+                  >
+                    <Rating readOnly value={5} className="text-yellow-400">
+                      {Array.from({length: 5}).map((_, index) => (
+                        <RatingButton
+                          key={index}
+                          className="h-5 w-5 p-0.5"
+                          aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                        />
+                      ))}
+                    </Rating>
+                  </div>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {formattedAverageRating} (
+                  {reviewsCount === 1 ? '1 review' : `${reviewsCount} reviews`})
+                </span>
+              </div>
             </div>
             <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
           </>
