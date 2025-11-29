@@ -827,6 +827,7 @@ export default function Product() {
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
+            <div>hi</div>
             <div className="average-product-rating">
               <div className="flex items-center gap-2">
                 <div
