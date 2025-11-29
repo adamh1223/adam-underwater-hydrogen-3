@@ -22,6 +22,7 @@ import {
   ArrowRight,
   ChevronLeftIcon,
   ChevronRightIcon,
+  StarIcon,
 } from 'lucide-react';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
@@ -59,7 +60,6 @@ import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 import ReviewForm from '~/components/form/ReviewForm';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import ProductReviewsDisplay from '~/components/global/ProductReviewsDisplay';
-import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -829,31 +829,34 @@ export default function Product() {
             />
             <div className="average-product-rating">
               <div className="flex items-center gap-2">
-                <div className="relative flex items-center" aria-hidden="true">
-                  <Rating
-                    readOnly
-                    value={5}
-                    className="text-muted-foreground"
-                    aria-label={`Maximum rating of 5 stars`}
-                  >
-                    {Array.from({length: 5}).map((_, index) => (
-                      <RatingButton key={index} className="h-5 w-5 p-0.5" />
-                    ))}
-                  </Rating>
-                  <div
-                    className="absolute inset-0 overflow-hidden text-yellow-400"
-                    style={{width: `${(averageRating / 5) * 100}%`}}
-                  >
-                    <Rating readOnly value={5} className="text-yellow-400">
-                      {Array.from({length: 5}).map((_, index) => (
-                        <RatingButton
-                          key={index}
-                          className="h-5 w-5 p-0.5"
-                          aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                        />
-                      ))}
-                    </Rating>
-                  </div>
+                <div
+                  className="flex items-center"
+                  aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                >
+                  {Array.from({length: 5}).map((_, index) => {
+                    const fillPercentage = Math.max(
+                      0,
+                      Math.min(1, averageRating - index),
+                    );
+
+                    return (
+                      <span
+                        key={index}
+                        className="relative inline-block h-5 w-5 text-muted-foreground"
+                        aria-hidden="true"
+                      >
+                        <StarIcon className="h-5 w-5" />
+                        {fillPercentage > 0 ? (
+                          <span
+                            className="absolute inset-0 overflow-hidden text-yellow-400"
+                            style={{width: `${fillPercentage * 100}%`}}
+                          >
+                            <StarIcon className="h-5 w-5 fill-current" />
+                          </span>
+                        ) : null}
+                      </span>
+                    );
+                  })}
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {formattedAverageRating} (
