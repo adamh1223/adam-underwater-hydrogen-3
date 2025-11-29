@@ -4,6 +4,7 @@ import {
   type MetaFunction,
   Link,
   useRouteLoaderData,
+  useLocation,
 } from '@remix-run/react';
 import {
   getSelectedProductOptions,
@@ -27,7 +28,7 @@ import {
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {RootLoader} from '~/root';
 import {useIsVideoInCart} from '~/lib/hooks';
 import {
@@ -762,6 +763,91 @@ export default function Product() {
       console.error('Error editing review', error);
     }
   };
+  const location = useLocation();
+
+  const retryTimerRef = useRef<number | null>(null);
+
+  // Track window width
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const getYOffset = () => {
+    if (windowWidth == null) return -180;
+    if (windowWidth < 601) return -215;
+    if (windowWidth >= 601 && windowWidth < 1280) return -180;
+    return -75;
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (!section) return false;
+    const y =
+      section.getBoundingClientRect().top + window.scrollY + getYOffset();
+    window.scrollTo({top: y, behavior: 'smooth'});
+    return true;
+  };
+
+  const handleScroll = (
+    sectionId: string,
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
+    event.preventDefault();
+    scrollToSection(sectionId);
+  };
+
+  useEffect(() => {
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+
+    const saved = (() => {
+      try {
+        return sessionStorage.getItem('about-scroll-target');
+      } catch {
+        return null;
+      }
+    })();
+
+    const hashTarget = location.hash ? location.hash.replace('#', '') : null;
+    const target = hashTarget || saved;
+    if (!target) return;
+
+    let attempts = 0;
+    const maxAttempts = 20;
+    const delayMs = 100;
+
+    const tryScroll = () => {
+      attempts++;
+      const ok = scrollToSection(target);
+      if (ok) {
+        try {
+          sessionStorage.removeItem('about-scroll-target');
+        } catch {}
+        return;
+      }
+      if (attempts >= maxAttempts) {
+        try {
+          sessionStorage.removeItem('about-scroll-target');
+        } catch {}
+        return;
+      }
+      retryTimerRef.current = window.setTimeout(tryScroll, delayMs);
+    };
+
+    retryTimerRef.current = window.setTimeout(tryScroll, 50);
+
+    return () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
+  }, [location, windowWidth]);
   return (
     <>
       <section className="product px-[40px] pt-[20px]">
@@ -828,41 +914,48 @@ export default function Product() {
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
-
-            <div className="average-product-rating">
-              <div className="flex items-center gap-2">
-                <div className="relative flex items-center" aria-hidden="true">
-                  <Rating
-                    readOnly
-                    value={5}
-                    className="text-muted-foreground"
-                    aria-label={`Maximum rating of 5 stars`}
-                  >
-                    {Array.from({length: 5}).map((_, index) => (
-                      <RatingButton key={index} className="h-5 w-5 p-0.5" />
-                    ))}
-                  </Rating>
+            <a onClick={(evt) => handleScroll('reviews', evt)}>
+              <div className="average-product-rating">
+                <div className="flex items-center gap-2">
                   <div
-                    className="absolute inset-0 overflow-hidden text-yellow-400"
-                    style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                    className="relative flex items-center"
+                    aria-hidden="true"
                   >
-                    <Rating readOnly value={5} className="text-yellow-400">
+                    <Rating
+                      readOnly
+                      value={5}
+                      className="text-muted-foreground"
+                      aria-label={`Maximum rating of 5 stars`}
+                    >
                       {Array.from({length: 5}).map((_, index) => (
-                        <RatingButton
-                          key={index}
-                          className="h-5 w-5 p-0.5"
-                          aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                        />
+                        <RatingButton key={index} className="h-5 w-5 p-0.5" />
                       ))}
                     </Rating>
+                    <div
+                      className="absolute inset-0 overflow-hidden text-yellow-400"
+                      style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                    >
+                      <Rating readOnly value={5} className="text-yellow-400">
+                        {Array.from({length: 5}).map((_, index) => (
+                          <RatingButton
+                            key={index}
+                            className="h-5 w-5 p-0.5"
+                            aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                          />
+                        ))}
+                      </Rating>
+                    </div>
                   </div>
+                  <span className="text-sm text-muted-foreground">
+                    {formattedAverageRating} (
+                    {reviewsCount === 1
+                      ? '1 review'
+                      : `${reviewsCount} reviews`}
+                    )
+                  </span>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {formattedAverageRating} (
-                  {reviewsCount === 1 ? '1 review' : `${reviewsCount} reviews`})
-                </span>
               </div>
-            </div>
+            </a>
             <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
           </>
         )}
@@ -1723,7 +1816,7 @@ export default function Product() {
               <div className="flex-1 h-px bg-muted" />
             </div>
           </div>
-          <div className="my-5">
+          <div className="my-5" id="reviews">
             <div>
               {reviewsList?.map((review: any, index: number) => (
                 <ProductReviewsDisplay
