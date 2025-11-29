@@ -914,7 +914,11 @@ export default function Product() {
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
-            <a onClick={(evt) => handleScroll('reviews', evt)}>
+            <a
+              href="#reviews"
+              onClick={(evt) => handleScroll('reviews', evt)}
+              className="no-underline text-inherit"
+            >
               <div className="average-product-rating">
                 <div className="flex items-center gap-2">
                   <div
@@ -1009,46 +1013,52 @@ export default function Product() {
                   price={selectedVariant?.price}
                   compareAtPrice={selectedVariant?.compareAtPrice}
                 />
-                <div className="average-product-rating">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="relative flex items-center"
-                      aria-hidden="true"
-                    >
-                      <Rating
-                        readOnly
-                        value={5}
-                        className="text-muted-foreground"
-                        aria-label={`Maximum rating of 5 stars`}
-                      >
-                        {Array.from({length: 5}).map((_, index) => (
-                          <RatingButton key={index} className="h-5 w-5 p-0.5" />
-                        ))}
-                      </Rating>
+                <a
+                  href="#reviews"
+                  onClick={(evt) => handleScroll('reviews', evt)}
+                  className="no-underline text-inherit"
+                >
+                  <div className="average-product-rating">
+                    <div className="flex items-center gap-2">
                       <div
-                        className="absolute inset-0 overflow-hidden text-yellow-400"
-                        style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                        className="relative flex items-center"
+                        aria-hidden="true"
                       >
-                        <Rating readOnly value={5} className="text-yellow-400">
+                        <Rating
+                          readOnly
+                          value={5}
+                          className="text-muted-foreground"
+                          aria-label={`Maximum rating of 5 stars`}
+                        >
                           {Array.from({length: 5}).map((_, index) => (
-                            <RatingButton
-                              key={index}
-                              className="h-5 w-5 p-0.5"
-                              aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                            />
+                            <RatingButton key={index} className="h-5 w-5 p-0.5" />
                           ))}
                         </Rating>
+                        <div
+                          className="absolute inset-0 overflow-hidden text-yellow-400"
+                          style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                        >
+                          <Rating readOnly value={5} className="text-yellow-400">
+                            {Array.from({length: 5}).map((_, index) => (
+                              <RatingButton
+                                key={index}
+                                className="h-5 w-5 p-0.5"
+                                aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                              />
+                            ))}
+                          </Rating>
+                        </div>
                       </div>
+                      <span className="text-sm text-muted-foreground">
+                        {formattedAverageRating} (
+                        {reviewsCount === 1
+                          ? '1 review'
+                          : `${reviewsCount} reviews`}
+                        )
+                      </span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {formattedAverageRating} (
-                      {reviewsCount === 1
-                        ? '1 review'
-                        : `${reviewsCount} reviews`}
-                      )
-                    </span>
                   </div>
-                </div>
+                </a>
                 <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
               </>
             )}
