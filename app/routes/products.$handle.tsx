@@ -59,6 +59,7 @@ import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 import ReviewForm from '~/components/form/ReviewForm';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import ProductReviewsDisplay from '~/components/global/ProductReviewsDisplay';
+import { Rating } from 'components/ui/shadcn-io/rating';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -815,6 +816,9 @@ export default function Product() {
               price={selectedVariant?.price}
               compareAtPrice={selectedVariant?.compareAtPrice}
             />
+            <div className='average-product-rating'>
+              <Rating />
+            </div>
             <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
           </>
         )}
