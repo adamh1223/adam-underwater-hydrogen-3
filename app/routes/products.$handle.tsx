@@ -731,7 +731,7 @@ export default function Product() {
 
   const handleEditReview = async (
     reviewToEdit: any,
-    updates: {text: string; title: string; stars: number},
+    updates: {text: string; title: string; stars: number; image?: File | null},
   ) => {
     if (!customerId || !reviewToEdit?.createdAt) return;
 
@@ -743,6 +743,9 @@ export default function Product() {
     form.append('stars', updates.stars.toString());
     form.append('title', updates.title);
     form.append('customerName', customerName);
+    if (updates.image) {
+      form.append('image', updates.image);
+    }
 
     try {
       const response = await fetch('/api/edit_review', {
