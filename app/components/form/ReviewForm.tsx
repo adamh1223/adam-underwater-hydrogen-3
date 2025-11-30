@@ -101,70 +101,75 @@ function ReviewForm({
       <br />
       {!reviewSubmittedMessage ? (
         <>
-          <Input
-            name="title"
-            placeholder="title here"
-            onChange={handleChange}
-            disabled={!isLoggedIn}
-          ></Input>
-          <br />
-          <Input
-            name="review"
-            placeholder="message"
-            onChange={handleChange}
-            disabled={!isLoggedIn}
-          ></Input>
-          <br />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={!isLoggedIn}
-          />
-          <div className="flex items-center gap-3 mb-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={triggerFileSelect}
-              disabled={!isLoggedIn}
-              className="cursor-pointer"
-            >
-              Upload image
-            </Button>
-            {imagePreview && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <img
-                  src={imagePreview}
-                  alt="Selected review attachment"
-                  className="h-12 w-12 object-cover rounded"
-                />
-                <span className="truncate max-w-[160px]">
-                  {selectedImage?.name}
-                </span>
+          <div className="leave-review-container flex justify-center">
+            <div className="leave-review">
+              <div className="flex items-center mb-5">
+                <Rating value={stars} onValueChange={setStars}>
+                  {Array.from({length: 5}).map((_, index) => (
+                    <RatingButton key={index} className="stars" />
+                  ))}
+                </Rating>
               </div>
-            )}
-          </div>
-          <div className="flex items-center">
-            <Rating value={stars} onValueChange={setStars}>
-              {Array.from({length: 5}).map((_, index) => (
-                <RatingButton key={index} className="stars" />
-              ))}
-            </Rating>
-          </div>
-          <div className="mt-3">
-            <Button
-              onClick={handleSubmit}
-              disabled={!isLoggedIn}
-              className="cursor-pointer"
-            >
-              {pendingReviewSubmit ? (
-                <ReloadIcon className="animate-spin" />
-              ) : (
-                'Submit'
-              )}
-            </Button>
+              <Input
+                name="title"
+                placeholder="title here"
+                onChange={handleChange}
+                disabled={!isLoggedIn}
+              ></Input>
+              <br />
+              <Input
+                name="review"
+                placeholder="message"
+                onChange={handleChange}
+                disabled={!isLoggedIn}
+              ></Input>
+              <br />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={!isLoggedIn}
+              />
+              <div className="flex items-center gap-3 mb-5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={triggerFileSelect}
+                  disabled={!isLoggedIn}
+                  className="cursor-pointer"
+                >
+                  Upload image
+                </Button>
+                {imagePreview && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <img
+                      src={imagePreview}
+                      alt="Selected review attachment"
+                      className="h-12 w-12 object-cover rounded"
+                    />
+                    <span className="truncate max-w-[160px]">
+                      {selectedImage?.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!isLoggedIn}
+                  className="cursor-pointer"
+                >
+                  {pendingReviewSubmit ? (
+                    <ReloadIcon className="animate-spin" />
+                  ) : (
+                    'Submit'
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </>
       ) : (

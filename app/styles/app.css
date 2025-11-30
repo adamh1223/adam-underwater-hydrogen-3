@@ -1227,3 +1227,7 @@ span {
   display: grid;
   grid-template-columns: 1fr;
 }
+
+.leave-review {
+  width: 75vw;
+}
