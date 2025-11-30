@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Input} from '../ui/input';
 import {Button} from '../ui/button';
+import {Label} from '../ui/label';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import Sectiontitle from '../global/Sectiontitle';
 import {ReloadIcon} from '@radix-ui/react-icons';
@@ -37,7 +38,9 @@ function ReviewForm({
     }
   }, [reviewSubmittedMessage]);
   const isLoggedIn = Boolean(customerId);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const {name, value} = e.target;
     if (name === 'title') {
       setTitle(value);
@@ -117,12 +120,21 @@ function ReviewForm({
                 disabled={!isLoggedIn}
               ></Input>
               <br />
-              <Input
-                name="review"
-                placeholder="message"
-                onChange={handleChange}
-                disabled={!isLoggedIn}
-              ></Input>
+              <div className="space-y-2">
+                <Label className="required" htmlFor="message">
+                  Message
+                </Label>
+                <textarea
+                  id="message"
+                  name="review"
+                  value={review ?? ''}
+                  onChange={handleChange}
+                  placeholder="message"
+                  rows={4}
+                  className="w-full message bg-background border border-input border-gray-300 dark:border-gray-700 rounded-sm p-2"
+                  disabled={!isLoggedIn}
+                />
+              </div>
               <br />
               <input
                 ref={fileInputRef}
