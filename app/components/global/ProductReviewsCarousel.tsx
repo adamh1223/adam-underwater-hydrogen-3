@@ -58,32 +58,36 @@ export default function ProductReviewsCarousel({
   if (!sortedReviews.length) return null;
 
   return (
-    <Carousel
-      className="you-may-like-carousel w-full"
-      opts={{
-        loop: true,
-        align: slidesPerView === 1 ? 'center' : 'start',
-        slidesToScroll: 1,
-      }}
-    >
-      <CarouselContent className="!flex !items-stretch !justify-start">
-        {sortedReviews.map((review, index) => (
-          <CarouselItem
-            key={review?.createdAt ?? index}
-            className="flex justify-center items-stretch"
-            style={slideStyle}
-          >
-            <ProductReviewsDisplay
-              review={review}
-              currentCustomerId={currentCustomerId}
-              onRemove={onRemove}
-              onEdit={onEdit}
-            />
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+    <>
+      <div className="reviews-container flex justify-center mt-3">
+        <Carousel
+          className="you-may-like-carousel w-full"
+          opts={{
+            loop: true,
+            align: slidesPerView === 1 ? 'center' : 'start',
+            slidesToScroll: 1,
+          }}
+        >
+          <CarouselContent className="!flex !items-stretch !justify-start">
+            {sortedReviews.map((review, index) => (
+              <CarouselItem
+                key={review?.createdAt ?? index}
+                className="flex justify-center items-stretch"
+                style={slideStyle}
+              >
+                <ProductReviewsDisplay
+                  review={review}
+                  currentCustomerId={currentCustomerId}
+                  onRemove={onRemove}
+                  onEdit={onEdit}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+    </>
   );
 }
