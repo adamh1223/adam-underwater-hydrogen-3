@@ -20,7 +20,7 @@ interface ProductReviewsDisplayProps {
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
     review: Review,
-    updates: {text: string; title: string; stars: number},
+    updates: {text: string; title: string; stars: number; image?: File | null},
   ) => Promise<void> | void;
 }
 
@@ -33,6 +33,8 @@ const ProductReviewsDisplay = ({
   const [isRemoving, setIsRemoving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const routeData = useRouteLoaderData<{
     customer?: {customer?: {id?: string}};
   }>('routes/products.$handle');
@@ -57,7 +59,25 @@ const ProductReviewsDisplay = ({
     setEditTitle(displayTitle);
     setEditText(displayText);
     setEditStars(parsedStars);
-  }, [displayTitle, displayText, parsedStars]);
+    setSelectedImage(null);
+    setImagePreview(customerImage ?? null);
+  }, [customerImage, displayText, displayTitle, parsedStars]);
+
+  const resetEditState = () => {
+    setEditTitle(displayTitle);
+    setEditText(displayText);
+    setEditStars(parsedStars);
+    setSelectedImage(null);
+    setImagePreview(customerImage ?? null);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleRemove = async () => {
     if (!onRemove) return;
@@ -77,6 +97,7 @@ const ProductReviewsDisplay = ({
         text: editText,
         title: editTitle,
         stars: editStars,
+        image: selectedImage,
       });
       setIsEditing(false);
     } finally {
@@ -89,6 +110,7 @@ const ProductReviewsDisplay = ({
       <Card className="mb-5">
         {isEditing ? (
           <>
+            <p className="mb-2 text-sm text-muted-foreground">Current review</p>
             <Input
               name="title"
               placeholder="Title"
@@ -108,6 +130,36 @@ const ProductReviewsDisplay = ({
                 <RatingButton key={index} className="stars" />
               ))}
             </Rating>
+            <div className="mt-3">
+              <p className="mb-2 text-sm text-muted-foreground">Image</p>
+              {imagePreview ? (
+                <div className="mb-3">
+                  <img
+                    src={imagePreview}
+                    alt={`${displayTitle} image attachment`}
+                    className="max-h-64 rounded object-contain"
+                  />
+                </div>
+              ) : null}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id={`edit-image-${review.createdAt}`}
+                onChange={handleFileChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  document.getElementById(`edit-image-${review.createdAt}`)?.click()
+                }
+                className="cursor-pointer"
+                disabled={isSaving}
+              >
+                Upload new image
+              </Button>
+            </div>
             <div className="mt-3 flex gap-2">
               <Button
                 onClick={handleEdit}
@@ -119,7 +171,10 @@ const ProductReviewsDisplay = ({
               <Button
                 className="cursor-pointer"
                 variant="outline"
-                onClick={() => setIsEditing(false)}
+                onClick={() => {
+                  resetEditState();
+                  setIsEditing(false);
+                }}
                 disabled={isSaving}
               >
                 Cancel
@@ -177,7 +232,10 @@ const ProductReviewsDisplay = ({
                         <div className="">
                           <Button
                             variant="secondary"
-                            onClick={() => setIsEditing((prev) => !prev)}
+                            onClick={() => {
+                              resetEditState();
+                              setIsEditing((prev) => !prev);
+                            }}
                             disabled={isSaving}
                             className="cursor-pointer w-32"
                           >

@@ -1,5 +1,6 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
+import {deleteImage, uploadImage} from '~/lib/supabase.server';
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
@@ -11,6 +12,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const title = (form.get('title') as string) ?? '';
     const customerName = (form.get('customerName') as string) ?? '';
     const createdAt = form.get('createdAt') as string;
+    const imageFile = form.get('image');
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -81,12 +83,31 @@ export async function action({request, context}: ActionFunctionArgs) {
       return json({error: 'Not authorized to edit this review'}, {status: 403});
     }
 
+    let newCustomerImage = targetReview?.customerImage;
+    if (imageFile && typeof imageFile !== 'string') {
+      try {
+        const uploadedUrl = await uploadImage(context.env, imageFile as File);
+        if (targetReview?.customerImage) {
+          try {
+            await deleteImage(context.env, targetReview.customerImage);
+          } catch (error) {
+            console.error('Failed to delete previous review image', error);
+          }
+        }
+        newCustomerImage = uploadedUrl;
+      } catch (error) {
+        console.error('Failed to upload new review image', error);
+        return json({error: 'Image upload failed'}, {status: 500});
+      }
+    }
+
     const updatedReview = {
       ...targetReview,
       text: reviewText || targetReview?.text || '',
       stars: stars || targetReview?.stars || 0,
       title: title || targetReview?.title || '',
       customerName: customerName || targetReview?.customerName || '',
+      customerImage: newCustomerImage,
       updatedAt: new Date().toISOString(),
     };
 
