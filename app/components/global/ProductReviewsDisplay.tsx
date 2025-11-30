@@ -110,75 +110,97 @@ const ProductReviewsDisplay = ({
       <Card className="mb-5">
         {isEditing ? (
           <>
-            <p className="mb-2 text-sm text-muted-foreground">Current review</p>
-            <Input
-              name="title"
-              placeholder="Title"
-              value={editTitle}
-              onChange={(event) => setEditTitle(event.target.value)}
-              className="mb-2"
-            />
-            <Input
-              name="review"
-              placeholder="Write your review"
-              value={editText}
-              onChange={(event) => setEditText(event.target.value)}
-              className="mb-2"
-            />
-            <Rating value={editStars} onValueChange={setEditStars}>
-              {Array.from({length: 5}).map((_, index) => (
-                <RatingButton key={index} className="stars" />
-              ))}
-            </Rating>
-            <div className="mt-3">
-              <p className="mb-2 text-sm text-muted-foreground">Image</p>
-              {imagePreview ? (
-                <div className="mb-3">
-                  <img
-                    src={imagePreview}
-                    alt={`${displayTitle} image attachment`}
-                    className="max-h-64 rounded object-contain"
+            <div className="review-container">
+              <div className="ps-5 py-3 review-left-side">
+                <p className="mb-2 text-sm text-muted-foreground">
+                  Current review
+                </p>
+                <Rating value={editStars} onValueChange={setEditStars}>
+                  {Array.from({length: 5}).map((_, index) => (
+                    <RatingButton key={index} className="stars" />
+                  ))}
+                </Rating>
+                <div className="mt-3">
+                  {imagePreview ? (
+                    <div className="mb-3">
+                      <img
+                        src={imagePreview}
+                        alt={`${displayTitle} image attachment`}
+                        className="max-h-64 rounded object-contain"
+                      />
+                    </div>
+                  ) : null}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    id={`edit-image-${review.createdAt}`}
+                    onChange={handleFileChange}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      document
+                        .getElementById(`edit-image-${review.createdAt}`)
+                        ?.click()
+                    }
+                    className="cursor-pointer mb-4"
+                    disabled={isSaving}
+                  >
+                    Upload new image
+                  </Button>
                 </div>
-              ) : null}
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                id={`edit-image-${review.createdAt}`}
-                onChange={handleFileChange}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  document.getElementById(`edit-image-${review.createdAt}`)?.click()
-                }
-                className="cursor-pointer"
-                disabled={isSaving}
-              >
-                Upload new image
-              </Button>
-            </div>
-            <div className="mt-3 flex gap-2">
-              <Button
-                onClick={handleEdit}
-                disabled={isSaving}
-                className="cursor-pointer"
-              >
-                {isSaving ? 'Saving...' : 'Save Review'}
-              </Button>
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                onClick={() => {
-                  resetEditState();
-                  setIsEditing(false);
-                }}
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
+                <p className="mb-2">
+                  <strong>Title:</strong>
+                </p>
+                <Input
+                  name="title"
+                  placeholder="Title"
+                  value={editTitle}
+                  onChange={(event) => setEditTitle(event.target.value)}
+                  className="mb-2"
+                />
+                <p className="mb-2">
+                  <strong>Body:</strong>
+                </p>
+                <Input
+                  name="review"
+                  placeholder="Write your review"
+                  value={editText}
+                  onChange={(event) => setEditText(event.target.value)}
+                  className="mb-2"
+                />
+              </div>
+
+              <div className="review-right-side-container">
+                <div className="pe-5 p-3 flex justify-end">
+                  <div className="review-right-side">
+                    <div>
+                      <Button
+                        onClick={handleEdit}
+                        disabled={isSaving}
+                        className="cursor-pointer w-14 mb-2"
+                      >
+                        {isSaving ? 'Saving...' : 'Save'}
+                      </Button>
+                    </div>
+                    <div>
+                      <Button
+                        className="cursor-pointer w-14"
+                        variant="outline"
+                        onClick={() => {
+                          resetEditState();
+                          setIsEditing(false);
+                        }}
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         ) : (
@@ -191,6 +213,15 @@ const ProductReviewsDisplay = ({
                   ))}
                 </Rating>
                 <p>Written by {displayAuthor}</p>
+                {customerImage ? (
+                  <div className="mt-4">
+                    <img
+                      src={customerImage}
+                      alt={`${displayTitle} image attachment`}
+                      className="max-h-64 rounded object-contain"
+                    />
+                  </div>
+                ) : null}
                 <Card className="mt-3 mb-1">
                   <CardHeader>
                     <p>
@@ -199,15 +230,6 @@ const ProductReviewsDisplay = ({
                   </CardHeader>
                   <CardContent>
                     <p>{displayText}</p>
-                    {customerImage ? (
-                      <div className="mt-4">
-                        <img
-                          src={customerImage}
-                          alt={`${displayTitle} image attachment`}
-                          className="max-h-64 rounded object-contain"
-                        />
-                      </div>
-                    ) : null}
                   </CardContent>
                 </Card>
               </div>
@@ -216,17 +238,14 @@ const ProductReviewsDisplay = ({
                   <>
                     <div className="pe-5 p-3 flex justify-end">
                       <div className="review-right-side">
-                        <div className="pb-3 flex justify-center ">
-                          Your Review
-                        </div>
                         <div className="">
                           <Button
                             variant="destructive"
                             onClick={handleRemove}
                             disabled={isRemoving}
-                            className="mb-2 cursor-pointer w-32 "
+                            className="mb-2 cursor-pointer w-14"
                           >
-                            {isRemoving ? 'Removing...' : 'Remove Review'}
+                            {isRemoving ? 'Removing...' : 'Delete'}
                           </Button>
                         </div>
                         <div className="">
@@ -237,9 +256,9 @@ const ProductReviewsDisplay = ({
                               setIsEditing((prev) => !prev);
                             }}
                             disabled={isSaving}
-                            className="cursor-pointer w-32"
+                            className="cursor-pointer w-14"
                           >
-                            {isEditing ? 'Cancel edit' : 'Edit Review'}
+                            {isEditing ? 'Cancel edit' : 'Edit'}
                           </Button>
                         </div>
                       </div>
