@@ -4,7 +4,7 @@ import {Card, CardContent, CardHeader} from '../ui/card';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {Button} from '../ui/button';
 import {Input} from '../ui/input';
-interface Review {
+export interface Review {
   text?: string;
   createdAt?: string;
   customerId?: string;

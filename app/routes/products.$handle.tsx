@@ -60,7 +60,7 @@ import {
 import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 import ReviewForm from '~/components/form/ReviewForm';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
-import ProductReviewsDisplay from '~/components/global/ProductReviewsDisplay';
+import ProductReviewsCarousel from '~/components/global/ProductReviewsCarousel';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
@@ -1837,17 +1837,12 @@ export default function Product() {
             </div>
           </div>
           <div className="my-5" id="reviews">
-            <div>
-              {reviewsList?.map((review: any, index: number) => (
-                <ProductReviewsDisplay
-                  key={review?.createdAt ?? index}
-                  review={review}
-                  currentCustomerId={customerId}
-                  onRemove={handleRemoveReview}
-                  onEdit={handleEditReview}
-                />
-              ))}
-            </div>
+            <ProductReviewsCarousel
+              reviews={reviewsList}
+              currentCustomerId={customerId}
+              onRemove={handleRemoveReview}
+              onEdit={handleEditReview}
+            />
             <ReviewForm
               productId={product.id}
               customerId={customerId}
