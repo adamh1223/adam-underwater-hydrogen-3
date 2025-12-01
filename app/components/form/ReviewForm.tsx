@@ -4,7 +4,8 @@ import {Button} from '../ui/button';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import Sectiontitle from '../global/Sectiontitle';
 import {ReloadIcon} from '@radix-ui/react-icons';
-import {toast, Toaster} from 'sonner';
+
+const REVIEW_CHAR_LIMIT = 200;
 
 function ReviewForm({
   productId,
@@ -18,69 +19,71 @@ function ReviewForm({
   updateExistingReviews: (reviews: any[]) => void;
 }) {
   const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
-  const [review, setReview] = useState<string | undefined>();
-  const [stars, setStars] = useState<number>(0);
-  const [title, setTitle] = useState<string | undefined>();
+  const [review, setReview] = useState('');
+  const [stars, setStars] = useState(0);
+  const [title, setTitle] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [reviewSubmittedMessage, setReviewSubmittedMessage] = useState<
-    string | undefined
-  >();
+  const [reviewSubmittedMessage, setReviewSubmittedMessage] =
+    useState<string>();
+
   useEffect(() => {
     if (reviewSubmittedMessage) {
-      const timer = setTimeout(() => {
-        setReviewSubmittedMessage(undefined);
-      }, 2500);
+      const timer = setTimeout(
+        () => setReviewSubmittedMessage(undefined),
+        2500,
+      );
       return () => clearTimeout(timer);
     }
   }, [reviewSubmittedMessage]);
+
   const isLoggedIn = Boolean(customerId);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value} = e.target;
     if (name === 'title') {
       setTitle(value);
-    } else setReview(value);
-  };
-  console.log(review, 'review2');
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
     } else {
-      setSelectedImage(null);
-      setImagePreview(null);
+      setReview(value.slice(0, REVIEW_CHAR_LIMIT));
     }
   };
-  const triggerFileSelect = () => {
-    fileInputRef.current?.click();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setSelectedImage(file);
+    setImagePreview(file ? URL.createObjectURL(file) : null);
   };
+
+  const triggerFileSelect = () => fileInputRef.current?.click();
+
   const handleSubmit = async () => {
     try {
       setPendingReviewSubmit(true);
+
       const form = new FormData();
-      //   form.append('productId', product.id);
-      form.append('review', review as string);
+      form.append('review', review);
       form.append('productId', productId);
-      form.append('customerId', customerId as string);
-      form.append('stars', stars?.toString() as string);
-      form.append('title', title as string);
-      form.append('customerName', customerName as string);
+      form.append('customerId', customerId || '');
+      form.append('stars', String(stars));
+      form.append('title', title || '');
+      form.append('customerName', customerName || '');
+
       if (selectedImage) {
         form.append('image', selectedImage);
       }
-      console.log(form, 'form');
 
       const response = await fetch('/api/add_review', {
         method: 'POST',
         body: form,
         headers: {Accept: 'application/json'},
       });
+
       const json = await response.json();
       updateExistingReviews(json.reviews);
+
+      // Reset
       setPendingReviewSubmit(false);
       setReview('');
       setStars(0);
@@ -88,21 +91,22 @@ function ReviewForm({
       setSelectedImage(null);
       setImagePreview(null);
       setReviewSubmittedMessage('Review Submitted!');
-    } catch (error) {}
-    setPendingReviewSubmit(false);
+    } catch (err) {
+      setPendingReviewSubmit(false);
+      console.error(err);
+    }
   };
-
-  console.log(review, '444review');
-  console.log(title, '444title');
 
   return (
     <>
       <Sectiontitle text="Leave Product Review" />
       <br />
+
       {!reviewSubmittedMessage ? (
         <>
           <div className="leave-review-container flex justify-center">
             <div className="leave-review">
+              {/* Stars */}
               <div className="flex items-center mb-5">
                 <Rating value={stars} onValueChange={setStars}>
                   {Array.from({length: 5}).map((_, index) => (
@@ -110,20 +114,43 @@ function ReviewForm({
                   ))}
                 </Rating>
               </div>
+
+              {/* Title */}
               <Input
                 name="title"
                 placeholder="title here"
                 onChange={handleChange}
                 disabled={!isLoggedIn}
-              ></Input>
+                value={title}
+              />
+
               <br />
+
+              {/* Review */}
               <Input
                 name="review"
                 placeholder="message"
                 onChange={handleChange}
                 disabled={!isLoggedIn}
-              ></Input>
+                value={review}
+                maxLength={REVIEW_CHAR_LIMIT}
+              />
+
+              <div className="flex items-center justify-between mt-1 text-sm">
+                <span
+                  className={
+                    review.length >= REVIEW_CHAR_LIMIT
+                      ? 'text-destructive'
+                      : 'text-muted-foreground'
+                  }
+                >
+                  {review.length}/{REVIEW_CHAR_LIMIT}
+                </span>
+              </div>
+
               <br />
+
+              {/* Upload */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -132,6 +159,7 @@ function ReviewForm({
                 onChange={handleFileChange}
                 disabled={!isLoggedIn}
               />
+
               <div className="flex items-center gap-3 mb-5">
                 <Button
                   type="button"
@@ -142,11 +170,12 @@ function ReviewForm({
                 >
                   Upload image
                 </Button>
+
                 {imagePreview && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <img
                       src={imagePreview}
-                      alt="Selected review attachment"
+                      alt="Selected"
                       className="h-12 w-12 object-cover rounded"
                     />
                     <span className="truncate max-w-[160px]">
@@ -156,25 +185,25 @@ function ReviewForm({
                 )}
               </div>
 
-              <div className="mt-3">
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!isLoggedIn}
-                  className="cursor-pointer"
-                >
-                  {pendingReviewSubmit ? (
-                    <ReloadIcon className="animate-spin" />
-                  ) : (
-                    'Submit'
-                  )}
-                </Button>
-              </div>
+              {/* Submit */}
+              <Button
+                onClick={handleSubmit}
+                disabled={!isLoggedIn}
+                className="cursor-pointer"
+              >
+                {pendingReviewSubmit ? (
+                  <ReloadIcon className="animate-spin" />
+                ) : (
+                  'Submit'
+                )}
+              </Button>
             </div>
           </div>
         </>
       ) : (
         <div>{reviewSubmittedMessage}</div>
       )}
+
       {!isLoggedIn && (
         <p className="text-sm text-muted-foreground mt-2">
           Please sign in to leave a review.

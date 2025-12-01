@@ -1231,7 +1231,7 @@ span {
 
 .review-container {
   display: grid;
-  grid-template-columns: 4fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .review-right-side {
@@ -1241,4 +1241,9 @@ span {
 
 .leave-review {
   width: 75vw;
+}
+
+.stars-writtenby-buttons {
+  display: grid;
+  grid-template-columns: 4fr 1fr;
 }
