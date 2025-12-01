@@ -1218,6 +1218,17 @@ span {
   color: rgb(214, 183, 72);
 }
 
+.review-card {
+  width: 100%;
+  height: 100%;
+}
+
+.review-title,
+.review-body {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 .review-container {
   display: grid;
   grid-template-columns: 4fr 1fr;
