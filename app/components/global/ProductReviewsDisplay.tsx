@@ -299,7 +299,6 @@ const ProductReviewsDisplay = ({
                   />
                 </div>
               )}
-
               <Card className="mt-3 mb-1 mx-4">
                 <CardHeader>
                   <p className="review-title font-bold">{displayTitle}</p>
