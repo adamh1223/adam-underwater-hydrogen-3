@@ -1831,7 +1831,7 @@ export default function Product() {
             <div className="flex items-center justify-center w-full">
               <div className="flex-1 h-px bg-muted" />
               <span className="px-4">
-                <p className="text-xl">Reviews</p>
+                <p className="text-xl">Reviews for this Product</p>
               </span>
               <div className="flex-1 h-px bg-muted" />
             </div>

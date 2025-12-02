@@ -299,7 +299,7 @@ const ProductReviewsDisplay = ({
                   />
                 </div>
               )}
-              <Card className="mt-3 mb-1 mx-4">
+              <Card className="mt-3 mb-1 mx-4 w-[90%]">
                 <CardHeader>
                   <p className="review-title font-bold">{displayTitle}</p>
                 </CardHeader>
