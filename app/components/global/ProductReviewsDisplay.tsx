@@ -123,20 +123,57 @@ const ProductReviewsDisplay = ({
       {isEditing ? (
         <>
           <div className="review-container">
-            <div className="ps-5 py-3 review-left-side">
-              {/* Stars */}
-              <Rating value={editStars} onValueChange={setEditStars}>
-                {Array.from({length: 5}).map((_, index) => (
-                  <RatingButton key={index} className="stars" />
-                ))}
-              </Rating>
+            <div className="review-left-side">
+              <div className="stars-writtenby-buttons">
+                <div className="flex items-center justify-center">
+                  <div>
+                    <Rating value={editStars} onValueChange={setEditStars}>
+                      {Array.from({length: 5}).map((_, index) => (
+                        <RatingButton key={index} className="stars" />
+                      ))}
+                    </Rating>
+                    <p>Written by {displayAuthor}</p>
+                  </div>
+                </div>
+                <div>
+                  <div className="review-right-side-container">
+                    <div className="ps-1 pt-2 pe-2 flex justify-end">
+                      <div className="review-right-side">
+                        <Button
+                          onClick={handleEdit}
+                          disabled={isSaving}
+                          className="cursor-pointer w-14 mb-2"
+                        >
+                          {isSaving ? (
+                            <ReloadIcon className="animate-spin" />
+                          ) : (
+                            'Save'
+                          )}
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            resetEditState();
+                            setIsEditing(false);
+                          }}
+                          disabled={isSaving}
+                          className="cursor-pointer w-14"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {imagePreview && (
-                <div className="mt-4">
+                <div className="mt-4 flex justify-center">
                   <img
                     src={imagePreview}
                     alt="Edited review"
-                    className="max-h-64 rounded object-contain mb-3"
+                    className="max-h-56 rounded object-contain mb-3"
                   />
                 </div>
               )}
@@ -149,82 +186,53 @@ const ProductReviewsDisplay = ({
                 id={`edit-image-${review.createdAt}`}
                 onChange={handleFileChange}
               />
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  document
-                    .getElementById(`edit-image-${review.createdAt}`)
-                    ?.click()
-                }
-                className="cursor-pointer mb-4"
-                disabled={isSaving}
-              >
-                Upload new image
-              </Button>
-
-              {/* Title */}
-              <p className="mb-2 font-semibold">Title:</p>
-              <Input
-                name="title"
-                placeholder="Title"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                className="mb-2"
-              />
-
-              {/* Body */}
-              <p className="mb-2 font-semibold">Body:</p>
-              <Input
-                name="review"
-                placeholder="Write your review"
-                value={editText}
-                onChange={(e) =>
-                  setEditText(e.target.value.slice(0, REVIEW_CHAR_LIMIT))
-                }
-                className="mb-2"
-              />
-
-              <div className="flex items-center justify-between text-sm mt-1 mb-2">
-                <span
-                  className={
-                    editText.length >= REVIEW_CHAR_LIMIT
-                      ? 'text-destructive'
-                      : 'text-muted-foreground'
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    document
+                      .getElementById(`edit-image-${review.createdAt}`)
+                      ?.click()
                   }
+                  className="cursor-pointer mb-4"
+                  disabled={isSaving}
                 >
-                  {editText.length}/{REVIEW_CHAR_LIMIT}
-                </span>
+                  Replace Image
+                </Button>
               </div>
-            </div>
+              <div className="title-body-character-limit mx-5">
+                {/* Title */}
+                <p className="mb-2 font-semibold">Title:</p>
+                <Input
+                  name="title"
+                  placeholder="Title"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="mb-2"
+                />
 
-            <div className="review-right-side-container">
-              <div className="ps-1 pt-2 pe-2 flex justify-end">
-                <div className="review-right-side">
-                  <Button
-                    onClick={handleEdit}
-                    disabled={isSaving}
-                    className="cursor-pointer w-14 mb-2"
+                {/* Body */}
+                <p className="mb-2 font-semibold">Body:</p>
+                <Input
+                  name="review"
+                  placeholder="Write your review"
+                  value={editText}
+                  onChange={(e) =>
+                    setEditText(e.target.value.slice(0, REVIEW_CHAR_LIMIT))
+                  }
+                  className="mb-2"
+                />
+                <div className="flex items-center justify-between text-sm mt-1 mb-2">
+                  <span
+                    className={
+                      editText.length >= REVIEW_CHAR_LIMIT
+                        ? 'text-destructive'
+                        : 'text-muted-foreground'
+                    }
                   >
-                    {isSaving ? (
-                      <ReloadIcon className="animate-spin" />
-                    ) : (
-                      'Save'
-                    )}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      resetEditState();
-                      setIsEditing(false);
-                    }}
-                    disabled={isSaving}
-                    className="cursor-pointer w-14"
-                  >
-                    Cancel
-                  </Button>
+                    {editText.length}/{REVIEW_CHAR_LIMIT}
+                  </span>
                 </div>
               </div>
             </div>

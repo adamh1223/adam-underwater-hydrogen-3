@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['parking-prior-steam-streams.tryhydrogen.dev'],
+    allowedHosts: ['grown-consent-television-boxed.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
