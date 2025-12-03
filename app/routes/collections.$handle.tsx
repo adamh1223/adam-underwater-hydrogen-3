@@ -262,7 +262,7 @@ export default function Collection() {
       {collection.handle === 'prints' && <ProductsHeader />}
       {collection.handle === 'stock' && <EProductsHeader />}
 
-      {/* SOMETHING HERE IS NOT WORKING WITH PRODUCT COUNT */}
+
       {collection.handle === 'prints' && (
         <div>
           <p className="text-lg flex justify-center pb-3">
