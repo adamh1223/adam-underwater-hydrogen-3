@@ -352,16 +352,6 @@ export const ProductCarousel = ({
                         disabled={!loginValue}
                         className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                       >
-                        {/* {pending ? (
-                  <ReloadIcon className="animate-spin" />
-                ) : isFavorite ? (
-                  <FaHeart />
-                ) : (
-                  <FaRegHeart />
-                )} */}
-                        {/* <ReloadIcon className="animate-spin" />
-              <FaHeart /> */}
-
                         {pendingWishlistChange ? (
                           <ReloadIcon className="animate-spin" />
                         ) : (
