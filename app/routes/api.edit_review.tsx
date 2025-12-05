@@ -6,13 +6,14 @@ export async function action({request, context}: ActionFunctionArgs) {
   try {
     const form = await request.formData();
     const productId = form.get('productId') as string;
+    const productName = form.get('productName') as string;
     const reviewText = (form.get('review') as string) ?? '';
     const customerId = (form.get('customerId') as string) ?? '';
     const stars = (form.get('stars') as string) ?? '';
     const title = (form.get('title') as string) ?? '';
     const customerName = (form.get('customerName') as string) ?? '';
     const createdAt = form.get('createdAt') as string;
-    const imageFile = form.get('image');
+    const imageFile = form.get('image') as File | null;
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -55,6 +56,18 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     const existingJson = await existingResponse.json();
     const mf = existingJson?.data?.product?.metafield;
+
+    let customerImage;
+    if (imageFile) {
+      customerImage = await uploadImage(context.env, imageFile);
+    }
+
+    if (imageFile) {
+      // const promisedImages = imageFiles?.map((file: File) =>
+      //   uploadImage(context.env, file),
+      // );
+      // customerImages = await Promise.all(promisedImages);
+    }
 
     let existingReviews: any[] = [];
     if (mf?.value) {
@@ -163,7 +176,38 @@ export async function action({request, context}: ActionFunctionArgs) {
       console.error('Admin API errors:', errors);
       return json({error: errors}, {status: 500});
     }
-
+    const courierToken = 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08';
+    try {
+      await fetch('https://api.courier.com/send', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${courierToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: {
+            to: {
+              email: 'adam@hussmedia.io',
+            },
+            template: 'M9ZCJYNC6R479FGVS73XTSBBRBWN',
+            data: {
+              customerName,
+              productName,
+              reviewTitle: title,
+              stars,
+              reviewText,
+              reviewImage: customerImage,
+            },
+            routing: {
+              method: 'single',
+              channels: ['email'],
+            },
+          },
+        }),
+      });
+    } catch (error) {
+      console.log(error, 'errorlog');
+    }
     return json({success: true, reviews: updatedReviews});
   } catch (error) {
     console.error(error, 'edit-review-error');

@@ -171,7 +171,7 @@ const ProductReviewsDisplay = ({
               </div>
 
               {imagePreview && (
-                <div className="mt-4 flex justify-center">
+                <div className="mt-3 flex justify-center">
                   <img
                     src={imagePreview}
                     alt="Edited review"
@@ -200,7 +200,7 @@ const ProductReviewsDisplay = ({
                   className="cursor-pointer mb-4"
                   disabled={isSaving}
                 >
-                  Replace Image
+                  Upload New Image
                 </Button>
               </div>
               <div className="title-body-character-limit mx-5">
@@ -244,56 +244,75 @@ const ProductReviewsDisplay = ({
         <>
           <div className="review-container">
             <div className="review-left-side">
-              <div className="stars-writtenby-buttons">
-                <div className="flex items-center justify-center">
-                  <div>
-                    <Rating value={parsedStars} readOnly>
-                      {Array.from({length: 5}).map((_, index) => (
-                        <RatingButton key={index} className="stars" />
-                      ))}
-                    </Rating>
+              {(isCurrentUserReview || isAdmin) && (
+                <>
+                  <div className="stars-writtenby-buttons">
+                    <div className="flex items-center justify-center">
+                      <div>
+                        <Rating value={parsedStars} readOnly>
+                          {Array.from({length: 5}).map((_, index) => (
+                            <RatingButton key={index} className="stars" />
+                          ))}
+                        </Rating>
 
-                    <p>Written by {displayAuthor}</p>
-                  </div>
-                </div>
-                <div>
-                  {(isCurrentUserReview || isAdmin) && (
-                    <div className="review-right-side-container">
-                      <div className="ps-1 pt-2 pe-2 flex justify-end">
-                        <div className="review-right-side">
-                          <Button
-                            variant="destructive"
-                            onClick={handleRemove}
-                            disabled={isRemoving}
-                            className="mb-2 cursor-pointer w-14"
-                          >
-                            {isRemoving ? (
-                              <ReloadIcon className="animate-spin" />
-                            ) : (
-                              'Delete'
-                            )}
-                          </Button>
+                        <p>Written by {displayAuthor}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="review-right-side-container">
+                        <div className="ps-1 pt-2 pe-2 flex justify-end">
+                          <div className="review-right-side">
+                            <Button
+                              variant="destructive"
+                              onClick={handleRemove}
+                              disabled={isRemoving}
+                              className="mb-2 cursor-pointer w-14"
+                            >
+                              {isRemoving ? (
+                                <ReloadIcon className="animate-spin" />
+                              ) : (
+                                'Delete'
+                              )}
+                            </Button>
 
-                          <Button
-                            variant="secondary"
-                            onClick={() => {
-                              resetEditState();
-                              setIsEditing(true);
-                            }}
-                            disabled={isSaving}
-                            className="cursor-pointer w-14"
-                          >
-                            Edit
-                          </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                resetEditState();
+                                setIsEditing(true);
+                              }}
+                              disabled={isSaving}
+                              className="cursor-pointer w-14"
+                            >
+                              Edit
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                </>
+              )}
+              {!isCurrentUserReview && !isAdmin && (
+                <>
+                  <div className="stars-writtenby py-4">
+                    <div className="flex items-center justify-center">
+                      <div>
+                        <Rating value={parsedStars} readOnly>
+                          {Array.from({length: 5}).map((_, index) => (
+                            <RatingButton key={index} className="stars" />
+                          ))}
+                        </Rating>
+
+                        <p>Written by {displayAuthor}</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {customerImage && (
-                <div className="mt-4 flex justify-center">
+                <div className="mt-3 mb-5 flex justify-center">
                   <img
                     src={customerImage}
                     alt="Review"

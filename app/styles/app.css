@@ -1247,3 +1247,10 @@ span {
   display: grid;
   grid-template-columns: 4fr 1fr;
 }
+
+.stars-writtenby {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
