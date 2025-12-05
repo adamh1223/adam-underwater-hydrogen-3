@@ -21,6 +21,7 @@ export interface Review {
 
 interface ProductReviewsDisplayProps {
   review: Review;
+  isAdmin: Boolean;
   currentCustomerId?: string;
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
@@ -34,6 +35,7 @@ const ProductReviewsDisplay = ({
   currentCustomerId,
   onRemove,
   onEdit,
+  isAdmin,
 }: ProductReviewsDisplayProps) => {
   const [isRemoving, setIsRemoving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -255,7 +257,7 @@ const ProductReviewsDisplay = ({
                   </div>
                 </div>
                 <div>
-                  {isCurrentUserReview && (
+                  {(isCurrentUserReview || isAdmin) && (
                     <div className="review-right-side-container">
                       <div className="ps-1 pt-2 pe-2 flex justify-end">
                         <div className="review-right-side">

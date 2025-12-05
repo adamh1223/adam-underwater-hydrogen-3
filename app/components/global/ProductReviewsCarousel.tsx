@@ -10,6 +10,7 @@ import {
 
 interface ProductReviewsCarouselProps {
   reviews: Review[];
+  isAdmin: Boolean;
   currentCustomerId?: string;
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
@@ -20,6 +21,7 @@ interface ProductReviewsCarouselProps {
 
 export default function ProductReviewsCarousel({
   reviews,
+  isAdmin,
   currentCustomerId,
   onRemove,
   onEdit,
@@ -80,6 +82,7 @@ export default function ProductReviewsCarousel({
                   currentCustomerId={currentCustomerId}
                   onRemove={onRemove}
                   onEdit={onEdit}
+                  isAdmin={isAdmin}
                 />
               </CarouselItem>
             ))}

@@ -9,15 +9,19 @@ const REVIEW_CHAR_LIMIT = 200;
 
 function ReviewForm({
   productId,
+  productName,
   customerId,
   customerName,
   updateExistingReviews,
 }: {
   productId: string;
+  productName: string;
   customerId: string | undefined;
   customerName: string | undefined;
   updateExistingReviews: (reviews: any[]) => void;
 }) {
+  console.log(productName, 'prodname');
+
   const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
   const [review, setReview] = useState('');
   const [stars, setStars] = useState(0);
@@ -58,6 +62,8 @@ function ReviewForm({
 
   const triggerFileSelect = () => fileInputRef.current?.click();
 
+  const disableSubmitButton = !review || !stars || !title;
+
   const handleSubmit = async () => {
     try {
       setPendingReviewSubmit(true);
@@ -69,6 +75,7 @@ function ReviewForm({
       form.append('stars', String(stars));
       form.append('title', title || '');
       form.append('customerName', customerName || '');
+      form.append('productName', productName);
 
       if (selectedImage) {
         form.append('image', selectedImage);
@@ -188,7 +195,7 @@ function ReviewForm({
               {/* Submit */}
               <Button
                 onClick={handleSubmit}
-                disabled={!isLoggedIn}
+                disabled={!isLoggedIn || disableSubmitButton}
                 className="cursor-pointer"
               >
                 {pendingReviewSubmit ? (

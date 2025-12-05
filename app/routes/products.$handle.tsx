@@ -119,6 +119,7 @@ async function loadCriticalData({
       CUSTOMER_DETAILS_QUERY,
     );
     customer = data;
+    console.log(data.customer, 'data1000');
   }
   return {
     product,
@@ -153,6 +154,10 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
 export default function Product() {
   const {product, recommendedProducts, cart, reviews, customer} =
     useLoaderData<typeof loader>();
+  const isAdmin =
+    customer?.customer?.id === 'gid://shopify/Customer/7968375079049';
+  console.log(product, 'prod123');
+
   const customerId = customer?.customer?.id ?? '';
   const customerFirstName = customer?.customer?.firstName ?? '';
   const customerLastName = customer?.customer?.lastName ?? '';
@@ -700,10 +705,10 @@ export default function Product() {
 
   const handleRemoveReview = async (reviewToRemove: any) => {
     if (!customerId || !reviewToRemove?.createdAt) return;
-
+    const idToRemove = isAdmin ? reviewToRemove.customerId : customerId;
     const form = new FormData();
     form.append('productId', product.id);
-    form.append('customerId', customerId);
+    form.append('customerId', idToRemove);
     form.append('createdAt', reviewToRemove.createdAt);
 
     try {
@@ -1842,9 +1847,11 @@ export default function Product() {
               currentCustomerId={customerId}
               onRemove={handleRemoveReview}
               onEdit={handleEditReview}
+              isAdmin={isAdmin}
             />
             <ReviewForm
               productId={product.id}
+              productName={product.title}
               customerId={customerId}
               customerName={customerName}
               updateExistingReviews={updateExistingReviews}
