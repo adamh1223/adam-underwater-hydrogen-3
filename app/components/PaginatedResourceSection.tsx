@@ -16,7 +16,7 @@ export function PaginatedResourceSection<NodesType>({
   return (
     <Pagination connection={connection}>
       {({nodes, isLoading, PreviousLink, NextLink}) => {
-        const resourcesMarkup = nodes.map((node, index) =>
+        const resourcesMarkup = nodes?.map((node, index) =>
           children({node, index}),
         );
 

@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['vice-remove-wallpaper-trade.tryhydrogen.dev'],
+    allowedHosts: ['thehun-province-diy-gbp.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

@@ -47,7 +47,7 @@ import {
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  return [{title: `Hydrogen | ${data?.collection?.title ?? ''} Collection`}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -60,6 +60,7 @@ export async function loader(args: LoaderFunctionArgs) {
   let customer = null;
   try {
     customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+    console.log(customer.data, 'customer000');
   } catch (error) {
     console.warn('Not logged in');
     customer = null;
@@ -76,12 +77,18 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
-  if (!customer.data.customer.metafield?.value) {
-    return [];
+  // if (!customer.data.customer.metafield?.value) {
+  //   return [];
+  // }
+  let wishlistProducts;
+  const customerMetafieldValue =
+    customer.data.customer.metafield?.value ?? undefined;
+  if (customerMetafieldValue) {
+    wishlistProducts = JSON.parse(customerMetafieldValue);
+  } else {
+    wishlistProducts = [];
   }
-  const wishlistProducts = JSON.parse(
-    customer.data.customer.metafield?.value,
-  ) as string[];
+  console.log(wishlistProducts, 'wishlistProds');
 
   return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
@@ -153,17 +160,13 @@ export default function Collection() {
   const currentSearchTerm = searchParams.get('q') || '';
   const [searchText, setSearchText] = useState<string | undefined>();
 
-  console.log(collection.products, 'cpcp');
   // const isHorOnly = collection?.nodes?.map((p: any) =>
   //   p.tags.includes('horOnly'),
   // );
   // const isHorPrimary = collection?.nodes?.map((p: any) =>
   //   p.tags.includes('horPrimary'),
   // );
-  const test = {
-    nodes: [],
-    pageInfo: collection.products.pageInfo,
-  };
+
   // collection.products.nodes = isHorPrimary;
   // const isVertOnly = collection?.nodes?.map((p: any) =>
   //   p.tags.includes('vertOnly'),
@@ -183,10 +186,10 @@ export default function Collection() {
 
   useEffect(() => {
     setSearchText('');
-  }, [collection.handle]);
+  }, [collection?.handle]);
   useEffect(() => {
     if (searchText === '') {
-      setTotalProductCount(collection.products?.nodes?.length);
+      setTotalProductCount(collection?.products?.nodes?.length);
     }
   }, [searchText]);
   const [layout, setLayout] = useState('grid');
@@ -204,14 +207,14 @@ export default function Collection() {
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
   const [filterState, setFilterState] = useState('All');
-  const [productState, setProductState] = useState(collection.products);
+  const [productState, setProductState] = useState(collection?.products);
   const [totalProductCount, setTotalProductCount] = useState(
-    productState.nodes?.length,
+    productState?.nodes?.length,
   );
   useEffect(() => {
     let tag: string[] = [];
 
-    console.log(collection.products.nodes, 'cnodes');
+    console.log(collection?.products?.nodes, 'cnodes');
     const filteredCollection = collection?.products?.nodes?.filter((p: any) => {
       if (filterState === 'All') {
         return (
@@ -233,16 +236,16 @@ export default function Collection() {
       ...state,
       nodes: filteredCollection,
     }));
-    setTotalProductCount(filteredCollection.length);
+    setTotalProductCount(filteredCollection?.length);
   }, [filterState]);
 
   useEffect(() => {
-    console.log(collection.products, 'clp');
+    console.log(collection?.products, 'clp');
 
-    setTotalProductCount(collection.products.nodes.length);
-  }, [collection.handle]);
+    setTotalProductCount(collection?.products?.nodes?.length);
+  }, [collection?.handle]);
 
-  console.log(productState, 'productstate');
+  // console.log(productState, 'productstate');
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -254,16 +257,15 @@ export default function Collection() {
   });
 
   useEffect(() => {
-    setProductState(collection.products);
-  }, [collection.handle]);
+    setProductState(collection?.products);
+  }, [collection?.handle]);
 
   return (
     <div>
-      {collection.handle === 'prints' && <ProductsHeader />}
-      {collection.handle === 'stock' && <EProductsHeader />}
+      {collection?.handle === 'prints' && <ProductsHeader />}
+      {collection?.handle === 'stock' && <EProductsHeader />}
 
-
-      {collection.handle === 'prints' && (
+      {collection?.handle === 'prints' && (
         <div>
           <p className="text-lg flex justify-center pb-3">
             Filter By Orientation:
@@ -526,7 +528,7 @@ export default function Collection() {
               console.log(typeof term, '999111');
 
               const extraTags: string[] = [];
-              const collectionName = capitalizeFirstLetter(collection.title);
+              const collectionName = capitalizeFirstLetter(collection?.title);
               if (collectionName === 'Stock') {
                 extraTags.push('Video');
                 // For other types of EProducts, push that tag here
@@ -544,7 +546,7 @@ export default function Collection() {
                 ...filteredProducts,
                 ...extraFilteredProducts,
               ];
-              setTotalProductCount(combinedProductSearches.length);
+              setTotalProductCount(combinedProductSearches?.length);
 
               if (state === 'loading' && term.current) {
                 return <div>Loading...</div>;
@@ -562,7 +564,7 @@ export default function Collection() {
                     }
                     layout={layout}
                     term={term}
-                    collectionHandle={collection.handle}
+                    collectionHandle={collection?.handle}
                     cart={cart}
                   />
                 </>
@@ -585,10 +587,10 @@ export default function Collection() {
               };
               index: number;
             }) => {
-              const isInWishlist = wishlistProducts.includes(product.id);
+              const isInWishlist = wishlistProducts.includes(product?.id);
               return (
                 <>
-                  {collection.handle === 'prints' && (
+                  {collection?.handle === 'prints' && (
                     <ProductCarousel
                       product={product}
                       layout={layout}
@@ -596,7 +598,7 @@ export default function Collection() {
                       isLoggedIn={isLoggedIn}
                     />
                   )}
-                  {collection.handle === 'stock' && (
+                  {collection?.handle === 'stock' && (
                     <EProductsContainer
                       product={product}
                       layout={layout}
@@ -613,8 +615,8 @@ export default function Collection() {
         <Analytics.CollectionView
           data={{
             collection: {
-              id: collection.id,
-              handle: collection.handle,
+              id: collection?.id,
+              handle: collection?.handle,
             },
           }}
         />

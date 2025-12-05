@@ -10,16 +10,19 @@ export async function action({request, context}: ActionFunctionArgs) {
     const {customerAccount} = context;
     const productId = (await request.formData()).get('productId') as string;
     const data = await context.customerAccount.query(CUSTOMER_WISHLIST);
-    console.log(
-      data.data.customer.metafield.value,
-      '0000000000000011111111111111data',
-    );
-    const existingWishlist = JSON.parse(
-      data.data.customer.metafield.value,
-    ) as string[];
+
+    let existingWishlist: string[];
+    const customerMetafieldValue =
+      data?.data?.customer?.metafield?.value ?? undefined;
+    if (customerMetafieldValue) {
+      existingWishlist = JSON.parse(customerMetafieldValue) as string[];
+    } else {
+      existingWishlist = [];
+    }
+
     existingWishlist.push(productId);
 
-    const customerId = data.data.customer.id;
+    const customerId = data?.data?.customer?.id;
     console.log(customerId, 'customerid');
 
     const response = await customerAccount.mutate(CUSTOMER_UPDATE_WISHLIST, {
