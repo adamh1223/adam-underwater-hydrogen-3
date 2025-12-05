@@ -14,6 +14,7 @@ import {
   RECOMMENDED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -27,7 +28,31 @@ export async function loader(args: LoaderFunctionArgs) {
   const criticalData = await loadCriticalData(args);
   console.log(criticalData, '44crd');
 
-  return {...deferredData, ...criticalData};
+  let customer = null;
+  try {
+    customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      ...deferredData,
+      ...criticalData,
+      wishlistProducts: [],
+      isLoggedIn: undefined,
+    };
+  }
+  const isLoggedIn = args.context.customerAccount.isLoggedIn();
+
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
+  const wishlistProducts = JSON.parse(
+    customer.data.customer.metafield?.value,
+  ) as string[];
+
+  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
 
 /**
@@ -81,7 +106,11 @@ export default function Homepage() {
         </div>
       </section>
       {/* <FeaturedCollection collection={data.featuredCollection} /> */}
-      <RecommendedProducts products={data.recommendedProducts} is />
+      <RecommendedProducts
+        products={data.recommendedProducts}
+        wishlistProducts={data.wishlistProducts}
+        isLoggedIn={data.isLoggedIn}
+      />
     </div>
   );
 }

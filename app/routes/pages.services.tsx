@@ -43,6 +43,7 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import VideoPreview from '~/components/global/VideoPreview';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 // export async function loader({context}: LoaderFunctionArgs) {
 //   const {storefront} = context;
@@ -57,7 +58,31 @@ export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData};
+  let customer = null;
+  try {
+    customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      ...deferredData,
+      ...criticalData,
+      wishlistProducts: [],
+      isLoggedIn: undefined,
+    };
+  }
+  const isLoggedIn = args.context.customerAccount.isLoggedIn();
+
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
+  const wishlistProducts = JSON.parse(
+    customer.data.customer.metafield?.value,
+  ) as string[];
+
+  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
 
 async function loadCriticalData({context}: LoaderFunctionArgs) {
@@ -524,7 +549,7 @@ function ServicesPage() {
                 alt="DJI Inspire 3"
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
               /> */}
-              <VideoPreview/>
+              <VideoPreview />
             </CardContent>
           </Card>
           {/* /627592883 */}
@@ -571,7 +596,11 @@ function ServicesPage() {
         </div>
       </section>
 
-      <RecommendedProducts products={collection?.recommendedProducts} />
+      <RecommendedProducts
+        products={collection?.recommendedProducts}
+        wishlistProducts={collection.wishlistProducts}
+        isLoggedIn={collection.isLoggedIn}
+      />
       {/* <section id="coaching">
         <Sectiontitle text="1 on 1 Coaching" />
         <ul className="subheader">

@@ -8,12 +8,36 @@ import {
   RECOMMENDED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
 import '../styles/routeStyles/contact.css';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
+  let customer = null;
+  try {
+    customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      ...deferredData,
+      ...criticalData,
+      wishlistProducts: [],
+      isLoggedIn: undefined,
+    };
+  }
+  const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
-  return {...deferredData, ...criticalData};
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
+  const wishlistProducts = JSON.parse(
+    customer.data.customer.metafield?.value,
+  ) as string[];
+
+  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
 
 async function loadCriticalData({context}: LoaderFunctionArgs) {
@@ -42,7 +66,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 function ContactPage() {
   const collection = useLoaderData<typeof loader>() || {};
-  console.log(collection.recommendedProducts, 'collection');
+  console.log(collection, '111collection');
 
   return (
     <>
@@ -64,7 +88,11 @@ function ContactPage() {
         </div>
       </section>
 
-      <RecommendedProducts products={collection?.recommendedProducts} />
+      <RecommendedProducts
+        products={collection?.recommendedProducts}
+        wishlistProducts={collection?.wishlistProducts}
+        isLoggedIn={collection?.isLoggedIn}
+      />
     </>
   );
 }

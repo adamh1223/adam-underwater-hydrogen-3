@@ -30,7 +30,7 @@ import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduc
 import {ProductImages, SimpleProductImages} from '~/lib/types';
 import {useEffect, useRef, useState} from 'react';
 import {RootLoader} from '~/root';
-import {useIsVideoInCart} from '~/lib/hooks';
+import {useIsLoggedIn, useIsVideoInCart} from '~/lib/hooks';
 import {
   Accordion,
   AccordionContent,
@@ -50,7 +50,7 @@ import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarous
 import {Button} from '~/components/ui/button';
 import {GET_REVIEW_QUERY, RECOMMENDED_PRODUCTS_QUERY} from '~/lib/homeQueries';
 import SimpleRecommendedProducts from '~/components/products/simpleRecommendedProducts';
-import {FaRegHeart} from 'react-icons/fa';
+import {FaHeart, FaRegHeart} from 'react-icons/fa';
 import {
   Tooltip,
   TooltipContent,
@@ -62,6 +62,7 @@ import ReviewForm from '~/components/form/ReviewForm';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import ProductReviewsCarousel from '~/components/global/ProductReviewsCarousel';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
+import {ReloadIcon} from '@radix-ui/react-icons';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -151,7 +152,13 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
   };
 }
 // Use the same fix for about page recommended products
-export default function Product() {
+export default function Product({
+  isInWishlist = false,
+  isLoggedIn = undefined,
+}: {
+  isInWishlist: boolean;
+  isLoggedIn: Promise<boolean> | undefined;
+}) {
   const {product, recommendedProducts, cart, reviews, customer} =
     useLoaderData<typeof loader>();
   const isAdmin =
@@ -771,7 +778,53 @@ export default function Product() {
       console.error('Error editing review', error);
     }
   };
+
+  const [wishlistItem, setWishlistItem] = useState(isInWishlist);
+  const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
+
+  const addToFavorites = async () => {
+    try {
+      setPendingWishlistChange(true);
+      const form = new FormData();
+      form.append('productId', product.id);
+      console.log(form, 'form');
+
+      const response = await fetch('/api/add_favorites', {
+        method: 'POST',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+      const json = await response.json();
+      setWishlistItem(true);
+      setPendingWishlistChange(false);
+    } catch (error) {
+      setWishlistItem(false);
+      setPendingWishlistChange(false);
+    }
+  };
+  const removeFromFavorites = async () => {
+    try {
+      setPendingWishlistChange(true);
+      const form = new FormData();
+      form.append('productId', product.id);
+      console.log(form, 'form');
+
+      const response = await fetch('/api/remove_favorites', {
+        method: 'PUT',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+      const json = await response.json();
+      setWishlistItem(false);
+      setPendingWishlistChange(false);
+    } catch (error) {
+      setWishlistItem(true);
+      setPendingWishlistChange(false);
+    }
+  };
+  const loginValue = useIsLoggedIn(isLoggedIn);
   const location = useLocation();
+  console.log(loginValue, 'login');
 
   const retryTimerRef = useRef<number | null>(null);
 
@@ -901,12 +954,37 @@ export default function Product() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="heart-btn cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50">
-                      <FaRegHeart />
+                    <button
+                      onClick={
+                        wishlistItem ? removeFromFavorites : addToFavorites
+                      }
+                      className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                    >
+                      {pendingWishlistChange ? (
+                        <ReloadIcon className="animate-spin" />
+                      ) : (
+                        <>
+                          {wishlistItem ? (
+                            <FaHeart />
+                          ) : (
+                            <>
+                              {loginValue ? (
+                                <FaRegHeart />
+                              ) : (
+                                <Link to="/account/login">
+                                  <FaRegHeart />
+                                </Link>
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-sm z-1000">
-                    Save to Favorites
+                    {wishlistItem
+                      ? 'Remove from Favorites'
+                      : 'Save to Favorites'}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
