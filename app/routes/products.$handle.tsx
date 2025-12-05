@@ -63,6 +63,7 @@ import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetails
 import ProductReviewsCarousel from '~/components/global/ProductReviewsCarousel';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {ReloadIcon} from '@radix-ui/react-icons';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -115,17 +116,31 @@ async function loadCriticalData({
     throw new Response(null, {status: 404});
   }
   let customer = null;
+  let wishlistProducts: string[] = [];
+  let isLoggedIn = false;
+  console.log(context, '4444customeraccount');
   if (await context.customerAccount.isLoggedIn()) {
     const {data, errors} = await context.customerAccount.query(
       CUSTOMER_DETAILS_QUERY,
     );
+    const customerWishlistData =
+      await context.customerAccount.query(CUSTOMER_WISHLIST);
     customer = data;
-    console.log(data.customer, 'data1000');
+    isLoggedIn = true;
+    const customerMetafieldValue =
+      customerWishlistData?.data?.customer?.metafield?.value ?? undefined;
+    if (customerMetafieldValue) {
+      wishlistProducts = JSON.parse(customerMetafieldValue) as string[];
+    } else {
+      wishlistProducts = [];
+    }
   }
   return {
     product,
     customer,
     reviews,
+    isLoggedIn,
+    wishlistProducts,
     cart: cart.get(),
   };
 }
@@ -152,15 +167,17 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
   };
 }
 // Use the same fix for about page recommended products
-export default function Product({
-  isInWishlist = false,
-  isLoggedIn = undefined,
-}: {
-  isInWishlist: boolean;
-  isLoggedIn: Promise<boolean> | undefined;
-}) {
-  const {product, recommendedProducts, cart, reviews, customer} =
-    useLoaderData<typeof loader>();
+export default function Product() {
+  const {
+    product,
+    recommendedProducts,
+    cart,
+    reviews,
+    customer,
+    isLoggedIn,
+    wishlistProducts,
+  } = useLoaderData<typeof loader>();
+  const isInWishlist = wishlistProducts.includes(product?.id);
   const isAdmin =
     customer?.customer?.id === 'gid://shopify/Customer/7968375079049';
   console.log(product, 'prod123');
@@ -169,8 +186,8 @@ export default function Product({
   const customerFirstName = customer?.customer?.firstName ?? '';
   const customerLastName = customer?.customer?.lastName ?? '';
   const customerName = `${customerFirstName} ${customerLastName}`.trim();
-  console.log(reviews, 'reviews');
-  console.log(customer, 'customer');
+  console.log(wishlistProducts, '444wishlistprods');
+  console.log(product?.id, '444prodid');
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -822,9 +839,9 @@ export default function Product({
       setPendingWishlistChange(false);
     }
   };
-  const loginValue = useIsLoggedIn(isLoggedIn);
+
   const location = useLocation();
-  console.log(loginValue, 'login');
+  console.log(isLoggedIn, 'login');
 
   const retryTimerRef = useRef<number | null>(null);
 
@@ -968,7 +985,7 @@ export default function Product({
                             <FaHeart />
                           ) : (
                             <>
-                              {loginValue ? (
+                              {isLoggedIn ? (
                                 <FaRegHeart />
                               ) : (
                                 <Link to="/account/login">
@@ -1078,12 +1095,37 @@ export default function Product({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button className="heart-btn cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50">
-                          <FaRegHeart />
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <ReloadIcon className="animate-spin" />
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <FaHeart />
+                              ) : (
+                                <>
+                                  {isLoggedIn ? (
+                                    <FaRegHeart />
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <FaRegHeart />
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-sm z-1000">
-                        Save to Favorites
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
