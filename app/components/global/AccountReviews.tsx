@@ -11,6 +11,8 @@ interface AccountReviewsProps {
   products: ProductReviewSource[];
   customerId?: string | null;
   customerName?: string;
+  wishlistProducts?: string[];
+  isLoggedIn?: Promise<boolean>;
 }
 
 interface ProductReviewSource {
@@ -96,6 +98,8 @@ const AccountReviews = ({
   products,
   customerId,
   customerName,
+  wishlistProducts,
+  isLoggedIn,
 }: AccountReviewsProps) => {
   const initialReviews = useMemo(
     () => parseReviews(products, customerId),
@@ -105,7 +109,10 @@ const AccountReviews = ({
   const [userReviews, setUserReviews] =
     useState<UserProductReview[]>(initialReviews);
 
-  const loggedInPromise = useMemo(() => Promise.resolve(true), []);
+  const loggedInPromise = useMemo(
+    () => isLoggedIn ?? Promise.resolve(false),
+    [isLoggedIn],
+  );
 
   useEffect(() => {
     setUserReviews(parseReviews(products, customerId));
@@ -236,7 +243,9 @@ const AccountReviews = ({
             <ProductCarousel
               product={entry.product}
               layout="grid"
-              isInWishlist={false}
+              isInWishlist={
+                wishlistProducts?.includes(entry.productId) ?? false
+              }
               isLoggedIn={loggedInPromise}
             />
           </div>

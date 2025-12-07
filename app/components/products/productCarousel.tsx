@@ -291,26 +291,32 @@ export const ProductCarousel = ({
                     onClick={
                       wishlistItem ? removeFromFavorites : addToFavorites
                     }
+                    disabled={!loginValue}
                     className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                   >
-                    {/* {pending ? (
-                  <ReloadIcon className="animate-spin" />
-                ) : isFavorite ? (
-                  <FaHeart />
-                ) : (
-                  <FaRegHeart />
-                )} */}
-                    {/* <ReloadIcon className="animate-spin" />
-              <FaHeart /> */}
-                    {/* <ReloadIcon className="animate-spin" /> */}
-
-                    <FaHeart />
-
-                    <FaRegHeart />
+                    {pendingWishlistChange ? (
+                      <ReloadIcon className="animate-spin" />
+                    ) : (
+                      <>
+                        {wishlistItem ? (
+                          <FaHeart />
+                        ) : (
+                          <>
+                            {loginValue ? (
+                              <FaRegHeart />
+                            ) : (
+                              <Link to="/account/login">
+                                <FaRegHeart />
+                              </Link>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-sm z-1000">
-                  Save to Favorites
+                  {wishlistItem ? 'Remove from Favorites' : 'Save to Favorites'}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

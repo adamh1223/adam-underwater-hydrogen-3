@@ -8,6 +8,7 @@ import type {CustomerFragment} from 'customer-accountapi.generated';
 import AccountReviews from '~/components/global/AccountReviews';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import Sectiontitle from '~/components/global/Sectiontitle';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 const CUSTOMER_REVIEWS_QUERY = `#graphql
   query CustomerReviews($country: CountryCode, $language: LanguageCode)
@@ -49,18 +50,35 @@ export const meta: MetaFunction = () => {
 export async function loader({context}: LoaderFunctionArgs) {
   await context.customerAccount.handleAuthStatus();
 
-  const [productsResponse, customerResponse] = await Promise.all([
-    context.storefront.query(CUSTOMER_REVIEWS_QUERY),
-    context.customerAccount.query(CUSTOMER_DETAILS_QUERY),
-  ]);
+  const [productsResponse, customerResponse, wishlistResponse] =
+    await Promise.all([
+      context.storefront.query(CUSTOMER_REVIEWS_QUERY),
+      context.customerAccount.query(CUSTOMER_DETAILS_QUERY),
+      context.customerAccount.query(CUSTOMER_WISHLIST).catch(() => null),
+    ]);
+
   const products = productsResponse?.products?.nodes ?? [];
   const customer = customerResponse?.data?.customer ?? null;
+  const wishlistValue = wishlistResponse?.data?.customer?.metafield?.value;
+  let wishlistProducts: string[] = [];
 
-  return json({products, customer});
+  try {
+    wishlistProducts = wishlistValue
+      ? (JSON.parse(wishlistValue) as string[])
+      : [];
+  } catch (error) {
+    console.error('Unable to parse wishlist', error);
+  }
+  const isLoggedIn = wishlistResponse
+    ? context.customerAccount.isLoggedIn()
+    : undefined;
+
+  return json({products, customer, wishlistProducts, isLoggedIn});
 }
 
 export default function AccountReviewsRoute() {
-  const {products, customer} = useLoaderData<typeof loader>();
+  const {products, customer, wishlistProducts, isLoggedIn} =
+    useLoaderData<typeof loader>();
   const outletContext = useOutletContext<{customer: CustomerFragment}>();
 
   const resolvedCustomer = customer ?? outletContext.customer;
@@ -79,6 +97,7 @@ export default function AccountReviewsRoute() {
         products={products}
         customerId={customerId}
         customerName={customerName || undefined}
+        wishlistProducts={wishlistProducts}
       />
     </div>
   );

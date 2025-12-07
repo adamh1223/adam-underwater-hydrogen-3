@@ -1141,59 +1141,61 @@ export default function Product() {
                   price={selectedVariant?.price}
                   compareAtPrice={selectedVariant?.compareAtPrice}
                 />
-                <a
-                  href="#reviews"
-                  onClick={(evt) => handleScroll('reviews', evt)}
-                  className="no-underline text-inherit"
-                >
-                  <div className="average-product-rating">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="relative flex items-center"
-                        aria-hidden="true"
-                      >
-                        <Rating
-                          readOnly
-                          value={5}
-                          className="text-muted-foreground"
-                          aria-label={`Maximum rating of 5 stars`}
-                        >
-                          {Array.from({length: 5}).map((_, index) => (
-                            <RatingButton
-                              key={index}
-                              className="h-5 w-5 p-0.5"
-                            />
-                          ))}
-                        </Rating>
+                {!isVideo && (
+                  <a
+                    href="#reviews"
+                    onClick={(evt) => handleScroll('reviews', evt)}
+                    className="no-underline text-inherit"
+                  >
+                    <div className="average-product-rating">
+                      <div className="flex items-center gap-2">
                         <div
-                          className="absolute inset-0 overflow-hidden text-yellow-400"
-                          style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                          className="relative flex items-center"
+                          aria-hidden="true"
                         >
                           <Rating
                             readOnly
                             value={5}
-                            className="text-yellow-400"
+                            className="text-muted-foreground"
+                            aria-label={`Maximum rating of 5 stars`}
                           >
                             {Array.from({length: 5}).map((_, index) => (
                               <RatingButton
                                 key={index}
                                 className="h-5 w-5 p-0.5"
-                                aria-label={`Average rating ${formattedAverageRating} out of 5`}
                               />
                             ))}
                           </Rating>
+                          <div
+                            className="absolute inset-0 overflow-hidden text-yellow-400"
+                            style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                          >
+                            <Rating
+                              readOnly
+                              value={5}
+                              className="text-yellow-400"
+                            >
+                              {Array.from({length: 5}).map((_, index) => (
+                                <RatingButton
+                                  key={index}
+                                  className="h-5 w-5 p-0.5"
+                                  aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                />
+                              ))}
+                            </Rating>
+                          </div>
                         </div>
+                        <span className="text-sm text-muted-foreground">
+                          {formattedAverageRating} (
+                          {reviewsCount === 1
+                            ? '1 review'
+                            : `${reviewsCount} reviews`}
+                          )
+                        </span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {formattedAverageRating} (
-                        {reviewsCount === 1
-                          ? '1 review'
-                          : `${reviewsCount} reviews`}
-                        )
-                      </span>
                     </div>
-                  </div>
-                </a>
+                  </a>
+                )}
                 <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
               </>
             )}
@@ -1950,34 +1952,36 @@ export default function Product() {
             </div>
           </section>
         )}
-        <section className="reviews mt-3">
-          {/* section title */}
-          <div className="section-title-container">
-            <div className="flex items-center justify-center w-full">
-              <div className="flex-1 h-px bg-muted" />
-              <span className="px-4">
-                <p className="text-xl">Reviews for this Product</p>
-              </span>
-              <div className="flex-1 h-px bg-muted" />
+        {!isVideo && (
+          <section className="reviews mt-3">
+            {/* section title */}
+            <div className="section-title-container">
+              <div className="flex items-center justify-center w-full">
+                <div className="flex-1 h-px bg-muted" />
+                <span className="px-4">
+                  <p className="text-xl">Reviews for this Product</p>
+                </span>
+                <div className="flex-1 h-px bg-muted" />
+              </div>
             </div>
-          </div>
-          <div className="my-5" id="reviews">
-            <ProductReviewsCarousel
-              reviews={reviewsList}
-              currentCustomerId={customerId}
-              onRemove={handleRemoveReview}
-              onEdit={handleEditReview}
-              isAdmin={isAdmin}
-            />
-            <ReviewForm
-              productId={product.id}
-              productName={product.title}
-              customerId={customerId}
-              customerName={customerName}
-              updateExistingReviews={updateExistingReviews}
-            />
-          </div>
-        </section>
+            <div className="my-5" id="reviews">
+              <ProductReviewsCarousel
+                reviews={reviewsList}
+                currentCustomerId={customerId}
+                onRemove={handleRemoveReview}
+                onEdit={handleEditReview}
+                isAdmin={isAdmin}
+              />
+              <ReviewForm
+                productId={product.id}
+                productName={product.title}
+                customerId={customerId}
+                customerName={customerName}
+                updateExistingReviews={updateExistingReviews}
+              />
+            </div>
+          </section>
+        )}
         <section className="you-may-also-like mt-3">
           {/* section title */}
           <div className="section-title-container">
