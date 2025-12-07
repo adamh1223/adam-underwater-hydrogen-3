@@ -5,6 +5,7 @@ import {Card, CardContent, CardHeader, CardTitle} from '~/components/ui/card';
 import ProductReviewsDisplay, {
   type Review,
 } from '~/components/global/ProductReviewsDisplay';
+import ProductCarousel from '../products/productCarousel';
 
 interface AccountReviewsProps {
   products: ProductReviewSource[];
@@ -16,6 +17,14 @@ interface ProductReviewSource {
   id: string;
   title: string;
   handle: string;
+  tags?: string[];
+  images?: {nodes?: {url: string; altText?: string | null}[]};
+  priceRange?: {
+    minVariantPrice?: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
   featuredImage?: {
     url: string;
     altText?: string | null;
@@ -29,10 +38,11 @@ interface UserProductReview {
   productId: string;
   productTitle: string;
   productHandle: string;
-  productImage?: {
-    url: string;
-    altText?: string | null;
-  } | null;
+  //   productImage?: {
+  //     url: string;
+  //     altText?: string | null;
+  //   } | null;
+  product: ProductReviewSource;
   review: Review;
 }
 
@@ -43,6 +53,22 @@ const parseReviews = (
   if (!customerId) return [];
 
   return products.flatMap((product) => {
+    const productWithFallbackImage: ProductReviewSource = {
+      ...product,
+      tags: product.tags ?? [],
+      images:
+        product.images ??
+        (product.featuredImage
+          ? {
+              nodes: [
+                {
+                  url: product.featuredImage.url,
+                  altText: product.featuredImage.altText ?? product.title,
+                },
+              ],
+            }
+          : undefined),
+    };
     const rawValue = product.metafield?.value;
     let parsedProductReviews: Review[] = [];
 
@@ -60,7 +86,7 @@ const parseReviews = (
         productId: product.id,
         productTitle: product.title,
         productHandle: product.handle,
-        productImage: product.featuredImage,
+        product: productWithFallbackImage,
         review,
       }));
   });
@@ -78,6 +104,8 @@ const AccountReviews = ({
 
   const [userReviews, setUserReviews] =
     useState<UserProductReview[]>(initialReviews);
+
+  const loggedInPromise = useMemo(() => Promise.resolve(true), []);
 
   useEffect(() => {
     setUserReviews(parseReviews(products, customerId));
@@ -198,36 +226,20 @@ const AccountReviews = ({
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col">
       {userReviews.map((entry) => (
         <div
           key={`${entry.productId}-${entry.review.createdAt}`}
           className="grid gap-4 md:grid-cols-[1fr_auto_1fr] items-stretch mx-[30px]"
         >
-          <Card className="h-full product-carousel-card">
-            <CardHeader className="flex flex-row items-center gap-3">
-              {entry.productImage?.url ? (
-                <img
-                  src={entry.productImage.url}
-                  alt={entry.productImage.altText ?? entry.productTitle}
-                  className="h-16 w-16 rounded object-cover"
-                />
-              ) : null}
-              <CardTitle>
-                <Link
-                  to={`/products/${entry.productHandle}`}
-                  className="hover:underline"
-                >
-                  {entry.productTitle}
-                </Link>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                View your review for this product.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="h-full">
+            <ProductCarousel
+              product={entry.product}
+              layout="grid"
+              isInWishlist={false}
+              isLoggedIn={loggedInPromise}
+            />
+          </div>
 
           <div className="hidden md:flex items-center">
             <div className="w-full h-px bg-muted" />
@@ -235,7 +247,7 @@ const AccountReviews = ({
             <div className="w-full h-px bg-muted" />
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 mb-5">
             <div className="md:hidden flex items-center justify-center">
               <ArrowRightIcon className="text-muted-foreground" />
             </div>

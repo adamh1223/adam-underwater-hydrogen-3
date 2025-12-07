@@ -17,6 +17,19 @@ const CUSTOMER_REVIEWS_QUERY = `#graphql
         id
         title
         handle
+        tags
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 10) {
+          nodes {
+            url
+            altText
+          }
+        }
         featuredImage {
           url
           altText

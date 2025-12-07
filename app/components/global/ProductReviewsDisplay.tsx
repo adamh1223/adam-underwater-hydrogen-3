@@ -121,7 +121,7 @@ const ProductReviewsDisplay = ({
   };
 
   return (
-    <Card className="review-card mb-5 h-full w-full">
+    <Card className="review-card h-full w-full">
       {isEditing ? (
         <>
           <div className="review-container">
@@ -320,7 +320,7 @@ const ProductReviewsDisplay = ({
                   />
                 </div>
               )}
-              <Card className="mt-3 mb-1 mx-4 w-[90%]">
+              <Card className="mt-3 mb-4 mx-4 w-[90%]">
                 <CardHeader>
                   <p className="review-title font-bold">{displayTitle}</p>
                 </CardHeader>
