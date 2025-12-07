@@ -110,7 +110,7 @@ export function HeaderMenu({
           to="/"
           className="logo-container"
         >
-          <img src={imageURL} className="logo" style={{height: '4rem'}}></img>
+          <img src={imageURL} className="logo" style={{height: '2.5rem'}}></img>
         </NavLink>
       </div>
       <div className="2 flex items-center nav-links">
