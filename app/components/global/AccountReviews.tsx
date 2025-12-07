@@ -204,7 +204,7 @@ const AccountReviews = ({
           key={`${entry.productId}-${entry.review.createdAt}`}
           className="grid gap-4 md:grid-cols-[1fr_auto_1fr] items-stretch mx-[30px]"
         >
-          <Card className="h-full">
+          <Card className="h-full product-carousel-card">
             <CardHeader className="flex flex-row items-center gap-3">
               {entry.productImage?.url ? (
                 <img
