@@ -7,11 +7,39 @@ import {
 } from '~/lib/homeQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {useLoaderData} from '@remix-run/react';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
+  //   need the customer variable, add these lines for other instances of recommended products
+  let customer = null;
+  try {
+    customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      ...deferredData,
+      ...criticalData,
+      wishlistProducts: [],
+      isLoggedIn: undefined,
+    };
+  }
+  console.log(customer, '1234123412341234customer');
 
-  return {...deferredData, ...criticalData};
+  const isLoggedIn = args.context.customerAccount.isLoggedIn();
+
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
+  const wishlistProducts = JSON.parse(
+    customer.data.customer.metafield?.value,
+  ) as string[];
+
+  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
 
 async function loadCriticalData({context}: LoaderFunctionArgs) {
@@ -40,7 +68,6 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 function WorkPage() {
   const collection = useLoaderData<typeof loader>() || {};
-  console.log(collection.recommendedProducts, 'collection');
   return (
     <>
       <div className="flex justify-center pb-5 ps-5">
@@ -80,7 +107,11 @@ function WorkPage() {
         </div>
       </section>
 
-      <RecommendedProducts products={collection?.recommendedProducts} />
+      <RecommendedProducts
+        products={collection?.recommendedProducts}
+        wishlistProducts={collection?.wishlistProducts}
+        isLoggedIn={collection?.isLoggedIn}
+      />
     </>
   );
 }
