@@ -1,16 +1,2 @@
-@media (max-width: 713px) {
-  .navbar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-}
-.navbar {
-  padding: 20px;
-}
-@media (max-width: 600px) {
-  .nav-links {
-    flex-wrap: wrap;
-  }
-}
+
 
