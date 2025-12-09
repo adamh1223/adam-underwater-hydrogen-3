@@ -26,11 +26,11 @@ img {
 * --------------------------------------------------
 */
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-    height: 94vh;
+    height: 100vh;
     max-width: var(--aside-width);
     min-width: var(--aside-width);
     position: fixed;
@@ -41,11 +41,11 @@ img {
     bottom: 0;
   }
 }
-@media (min-width: 601px) and (max-width: 1279px) {
+@media (min-width: 601px) and (max-width: 1023px) {
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-    height: 90vh;
+    height: 100vh;
     width: 350px;
     position: fixed;
     right: calc(-1 * var(--aside-width));
@@ -59,7 +59,7 @@ img {
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-    height: 85vh;
+    height: 100vh;
     width: 300px;
     position: fixed;
     right: calc(-1 * var(--aside-width));

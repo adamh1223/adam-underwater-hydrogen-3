@@ -83,8 +83,8 @@ export function Aside({
       <button className="close-outside" onClick={close} />
 
       <aside className="border-l">
-        {windowWidth != null && windowWidth > 1279 && (
-          <div className="mt-[30px]">
+        {windowWidth != null && windowWidth > 1023 && (
+          <div className="mt-[70px]">
             <div className="flex justify-end pe-4">
               <button
                 className="close reset cursor-pointer text-xl"
@@ -101,14 +101,13 @@ export function Aside({
                   style={{height: '90px'}}
                   className="pt-3"
                 ></img>
-                
               </div>
             </header>
             <main>{children}</main>
           </div>
         )}
-        {windowWidth != null && windowWidth <= 1279 && windowWidth > 600 && (
-          <div className="mt-[105px]">
+        {windowWidth != null && windowWidth <= 1023 && (
+          <div className="mt-[110px]">
             <div className="flex justify-end pe-4">
               <button
                 className="close reset cursor-pointer text-xl"
@@ -123,29 +122,6 @@ export function Aside({
                 <img
                   src={imageSource}
                   style={{height: '80px'}}
-                  className="pt-3"
-                ></img>
-              </div>
-            </header>
-            <main>{children}</main>
-          </div>
-        )}
-        {windowWidth != null && windowWidth <= 600 && (
-          <div className="mt-[100px]">
-            <div className="flex justify-end pe-4">
-              <button
-                className="close reset cursor-pointer text-xl"
-                onClick={close}
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </div>
-            <header>
-              <div className="flex justify-center border-b">
-                <img
-                  src={imageSource}
-                  style={{height: '70px'}}
                   className="pt-3"
                 ></img>
               </div>
