@@ -115,8 +115,8 @@ export function HeaderMenu({
       {windowWidth != undefined && windowWidth < 1024 && (
         <>
           <nav role="navigation">
-            <div className="main-navbar-small-top-row mt-4">
-              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2">
+            <div className="main-navbar-small-top-row ">
+              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2 mt-4">
                 <NavLink
                   end
                   onClick={close}
@@ -133,12 +133,12 @@ export function HeaderMenu({
               </div>
 
               {cart && (
-                <div className="3 flex gap-4 items-center ctas-cart-search-container">
+                <div className="3 flex gap-4 items-center ctas-cart-search-container mt-4">
                   <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
                 </div>
               )}
             </div>
-            <div className="main-navbar-small-bottom-row mb-4 mt-2">
+            <div className="main-navbar-small-bottom-row mb-3 mt-2">
               <div className="2 flex items-center nav-links-container">
                 <div className="2.1 flex justify-center w-full">
                   {menuFirstHalf.map((item) => {
