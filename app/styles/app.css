@@ -588,6 +588,10 @@ button.reset:hover:not(:has(> *)) {
 .logo-container {
   width: 30%;
 } */
+
+.logo {
+  height: 2.5rem;
+}
 @media (min-width: 601px) {
   .cart-header {
     font-size: 17px;

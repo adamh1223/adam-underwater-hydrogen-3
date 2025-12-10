@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['holes-dive-flyer-our.tryhydrogen.dev'],
+    allowedHosts: ['obj-sheriff-baseball-sierra.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
