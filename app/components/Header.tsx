@@ -91,7 +91,7 @@ export function HeaderMenu({
   isLoggedIn?: HeaderProps['isLoggedIn'];
   cart?: HeaderProps['cart'];
 }) {
-  const className = `header-menu-${viewport} main-navbar flex xl:flex-row sm:justify-between sm:items-center lg:justify-between flex-wrap pt-[15.5px] pb-2 navbar`;
+  const className = `header-menu-${viewport} main-navbar flex xl:flex-row sm:justify-between sm:items-center lg:justify-between flex-wrap py-4 navbar`;
   const {close} = useAside();
   // IF the order ever changes in shopify admin, we may have to update these two variables as well
   // If we remove a menu item it might look off
