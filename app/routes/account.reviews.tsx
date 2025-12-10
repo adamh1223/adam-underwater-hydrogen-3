@@ -9,6 +9,7 @@ import AccountReviews from '~/components/global/AccountReviews';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import {useIsLoggedIn} from '~/lib/hooks';
 
 const CUSTOMER_REVIEWS_QUERY = `#graphql
   query CustomerReviews($country: CountryCode, $language: LanguageCode)
@@ -69,11 +70,10 @@ export async function loader({context}: LoaderFunctionArgs) {
   } catch (error) {
     console.error('Unable to parse wishlist', error);
   }
-  const isLoggedIn = wishlistResponse
-    ? context.customerAccount.isLoggedIn()
-    : undefined;
+  const isLoggedIn = context.customerAccount.isLoggedIn();
+  console.log(isLoggedIn, 'islogged2');
 
-  return json({products, customer, wishlistProducts, isLoggedIn});
+  return {products, customer, wishlistProducts, isLoggedIn};
 }
 
 export default function AccountReviewsRoute() {
@@ -89,6 +89,7 @@ export default function AccountReviewsRoute() {
   ]
     .join(' ')
     .trim();
+  console.log(isLoggedIn, 'islogged');
 
   return (
     <div className="account-reviews space-y-6">
@@ -98,6 +99,7 @@ export default function AccountReviewsRoute() {
         customerId={customerId}
         customerName={customerName || undefined}
         wishlistProducts={wishlistProducts}
+        isLoggedIn={isLoggedIn}
       />
     </div>
   );

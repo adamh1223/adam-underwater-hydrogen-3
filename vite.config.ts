@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['shower-pub-content-comparisons.tryhydrogen.dev'],
+    allowedHosts: ['density-nations-chemical-fig.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
@@ -52,6 +52,7 @@ export default defineConfig({
        * @see https://vitejs.dev/config/dep-optimization-options
        */
       include: [
+        'react-image-zooom',
         '@trycourier/courier',
         '@supabase/supabase-js',
         '@supabase/postgrest-js',

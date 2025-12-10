@@ -57,9 +57,16 @@ function ReviewForm({
       setReview(value.slice(0, REVIEW_CHAR_LIMIT));
     }
   };
+  const [fileError, setFileError] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+    console.log('hello world');
+    setFileError('');
+    if (file && file?.size / (1024 * 1024) > 20) {
+      setFileError('Image exceeds 20 mb limit');
+      return;
+    }
     setSelectedImage(file);
     setImagePreview(file ? URL.createObjectURL(file) : null);
   };
@@ -97,6 +104,7 @@ function ReviewForm({
       updateExistingReviews(json.reviews);
 
       // Reset
+      setFileError('');
       setPendingReviewSubmit(false);
       setReview('');
       setStars(0);
@@ -162,7 +170,7 @@ function ReviewForm({
               </div>
 
               <br />
-
+              {fileError && <h2>{fileError}</h2>}
               {/* Upload */}
               <input
                 ref={fileInputRef}

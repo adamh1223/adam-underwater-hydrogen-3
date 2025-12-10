@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip';
+import ImageZoom from 'react-image-zooom';
 
 function IndividualProduct({
   productName,
@@ -201,14 +202,18 @@ function IndividualProduct({
                     key={idx}
                   >
                     <div className="p-4 flex items-center justify-center">
-                      <img
+                      <ImageZoom
+                        src={url.url}
+                        className="max-h-full object-contain carousel-item"
+                      ></ImageZoom>
+                      {/* <img
                         src={url.url}
                         alt=""
                         className="max-h-full object-contain carousel-item"
                         onClick={(e) => handleImageClick(e, url.url)}
                         onMouseMove={(e) => handleMouseMove(e, url.url)}
                         onMouseLeave={handleMouseLeave}
-                      />
+                      /> */}
                     </div>
                   </CarouselItem>
                 ))}
@@ -295,7 +300,7 @@ function IndividualProduct({
       </div>
 
       {/* Floating Zoom Window */}
-      {zoomData.visible && (
+      {/* {zoomData.visible && (
         <div
           className="floating-zoom-window fixed border-2 border-gray-300 shadow-xl z-50 bg-no-repeat bg-white pointer-events-none"
           style={{
@@ -319,7 +324,7 @@ function IndividualProduct({
             })
           }
         />
-      )}
+      )} */}
     </>
   );
 }
