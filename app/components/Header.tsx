@@ -91,7 +91,7 @@ export function HeaderMenu({
   isLoggedIn?: HeaderProps['isLoggedIn'];
   cart?: HeaderProps['cart'];
 }) {
-  const className = `header-menu-${viewport} main-navbar flex xl:flex-row sm:justify-between sm:items-center lg:justify-between flex-wrap py-4 navbar`;
+  const className = `header-menu-${viewport} main-navbar flex xl:flex-row sm:justify-between sm:items-center lg:justify-between flex-wrap navbar`;
   const {close} = useAside();
   // IF the order ever changes in shopify admin, we may have to update these two variables as well
   // If we remove a menu item it might look off
@@ -112,7 +112,7 @@ export function HeaderMenu({
 
   return (
     <>
-      {windowWidth != undefined && windowWidth < 810 && (
+      {windowWidth != undefined && windowWidth < 768 && (
         <>
           <nav role="navigation">
             <div className="main-navbar-small-top-row ">
@@ -265,14 +265,14 @@ export function HeaderMenu({
           </nav>
         </>
       )}
-      {windowWidth != undefined && windowWidth >= 810 && windowWidth < 1024 && (
+      {windowWidth != undefined && windowWidth >= 768 && windowWidth < 1024 && (
         <>
           <nav
-            className={`${className} flex w-full flex-col gap-3`}
+            className={`${className} flex w-full flex-col gap-2`}
             role="navigation"
           >
             <div className="flex w-full items-center justify-between gap-4">
-              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2 shrink-0">
+              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2 mt-[15.5px] shrink-0">
                 <NavLink
                   end
                   onClick={close}
@@ -289,7 +289,7 @@ export function HeaderMenu({
               </div>
 
               {/* ⭐ SHIFTED LEFT 30px */}
-              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[32px]">
+              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[32px] mt-[16px]">
                 {menuFirstHalf.map((item) => {
                   console.log(menu, '2222');
                   if (!item.url) return null;
@@ -348,13 +348,13 @@ export function HeaderMenu({
               </div>
 
               {cart && (
-                <div className="flex gap-4 items-center ctas-cart-search-container">
+                <div className="flex gap-4 items-center ctas-cart-search-container mt-[16px]">
                   <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
                 </div>
               )}
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-3">
               {menuSecondHalf.map((item) => {
                 console.log(menu, '2222');
                 if (!item.url) return null;
@@ -415,8 +415,8 @@ export function HeaderMenu({
         </>
       )}
       {windowWidth != undefined && windowWidth >= 1024 && (
-        <nav className={className} role="navigation">
-          <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2">
+        <nav className={`${className}`} role="navigation">
+          <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 pt-[15px] pb-4">
             <NavLink
               end
               onClick={close}
@@ -431,7 +431,7 @@ export function HeaderMenu({
               ></img>
             </NavLink>
           </div>
-          <div className="2 flex items-center nav-links-container">
+          <div className="2 flex items-center nav-links-container py-4">
             <div className="2.1 flex justify-center w-full">
               {menuFirstHalf.map((item) => {
                 console.log(menu, '2222');
@@ -554,7 +554,7 @@ export function HeaderMenu({
             </div>
           </div>
           {cart && (
-            <div className="3 flex gap-4 items-center ctas-cart-search-container">
+            <div className="3 flex gap-3 items-center ctas-cart-search-container py-4">
               <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
             </div>
           )}
