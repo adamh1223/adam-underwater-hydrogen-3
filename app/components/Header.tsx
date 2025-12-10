@@ -267,8 +267,11 @@ export function HeaderMenu({
       )}
       {windowWidth != undefined && windowWidth >= 810 && windowWidth < 1024 && (
         <>
-          <nav className={`${className} flex flex-col gap-3`} role="navigation">
-            <div className="flex items-center gap-4">
+          <nav
+            className={`${className} flex w-full flex-col gap-3`}
+            role="navigation"
+          >
+            <div className="flex w-full items-center justify-between gap-4">
               <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2 shrink-0">
                 <NavLink
                   end
@@ -281,16 +284,16 @@ export function HeaderMenu({
                     src={imageURL}
                     className="logo"
                     style={{height: '2.5rem'}}
-                  ></img>
+                  />
                 </NavLink>
               </div>
-              <div className="flex-1 flex justify-center">
+
+              {/* ⭐ SHIFTED LEFT 30px */}
+              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[30px]">
                 {menuFirstHalf.map((item) => {
                   console.log(menu, '2222');
-
                   if (!item.url) return null;
 
-                  // if the url is internal, we strip the domain
                   const url =
                     item.url.includes('myshopify.com') ||
                     item.url.includes(publicStoreDomain) ||
@@ -306,16 +309,17 @@ export function HeaderMenu({
                           menuItems={item}
                           publicStoreDomain={publicStoreDomain}
                           primaryDomainUrl={primaryDomainUrl}
-                        ></AboutDropdown>
+                        />
                       );
                       break;
+
                     case 'Services':
                       renderContent = (
                         <ServicesDropdown
                           menuItems={item}
                           publicStoreDomain={publicStoreDomain}
                           primaryDomainUrl={primaryDomainUrl}
-                        ></ServicesDropdown>
+                        />
                       );
                       break;
 
@@ -333,29 +337,28 @@ export function HeaderMenu({
                             className="relative group px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
                           >
                             {item.title}
-                            {/* animated underline */}
                             <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
                           </Button>
                         </NavLink>
                       );
-                      break;
                   }
+
                   return <>{renderContent}</>;
                 })}
               </div>
+
               {cart && (
                 <div className="flex gap-4 items-center ctas-cart-search-container">
                   <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
                 </div>
               )}
             </div>
+
             <div className="flex justify-center">
               {menuSecondHalf.map((item) => {
                 console.log(menu, '2222');
-
                 if (!item.url) return null;
 
-                // if the url is internal, we strip the domain
                 const url =
                   item.url.includes('myshopify.com') ||
                   item.url.includes(publicStoreDomain) ||
@@ -371,22 +374,21 @@ export function HeaderMenu({
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
-                      ></AboutDropdown>
+                      />
                     );
                     break;
+
                   case 'Services':
                     renderContent = (
                       <ServicesDropdown
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
-                      ></ServicesDropdown>
+                      />
                     );
                     break;
 
                   default:
-                    console.log(url, '888url');
-
                     renderContent = (
                       <NavLink
                         className="relative z-10"
@@ -400,13 +402,12 @@ export function HeaderMenu({
                           className="relative group px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
                         >
                           {item.title}
-                          {/* animated underline */}
                           <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
                         </Button>
                       </NavLink>
                     );
-                    break;
                 }
+
                 return <>{renderContent}</>;
               })}
             </div>
