@@ -26,6 +26,7 @@ export default async function handleRequest(
       'blob:',
       'https://cdn.shopify.com',
       'https://fpoxvfuxgtlyphowqdgf.supabase.co',
+      'https://aethtsbnwylikosxhnkh.supabase.co',
     ],
     frameSrc: ['https://player.vimeo.com/', 'https://vimeo.com/'],
   });

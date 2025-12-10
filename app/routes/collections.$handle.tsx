@@ -539,7 +539,7 @@ export default function Collection() {
               const extraFilteredProducts =
                 extraTags?.length > 0
                   ? products.filter((product) =>
-                      product.tags.some((tag) => extraTags.includes(tag)),
+                      product?.tags?.some((tag) => extraTags.includes(tag)),
                     )
                   : [];
               const combinedProductSearches = [

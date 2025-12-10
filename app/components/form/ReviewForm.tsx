@@ -13,11 +13,15 @@ function ReviewForm({
   customerId,
   customerName,
   updateExistingReviews,
+  userReviewExists,
+  isBlocked,
 }: {
   productId: string;
   productName: string;
   customerId: string | undefined;
   customerName: string | undefined;
+  userReviewExists: Boolean;
+  isBlocked: Boolean;
   updateExistingReviews: (reviews: any[]) => void;
 }) {
   console.log(productName, 'prodname');
@@ -61,8 +65,10 @@ function ReviewForm({
   };
 
   const triggerFileSelect = () => fileInputRef.current?.click();
+  console.log(userReviewExists, 'userreviewexists');
 
-  const disableSubmitButton = !review || !stars || !title;
+  const disableSubmitButton =
+    !review || !stars || !title || userReviewExists || isBlocked;
 
   const handleSubmit = async () => {
     try {

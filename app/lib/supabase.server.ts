@@ -8,7 +8,6 @@ function getSupabase(env: Env) {
 
   // Because the Max storage limit is 1 GB, we need to have Several supabase buckets ready, for when this limit is reached, so that we switch to a new bucket so ppl can still upload images.
 
-
   // Can we have it automatically upload to bucket 2 if bucket 1 fails? This could be a try catch or an if statement conditional deciding to attempt upload to bucket 2 if bucket 1 fails. And so on. Attempt to upload to bucket 3 if bucket 1 and bucket 2 fails. Like a waterfall effect.
 
   // I also need to be able to keep the original bucket images live, while allowing new uploads to occur on bucket 2

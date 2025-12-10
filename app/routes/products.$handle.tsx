@@ -188,6 +188,9 @@ export default function Product() {
   const customerName = `${customerFirstName} ${customerLastName}`.trim();
   console.log(wishlistProducts, '444wishlistprods');
   console.log(product?.id, '444prodid');
+  console.log(customer?.customer, 'customer');
+  const isBlocked = customer?.customer?.tags?.includes('blocked');
+  console.log(isBlocked, 'isblocked');
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -715,6 +718,11 @@ export default function Product() {
   console.log(parsedReviews, 'parsedReviews');
 
   const [reviewsList, setReviewsList] = useState(parsedReviews);
+  const userReviewExists = reviewsList?.some((review) => {
+    console.log(review.customerId === customerId, '222reviewcustomerid');
+
+    return review.customerId === customerId;
+  });
 
   const reviewsCount = reviewsList.length;
   const averageRating =
@@ -1978,6 +1986,8 @@ export default function Product() {
                 customerId={customerId}
                 customerName={customerName}
                 updateExistingReviews={updateExistingReviews}
+                userReviewExists={userReviewExists}
+                isBlocked={isBlocked}
               />
             </div>
           </section>
