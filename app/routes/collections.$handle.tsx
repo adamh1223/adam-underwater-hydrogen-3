@@ -267,7 +267,7 @@ export default function Collection() {
 
       {collection?.handle === 'prints' && (
         <div>
-          <p className="text-lg flex justify-center pb-3">
+          <p className="text-lg flex justify-center py-3">
             Filter By Orientation:
           </p>
           <div className="flex justify-center pb-3">

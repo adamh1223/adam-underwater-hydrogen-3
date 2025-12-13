@@ -28,7 +28,7 @@ function HeroPrints() {
   }, []);
 
   return (
-    <section className="flex flex-col items-center justify-center text-center main mb-3">
+    <section className="flex flex-col items-center justify-center text-center main">
       <div className="title-wrapper">
         <div className="flex justify-center font-extrabold text-3xl py-2">
           <Sectiontitle text="Framed Canvas Wall Art" />
@@ -57,6 +57,9 @@ function HeroPrints() {
             </div>
             <div>
               <p className="statement">Handcrafted in San Diego, CA</p>
+            </div>
+            <div>
+              <p className="statement">Original Photography </p>
             </div>
           </Card>
         </div>
