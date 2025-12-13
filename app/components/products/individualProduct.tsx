@@ -8,6 +8,8 @@ import {
 import {useEffect, useState} from 'react';
 import '../../styles/routeStyles/product.css';
 import ThreeDViewModal from '../global/ThreeDViewModal';
+import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
+import {Image} from 'lucide-react';
 
 function IndividualProduct({
   productName,
@@ -31,7 +33,6 @@ function IndividualProduct({
     altText: string;
   }[];
 }) {
-
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const handleImageClick = (src: string) => {
@@ -101,12 +102,19 @@ function IndividualProduct({
                     key={idx}
                   >
                     <div className="p-4 flex items-center justify-center">
-                      <img
+                      {/* <img
                         src={url.url}
                         alt={url.altText || productName}
                         className="max-h-full object-contain carousel-item cursor-zoom-in"
                         onClick={() => handleImageClick(url.url)}
-                      />
+                      /> */}
+                      <ImageZoom>
+                        <img
+                          className="max-h-full object-contain carousel-item cursor-zoom-in"
+                          src={url.url}
+                          alt={url.altText || productName}
+                        />
+                      </ImageZoom>
                     </div>
                   </CarouselItem>
                 ))}
