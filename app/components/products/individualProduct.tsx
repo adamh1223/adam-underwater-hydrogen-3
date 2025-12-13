@@ -1,5 +1,3 @@
-import {Breadcrumb} from '../ui/breadcrumb';
-import {Link} from '@remix-run/react';
 import {
   Carousel,
   CarouselContent,
@@ -9,16 +7,7 @@ import {
 } from '../ui/carousel';
 import {useEffect, useState} from 'react';
 import '../../styles/routeStyles/product.css';
-import RotatingCarousel from '../global/ThreeDViewModal';
 import ThreeDViewModal from '../global/ThreeDViewModal';
-import {FaRegHeart} from 'react-icons/fa';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
-import ImageZoom from 'react-image-zooom';
 
 function IndividualProduct({
   productName,
@@ -42,73 +31,14 @@ function IndividualProduct({
     altText: string;
   }[];
 }) {
-  console.log(productImages, 'imgs');
 
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    function handleResize() {
-      setWindowWidth(window.innerWidth);
-    }
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const [zoomData, setZoomData] = useState<{
-    src: string;
-    x: number;
-    y: number;
-    visible: boolean;
-    mouseX: number;
-    mouseY: number;
-  }>({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
-
-  const handleMouseMove = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>,
-    src: string,
-  ) => {
-    if (!zoomData.visible) return;
-
-    const {left, top, width, height} = e.currentTarget.getBoundingClientRect();
-    const x = ((e.pageX - left) / width) * 50;
-    const y = ((e.pageY - top) / height) * 50;
-
-    setZoomData((prev) => ({
-      ...prev,
-      x,
-      y,
-      mouseX: e.pageX,
-      mouseY: e.pageY,
-    }));
+  const handleImageClick = (src: string) => {
+    setZoomImage(src);
   };
 
-  const handleImageClick = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>,
-    src: string,
-  ) => {
-    if (zoomData.visible && zoomData.src === src) {
-      setZoomData({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
-    } else {
-      const {left, top, width, height} =
-        e.currentTarget.getBoundingClientRect();
-      const x = ((e.pageX - left) / width) * 50;
-      const y = ((e.pageY - top) / height) * 50;
-
-      setZoomData({
-        src,
-        x,
-        y,
-        visible: true,
-        mouseX: e.pageX,
-        mouseY: e.pageY,
-      });
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setZoomData({src: '', x: 0, y: 0, visible: false, mouseX: 0, mouseY: 0});
-  };
+  const closeZoom = () => setZoomImage(null);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<any>(null);
@@ -154,7 +84,6 @@ function IndividualProduct({
   //     }
   //   })
   //   .filter(Boolean);
-  console.log(productImages, '123prodimgs');
   return (
     <>
       <div className="grid grid-cols-1">
@@ -174,11 +103,9 @@ function IndividualProduct({
                     <div className="p-4 flex items-center justify-center">
                       <img
                         src={url.url}
-                        alt=""
-                        className="max-h-full object-contain carousel-item"
-                        onClick={(e) => handleImageClick(e, url.url)}
-                        onMouseMove={(e) => handleMouseMove(e, url.url)}
-                        onMouseLeave={handleMouseLeave}
+                        alt={url.altText || productName}
+                        className="max-h-full object-contain carousel-item cursor-zoom-in"
+                        onClick={() => handleImageClick(url.url)}
                       />
                     </div>
                   </CarouselItem>
@@ -202,18 +129,12 @@ function IndividualProduct({
                     key={idx}
                   >
                     <div className="p-4 flex items-center justify-center">
-                      <ImageZoom
+                      <img
                         src={url.url}
-                        className="max-h-full object-contain carousel-item"
-                      ></ImageZoom>
-                      {/* <img
-                        src={url.url}
-                        alt=""
-                        className="max-h-full object-contain carousel-item"
-                        onClick={(e) => handleImageClick(e, url.url)}
-                        onMouseMove={(e) => handleMouseMove(e, url.url)}
-                        onMouseLeave={handleMouseLeave}
-                      /> */}
+                        alt={url.altText || productName}
+                        className="max-h-full object-contain carousel-item cursor-zoom-in"
+                        onClick={() => handleImageClick(url.url)}
+                      />
                     </div>
                   </CarouselItem>
                 ))}
@@ -299,32 +220,31 @@ function IndividualProduct({
         </div>
       </div>
 
-      {/* Floating Zoom Window */}
-      {/* {zoomData.visible && (
+      {zoomImage && (
         <div
-          className="floating-zoom-window fixed border-2 border-gray-300 shadow-xl z-50 bg-no-repeat bg-white pointer-events-none"
-          style={{
-            width: '300px',
-            height: '300px',
-            backgroundImage: `url(${zoomData.src})`,
-            backgroundPosition: `${zoomData.x}% ${zoomData.y}%`,
-            backgroundSize: '500%',
-            top: zoomData.mouseY - 320, // above cursor
-            // Do some math to adjust ceiling of zoom window
-            left: zoomData.mouseX + 10, // to right of cursor
-          }}
-          onClick={() =>
-            setZoomData({
-              src: '',
-              x: 0,
-              y: 0,
-              visible: false,
-              mouseX: 0,
-              mouseY: 0,
-            })
-          }
-        />
-      )} */}
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={closeZoom}
+        >
+          <div
+            className="relative max-h-[90vh] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={zoomImage}
+              alt={productName}
+              className="max-h-[90vh] max-w-[90vw] object-contain rounded shadow-2xl"
+            />
+            <button
+              type="button"
+              className="absolute -top-2 -right-2 rounded-full bg-white text-black px-2 py-1 text-sm shadow"
+              onClick={closeZoom}
+              aria-label="Close image zoom"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
