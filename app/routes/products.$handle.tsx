@@ -863,9 +863,8 @@ export default function Product() {
 
   const getYOffset = () => {
     if (windowWidth == null) return -180;
-    if (windowWidth < 601) return -280;
-    if (windowWidth >= 601 && windowWidth < 1280) return -250;
-    if (windowWidth >= 1280) return -130;
+    if (windowWidth < 1024) return -165;
+    if (windowWidth >= 1024) return -130;
   };
 
   const scrollToSection = (sectionId: string) => {

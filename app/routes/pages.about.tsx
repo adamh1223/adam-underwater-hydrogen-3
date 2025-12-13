@@ -24,7 +24,7 @@ import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-//   need the customer variable, add these lines for other instances of recommended products
+  //   need the customer variable, add these lines for other instances of recommended products
   let customer = null;
   try {
     customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
@@ -96,9 +96,8 @@ export default function AboutPage() {
 
   const getYOffset = () => {
     if (windowWidth == null) return -180;
-    if (windowWidth < 601) return -215;
-    if (windowWidth >= 601 && windowWidth < 1280) return -180;
-    return -75;
+    if (windowWidth < 1024) return -110;
+    if (windowWidth >= 1024) return -70;
   };
 
   const scrollToSection = (sectionId: string) => {

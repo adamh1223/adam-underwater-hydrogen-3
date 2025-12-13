@@ -126,10 +126,9 @@ function ServicesPage() {
     return () => window.removeEventListener('resize', handleResize);
   });
   const getYOffset = () => {
-    if (windowWidth == null) return -180; // sane default until measured
-    if (windowWidth < 601) return -215;
-    if (windowWidth >= 601 && windowWidth < 1280) return -180;
-    return -75;
+    if (windowWidth == null) return -180;
+    if (windowWidth < 1024) return -110;
+    if (windowWidth >= 1024) return -70;
   };
 
   const scrollToSection = (sectionId: string) => {
