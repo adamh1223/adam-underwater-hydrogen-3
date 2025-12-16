@@ -11,7 +11,7 @@ const faq = () => {
     <>
       <section>
         <div className="flex justify-center">
-          <img src={'/faq2.png'} style={{height: '110px'}} className="pt-5" />
+          <img src={'/faq2.png'} className="pt-5 faq-header-img" />
         </div>
         <div className="flex justify-center card-container pt-5">
           <Card className="p-7 w-[50%]">

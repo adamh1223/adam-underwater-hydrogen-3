@@ -1261,3 +1261,14 @@ span {
   justify-content: center;
   align-items: center;
 }
+
+@media (max-width: 768px) {
+  .faq-header-img {
+    height: 75px;
+  }
+}
+@media (min-width: 769px) {
+  .faq-header-img {
+    height: 100px;
+  }
+}
