@@ -42,11 +42,14 @@ img {
   }
 }
 @media (min-width: 601px) and (max-width: 1023px) {
+  :root {
+    --aside-width: 350px;
+  }
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
     height: 100vh;
-    width: 350px;
+    width: var(--aside-width);
     position: fixed;
     right: calc(-1 * var(--aside-width));
     transition: transform 200ms ease-in-out;
@@ -56,11 +59,15 @@ img {
   }
 }
 @media (max-width: 600px) {
+  :root {
+    --aside-width: 300px;
+  }
+
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
     height: 100vh;
-    width: 300px;
+    width: var(--aside-width);
     position: fixed;
     right: calc(-1 * var(--aside-width));
     transition: transform 200ms ease-in-out;

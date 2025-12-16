@@ -13,6 +13,7 @@ import {
 } from '~/lib/search';
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
+import {useEffect, useState} from 'react';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Search`}];
@@ -41,6 +42,15 @@ export default function SearchPage() {
   const {type, term, result, error} = useLoaderData<typeof loader>();
   if (type === 'predictive') return null;
   console.log(result, '2025');
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
 
   return (
     <div className="search">

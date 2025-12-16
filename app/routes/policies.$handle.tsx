@@ -51,7 +51,7 @@ export default function Policy() {
       <section>
         <div className="pt-5 ps-[60px]">
           <Link to="/policies">
-            <Button variant="outline" size="sm">
+            <Button className="cursor-pointer" variant="outline" size="sm">
               &larr; Back to Policies
             </Button>
           </Link>
