@@ -44,11 +44,17 @@ function VideoPreview({
       {/* Base Image */}
 
       <img
-        src={'/print3.jpg'}
+        src={'/dji-inspire-3.jpg'}
         alt={'Product image'}
         className="EProductImage"
         onPointerDown={() => redirect(`/stock/${id}`)}
       />
+      {/* <img
+        src={'/fpv-red.jpg'}
+        alt={'Product image'}
+        className="EProductImage"
+        onPointerDown={() => redirect(`/stock/${id}`)}
+      /> */}
 
       {/* Video overlay */}
       {isHovered && (
