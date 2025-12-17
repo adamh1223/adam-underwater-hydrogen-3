@@ -842,7 +842,7 @@ span {
   flex-shrink: 0 !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .in-the-box-1 {
   }
   .in-the-box-2 {
@@ -850,7 +850,7 @@ span {
   .in-the-box-3 {
   }
 }
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 769px) and (max-width: 1023px) {
   .in-the-box-1 {
   }
   .in-the-box-2 {
@@ -870,7 +870,7 @@ span {
 /* === Force equal widths for "In the Box" items on mobile ===
    Put this AFTER your existing rules in app.css
 */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   /* Center all grid items in the parent grid */
   .in-the-box-section .grid {
     justify-items: center; /* Centers grid children horizontally */
@@ -1270,5 +1270,24 @@ span {
 @media (min-width: 769px) {
   .faq-header-img {
     height: 100px;
+  }
+}
+
+.policy-container-large {
+}
+
+@media (min-width: 1024px) {
+  .faq-card {
+    width: 60%;
+  }
+}
+@media (min-width: 769px) and (max-width: 1023px) {
+  .faq-card {
+    width: 70%;
+  }
+}
+@media (max-width: 768px) {
+  .faq-card {
+    width: 80%;
   }
 }

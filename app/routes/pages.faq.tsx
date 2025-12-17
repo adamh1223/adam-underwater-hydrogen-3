@@ -6,6 +6,7 @@ import {
 } from '~/components/ui/accordion';
 import {Card} from '~/components/ui/card';
 
+
 const faq = () => {
   return (
     <>
@@ -14,7 +15,7 @@ const faq = () => {
           <img src={'/faq2.png'} className="pt-5 faq-header-img" />
         </div>
         <div className="flex justify-center card-container pt-5">
-          <Card className="p-7 w-[50%]">
+          <Card className="p-7 faq-card">
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
                 <AccordionTrigger>

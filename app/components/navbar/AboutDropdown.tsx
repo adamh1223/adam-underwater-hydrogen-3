@@ -54,7 +54,7 @@ function AboutDropdown({
           className="hovercard-content rounded border-l border-r border-t border-b w-[122px]"
         >
           <div className="p-3">
-            <Button variant="ghost">
+            <Button variant="ghost" className="cursor-pointer">
               <Link
                 to={'/pages/about'}
                 onClick={() => writeScrollTarget('about')}
@@ -62,7 +62,7 @@ function AboutDropdown({
                 About Me
               </Link>
             </Button>
-            <Button variant="ghost">
+            <Button variant="ghost" className="cursor-pointer">
               <Link
                 to={'/pages/about#gear'}
                 onClick={() => writeScrollTarget('gear')}
