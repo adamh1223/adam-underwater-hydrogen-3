@@ -57,6 +57,16 @@ export async function action({request, context}: ActionFunctionArgs) {
         },
       }),
     });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Courier request failed:', response.status, text);
+      return json(
+        {error: 'Failed to send message notification.'},
+        {status: 500},
+      );
+    }
+
     const JSONResponse = await response.json();
     console.log(JSONResponse, '0987');
     return json({success: true, result: JSONResponse});
