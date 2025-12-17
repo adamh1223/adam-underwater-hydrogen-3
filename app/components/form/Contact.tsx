@@ -64,12 +64,7 @@ export default function ContactForm() {
         body: formPayload,
       });
 
-      let result: any = null;
-      try {
-        result = await response.json();
-      } catch (error) {
-        console.error('Failed to parse response JSON:', error);
-      }
+      const result = await response.json();
 
       if (response.ok) {
         setStatus('Message sent successfully!');
@@ -84,9 +79,9 @@ export default function ContactForm() {
           fileInputRef.current.value = '';
         }
       } else {
-        const errorMessage =
-          result?.error || 'Failed to submit form. Please try again.';
-        setStatus(errorMessage);
+        setStatus(
+          result?.error || 'Failed to submit form. Please try again.',
+        );
       }
     } catch (error) {
       console.error('Error:', error);
