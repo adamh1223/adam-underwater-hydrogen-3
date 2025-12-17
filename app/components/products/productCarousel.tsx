@@ -414,7 +414,7 @@ export const ProductCarousel = ({
             )}
             <Carousel
               setApi={setCarouselApi}
-              className="w-full max-w-7xl transform-none pb-5"
+              className="w-full max-w-7xl transform-none pb-4"
             >
               <Link
                 className="product-item"
@@ -462,8 +462,24 @@ export const ProductCarousel = ({
                 </Button>
               </div>
             </Carousel>
-            {totalItems > 1 && (
+            {totalItems > 1 && layout === 'grid' && (
               <div className="absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
+                {Array.from({length: totalItems}).map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      scrollToIndex(idx);
+                    }}
+                    className={`h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+            {totalItems > 1 && layout === 'list' && (
+              <div className="absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5 ms-3">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
