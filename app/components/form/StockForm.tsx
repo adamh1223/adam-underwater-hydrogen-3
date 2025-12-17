@@ -119,7 +119,9 @@ function StockForm({
 
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline">Stock Footage Licensing Form</Button>
+          <Button variant="outline" className="cursor-pointer">
+            Stock Footage Licensing Form
+          </Button>
         </DialogTrigger>
         <DialogContent className="modal">
           <DialogHeader>
@@ -253,7 +255,11 @@ function StockForm({
                 </Label>
               </div>
             </div>
-            <Button type="submit" className="self-end" onClick={handleSubmit}>
+            <Button
+              type="submit"
+              className="self-end cursor-pointer"
+              onClick={handleSubmit}
+            >
               Submit
             </Button>
           </DialogFooter>

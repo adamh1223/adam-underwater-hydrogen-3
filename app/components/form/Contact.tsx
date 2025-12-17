@@ -79,9 +79,7 @@ export default function ContactForm() {
           fileInputRef.current.value = '';
         }
       } else {
-        setStatus(
-          result?.error || 'Failed to submit form. Please try again.',
-        );
+        setStatus(result?.error || 'Failed to submit form. Please try again.');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -140,46 +138,46 @@ export default function ContactForm() {
               onChange={handleChange}
               placeholder="Type your message"
               rows={4}
-            className="w-full message bg-background border border-input border-gray-300 dark:border-gray-700 rounded-sm p-2"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="contactImages">Upload Images (optional)</Label>
-          <input
-            id="contactImages"
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={triggerFileSelect}
-              className="cursor-pointer"
-            >
-              Upload Images
-            </Button>
-            {selectedImages.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                Selected ({selectedImages.length}/3):{' '}
-                {selectedImages.map((file) => file.name).join(', ')}
-              </div>
+              className="w-full message bg-background border border-input border-gray-300 dark:border-gray-700 rounded-sm p-2"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="contactImages">(optional) Upload Images </Label>
+            <input
+              id="contactImages"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={triggerFileSelect}
+                className="cursor-pointer"
+              >
+                Upload Images
+              </Button>
+              {selectedImages.length > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  Selected ({selectedImages.length}/3):{' '}
+                  {selectedImages.map((file) => file.name).join(', ')}
+                </div>
+              )}
+            </div>
+            {imageError && (
+              <p className="text-sm text-red-500 font-medium">{imageError}</p>
             )}
           </div>
-          {imageError && (
-            <p className="text-sm text-red-500 font-medium">{imageError}</p>
-          )}
-        </div>
-        <div className="submit ">
-          <Button type="submit" className="w-50 bg-primary">
-            Submit
-          </Button>
-        </div>
+          <div className="submit ">
+            <Button type="submit" className="w-50 bg-primary">
+              Submit
+            </Button>
+          </div>
         </div>
         {status && <p className="text-center text-gray-600">{status}</p>}
       </form>
