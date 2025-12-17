@@ -37,7 +37,7 @@ function HeroPrints() {
           Bring the ocean into your home
         </p>
         <div className="flex justify-center returns">
-          <Card className="my-7 p-5">
+          <Card className="mb-3 p-5">
             <div>
               <p className="statement">Customizable sizes</p>
             </div>
