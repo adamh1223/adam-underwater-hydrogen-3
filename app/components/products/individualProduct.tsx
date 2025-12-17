@@ -9,7 +9,6 @@ import {useEffect, useState} from 'react';
 import '../../styles/routeStyles/product.css';
 import ThreeDViewModal from '../global/ThreeDViewModal';
 import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
-import {Image} from 'lucide-react';
 
 function IndividualProduct({
   productName,
@@ -33,14 +32,6 @@ function IndividualProduct({
     altText: string;
   }[];
 }) {
-  const [zoomImage, setZoomImage] = useState<string | null>(null);
-
-  const handleImageClick = (src: string) => {
-    setZoomImage(src);
-  };
-
-  const closeZoom = () => setZoomImage(null);
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<any>(null);
 
@@ -137,12 +128,13 @@ function IndividualProduct({
                     key={idx}
                   >
                     <div className="p-4 flex items-center justify-center">
-                      <img
-                        src={url.url}
-                        alt={url.altText || productName}
-                        className="max-h-full object-contain carousel-item cursor-zoom-in"
-                        onClick={() => handleImageClick(url.url)}
-                      />
+                      <ImageZoom>
+                        <img
+                          src={url.url}
+                          alt={url.altText || productName}
+                          className="max-h-full object-contain carousel-item cursor-zoom-in"
+                        />
+                      </ImageZoom>
                     </div>
                   </CarouselItem>
                 ))}
@@ -227,32 +219,6 @@ function IndividualProduct({
           <div></div>
         </div>
       </div>
-
-      {zoomImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-          onClick={closeZoom}
-        >
-          <div
-            className="relative max-h-[90vh] max-w-[90vw]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={zoomImage}
-              alt={productName}
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded shadow-2xl"
-            />
-            <button
-              type="button"
-              className="absolute -top-2 -right-2 rounded-full bg-white text-black px-2 py-1 text-sm shadow"
-              onClick={closeZoom}
-              aria-label="Close image zoom"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }
