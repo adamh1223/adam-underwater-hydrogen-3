@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {Label} from '~/components/ui/label';
 import {Input} from '~/components/ui/input';
 import {Button} from '~/components/ui/button';
@@ -11,6 +11,9 @@ export default function ContactForm() {
     message: '',
   });
 
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imageError, setImageError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [status, setStatus] = useState('');
 
   const handleChange = (
@@ -23,16 +26,45 @@ export default function ContactForm() {
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    setImageError('');
+
+    if (files.length > 3) {
+      setImageError('You can upload up to 3 images.');
+      e.target.value = '';
+      return;
+    }
+
+    setSelectedImages(files);
+  };
+
+  const triggerFileSelect = () => fileInputRef.current?.click();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (imageError) {
+      setStatus(imageError);
+      return;
+    }
     setStatus('Sending...');
 
     try {
+      const formPayload = new FormData();
+      formPayload.append('name', formData.name);
+      formPayload.append('email', formData.email);
+      formPayload.append('message', formData.message);
+
+      selectedImages.forEach((image) => {
+        formPayload.append('contactImages', image);
+      });
+
       const response = await fetch('/api/contact', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(formData),
+        body: formPayload,
       });
+
+      const result = await response.json();
 
       if (response.ok) {
         setStatus('Message sent successfully!');
@@ -41,8 +73,15 @@ export default function ContactForm() {
           email: '',
           message: '',
         });
+        setSelectedImages([]);
+        setImageError('');
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } else {
-        setStatus('Failed to submit form. Please try again.');
+        setStatus(
+          result?.error || 'Failed to submit form. Please try again.',
+        );
       }
     } catch (error) {
       console.error('Error:', error);
@@ -101,15 +140,46 @@ export default function ContactForm() {
               onChange={handleChange}
               placeholder="Type your message"
               rows={4}
-              className="w-full message bg-background border border-input border-gray-300 dark:border-gray-700 rounded-sm p-2"
-              required
-            />
-          </div>
-          <div className="submit ">
-            <Button type="submit" className="w-50 bg-primary">
-              Submit
+            className="w-full message bg-background border border-input border-gray-300 dark:border-gray-700 rounded-sm p-2"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="contactImages">Upload Images (optional)</Label>
+          <input
+            id="contactImages"
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={triggerFileSelect}
+              className="cursor-pointer"
+            >
+              Upload Images
             </Button>
+            {selectedImages.length > 0 && (
+              <div className="text-sm text-muted-foreground">
+                Selected ({selectedImages.length}/3):{' '}
+                {selectedImages.map((file) => file.name).join(', ')}
+              </div>
+            )}
           </div>
+          {imageError && (
+            <p className="text-sm text-red-500 font-medium">{imageError}</p>
+          )}
+        </div>
+        <div className="submit ">
+          <Button type="submit" className="w-50 bg-primary">
+            Submit
+          </Button>
+        </div>
         </div>
         {status && <p className="text-center text-gray-600">{status}</p>}
       </form>
