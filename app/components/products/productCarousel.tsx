@@ -214,10 +214,34 @@ export const ProductCarousel = ({
     carouselHeight = 'w-120';
   } else if (isHorPrimary) {
     carouselHeight = 'w-120';
-  } else if (isVertOnly && layout === 'grid') {
-    carouselHeight = 'w-58';
-  } else if (isVertPrimary && layout === 'grid') {
-    carouselHeight = 'w-58';
+  } else if (
+    isVertOnly &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth > 900
+  ) {
+    carouselHeight = 'w-64';
+  } else if (
+    isVertOnly &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth <= 900
+  ) {
+    carouselHeight = 'w-54';
+  } else if (
+    isVertPrimary &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth > 900
+  ) {
+    carouselHeight = 'w-64';
+  } else if (
+    isVertPrimary &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth <= 900
+  ) {
+    carouselHeight = 'w-54';
   } else if (isVertOnly && layout === 'list') {
     carouselHeight = 'w-28';
   } else if (isVertPrimary && layout === 'list') {
@@ -390,7 +414,7 @@ export const ProductCarousel = ({
             )}
             <Carousel
               setApi={setCarouselApi}
-              className="w-full max-w-7xl transform-none"
+              className="w-full max-w-7xl transform-none pb-5"
             >
               <Link
                 className="product-item"
@@ -407,11 +431,10 @@ export const ProductCarousel = ({
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid'
-                            ? 'pt-[12px] pb-[12px] ps-4 pe-4'
+                            ? 'pt-5 pb-[12px] ps-4 pe-4'
                             : 'p-2 ms-3'
                         }`}
                       >
-                        
                         <img
                           src={img?.url}
                           className={`rounded ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
@@ -425,20 +448,36 @@ export const ProductCarousel = ({
               <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
                 <Button
                   onClick={decreaseIndex}
-                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${layout === 'list' && isHorizontal && 'left-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'left-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'left-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'left-arrow-carousel-grid-vertical'}`}
+                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer ${layout === 'list' && isHorizontal && 'left-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'left-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'left-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'left-arrow-carousel-grid-vertical'}`}
                   variant="secondary"
                 >
                   <ChevronLeftIcon className="h-6 w-6 text-white" />
                 </Button>
                 <Button
                   onClick={increaseIndex}
-                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${layout === 'list' && isHorizontal && 'right-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'right-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'right-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'right-arrow-carousel-grid-vertical'}`}
+                  className={`cursor-pointer pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${layout === 'list' && isHorizontal && 'right-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'right-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'right-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'right-arrow-carousel-grid-vertical'}`}
                   variant="secondary"
                 >
                   <ChevronRightIcon className="h-6 w-6 text-white" />
                 </Button>
               </div>
             </Carousel>
+            {totalItems > 1 && (
+              <div className="absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
+                {Array.from({length: totalItems}).map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      scrollToIndex(idx);
+                    }}
+                    className={`h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Bottom card section */}
