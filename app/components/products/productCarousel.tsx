@@ -26,6 +26,7 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import {useIsLoggedIn} from '~/lib/hooks';
+import {toast} from 'sonner';
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
@@ -268,6 +269,7 @@ export const ProductCarousel = ({
       const json = await response.json();
       setWishlistItem(true);
       setPendingWishlistChange(false);
+      toast('Added to favorites');
     } catch (error) {
       setWishlistItem(false);
       setPendingWishlistChange(false);
@@ -288,6 +290,7 @@ export const ProductCarousel = ({
       const json = await response.json();
       setWishlistItem(false);
       setPendingWishlistChange(false);
+      toast('Removed from favorites');
     } catch (error) {
       setWishlistItem(true);
       setPendingWishlistChange(false);

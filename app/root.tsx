@@ -9,6 +9,7 @@ import {
 import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 
+
 export type RootLoader = typeof loader;
 
 /**

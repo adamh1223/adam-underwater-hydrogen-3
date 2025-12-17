@@ -14,7 +14,7 @@ import {RootLoader} from './root';
 
 // ✅ Import TooltipProvider from Shadcn UI
 import {TooltipProvider} from '~/components/ui/tooltip';
-import {Toaster} from './components/ui/sonner';
+import {Toaster} from '~/components/ui/sonner';
 
 export default function Layout() {
   const nonce = useNonce();
@@ -26,18 +26,15 @@ export default function Layout() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <link rel="stylesheet" href={tailwindCss}></link>
-        <link rel="stylesheet" href={appStyles}></link>
-        {/* <link rel="preconnect" href="https://fonts.googleapis.com"></link>
-        <link rel="preconnect" href="https://fonts.gstatic.com"></link>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
-          rel="stylesheet"
-        ></link> */}
+        <link rel="stylesheet" href={tailwindCss} />
+        <link rel="stylesheet" href={appStyles} />
         <Meta />
         <Links />
       </head>
       <body className="dark">
+        {/* 🔔 Sonner toaster (mount once at root) */}
+        <Toaster richColors />
+
         <TooltipProvider delayDuration={200}>
           {data ? (
             <Analytics.Provider
@@ -54,9 +51,9 @@ export default function Layout() {
             <Outlet />
           )}
         </TooltipProvider>
+
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
-   
       </body>
     </html>
   );
