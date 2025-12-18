@@ -181,7 +181,7 @@ function SearchResultsProducts({
           });
 
           return (
-            <div className="space-y-6">
+            <div className="2">
               <div className="flex justify-center">
                 <PreviousLink>
                   {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
