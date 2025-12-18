@@ -457,6 +457,10 @@ button.reset:hover:not(:has(> *)) {
     column-gap: 20px;
     row-gap: 20px;
     padding: 20px 50px 0 50px;
+    align-items: stretch;
+  }
+  .prods-grid > * {
+    height: 100%;
   }
   .prods-grid-favorites {
     display: grid;
@@ -485,6 +489,10 @@ button.reset:hover:not(:has(> *)) {
     column-gap: 20px;
     row-gap: 20px;
     padding: 20px 50px 0 50px;
+    align-items: stretch;
+  }
+  .prods-grid > * {
+    height: 100%;
   }
   .prods-grid-favorites {
     display: grid;
