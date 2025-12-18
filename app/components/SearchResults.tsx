@@ -140,7 +140,7 @@ function SearchResultsProducts({
             const isInWishlist = wishlistProducts?.includes(product?.id);
             if (product.tags.includes('Prints')) {
               return (
-                <div key={product.id}>
+                <div className="h-full" key={product.id}>
                   <ProductCarousel
                     product={product}
                     layout="grid"
@@ -152,7 +152,7 @@ function SearchResultsProducts({
             }
             if (product.tags.includes('Video')) {
               return (
-                <div key={product.id}>
+                <div className="h-full" key={product.id}>
                   <EProductsContainer
                     product={product}
                     layout="grid"
@@ -166,7 +166,7 @@ function SearchResultsProducts({
             // original code below
 
             return (
-              <div className="search-results-item" key={product.id}>
+              <div className="search-results-item h-full" key={product.id}>
                 <Link prefetch="intent" to={productUrl}>
                   {image && (
                     <Image data={image} alt={product.title} width={50} />
