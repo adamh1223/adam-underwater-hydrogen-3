@@ -140,69 +140,55 @@ function SearchResultsProducts({
             const isInWishlist = wishlistProducts?.includes(product?.id);
             if (product.tags.includes('Prints')) {
               return (
-                <>
-                  <div className="m-5">
-                    <div className="flex justify-center pb-2">
-                      Framed Canvas Print:
-                    </div>
-                    <ProductCarousel
-                      product={product}
-                      layout="grid"
-                      isLoggedIn={isLoggedIn}
-                      isInWishlist={!!isInWishlist}
-                    />
-                  </div>
-                </>
+                <div key={product.id}>
+                  <ProductCarousel
+                    product={product}
+                    layout="grid"
+                    isLoggedIn={isLoggedIn}
+                    isInWishlist={!!isInWishlist}
+                  />
+                </div>
               );
             }
             if (product.tags.includes('Video')) {
               return (
-                <>
-                  <div className="mx-5">
-                    <div className="flex justify-center pb-2">
-                      Stock Footage Clip:
-                    </div>
-                    <EProductsContainer
-                      product={product}
-                      layout="grid"
-                      cart={cart}
-                      isLoggedIn={isLoggedIn}
-                      isInWishlist={!!isInWishlist}
-                    />
-                  </div>
-                  {/* Not working for some reason^ */}
-                </>
+                <div key={product.id}>
+                  <EProductsContainer
+                    product={product}
+                    layout="grid"
+                    cart={cart}
+                    isLoggedIn={isLoggedIn}
+                    isInWishlist={!!isInWishlist}
+                  />
+                </div>
               );
             }
             // original code below
 
-            // return (
-            //   <div className="search-results-item" key={product.id}>
-            //     <Link prefetch="intent" to={productUrl}>
-            //       {image && (
-            //         <Image data={image} alt={product.title} width={50} />
-            //       )}
-            //       <div>
-            //         <p>{product.title}</p>
-            //         <small>{price && <Money data={price} />}</small>
-            //       </div>
-            //     </Link>
-            //   </div>
-            // );
+            return (
+              <div className="search-results-item" key={product.id}>
+                <Link prefetch="intent" to={productUrl}>
+                  {image && (
+                    <Image data={image} alt={product.title} width={50} />
+                  )}
+                  <div>
+                    <p>{product.title}</p>
+                    <small>{price && <Money data={price} />}</small>
+                  </div>
+                </Link>
+              </div>
+            );
           });
 
           return (
-            <div>
-              <div>
+            <div className="space-y-6">
+              <div className="flex justify-center">
                 <PreviousLink>
                   {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
                 </PreviousLink>
               </div>
-              <div>
-                {ItemsMarkup}
-                <br />
-              </div>
-              <div>
+              <div className="prods-grid gap-x-5">{ItemsMarkup}</div>
+              <div className="flex justify-center">
                 <NextLink>
                   {isLoading ? 'Loading...' : <span>Load more ↓</span>}
                 </NextLink>
