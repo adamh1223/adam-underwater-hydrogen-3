@@ -196,6 +196,8 @@ interface PredictiveSearchLayout {
   collectionHandle?: string;
   cart?: Promise<CartReturn | null>;
   showProductHeader?: Boolean;
+  wishlistProducts: string[];
+  isLoggedIn: Promise<boolean> | undefined;
 }
 function SearchResultsPredictiveProducts({
   term,
@@ -204,6 +206,8 @@ function SearchResultsPredictiveProducts({
   collectionHandle,
   cart,
   showProductHeader = false,
+  wishlistProducts,
+  isLoggedIn,
 }: PredictiveSearchLayout) {
   if (!products.length) return null;
 
@@ -211,7 +215,7 @@ function SearchResultsPredictiveProducts({
     <>
       {products.map((product) => {
         console.log(product, 'productlog');
-
+        const isInWishlist = wishlistProducts?.includes(product.id);
         if (product.tags.includes('Prints')) {
           return (
             <>
@@ -220,11 +224,21 @@ function SearchResultsPredictiveProducts({
                   <div className="flex justify-center pb-2">
                     Framed Canvas Print:
                   </div>
-                  <ProductCarousel product={product} layout={layout} />
+                  <ProductCarousel
+                    product={product}
+                    layout={layout}
+                    isInWishlist={isInWishlist}
+                    isLoggedIn={isLoggedIn}
+                  />
                 </div>
               )}
               {!showProductHeader && (
-                <ProductCarousel product={product} layout={layout} />
+                <ProductCarousel
+                  product={product}
+                  layout={layout}
+                  isInWishlist={isInWishlist}
+                  isLoggedIn={isLoggedIn}
+                />
               )}
             </>
           );
@@ -241,6 +255,8 @@ function SearchResultsPredictiveProducts({
                     product={product}
                     layout="grid"
                     cart={cart}
+                    isInWishlist={isInWishlist}
+                    isLoggedIn={isLoggedIn}
                   />
                 </div>
               )}
@@ -249,6 +265,8 @@ function SearchResultsPredictiveProducts({
                   product={product}
                   layout={layout}
                   cart={cart}
+                  isInWishlist={isInWishlist}
+                  isLoggedIn={isLoggedIn}
                 />
               )}
             </>

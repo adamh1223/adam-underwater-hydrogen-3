@@ -14,12 +14,16 @@ import {
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
 import {useEffect, useState} from 'react';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Search`}];
 };
 
 export async function loader({request, context}: LoaderFunctionArgs) {
+  const {storefront, cart} = context;
+  console.log(cart, '909cart');
+
   const url = new URL(request.url);
   const isPredictive = url.searchParams.has('predictive');
   const searchPromise: Promise<PredictiveSearchReturn | RegularSearchReturn> =
@@ -31,17 +35,49 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     console.error(error);
     return {term: '', result: null, error: error.message};
   });
+  const promiseResult = await searchPromise;
+  let customer = null;
+  try {
+    customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
+    console.log(customer.data, 'customer000');
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      ...promiseResult,
+      cart: cart.get(),
+      wishlistProducts: undefined,
+      isLoggedIn: undefined,
+    };
+  }
+  const isLoggedIn = context.customerAccount.isLoggedIn();
 
-  return await searchPromise;
+  let wishlistProducts: string[];
+  const customerMetafieldValue =
+    customer.data.customer.metafield?.value ?? undefined;
+  if (customerMetafieldValue) {
+    wishlistProducts = JSON.parse(customerMetafieldValue) as string[];
+  } else {
+    wishlistProducts = [];
+  }
+  console.log(wishlistProducts, 'wishlistProds');
+
+  return {...promiseResult, cart: cart.get(), wishlistProducts, isLoggedIn};
 }
 
 /**
  * Renders the /search route
  */
 export default function SearchPage() {
-  const {type, term, result, error} = useLoaderData<typeof loader>();
+  // const {type, term, result, error, cart} = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
+  console.log(data, '999data');
+
+  const {type, term, result, error, cart, isLoggedIn, wishlistProducts} = data;
   if (type === 'predictive') return null;
-  console.log(result, '2025');
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -84,9 +120,13 @@ export default function SearchPage() {
         <SearchResults result={result} term={term}>
           {({articles, pages, products, term}) => (
             <div>
-              <SearchResults.Products products={products} term={term} />
-              <SearchResults.Pages pages={pages} term={term} />
-              <SearchResults.Articles articles={articles} term={term} />
+              <SearchResults.Products
+                products={products}
+                term={term}
+                cart={cart}
+                isLoggedIn={isLoggedIn}
+                wishlistProducts={wishlistProducts}
+              />
             </div>
           )}
         </SearchResults>
@@ -101,18 +141,39 @@ export default function SearchPage() {
  * (adjust as needed)
  */
 const SEARCH_PRODUCT_FRAGMENT = `#graphql
+fragment MoneyProductItem on MoneyV2 {
+    amount
+    currencyCode
+  }
   fragment SearchProduct on Product {
     __typename
-    handle
     id
-    tags
-    publishedAt
     title
+    handle
+    tags
+    descriptionHtml
+    featuredImage {
+      altText
+      url
+    }
     trackingParameters
-    vendor
+    images(first: 20) {
+      nodes {
+        url
+        altText
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        ...MoneyProductItem
+      }
+      maxVariantPrice {
+        ...MoneyProductItem
+      }
+    }
     selectedOrFirstAvailableVariant(
       selectedOptions: []
-      ignoreUnknownOptions: true
+      ignoreUnknownOptions: false
       caseInsensitiveMatch: true
     ) {
       id
@@ -125,18 +186,6 @@ const SEARCH_PRODUCT_FRAGMENT = `#graphql
       price {
         amount
         currencyCode
-      }
-      compareAtPrice {
-        amount
-        currencyCode
-      }
-      selectedOptions {
-        name
-        value
-      }
-      product {
-        handle
-        title
       }
     }
   }

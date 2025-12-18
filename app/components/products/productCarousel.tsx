@@ -97,6 +97,7 @@ export const ProductCarousel = ({
 
   const {title, images, priceRange, handle, id, tags} =
     prod as collectionProduct;
+  console.log(images, 'imageslog');
 
   const cardClassName =
     layout === 'grid'

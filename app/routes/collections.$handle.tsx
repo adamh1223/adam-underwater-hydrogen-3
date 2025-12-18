@@ -69,7 +69,7 @@ export async function loader(args: LoaderFunctionArgs) {
     return {
       ...deferredData,
       ...criticalData,
-      wishlistProducts: [],
+      wishlistProducts: undefined,
       isLoggedIn: undefined,
     };
   }
@@ -80,11 +80,11 @@ export async function loader(args: LoaderFunctionArgs) {
   // if (!customer.data.customer.metafield?.value) {
   //   return [];
   // }
-  let wishlistProducts;
+  let wishlistProducts: string[];
   const customerMetafieldValue =
     customer.data.customer.metafield?.value ?? undefined;
   if (customerMetafieldValue) {
-    wishlistProducts = JSON.parse(customerMetafieldValue);
+    wishlistProducts = JSON.parse(customerMetafieldValue) as string[];
   } else {
     wishlistProducts = [];
   }
@@ -104,6 +104,8 @@ async function loadCriticalData({
 }: LoaderFunctionArgs) {
   const {handle} = params;
   const {storefront, cart} = context;
+  console.log(cart, '90909cart');
+
   const url = new URL(request.url);
   const searchTerm = url.searchParams.get('q')?.trim() || '';
   const paginationVariables = getPaginationVariables(request, {
@@ -154,7 +156,8 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Collection() {
   const {collection, searchTerm, cart, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
-  console.log(isLoggedIn, '444444444isloggedin');
+  console.log(wishlistProducts, '88888wishlistproducts');
+  console.log(cart, '9090909cart');
 
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
@@ -566,6 +569,8 @@ export default function Collection() {
                     term={term}
                     collectionHandle={collection?.handle}
                     cart={cart}
+                    wishlistProducts={wishlistProducts as string[]}
+                    isLoggedIn={isLoggedIn}
                   />
                 </>
               );
@@ -587,7 +592,9 @@ export default function Collection() {
               };
               index: number;
             }) => {
-              const isInWishlist = wishlistProducts.includes(product?.id);
+              const isInWishlist = wishlistProducts?.includes(
+                product?.id,
+              ) as boolean;
               return (
                 <>
                   {collection?.handle === 'prints' && (

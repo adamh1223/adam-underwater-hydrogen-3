@@ -1,5 +1,5 @@
 import {Link} from '@remix-run/react';
-import {Image, Money, Pagination} from '@shopify/hydrogen';
+import {CartReturn, Image, Money, Pagination} from '@shopify/hydrogen';
 import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
 import ProductCarousel from './products/productCarousel';
 import EProductsContainer from './eproducts/EProductsContainer';
@@ -11,7 +11,9 @@ type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
   SearchItems,
   ItemType
 > &
-  Pick<RegularSearchReturn, 'term'>;
+  Pick<RegularSearchReturn, 'term'> & {
+    cart: Promise<CartReturn | null> | undefined;
+  };
 
 type SearchResultsProps = RegularSearchReturn & {
   children: (args: SearchItems & {term: string}) => React.ReactNode;
@@ -97,10 +99,19 @@ function SearchResultsPages({term, pages}: PartialSearchResult<'pages'>) {
   );
 }
 
+interface SearchResults extends PartialSearchResult<'products'> {
+  isLoggedIn: Promise<boolean> | undefined;
+  wishlistProducts: string[] | undefined;
+}
 function SearchResultsProducts({
   term,
   products,
-}: PartialSearchResult<'products'>) {
+  cart,
+  isLoggedIn,
+  wishlistProducts,
+}: SearchResults) {
+  console.log(isLoggedIn, 'islogged');
+
   if (!products?.nodes.length) {
     return null;
   }
@@ -122,10 +133,11 @@ function SearchResultsProducts({
 
             const price = product?.selectedOrFirstAvailableVariant?.price;
             const image = product?.selectedOrFirstAvailableVariant?.image;
-            console.log(product, 'prod');
+            console.log(image, '000image');
             {
               /* not getting product images on this console.log^ But we DO GET images on searchresultspredictive console.log */
             }
+            const isInWishlist = wishlistProducts?.includes(product?.id);
             if (product.tags.includes('Prints')) {
               return (
                 <>
@@ -133,7 +145,12 @@ function SearchResultsProducts({
                     <div className="flex justify-center pb-2">
                       Framed Canvas Print:
                     </div>
-                    <ProductCarousel product={product} layout="grid" />
+                    <ProductCarousel
+                      product={product}
+                      layout="grid"
+                      isLoggedIn={isLoggedIn}
+                      isInWishlist={!!isInWishlist}
+                    />
                   </div>
                 </>
               );
@@ -141,7 +158,7 @@ function SearchResultsProducts({
             if (product.tags.includes('Video')) {
               return (
                 <>
-                  {/* <div className="mx-5">
+                  <div className="mx-5">
                     <div className="flex justify-center pb-2">
                       Stock Footage Clip:
                     </div>
@@ -149,10 +166,11 @@ function SearchResultsProducts({
                       product={product}
                       layout="grid"
                       cart={cart}
+                      isLoggedIn={isLoggedIn}
+                      isInWishlist={!!isInWishlist}
                     />
-                  </div> */}
+                  </div>
                   {/* Not working for some reason^ */}
-                  <div>This is a stock video</div>
                 </>
               );
             }
