@@ -37,6 +37,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '~/components/ui/accordion';
+import {toast} from 'sonner';
 import {
   Carousel,
   CarouselApi,
@@ -821,6 +822,7 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(true);
+      toast.success('Added to Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
@@ -841,6 +843,7 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(false);
+      toast.success('Removed from Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
