@@ -20,6 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip';
+import {toast} from 'sonner';
 
 type shopifyImage = {url: string; altText: string};
 function EProductsContainer({
@@ -135,6 +136,7 @@ function EProductsContainer({
       });
       const json = await response.json();
       setWishlistItem(true);
+      toast.success('Added to Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
@@ -155,6 +157,7 @@ function EProductsContainer({
       });
       const json = await response.json();
       setWishlistItem(false);
+      toast.success('Removed from Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
