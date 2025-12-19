@@ -86,6 +86,8 @@ function EmptyOrders() {
 
 function OrderItem({order}: {order: OrderItemFragment}) {
   const fulfillmentStatus = flattenConnection(order.fulfillments)[0]?.status;
+  console.log(fulfillmentStatus, 'fulfillment');
+
   return (
     <>
       <fieldset>
