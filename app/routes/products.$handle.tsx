@@ -822,7 +822,13 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(true);
-      toast.success('Added to Favorites');
+      toast('Added to Favor', {
+        description: 'Navigate to my favorites to view all',
+        action: {
+          label: 'Undo',
+          onClick: () => console.log('Undo'),
+        },
+      });
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
@@ -843,7 +849,7 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(false);
-      toast.success('Removed from Favorites');
+      // toast.success('Removed from Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
@@ -1778,7 +1784,7 @@ export default function Product() {
                 <div className="flex-1 h-px bg-muted" />
               </div>
             </div>
-            
+
             <div className="gap-x-5 py-5 px-[70px]">
               <ThreeUpCarouselBox cards={cards} />
             </div>

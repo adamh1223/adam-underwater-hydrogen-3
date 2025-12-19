@@ -28,7 +28,6 @@ import {
 import {useIsLoggedIn} from '~/lib/hooks';
 import {toast} from 'sonner';
 
-
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
 type collectionProduct = ProductItemFragment &
@@ -304,9 +303,14 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(true);
-      toast.success('Added to Favorites');
+      toast('Added to Favor', {
+        description: 'Navigate to my favorites to view all',
+        action: {
+          label: 'Undo',
+          onClick: () => console.log('Undo'),
+        },
+      });
       setPendingWishlistChange(false);
-
     } catch (error) {
       setWishlistItem(false);
       setPendingWishlistChange(false);
@@ -328,7 +332,6 @@ export const ProductCarousel = ({
       setWishlistItem(false);
       toast.success('Removed from Favorites');
       setPendingWishlistChange(false);
-
     } catch (error) {
       setWishlistItem(true);
       setPendingWishlistChange(false);
