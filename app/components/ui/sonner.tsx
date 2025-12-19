@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -5,32 +6,35 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from 'lucide-react';
-import {useTheme} from 'next-themes';
 import {Toaster as Sonner, type ToasterProps} from 'sonner';
 
+/**
+ * Remix / Hydrogen compatible Sonner wrapper
+ * Matches shadcn UI default behavior & appearance
+ */
 const Toaster = ({...props}: ToasterProps) => {
-  const {theme = 'system'} = useTheme();
-
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
-      position="bottom-right"
-      offset={24}
+      theme="dark"
       className="toaster group"
       toastOptions={{
         classNames: {
           toast:
-            'bg-background text-white border border-border rounded-lg px-4 py-3 mr-6 shadow-lg ' +
-            'data-[state=open]:animate-in data-[state=open]:slide-in-from-right-full ' +
-            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-right-full',
+            'group toast group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground ' +
+            'group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+          description: 'group-[.toast]:text-muted-foreground',
+          actionButton:
+            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
+          cancelButton:
+            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
         },
       }}
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+        success: <CircleCheckIcon className="h-4 w-4" />,
+        info: <InfoIcon className="h-4 w-4" />,
+        warning: <TriangleAlertIcon className="h-4 w-4" />,
+        error: <OctagonXIcon className="h-4 w-4" />,
+        loading: <Loader2Icon className="h-4 w-4 animate-spin" />,
       }}
       style={
         {

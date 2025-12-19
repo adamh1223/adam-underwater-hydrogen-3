@@ -7,7 +7,7 @@ import {
   CarouselItem,
   CarouselApi,
 } from '../ui/carousel';
-import {Link, NavLink, useLoaderData} from '@remix-run/react';
+import {Link, NavLink, Navigate, useLoaderData} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon, Divide} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
@@ -16,7 +16,7 @@ import {ProductItemFragment, CollectionQuery} from 'storefrontapi.generated';
 import {PartialPredictiveSearchResult} from '../SearchResultsPredictive';
 import {CurrencyCode} from '@shopify/hydrogen/storefront-api-types';
 import '../../styles/routeStyles/product.css';
-import {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {LoaderFunctionArgs, redirect} from '@remix-run/server-runtime';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {FaHeart, FaRegHeart} from 'react-icons/fa';
 import {
@@ -303,11 +303,11 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(true);
-      toast('Added to Favor', {
+      toast('Added to Favorites', {
         description: 'Navigate to my favorites to view all',
         action: {
-          label: 'Undo',
-          onClick: () => console.log('Undo'),
+          label: 'View My Favorites',
+          onClick: () => navigate('/account/favorites'),
         },
       });
       setPendingWishlistChange(false);

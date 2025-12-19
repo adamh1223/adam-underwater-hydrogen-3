@@ -8,7 +8,7 @@ import {
 } from '@remix-run/react';
 import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
-
+import {CUSTOMER_WISHLIST} from './lib/customerQueries';
 
 export type RootLoader = typeof loader;
 
@@ -102,6 +102,28 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     }),
     // Add other queries here, so that they are loaded in parallel
   ]);
+  let customer = null;
+  try {
+    customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
+  } catch (error) {
+    console.warn('Not logged in');
+    customer = null;
+  }
+  if (!customer) {
+    return {
+      wishlistProducts: [],
+      header,
+    };
+  }
+  const isLoggedIn = context.customerAccount.isLoggedIn();
+  if (!customer.data.customer.metafield?.value) {
+    return [];
+  }
+  const wishlistProducts = JSON.parse(
+    customer.data.customer.metafield?.value,
+  ) as string[];
+
+  return {wishlistProducts, header};
 
   return {header};
 }

@@ -1,5 +1,5 @@
 import {Await, Link, useNavigate} from '@remix-run/react';
-import {Suspense, useId} from 'react';
+import {Suspense, useId, useState} from 'react';
 import type {
   CartApiQueryFragment,
   FooterQuery,
@@ -35,6 +35,7 @@ interface PageLayoutProps {
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
   children?: React.ReactNode;
+  wishlistProducts: string[];
 }
 
 export function PageLayout({
@@ -44,11 +45,15 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
+  wishlistProducts,
 }: PageLayoutProps) {
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
-      <SearchAside />
+      <SearchAside
+        isLoggedIn={isLoggedIn}
+        wishlistProducts={wishlistProducts}
+      />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && (
         <Header
@@ -81,42 +86,54 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
     </Aside>
   );
 }
-
-function SearchAside() {
+interface SearchAsideProps {
+  isLoggedIn: Promise<boolean>;
+  wishlistProducts: string[];
+}
+function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
   const queriesDatalistId = useId();
   const navigate = useNavigate();
+
+  const [searchTerm, setSearchTerm] = useState('');
   const handleClick = () => {
-    navigate('/search');
+    navigate(`/search?q=${searchTerm}`);
   };
+
   return (
     <Aside type="search" heading="SEARCH">
       <div className="predictive-search mt-[8px]">
         <br />
         <SearchFormPredictive>
-          {({fetchResults, inputRef}) => (
-            <>
-              <div className="flex justify-center mb-5 mx-3 bg-background">
-                <Input
-                  className="overflow-clip search-input w-[220px]"
-                  name="q"
-                  onChange={fetchResults}
-                  onFocus={fetchResults}
-                  placeholder="Search"
-                  ref={inputRef}
-                  type="search"
-                  list={queriesDatalistId}
-                />
-                &nbsp;
-                <Button
-                  variant="outline"
-                  onClick={handleClick}
-                  className="cursor-pointer"
-                >
-                  Search
-                </Button>
-              </div>
-            </>
-          )}
+          {({fetchResults, inputRef}) => {
+            const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+              setSearchTerm(e.target.value);
+              fetchResults(e);
+            };
+            return (
+              <>
+                <div className="flex justify-center mb-5 mx-3 bg-background">
+                  <Input
+                    className="overflow-clip search-input w-[220px]"
+                    name="q"
+                    onChange={handleChange}
+                    onFocus={fetchResults}
+                    placeholder="Search"
+                    ref={inputRef}
+                    type="search"
+                    list={queriesDatalistId}
+                  />
+                  &nbsp;
+                  <Button
+                    variant="outline"
+                    onClick={handleClick}
+                    className="cursor-pointer"
+                  >
+                    Search
+                  </Button>
+                </div>
+              </>
+            );
+          }}
         </SearchFormPredictive>
 
         <SearchResultsPredictive>
@@ -147,23 +164,11 @@ function SearchAside() {
                   }
                   showProductHeader
                   term={term}
+                  isLoggedIn={isLoggedIn}
+                  wishlistProducts={wishlistProducts}
                   // aside search results predictive
                 />
-                {/* <SearchResultsPredictive.Collections
-                  collections={collections}
-                  closeSearch={closeSearch}
-                  term={term}
-                /> */}
-                {/* <SearchResultsPredictive.Pages
-                  pages={pages}
-                  closeSearch={closeSearch}
-                  term={term}
-                /> */}
-                {/* <SearchResultsPredictive.Articles
-                  articles={articles}
-                  closeSearch={closeSearch}
-                  term={term}
-                /> */}
+
                 {term.current && total ? (
                   <>
                     <div className="flex justify-center pb-[30px]">
