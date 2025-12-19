@@ -84,7 +84,8 @@ image {
   border-color: hsl(var(--input));
 }
 
-@utility outline-ring\/50 {
+/* ✅ FIX: Tailwind v4 @utility names must be alphanumeric (no "/") */
+@utility outline-ring-50 {
   outline-color: hsl(var(--ring) / 0.5);
 }
 /* ===================== CORE shadcn token utilities ===================== */
@@ -204,7 +205,8 @@ image {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    /* ✅ FIX: use the renamed utility */
+    @apply border-border outline-ring-50;
   }
 
   body {
