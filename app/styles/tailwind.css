@@ -69,7 +69,7 @@ image {
 }
 
 @utility bg-muted {
-  background-color: hsl(var(--muted));
+  backgrovund-color: hsl(var(--muted));
 }
 
 @utility bg-accent {
