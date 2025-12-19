@@ -26,7 +26,7 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import {useIsLoggedIn} from '~/lib/hooks';
-import {toast} from 'sonner';
+
 
 type shopifyImage = {url: string; altText: string};
 type collectionProductImages = {images?: {nodes: shopifyImage[]}};
@@ -213,40 +213,74 @@ export const ProductCarousel = ({
   // const carouselHeight = isHorOnly || isHorPrimary ? 'w-88' : 'w-4';
   let carouselHeight = '';
   if (isHorOnly) {
+    // Horizontal Only = 120
     carouselHeight = 'w-120';
   } else if (isHorPrimary) {
+    // Horizontal Primary = 120
     carouselHeight = 'w-120';
   } else if (
-    isVertOnly &&
+    // Vertical / Grid / >900px = 64
+    (isVertOnly || isVertPrimary) &&
     layout === 'grid' &&
     windowWidth != undefined &&
-    windowWidth > 900
+    windowWidth > 1350
+  ) {
+    carouselHeight = 'w-72';
+  } else if (
+    // Vertical / Grid / >900px = 64
+    (isVertOnly || isVertPrimary) &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth > 1200 &&
+    windowWidth <= 1350
   ) {
     carouselHeight = 'w-64';
   } else if (
-    isVertOnly &&
+    // Vertical / Grid / >900px = 64
+    (isVertOnly || isVertPrimary) &&
     layout === 'grid' &&
     windowWidth != undefined &&
-    windowWidth <= 900
+    windowWidth > 900 &&
+    windowWidth <= 1200
   ) {
-    carouselHeight = 'w-54';
+    carouselHeight = 'w-56';
   } else if (
-    isVertPrimary &&
+    // Vertical / Grid / 800-900px = 54
+    (isVertPrimary || isVertOnly) &&
     layout === 'grid' &&
     windowWidth != undefined &&
-    windowWidth > 900
+    windowWidth <= 900 &&
+    windowWidth > 750
+  ) {
+    carouselHeight = 'w-48';
+  } else if (
+    // Vertical / Grid / 800-900px = 54
+    (isVertPrimary || isVertOnly) &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth <= 750 &&
+    windowWidth > 700
+  ) {
+    carouselHeight = 'w-40';
+  } else if (
+    // Vertical / Grid / <=800px = 40
+    (isVertPrimary || isVertOnly) &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth <= 700
   ) {
     carouselHeight = 'w-64';
   } else if (
-    isVertPrimary &&
-    layout === 'grid' &&
-    windowWidth != undefined &&
-    windowWidth <= 900
+    // Vertical Only / List / 28
+    isVertOnly &&
+    layout === 'list'
   ) {
-    carouselHeight = 'w-54';
-  } else if (isVertOnly && layout === 'list') {
     carouselHeight = 'w-28';
-  } else if (isVertPrimary && layout === 'list') {
+  } else if (
+    // Vertical Primary / List / 28
+    isVertPrimary &&
+    layout === 'list'
+  ) {
     carouselHeight = 'w-28';
   }
   console.log(prod, 'prods');
@@ -270,7 +304,7 @@ export const ProductCarousel = ({
       const json = await response.json();
       setWishlistItem(true);
       setPendingWishlistChange(false);
-      toast('Added to favorites');
+
     } catch (error) {
       setWishlistItem(false);
       setPendingWishlistChange(false);
@@ -291,7 +325,7 @@ export const ProductCarousel = ({
       const json = await response.json();
       setWishlistItem(false);
       setPendingWishlistChange(false);
-      toast('Removed from favorites');
+
     } catch (error) {
       setWishlistItem(true);
       setPendingWishlistChange(false);
@@ -301,7 +335,7 @@ export const ProductCarousel = ({
   console.log(loginValue, 'loginvalue');
 
   return (
-    <article className="group relative">
+    <article className="group relative h-full">
       <Card className={cardClassName}>
         {layout === 'list' && (
           <div className="cursor-pointer absolute top-[20px] right-[40px] z-50 p-1">

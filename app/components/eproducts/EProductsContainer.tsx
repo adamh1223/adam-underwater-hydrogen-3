@@ -170,7 +170,9 @@ function EProductsContainer({
           const productId = product.id;
           const dollarsAmount = formatCurrency(price);
           return ( */}
-      <article className={`group relative ${layout === 'list' && 'pb-5'}`}>
+      <article
+        className={`group relative h-full ${layout === 'list' && 'pb-5'}`}
+      >
         <Card className={cardClassName}>
           {layout === 'list' && (
             <div className="cursor-pointer absolute top-[7px] right-[40px] z-50 p-1">
