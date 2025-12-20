@@ -74,7 +74,7 @@ function FooterMenu({
           </span>
           <div className="flex-1 h-px bg-muted" />
         </div>
-      </div>
+      </div> 
 
       <div className="flex justify-evenly pb-[100px] text-muted-foreground pt-5 mx-5">
         <div className="help">
