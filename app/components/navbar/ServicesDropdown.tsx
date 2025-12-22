@@ -39,7 +39,7 @@ function ServicesDropdown({
         >
           <Button
             variant="ghost2"
-            className="relative group px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
+            className="relative group services-dropdown-button py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
           >
             {menuItems.title}
             <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />

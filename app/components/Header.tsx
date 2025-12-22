@@ -112,7 +112,160 @@ export function HeaderMenu({
 
   return (
     <>
-      {windowWidth != undefined && windowWidth < 768 && (
+      {windowWidth != undefined && windowWidth < 460 && (
+        <>
+          <nav role="navigation">
+            <div className="main-navbar-small-top-row ">
+              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 py-2 mt-4">
+                <NavLink
+                  end
+                  onClick={close}
+                  prefetch="intent"
+                  to="/"
+                  className="logo-container"
+                >
+                  <img
+                    src={imageURL}
+                    className="logo"
+                    style={{height: '2.5rem'}}
+                  ></img>
+                </NavLink>
+              </div>
+
+              {cart && (
+                <div className="3 flex gap-4 items-center ctas-cart-search-container mt-4">
+                  <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
+                </div>
+              )}
+            </div>
+            <div className="main-navbar-small-bottom-row mb-3 mt-2">
+              <div className="2 flex items-center nav-links-container">
+                <div className="2.1 flex justify-center w-full">
+                  {menuFirstHalf.map((item) => {
+                    console.log(menu, '2222');
+
+                    if (!item.url) return null;
+
+                    // if the url is internal, we strip the domain
+                    const url =
+                      item.url.includes('myshopify.com') ||
+                      item.url.includes(publicStoreDomain) ||
+                      item.url.includes(primaryDomainUrl)
+                        ? new URL(item.url).pathname
+                        : item.url;
+
+                    let renderContent;
+                    switch (item.title) {
+                      case 'About':
+                        renderContent = (
+                          <AboutDropdown
+                            menuItems={item}
+                            publicStoreDomain={publicStoreDomain}
+                            primaryDomainUrl={primaryDomainUrl}
+                          ></AboutDropdown>
+                        );
+                        break;
+                      case 'Services':
+                        renderContent = (
+                          <ServicesDropdown
+                            menuItems={item}
+                            publicStoreDomain={publicStoreDomain}
+                            primaryDomainUrl={primaryDomainUrl}
+                          ></ServicesDropdown>
+                        );
+                        break;
+
+                      default:
+                        renderContent = (
+                          <NavLink
+                            className="relative z-10"
+                            end
+                            onClick={close}
+                            prefetch="intent"
+                            to={url}
+                          >
+                            <Button
+                              variant="ghost2"
+                              className="relative group px-2 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
+                            >
+                              {item.title}
+                              {/* animated underline */}
+                              <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
+                            </Button>
+                          </NavLink>
+                        );
+                        break;
+                    }
+                    return <>{renderContent}</>;
+                  })}
+                </div>
+                <div className="2.2 flex justify-center w-full">
+                  {menuSecondHalf.map((item) => {
+                    console.log(menu, '2222');
+
+                    if (!item.url) return null;
+
+                    // if the url is internal, we strip the domain
+                    const url =
+                      item.url.includes('myshopify.com') ||
+                      item.url.includes(publicStoreDomain) ||
+                      item.url.includes(primaryDomainUrl)
+                        ? new URL(item.url).pathname
+                        : item.url;
+
+                    let renderContent;
+                    switch (item.title) {
+                      case 'About':
+                        renderContent = (
+                          <AboutDropdown
+                            menuItems={item}
+                            publicStoreDomain={publicStoreDomain}
+                            primaryDomainUrl={primaryDomainUrl}
+                          ></AboutDropdown>
+                        );
+                        break;
+                      case 'Services':
+                        renderContent = (
+                          <ServicesDropdown
+                            menuItems={item}
+                            publicStoreDomain={publicStoreDomain}
+                            primaryDomainUrl={primaryDomainUrl}
+                          ></ServicesDropdown>
+                        );
+                        break;
+
+                      default:
+                        console.log(url, '888url');
+
+                        renderContent = (
+                          <NavLink
+                            className="relative z-10"
+                            end
+                            onClick={close}
+                            prefetch="intent"
+                            to={url}
+                          >
+                            <Button
+                              variant="ghost2"
+                              className="relative group px-2 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
+                            >
+                              {item.title}
+                              {/* animated underline */}
+                              <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
+                            </Button>
+                          </NavLink>
+                        );
+                        break;
+                    }
+                    return <>{renderContent}</>;
+                  })}
+                </div>
+              </div>
+            </div>
+          </nav>
+        </>
+      )}
+      {windowWidth != undefined && windowWidth < 768 && windowWidth >= 460 && (
         <>
           <nav role="navigation">
             <div className="main-navbar-small-top-row ">
