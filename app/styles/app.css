@@ -227,14 +227,25 @@ button.reset:hover:not(:has(> *)) {
   cursor: pointer;
   color: white;
 }
-
-.header-ctas {
-  align-items: center;
-  display: flex;
-  grid-gap: 1rem;
-  margin-left: auto;
-  z-index: 100;
-  margin-right: 20px;
+@media (max-width: 500px) {
+  .header-ctas {
+    align-items: center;
+    display: flex;
+    grid-gap: 0.5rem;
+    margin-left: auto;
+    z-index: 100;
+    margin-right: 12px;
+  }
+}
+@media (min-width: 501px) {
+  .header-ctas {
+    align-items: center;
+    display: flex;
+    grid-gap: 1rem;
+    margin-left: auto;
+    z-index: 100;
+    margin-right: 20px;
+  }
 }
 
 /*
@@ -1297,5 +1308,35 @@ span {
 @media (max-width: 768px) {
   .faq-card {
     width: 80%;
+  }
+}
+@media (max-width: 460px) {
+  .about-dropdown-button {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+@media (min-width: 460px) {
+  .about-dropdown-button {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+@media (max-width: 459px) {
+  .about-dropdown-button {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+@media (min-width: 460px) {
+  .services-dropdown-button {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+@media (max-width: 459px) {
+  .services-dropdown-button {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 }
