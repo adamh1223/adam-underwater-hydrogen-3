@@ -37,7 +37,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
       },
     },
   );
-  console.log(data, '97531');
+  
 
   if (errors?.length || !data?.customer) {
     throw Error('Customer orders not found');
@@ -86,7 +86,7 @@ function EmptyOrders() {
 
 function OrderItem({order}: {order: OrderItemFragment}) {
   const fulfillmentStatus = flattenConnection(order.fulfillments)[0]?.status;
-  console.log(fulfillmentStatus, 'fulfillment');
+  
 
   return (
     <>

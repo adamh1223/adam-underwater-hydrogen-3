@@ -23,7 +23,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     existingWishlist.push(productId);
 
     const customerId = data?.data?.customer?.id;
-    console.log(customerId, 'customerid');
+    
 
     const response = await customerAccount.mutate(CUSTOMER_UPDATE_WISHLIST, {
       variables: {
@@ -36,7 +36,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         },
       },
     });
-    console.log(response.data.metafieldsSet.userErrors[0], 'resp');
+    
 
     return json({success: true, result: ''});
   } catch (error) {

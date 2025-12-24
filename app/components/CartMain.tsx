@@ -26,7 +26,7 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const cart = useOptimisticCart(originalCart);
   const location = useLocation();
   const currentURL = location.pathname;
-  console.log(currentURL, '373737');
+  
 
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
   const withDiscount =

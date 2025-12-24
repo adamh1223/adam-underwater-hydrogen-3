@@ -81,7 +81,7 @@ function StockForm({
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(formData),
       });
-      console.log(response, '353535');
+      
 
       if (true) {
         setStatus('Form submitted successfully!');
@@ -111,7 +111,7 @@ function StockForm({
       setStatus('An error occurred. Please try again later.');
     }
   };
-  console.log(checkedBox);
+  
 
   return (
     <>

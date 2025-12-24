@@ -60,7 +60,7 @@ export async function loader(args: LoaderFunctionArgs) {
   let customer = null;
   try {
     customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
-    console.log(customer.data, 'customer000');
+    
   } catch (error) {
     console.warn('Not logged in');
     customer = null;
@@ -73,7 +73,7 @@ export async function loader(args: LoaderFunctionArgs) {
       isLoggedIn: undefined,
     };
   }
-  console.log(customer, '1234123412341234customer');
+  
 
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
@@ -88,7 +88,7 @@ export async function loader(args: LoaderFunctionArgs) {
   } else {
     wishlistProducts = [];
   }
-  console.log(wishlistProducts, 'wishlistProds');
+  
 
   return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
@@ -104,7 +104,7 @@ async function loadCriticalData({
 }: LoaderFunctionArgs) {
   const {handle} = params;
   const {storefront, cart} = context;
-  console.log(cart, '90909cart');
+  
 
   const url = new URL(request.url);
   const searchTerm = url.searchParams.get('q')?.trim() || '';
@@ -156,8 +156,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Collection() {
   const {collection, searchTerm, cart, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
-  console.log(wishlistProducts, '88888wishlistproducts');
-  console.log(cart, '9090909cart');
+  
 
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
@@ -181,7 +180,7 @@ export default function Collection() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
     if (searchText && searchText?.length > 4) {
-      console.log('searched');
+      
     }
   };
 
@@ -217,7 +216,7 @@ export default function Collection() {
   useEffect(() => {
     let tag: string[] = [];
 
-    console.log(collection?.products?.nodes, 'cnodes');
+    
     const filteredCollection = collection?.products?.nodes?.filter((p: any) => {
       if (filterState === 'All') {
         return (
@@ -243,12 +242,12 @@ export default function Collection() {
   }, [filterState]);
 
   useEffect(() => {
-    console.log(collection?.products, 'clp');
+    
 
     setTotalProductCount(collection?.products?.nodes?.length);
   }, [collection?.handle]);
 
-  // console.log(productState, 'productstate');
+  
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -502,7 +501,7 @@ export default function Collection() {
           // <SearchResultsPredictive>
           //   {({items, total, term, state, closeSearch}) => {
           //     const {articles, collections, pages, products, queries} = items;
-          //     console.log(products, '778877');
+          
 
           //     if (state === 'loading' && term.current) {
           //       return <div>Loading...</div>;
@@ -528,7 +527,7 @@ export default function Collection() {
           <SearchResultsPredictive>
             {({items, total, term, state, closeSearch}) => {
               const {articles, collections, pages, products, queries} = items;
-              console.log(typeof term, '999111');
+              
 
               const extraTags: string[] = [];
               const collectionName = capitalizeFirstLetter(collection?.title);

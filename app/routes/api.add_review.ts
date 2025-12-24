@@ -62,7 +62,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const customerName = form.get('customerName') as string;
     const imageFile = form.get('image') as File | null;
 
-    console.log(productId, 'prodid');
+    
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -73,8 +73,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
     const shop = 'fuyqg4-fh.myshopify.com';
-    console.log(adminToken, '555admintoken');
-    console.log(shop, '555shop');
+    
 
     if (!adminToken) {
       return json({error: 'SHOPIFY_ADMIN_TOKEN not found'}, {status: 500});
@@ -166,7 +165,7 @@ export async function action({request, context}: ActionFunctionArgs) {
       // );
       // customerImages = await Promise.all(promisedImages);
     }
-    console.log(customerImage, 'customerimages');
+    
 
     // Append new review
     const updatedReviews = [
@@ -261,7 +260,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         }),
       });
     } catch (error) {
-      console.log(error, 'errorlog');
+      console.error(error)
     }
     return json({success: true, reviews: updatedReviews});
   } catch (error) {

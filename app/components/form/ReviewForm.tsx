@@ -24,7 +24,7 @@ function ReviewForm({
   isBlocked: Boolean;
   updateExistingReviews: (reviews: any[]) => void;
 }) {
-  console.log(productName, 'prodname');
+  
 
   const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
   const [review, setReview] = useState('');
@@ -61,7 +61,7 @@ function ReviewForm({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    console.log('hello world');
+    
     setFileError('');
     if (file && file?.size / (1024 * 1024) > 20) {
       setFileError('Image exceeds 20 mb limit');
@@ -72,7 +72,7 @@ function ReviewForm({
   };
 
   const triggerFileSelect = () => fileInputRef.current?.click();
-  console.log(userReviewExists, 'userreviewexists');
+  
 
   const disableSubmitButton =
     !review || !stars || !title || userReviewExists || isBlocked;

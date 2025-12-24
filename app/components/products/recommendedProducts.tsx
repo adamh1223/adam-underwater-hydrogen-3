@@ -20,7 +20,7 @@ function RecommendedProducts({
             <div className="recommended-products-grid gap-x-5 gap-y-5">
               {response
                 ? response.products.nodes.map((product) => {
-                    console.log(product, '111111');
+                    
                     const isVideo = product.tags?.includes('Video');
                     const isRecommendedProduct =
                       product.tags?.includes('recommended');

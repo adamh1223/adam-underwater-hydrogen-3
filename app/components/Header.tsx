@@ -54,7 +54,7 @@ export function Header({
 }: HeaderProps) {
   const {shop, menu, collection} = header;
   const imageURL = collection?.metafield?.references?.nodes?.[0].image.url;
-  console.log(collection, '707070');
+ 
 
   return (
     <header className="header border-b">
@@ -108,7 +108,7 @@ export function HeaderMenu({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  console.log(windowWidth, 'window');
+  
 
   return (
     <>
@@ -127,7 +127,7 @@ export function HeaderMenu({
                   <img
                     src={imageURL}
                     className="logo"
-                    style={{height: '2.5rem'}}
+                    style={{height: '35px'}}
                   ></img>
                 </NavLink>
               </div>
@@ -142,7 +142,7 @@ export function HeaderMenu({
               <div className="2 flex items-center nav-links-container">
                 <div className="2.1 flex justify-center w-full">
                   {menuFirstHalf.map((item) => {
-                    console.log(menu, '2222');
+                    
 
                     if (!item.url) return null;
 
@@ -201,7 +201,7 @@ export function HeaderMenu({
                 </div>
                 <div className="2.2 flex justify-center w-full">
                   {menuSecondHalf.map((item) => {
-                    console.log(menu, '2222');
+                   
 
                     if (!item.url) return null;
 
@@ -235,7 +235,7 @@ export function HeaderMenu({
                         break;
 
                       default:
-                        console.log(url, '888url');
+                        
 
                         renderContent = (
                           <NavLink
@@ -295,7 +295,7 @@ export function HeaderMenu({
               <div className="2 flex items-center nav-links-container">
                 <div className="2.1 flex justify-center w-full">
                   {menuFirstHalf.map((item) => {
-                    console.log(menu, '2222');
+                    
 
                     if (!item.url) return null;
 
@@ -354,7 +354,7 @@ export function HeaderMenu({
                 </div>
                 <div className="2.2 flex justify-center w-full">
                   {menuSecondHalf.map((item) => {
-                    console.log(menu, '2222');
+                    
 
                     if (!item.url) return null;
 
@@ -388,7 +388,7 @@ export function HeaderMenu({
                         break;
 
                       default:
-                        console.log(url, '888url');
+                        
 
                         renderContent = (
                           <NavLink
@@ -444,7 +444,7 @@ export function HeaderMenu({
               {/* ⭐ SHIFTED LEFT 30px */}
               <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[32px] mt-[16px]">
                 {menuFirstHalf.map((item) => {
-                  console.log(menu, '2222');
+                  
                   if (!item.url) return null;
 
                   const url =
@@ -509,7 +509,7 @@ export function HeaderMenu({
 
             <div className="flex justify-center mb-3">
               {menuSecondHalf.map((item) => {
-                console.log(menu, '2222');
+                
                 if (!item.url) return null;
 
                 const url =
@@ -587,7 +587,7 @@ export function HeaderMenu({
           <div className="2 flex items-center nav-links-container py-4">
             <div className="2.1 flex justify-center w-full">
               {menuFirstHalf.map((item) => {
-                console.log(menu, '2222');
+                
 
                 if (!item.url) return null;
 
@@ -646,7 +646,7 @@ export function HeaderMenu({
             </div>
             <div className="2.2 flex justify-center w-full">
               {menuSecondHalf.map((item) => {
-                console.log(menu, '2222');
+                
 
                 if (!item.url) return null;
 
@@ -680,7 +680,7 @@ export function HeaderMenu({
                     break;
 
                   default:
-                    console.log(url, '888url');
+                    
 
                     renderContent = (
                       <NavLink
@@ -739,7 +739,7 @@ function HeaderCtas({
     {href: 'account/profile', label: 'My Profile', icon: 'profile-icon'},
     {href: 'account/addresses', label: 'My Addresses', icon: 'addresses-icon'},
   ];
-  console.log(loginValue, 'xyz');
+  
 
   return (
     <nav className="header-ctas" role="navigation">

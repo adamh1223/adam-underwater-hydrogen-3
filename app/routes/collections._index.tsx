@@ -71,7 +71,7 @@ function CollectionItem({
   collection: CollectionFragment;
   index: number;
 }) {
-  console.log(collection.handle, '505050');
+  
 
   return (
     <Link

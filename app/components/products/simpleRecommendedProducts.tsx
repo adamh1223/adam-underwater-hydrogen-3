@@ -30,7 +30,7 @@ function SimpleRecommendedProducts({
                 !product.tags.includes('Video') &&
                 product.images.nodes[0].url.includes('youmayalsolike'),
             );
-            console.log(response?.products, 'ps');
+            
             const productsToUse = isVideo
               ? filteredVideoProducts
               : filteredPrintProducts;
@@ -38,10 +38,10 @@ function SimpleRecommendedProducts({
             const productsBesidesCurrent = productsToUse?.filter(
               (product) => product.id != currentProductID,
             );
-            console.log(productsToUse, 'productstouse');
+            
 
             const products = productsBesidesCurrent?.map((product) => {
-              console.log(product.images.nodes, 'prodimgnodes');
+              
               const productID = product.id;
               const productName = product.handle;
               const imageFound = product.images.nodes.filter((image) => {
@@ -58,7 +58,7 @@ function SimpleRecommendedProducts({
               };
             });
 
-            console.log(products, '555');
+            
 
             return (
               <div className="recommended-products-grid-simple gap-x-5 gap-y-5">
@@ -66,21 +66,10 @@ function SimpleRecommendedProducts({
                   <>
                     {!isVideo && <ThreeUpCarousel products={products} />}
                     {isVideo && <ThreeUpEProductCarousel products={products} />}
-                  </> //     const images = products.nodes.filter((image: any) =>
-                ) : //       image.url.includes('outer-carousel-main'),
-                //     );
+                  </> 
+                ) : 
 
-                //     const imageURL = product.images.nodes.filter((image: any) =>
-                //       image.url.includes('outer-carousel-main'),
-                //     );
-                //     console.log(imageURL, 'imgurl');
-
-                //     return (
-                //       <>
-                //         <img src={imageURL[0]?.url} />
-                //       </>
-                //     );
-                //   })
+                
                 null}
               </div>
             );
