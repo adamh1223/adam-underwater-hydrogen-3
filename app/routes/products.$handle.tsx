@@ -119,7 +119,7 @@ async function loadCriticalData({
   let customer = null;
   let wishlistProducts: string[] = [];
   let isLoggedIn = false;
-  
+
   if (await context.customerAccount.isLoggedIn()) {
     const {data, errors} = await context.customerAccount.query(
       CUSTOMER_DETAILS_QUERY,
@@ -181,13 +181,11 @@ export default function Product() {
   const isInWishlist = wishlistProducts.includes(product?.id);
   const isAdmin =
     customer?.customer?.id === 'gid://shopify/Customer/7968375079049';
-  
 
   const customerId = customer?.customer?.id ?? '';
   const customerFirstName = customer?.customer?.firstName ?? '';
   const customerLastName = customer?.customer?.lastName ?? '';
   const customerName = `${customerFirstName} ${customerLastName}`.trim();
-  
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -214,13 +212,11 @@ export default function Product() {
     selectedOrFirstAvailableVariant,
     tags,
   } = product;
-  
 
   const WMLink = tags.filter((tag: string) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
 
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
-  
 
   const {references} = productSizeMetafields || {};
   // THREE COLUMN SIZES
@@ -273,8 +269,6 @@ export default function Product() {
     } else if (layout === 'Three Columns' && orientation === 'Landscape') {
       return threeColumnSizes;
     } else if (layout === 'Standard' && orientation === 'Vertical') {
-      
-
       return verticalSizes;
     }
   };
@@ -282,7 +276,7 @@ export default function Product() {
   let layoutImagesToUse = determineLayoutImages(selectedVariant);
 
   // const imageURLs = images.nodes.map((item: {url: string}) => item.url);
-  
+
   // const imagesToUse = images.nodes.map(
   //   (item: {url: string; altText: string}) => {
   //     if (selectedVariant.title.toLowerCase() === item.altText.split('_')[0]) {
@@ -290,7 +284,6 @@ export default function Product() {
   //     }
   //   },
   // );
-  
 
   const standardCarouselImages = images.nodes
     .map((image: any) => {
@@ -377,7 +370,6 @@ export default function Product() {
     const orientation = variant.title.split(' / ')[0];
     const layout = variant.title.split(' / ')[1];
     const size = variant.title.split(' / ')[2];
-    
 
     // Standard Only, Horizontal and vertical all sizes
     // no two columns, no three columns any size
@@ -448,7 +440,6 @@ export default function Product() {
   };
 
   let threeDImagesToUse = determineThreeDImages(selectedVariant);
-  
 
   const standardVerticalCarouselImages = images.nodes
     .map((image: any) => {
@@ -486,7 +477,6 @@ export default function Product() {
       }
     })
     .filter(Boolean);
-  
 
   // WE ARE NOT GETTING VT SECOND IMG EVEN THO IT MATCHES. BUT IT DOES WORK ON HORPRIMARY. NOT VERTPRIMARY
 
@@ -501,7 +491,6 @@ export default function Product() {
   } else if (layout === 'Three Columns' && orientation === 'Landscape') {
     standardCarouselImages.unshift(horizontalThreeColsSecondImg.pop());
   } else if (layout === 'Standard' && orientation === 'Vertical') {
-    
     standardVerticalCarouselImages.unshift(verticalSecondImg.pop());
   }
   // add the main image first to each orientation
@@ -510,8 +499,7 @@ export default function Product() {
   standardCarouselImages.unshift(selectedVariant?.image);
 
   const isVideo = product.tags.includes('Video');
-  
-  
+
   let isHorOnly = product.tags
     .map((tag: any) => {
       if (tag.includes('horOnly')) {
@@ -541,7 +529,6 @@ export default function Product() {
       }
     })
     .filter(Boolean);
-  
 
   // const standardCarouselImages = images.nodes
   //   .map((image: any) => {
@@ -607,8 +594,6 @@ export default function Product() {
   // tag: loc_locname_san_miguel_island_locstatecaps_ca_loccountrycaps_usa
   // formattedLocation -> "San Miguel Island, CA, USA"
 
-  
-
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -626,7 +611,6 @@ export default function Product() {
     cart,
   );
 
-  
   const [carouselApi, setCarouselApi] = useState<CarouselApi | undefined>(
     undefined,
   );
@@ -656,12 +640,11 @@ export default function Product() {
     scrollToIndex(currentIndex + 1);
   };
 
-  
   const decreaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.stopPropagation();
     scrollToIndex(currentIndex - 1);
   };
-  
+
   const cards = [
     {
       icon: '/1x-icon-2.png',
@@ -699,14 +682,18 @@ export default function Product() {
     console.error('Unable to parse product reviews metafield', error);
     parsedReviews = [];
   }
-  
 
   const [reviewsList, setReviewsList] = useState(parsedReviews);
   const userReviewExists = reviewsList?.some((review) => {
-    
-
     return review.customerId === customerId;
   });
+  let isBlocked;
+  if (customer?.tags?.includes('blocked')) {
+    isBlocked = true;
+  } else {
+    isBlocked = false;
+  }
+  console.log(customer, 'customer');
 
   const reviewsCount = reviewsList.length;
   const averageRating =
@@ -796,7 +783,6 @@ export default function Product() {
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', product.id);
-      
 
       const response = await fetch('/api/add_favorites', {
         method: 'POST',
@@ -823,7 +809,6 @@ export default function Product() {
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', product.id);
-      
 
       const response = await fetch('/api/remove_favorites', {
         method: 'PUT',
@@ -841,7 +826,6 @@ export default function Product() {
   };
 
   const location = useLocation();
-  
 
   const retryTimerRef = useRef<number | null>(null);
 
