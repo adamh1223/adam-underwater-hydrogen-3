@@ -40,7 +40,7 @@ function EProductsContainer({
   isLoggedIn: Promise<boolean> | undefined;
   isInWishlist: boolean;
 }) {
-  console.log(layout, 'layout');
+  
 
   const cardClassName =
     layout === 'grid'
@@ -57,7 +57,7 @@ function EProductsContainer({
     product?.selectedOrFirstAvailableVariant?.id,
     cart,
   );
-  console.log(product, '204020');
+  
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   useEffect(() => {
@@ -118,7 +118,7 @@ function EProductsContainer({
   const formattedLocation = [locationName, locationState, locationCountry]
     .filter(Boolean)
     .join(', ');
-  console.log(product, 'prpr');
+  
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
@@ -127,7 +127,7 @@ function EProductsContainer({
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', product.id);
-      console.log(form, 'form');
+      
 
       const response = await fetch('/api/add_favorites', {
         method: 'POST',
@@ -148,7 +148,7 @@ function EProductsContainer({
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', product.id);
-      console.log(form, 'form');
+      
 
       const response = await fetch('/api/remove_favorites', {
         method: 'PUT',

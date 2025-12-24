@@ -10,10 +10,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const {customerAccount} = context;
     const productId = (await request.formData()).get('productId') as string;
     const data = await context.customerAccount.query(CUSTOMER_WISHLIST);
-    console.log(
-      data.data.customer.metafield.value,
-      '0000000000000011111111111111data',
-    );
+    
     const existingWishlist = JSON.parse(
       data.data.customer.metafield.value,
     ) as string[];
@@ -23,7 +20,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     );
 
     const customerId = data.data.customer.id;
-    console.log(customerId, 'customerid');
+    
 
     const response = await customerAccount.mutate(CUSTOMER_UPDATE_WISHLIST, {
       variables: {
@@ -36,7 +33,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         },
       },
     });
-    console.log(response.data.metafieldsSet.userErrors[0], 'resp');
+    
 
     return json({success: true, result: ''});
   } catch (error) {

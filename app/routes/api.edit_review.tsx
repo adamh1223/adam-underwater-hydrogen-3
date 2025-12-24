@@ -206,7 +206,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         }),
       });
     } catch (error) {
-      console.log(error, 'errorlog');
+      console.error(error)
     }
     return json({success: true, reviews: updatedReviews});
   } catch (error) {

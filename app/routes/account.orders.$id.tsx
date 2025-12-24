@@ -31,7 +31,7 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
       variables: {orderId},
     },
   );
-  console.log(data, '13579');
+  
   if (errors?.length || !data?.order) {
     throw new Error('Order not found');
   }
@@ -54,7 +54,7 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
   const discountPercentage =
     firstDiscount?.__typename === 'PricingPercentageValue' &&
     firstDiscount?.percentage;
-  console.log(lineItems, '0123');
+  
 
   const variantIds = lineItems.map((li: any) => li?.variantId).filter(Boolean);
   const variantResponses = await Promise.all(
@@ -113,7 +113,7 @@ export default function OrderRoute() {
     })
     .filter(Boolean);
 
-  console.log(order, '5678');
+  
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -123,7 +123,7 @@ export default function OrderRoute() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  console.log(lineItems, '012345');
+  
 
   return (
     <div className="outer-container flex justify-center">
@@ -453,17 +453,17 @@ function OrderLineRow({
   lineItem: OrderLineItemFullFragment;
   downloadLinks: {text: string; url: string}[];
 }) {
-  console.log(lineItem, '7123');
+  
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const downloadLink = downloadLinks.filter((downloadLink) => {
     return downloadLink.text === lineItem.title;
   });
-  console.log(downloadLinks, 'azaz');
+  
   const itemSubtotal =
     lineItem.quantity * Number(lineItem.price?.amount) -
     Number(lineItem.totalDiscount.amount);
-  console.log(itemSubtotal, '775577');
+  
 
   useEffect(() => {
     function handleResize() {
@@ -491,7 +491,7 @@ function OrderLineRow({
     lineItem?.image?.url.includes('vertPrimary') ||
     lineItem?.image?.url.includes('vertOnly');
 
-  console.log(lineItem, '484848');
+  
   return (
     <div key={lineItem.id} className="tr">
       {/* <tr key={lineItem.id}> */}

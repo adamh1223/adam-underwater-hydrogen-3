@@ -110,7 +110,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 function ServicesPage() {
   const collection = useLoaderData<typeof loader>() || {};
-  console.log(collection, 'collection');
+  
 
   const location = useLocation();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);

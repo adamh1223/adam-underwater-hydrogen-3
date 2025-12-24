@@ -53,7 +53,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function AboutPage() {
   const data = useLoaderData<typeof loader>();
-  console.log(data, 'data');
+  
 
   // const location = useLocation();
   // const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);

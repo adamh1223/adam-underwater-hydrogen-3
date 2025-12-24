@@ -36,9 +36,9 @@ export function CartLineItem({
   // @ts-expect-error fixed when restart
   const hasPrintTag = includesTagName(product.tags, 'Prints');
   const cartDescription = generateCartDescription(hasVideoTag || hasPrintTag);
-  console.log(cartDescription, '484848');
+  
 
-  console.log(image, 'img3');
+ 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -48,7 +48,7 @@ export function CartLineItem({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  console.log(line?.cost?.compareAtAmountPerQuantity, 'compareat');
+  
   const isHorizontalProduct =
     image?.url?.includes('horPrimary') || image?.url.includes('horOnly');
   const isStockClip =
@@ -71,7 +71,7 @@ export function CartLineItem({
     currencyCode: line?.cost?.compareAtAmountPerQuantity?.currencyCode || 'USD',
     amount: compareAtPerQuantity?.toString(),
   };
-  console.log(updatedCompareAt, 'updatedcompareat');
+  
 
   return (
     <Card className="mb-4">

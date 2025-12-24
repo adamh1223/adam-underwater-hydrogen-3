@@ -32,7 +32,7 @@ function VideoPreview({
     }
   }, [isHovered]);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  console.log(isVideoReady, '2222');
+  
 
   useEffect(() => {
     const iframe = document.querySelector('iframe');
@@ -65,7 +65,7 @@ function VideoPreview({
         height: '0px',
         width: '0px',
       };
-  // console.log(iframeStyles);
+  
 
   const [imageClass, setImageClass] = useState('');
   useEffect(() => {
@@ -109,17 +109,7 @@ function VideoPreview({
           {' '}
           {/* Aspect ratio for 16:9 */}
           <Link to={`/products/${handle}`} className="cursor-pointer">
-            {/* <iframe
-              src={`https://player.vimeo.com/video/${WMVideoLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
-              allow="autoplay; loop;"
-              // @ts-expect-error ignore for now
-              style={iframeStyles}
-              onLoad={() => console.log("The video is loaded", isHovered, isVideoReady)}
-              className={`ProductVideo ${
-                isVideoReady ? "visible" : "tinyVideo"
-              } cursor-pointer`}
-              onPointerDown={() => router.push(`/products/${handle}`)}
-            ></iframe> */}
+            
           </Link>
         </div>
       )}

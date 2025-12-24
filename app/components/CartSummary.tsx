@@ -22,7 +22,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
     (product) => product.merchandise.product.title,
   );
 
-  console.log(clipNames, '2468');
+  
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
   // const [isOrderReady, setIsOrderReady] = useState(defaultOrderValue);

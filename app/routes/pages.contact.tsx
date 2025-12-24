@@ -66,7 +66,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 function ContactPage() {
   const collection = useLoaderData<typeof loader>() || {};
-  console.log(collection, '111collection');
+  
 
   return (
     <>

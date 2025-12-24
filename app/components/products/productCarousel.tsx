@@ -72,7 +72,7 @@ export const ProductCarousel = ({
   isInWishlist: boolean;
   isLoggedIn: Promise<boolean> | undefined;
 }) => {
-  console.log(product.handle, isInWishlist, '8989898989');
+  
 
   // If caller passed a string id by mistake, bail out gracefully
   if (typeof product === 'string') {
@@ -85,7 +85,7 @@ export const ProductCarousel = ({
 
   // Attempt to coerce/validate into the expected shape
   const prod = (product as collectionProduct | undefined) ?? undefined;
-  console.log(product, 'logproduct');
+  
 
   if (!prod || (!prod.id && !prod.handle)) {
     console.warn(
@@ -97,7 +97,7 @@ export const ProductCarousel = ({
 
   const {title, images, priceRange, handle, id, tags} =
     prod as collectionProduct;
-  console.log(images, 'imageslog');
+  
 
   const cardClassName =
     layout === 'grid'
@@ -114,7 +114,7 @@ export const ProductCarousel = ({
   const standardImages = images?.nodes?.filter((item) =>
     item?.url?.includes('outer-carousel-'),
   );
-  console.log(standardImages, 'outer');
+  
 
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -283,18 +283,15 @@ export const ProductCarousel = ({
   ) {
     carouselHeight = 'w-28';
   }
-  console.log(prod, 'prods');
+  
 
-  console.log(product, '789product');
-  console.log(isVertOnly, '1144vertOnly');
-  console.log(isHorPrimary, '1144horPrimary');
-  console.log(isVertPrimary, '1144vertPrimary');
+  
   const addToFavorites = async () => {
     try {
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', prod.id);
-      console.log(form, 'form');
+      
 
       const response = await fetch('/api/add_favorites', {
         method: 'POST',
@@ -321,7 +318,7 @@ export const ProductCarousel = ({
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', prod.id);
-      console.log(form, 'form');
+      
 
       const response = await fetch('/api/remove_favorites', {
         method: 'PUT',
@@ -338,7 +335,7 @@ export const ProductCarousel = ({
     }
   };
   const loginValue = useIsLoggedIn(isLoggedIn);
-  console.log(loginValue, 'loginvalue');
+  
 
   return (
     <article className="group relative h-full">

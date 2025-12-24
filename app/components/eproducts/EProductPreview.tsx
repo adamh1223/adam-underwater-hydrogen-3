@@ -20,7 +20,7 @@ function EProductPreview({
   const {featuredImage, id} = EProduct;
   const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
-  console.log(EProduct, 'epep');
+  
 
   const handleVideoLoad = () => {
     setIsVideoReady(true);

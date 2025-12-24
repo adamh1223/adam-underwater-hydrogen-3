@@ -22,7 +22,7 @@ export const meta: MetaFunction = () => {
 
 export async function loader({request, context}: LoaderFunctionArgs) {
   const {storefront, cart} = context;
-  console.log(cart, '909cart');
+ 
 
   const url = new URL(request.url);
   const isPredictive = url.searchParams.has('predictive');
@@ -39,7 +39,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
   let customer = null;
   try {
     customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
-    console.log(customer.data, 'customer000');
+    
   } catch (error) {
     console.warn('Not logged in');
     customer = null;
@@ -62,7 +62,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
   } else {
     wishlistProducts = [];
   }
-  console.log(wishlistProducts, 'wishlistProds');
+  
 
   return {...promiseResult, cart: cart.get(), wishlistProducts, isLoggedIn};
 }
@@ -73,7 +73,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
 export default function SearchPage() {
   // const {type, term, result, error, cart} = useLoaderData<typeof loader>();
   const data = useLoaderData<typeof loader>();
-  console.log(data, '999data');
+  
 
   const {type, term, result, error, cart, isLoggedIn, wishlistProducts} = data;
   if (type === 'predictive') return null;

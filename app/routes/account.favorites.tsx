@@ -49,7 +49,7 @@ export async function loader(args: LoaderFunctionArgs) {
   // const token = await loadCriticalData(args);
   const customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
   const isLoggedIn = context.customerAccount.isLoggedIn();
-  console.log(customer, '0101010010101010101001010101010100110101');
+  
   if (!customer.data.customer.metafield?.value) {
     return [];
   }
@@ -66,42 +66,20 @@ export async function loader(args: LoaderFunctionArgs) {
       }),
     ),
   );
-  console.log(productNodes, '40404040044004040404040404040404040');
+  
 
   const products = productNodes?.map(({node}) => {
-    console.log(node, '30303030030303030303030303003030303030303');
+    
 
     return {...node};
   });
-  console.log(products, '2020200202020202020202020202200220202020020202020202');
+  
 
   const wishlist = {};
-  console.log(wishlist, '1111111111111111111');
+  
   return {products, isLoggedIn};
 }
-// async function loadCriticalData({context}: LoaderFunctionArgs) {
-//   const token = await context.customerAccount.getAccessToken();
 
-//   return token;
-// }
-// async function loadDeferredData({context}: LoaderFunctionArgs) {
-//   const token = await context.customerAccount.getAccessToken();
-//   const recommendedProducts = context.storefront
-//     .query(CUSTOMER_WISHLIST, {
-//       variables: {
-//         token,
-//       },
-//     })
-//     .catch((error) => {
-//       // Log query errors, but don't throw them so the page can still render
-//       console.error(error, '00000000000000000000000000000000000000000000000');
-//       return null;
-//     });
-
-//   return {
-//     recommendedProducts,
-//   };
-// }
 export async function action({request, context}: ActionFunctionArgs) {
   const {customerAccount} = context;
 }
@@ -110,13 +88,12 @@ export default function Favorites() {
   const {customer} = useOutletContext<{customer: CustomerFragment}>();
   const {products, isLoggedIn} = useLoaderData<typeof loader>();
 
-  console.log(customer.id, '2000');
-  console.log(products, '20001');
+ 
   return (
     <>
       <div className="prods-grid gap-x-5">
         {products?.map((product) => {
-          console.log(product, 'productlog');
+          
           {
             product.tags.includes('prints') ? (
               <div className="flex justify-center pb-2">

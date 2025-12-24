@@ -40,7 +40,7 @@ export async function loader(args: LoaderFunctionArgs) {
       isLoggedIn: undefined,
     };
   }
-  console.log(customer, '1234123412341234customer');
+  
 
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
@@ -80,7 +80,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function AboutPage() {
   const data = useLoaderData<typeof loader>();
-  console.log(data, 'data');
+  
 
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);

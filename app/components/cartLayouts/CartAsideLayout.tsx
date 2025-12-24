@@ -19,7 +19,7 @@ export function CartAsideLayout({
   cartHasItems,
   className,
 }: cartPageLayoutProps) {
-  console.log(cartHasItems, 'carthasitems');
+  
 
   return (
     <>

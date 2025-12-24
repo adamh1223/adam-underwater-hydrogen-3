@@ -28,7 +28,7 @@ export async function action({request}: ActionFunctionArgs) {
       }),
     });
     const JSONResponse = await response.json();
-    console.log(JSONResponse, '0987');
+    
     return json({success: true, result: JSONResponse});
   } catch (error) {
     console.error(error);

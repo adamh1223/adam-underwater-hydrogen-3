@@ -110,12 +110,12 @@ function SearchResultsProducts({
   isLoggedIn,
   wishlistProducts,
 }: SearchResults) {
-  console.log(isLoggedIn, 'islogged');
+  
 
   if (!products?.nodes.length) {
     return null;
   }
-  console.log(products, 'products');
+  
   // images are not coming in here^
 
   return (
@@ -133,7 +133,7 @@ function SearchResultsProducts({
 
             const price = product?.selectedOrFirstAvailableVariant?.price;
             const image = product?.selectedOrFirstAvailableVariant?.image;
-            console.log(image, '000image');
+            
             {
               /* not getting product images on this console.log^ But we DO GET images on searchresultspredictive console.log */
             }
