@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['throat-golden-became-wifi.tryhydrogen.dev'],
+    allowedHosts: ['fee-ease-incoming-value.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
