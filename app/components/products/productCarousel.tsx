@@ -7,7 +7,7 @@ import {
   CarouselItem,
   CarouselApi,
 } from '../ui/carousel';
-import {Link, NavLink, Navigate, useLoaderData} from '@remix-run/react';
+import {Link, NavLink, Navigate, useLoaderData, useNavigate} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon, Divide} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
@@ -111,6 +111,7 @@ export const ProductCarousel = ({
     item?.url?.includes('outer-carousel-'),
   );
 
+  const navigate = useNavigate();
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
@@ -295,10 +296,7 @@ export const ProductCarousel = ({
       toast.success('Added to Favorites', {
         action: {
           label: 'View All Favorites',
-          onClick: () => {
-            console.log('Navigate to favorites');
-            // e.g. navigate("/favorites")
-          },
+          onClick: () => navigate('/account/favorites'),
         },
       });
       setPendingWishlistChange(false);
@@ -323,9 +321,7 @@ export const ProductCarousel = ({
       toast.success('Removed from Favorites', {
         action: {
           label: 'View All Favorites',
-          onClick: () => {
-            // navigate("/favorites")
-          },
+          onClick: () => navigate('/account/favorites'),
         },
       });
       setPendingWishlistChange(false);

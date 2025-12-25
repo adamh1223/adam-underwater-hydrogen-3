@@ -5,7 +5,7 @@ import {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import EProductPreview from './EProductPreview';
 import {Money} from '@shopify/hydrogen';
-import {Link} from '@remix-run/react';
+import {Link, useNavigate} from '@remix-run/react';
 import {useAside} from '../Aside';
 import {useIsLoggedIn, useIsVideoInCart} from '~/lib/hooks';
 import {CartReturn} from '@shopify/hydrogen';
@@ -119,6 +119,7 @@ function EProductsContainer({
     .filter(Boolean)
     .join(', ');
   
+  const navigate = useNavigate();
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
@@ -139,10 +140,7 @@ function EProductsContainer({
       toast.success('Added to Favorites', {
         action: {
           label: 'View All Favorites',
-          onClick: () => {
-            console.log('Navigate to favorites');
-            // e.g. navigate("/favorites")
-          },
+          onClick: () => navigate('/account/favorites'),
         },
       });
       setPendingWishlistChange(false);
@@ -168,10 +166,7 @@ function EProductsContainer({
       toast.success('Removed from Favorites', {
         action: {
           label: 'View All Favorites',
-          onClick: () => {
-            
-            // navigate("/favorites")
-          },
+          onClick: () => navigate('/account/favorites'),
         },
       });
       setPendingWishlistChange(false);
