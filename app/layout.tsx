@@ -44,7 +44,7 @@ export default function Layout() {
       </head>
       <body className="dark">
         {/* 🔔 Sonner toaster (mount once at root) */}
-        <Toaster richColors />
+        <Toaster richColors={false} className='au-toaster' />
 
         <TooltipProvider delayDuration={200}>
           {data?.consent ? (
