@@ -40,8 +40,6 @@ function EProductsContainer({
   isLoggedIn: Promise<boolean> | undefined;
   isInWishlist: boolean;
 }) {
-  
-
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-5'
@@ -57,7 +55,7 @@ function EProductsContainer({
     product?.selectedOrFirstAvailableVariant?.id,
     cart,
   );
-  
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   useEffect(() => {
@@ -118,7 +116,7 @@ function EProductsContainer({
   const formattedLocation = [locationName, locationState, locationCountry]
     .filter(Boolean)
     .join(', ');
-  
+
   const navigate = useNavigate();
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
@@ -128,7 +126,6 @@ function EProductsContainer({
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', product.id);
-      
 
       const response = await fetch('/api/add_favorites', {
         method: 'POST',
@@ -142,6 +139,11 @@ function EProductsContainer({
           label: 'View All Favorites',
           onClick: () => navigate('/account/favorites'),
         },
+        style: {
+          background: 'red',
+          color: 'red',
+          border: '4px solid lime',
+        },
       });
       setPendingWishlistChange(false);
     } catch (error) {
@@ -154,7 +156,6 @@ function EProductsContainer({
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', product.id);
-      
 
       const response = await fetch('/api/remove_favorites', {
         method: 'PUT',

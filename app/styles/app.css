@@ -1340,3 +1340,116 @@ span {
     padding-right: 8px;
   }
 }
+@media (max-width: 599px) {
+  .toast-width {
+    width: 65vw !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+  .au-toaster {
+    position: fixed !important;
+    left: 43.5% !important;
+    bottom: 16px !important;
+    transform: translateX(-50%) !important;
+
+    /* Keep above everything */
+    z-index: 9999 !important;
+
+    /* Allow wide toasts without clipping */
+    width: auto !important;
+    max-width: calc(100vw - 2rem) !important;
+
+    /* Center the stack */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+
+    /* Optional spacing from edges */
+    pointer-events: none; /* clicks pass through */
+  }
+}
+@media (min-width: 600px) and (max-width: 768px) {
+  .toast-width {
+    width: 60vw !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+  .au-toaster {
+    position: fixed !important;
+    left: 63.5% !important;
+    bottom: 16px !important;
+    transform: translateX(-50%) !important;
+
+    /* Keep above everything */
+    z-index: 9999 !important;
+
+    /* Allow wide toasts without clipping */
+    width: auto !important;
+    max-width: calc(100vw - 2rem) !important;
+
+    /* Center the stack */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+
+    /* Optional spacing from edges */
+    pointer-events: none; /* clicks pass through */
+  }
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  .toast-width {
+    width: 50vw !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+  .au-toaster {
+    position: fixed !important;
+    left: 53.5% !important;
+    bottom: 16px !important;
+    transform: translateX(-50%) !important;
+
+    /* Keep above everything */
+    z-index: 9999 !important;
+
+    /* Allow wide toasts without clipping */
+    width: auto !important;
+    max-width: calc(100vw - 2rem) !important;
+
+    /* Center the stack */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+
+    /* Optional spacing from edges */
+    pointer-events: none; /* clicks pass through */
+  }
+}
+@media (min-width: 1025px) {
+  .toast-width {
+    width: 40vw !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+  .au-toaster {
+    position: fixed !important;
+    left: 42.5% !important;
+    bottom: 16px !important;
+    transform: translateX(-50%) !important;
+
+    /* Keep above everything */
+    z-index: 9999 !important;
+
+    /* Allow wide toasts without clipping */
+    width: auto !important;
+    max-width: calc(100vw - 2rem) !important;
+
+    /* Center the stack */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+
+    /* Optional spacing from edges */
+    pointer-events: none; /* clicks pass through */
+  }
+}
+
+/* Let toast buttons still be clickable */
+.au-toaster [data-sonner-toast] {
+  pointer-events: auto;
+}
