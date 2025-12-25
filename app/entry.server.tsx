@@ -19,6 +19,7 @@ export default async function handleRequest(
     connectSrc: [
       'wss://patient-mite-notably.ngrok-free.app:3000',
       'https://api.courier.com/send',
+      'https://cdn.shopify.com',
     ],
     imgSrc: [
       "'self'",
