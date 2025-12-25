@@ -72,8 +72,6 @@ export const ProductCarousel = ({
   isInWishlist: boolean;
   isLoggedIn: Promise<boolean> | undefined;
 }) => {
-  
-
   // If caller passed a string id by mistake, bail out gracefully
   if (typeof product === 'string') {
     console.warn(
@@ -85,7 +83,6 @@ export const ProductCarousel = ({
 
   // Attempt to coerce/validate into the expected shape
   const prod = (product as collectionProduct | undefined) ?? undefined;
-  
 
   if (!prod || (!prod.id && !prod.handle)) {
     console.warn(
@@ -97,7 +94,6 @@ export const ProductCarousel = ({
 
   const {title, images, priceRange, handle, id, tags} =
     prod as collectionProduct;
-  
 
   const cardClassName =
     layout === 'grid'
@@ -114,7 +110,6 @@ export const ProductCarousel = ({
   const standardImages = images?.nodes?.filter((item) =>
     item?.url?.includes('outer-carousel-'),
   );
-  
 
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -283,15 +278,12 @@ export const ProductCarousel = ({
   ) {
     carouselHeight = 'w-28';
   }
-  
 
-  
   const addToFavorites = async () => {
     try {
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', prod.id);
-      
 
       const response = await fetch('/api/add_favorites', {
         method: 'POST',
@@ -300,13 +292,7 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(true);
-      toast('Added to Favorites', {
-        description: 'Navigate to my favorites to view all',
-        action: {
-          label: 'View My Favorites',
-          onClick: () => navigate('/account/favorites'),
-        },
-      });
+      toast.default('Added to Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
@@ -318,7 +304,6 @@ export const ProductCarousel = ({
       setPendingWishlistChange(true);
       const form = new FormData();
       form.append('productId', prod.id);
-      
 
       const response = await fetch('/api/remove_favorites', {
         method: 'PUT',
@@ -327,7 +312,7 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(false);
-      toast.success('Removed from Favorites');
+      toast.info('Removed from Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
@@ -335,7 +320,6 @@ export const ProductCarousel = ({
     }
   };
   const loginValue = useIsLoggedIn(isLoggedIn);
-  
 
   return (
     <article className="group relative h-full">

@@ -38,6 +38,7 @@ import {
 import ProductCarousel from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {useEffect} from 'react';
+import Sectiontitle from '~/components/global/Sectiontitle';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Favorites'}];
@@ -49,7 +50,7 @@ export async function loader(args: LoaderFunctionArgs) {
   // const token = await loadCriticalData(args);
   const customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
   const isLoggedIn = context.customerAccount.isLoggedIn();
-  
+
   if (!customer.data.customer.metafield?.value) {
     return [];
   }
@@ -66,17 +67,13 @@ export async function loader(args: LoaderFunctionArgs) {
       }),
     ),
   );
-  
 
   const products = productNodes?.map(({node}) => {
-    
-
     return {...node};
   });
-  
 
   const wishlist = {};
-  
+
   return {products, isLoggedIn};
 }
 
@@ -88,12 +85,11 @@ export default function Favorites() {
   const {customer} = useOutletContext<{customer: CustomerFragment}>();
   const {products, isLoggedIn} = useLoaderData<typeof loader>();
 
- 
   return (
     <>
+      <Sectiontitle text="My Favorites" />
       <div className="prods-grid gap-x-5">
         {products?.map((product) => {
-          
           {
             product.tags.includes('prints') ? (
               <div className="flex justify-center pb-2">
