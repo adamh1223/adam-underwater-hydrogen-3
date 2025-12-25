@@ -19,7 +19,16 @@ import {Toaster} from '~/components/ui/sonner';
 export default function Layout() {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
- 
+
+  const page = data ? (
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore Shopify types don't include our additions yet
+    <PageLayout {...data}>
+      <Outlet />
+    </PageLayout>
+  ) : (
+    <Outlet />
+  );
 
   return (
     <html lang="en">
@@ -36,19 +45,16 @@ export default function Layout() {
         <Toaster richColors />
 
         <TooltipProvider delayDuration={200}>
-          {data ? (
+          {data?.consent ? (
             <Analytics.Provider
               cart={data.cart}
               shop={data.shop}
               consent={data.consent}
             >
-              {/* @ts-expect-error default shopify setup */}
-              <PageLayout {...data}>
-                <Outlet />
-              </PageLayout>
+              {page}
             </Analytics.Provider>
           ) : (
-            <Outlet />
+            page
           )}
         </TooltipProvider>
 

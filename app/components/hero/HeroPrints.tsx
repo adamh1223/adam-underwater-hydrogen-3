@@ -74,7 +74,6 @@ function HeroPrints() {
           src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
           frameBorder="0"
           allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
           className={`video ${isVideoReady ? 'visible' : ''}`}
           title="Background Video"
         ></iframe>
