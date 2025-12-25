@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['digit-debug-resumes-declare.tryhydrogen.dev'],
+    allowedHosts: ['fat-knowledge-operating-vancouver.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

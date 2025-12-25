@@ -9,24 +9,20 @@ import {
 import {Toaster as Sonner, type ToasterProps} from 'sonner';
 
 /**
- * Remix / Hydrogen compatible Sonner wrapper
- * Matches shadcn UI default behavior & appearance
+ * Shadcn-style Sonner wrapper (stable Tailwind classes)
  */
-const Toaster = ({...props}: ToasterProps) => {
+const Toaster = (props: ToasterProps) => {
   return (
     <Sonner
       theme="dark"
-      className="toaster group"
+      className="toaster"
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground ' +
-            'group-[.toaster]:border-border group-[.toaster]:shadow-lg',
-          description: 'group-[.toast]:text-muted-foreground',
-          actionButton:
-            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-          cancelButton:
-            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+            'bg-popover text-popover-foreground border border-border shadow-lg',
+          description: 'text-muted-foreground',
+          actionButton: 'bg-primary text-primary-foreground',
+          cancelButton: 'bg-muted text-muted-foreground',
         },
       }}
       icons={{
