@@ -292,7 +292,7 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(true);
-      toast.default('Added to Favorites');
+      toast.success('Added to Favorites');
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
