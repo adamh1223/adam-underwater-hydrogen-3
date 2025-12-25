@@ -292,7 +292,15 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(true);
-      toast.success('Added to Favorites');
+      toast.success('Added to Favorites', {
+        action: {
+          label: 'View All Favorites',
+          onClick: () => {
+            console.log('Navigate to favorites');
+            // e.g. navigate("/favorites")
+          },
+        },
+      });
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
@@ -312,7 +320,14 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(false);
-      toast.info('Removed from Favorites');
+      toast.success('Removed from Favorites', {
+        action: {
+          label: 'View All Favorites',
+          onClick: () => {
+            // navigate("/favorites")
+          },
+        },
+      });
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
