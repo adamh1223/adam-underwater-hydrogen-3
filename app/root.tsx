@@ -67,6 +67,21 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const {storefront, env} = args.context;
 
+  const checkoutDomain =
+    env.PUBLIC_CHECKOUT_DOMAIN || env.PUBLIC_STORE_DOMAIN || '';
+
+  const consent =
+    checkoutDomain && env.PUBLIC_STOREFRONT_API_TOKEN
+      ? {
+          checkoutDomain,
+          storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
+          withPrivacyBanner: false,
+          // localize the privacy banner
+          country: args.context.storefront.i18n.country,
+          language: args.context.storefront.i18n.language,
+        }
+      : null;
+
   return {
     ...deferredData,
     ...criticalData,
@@ -75,14 +90,7 @@ export async function loader(args: LoaderFunctionArgs) {
       storefront,
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
     }),
-    consent: {
-      checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
-      storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-      withPrivacyBanner: false,
-      // localize the privacy banner
-      country: args.context.storefront.i18n.country,
-      language: args.context.storefront.i18n.language,
-    },
+    consent,
   };
 }
 
@@ -109,23 +117,25 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     console.warn('Not logged in');
     customer = null;
   }
-  if (!customer) {
-    return {
-      wishlistProducts: [],
-      header,
-    };
-  }
-  const isLoggedIn = context.customerAccount.isLoggedIn();
-  if (!customer.data.customer.metafield?.value) {
-    return [];
-  }
-  const wishlistProducts = JSON.parse(
-    customer.data.customer.metafield?.value,
-  ) as string[];
+  const wishlistProducts = (() => {
+    if (!customer) return [];
 
-  return {wishlistProducts, header};
+    const wishlistValue = customer.data.customer.metafield?.value;
 
-  return {header};
+    if (!wishlistValue) return [];
+
+    try {
+      return JSON.parse(wishlistValue) as string[];
+    } catch (error) {
+      console.warn('Unable to parse wishlist metafield', error);
+      return [];
+    }
+  })();
+
+  return {
+    wishlistProducts,
+    header,
+  };
 }
 
 /**
