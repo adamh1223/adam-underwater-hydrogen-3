@@ -10,6 +10,7 @@ import {
 import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from '~/components/PageLayout';
+import sonnerStyles from 'sonner/dist/styles.css?url';
 import {RootLoader} from './root';
 
 // ✅ Import TooltipProvider from Shadcn UI
@@ -37,6 +38,7 @@ export default function Layout() {
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <link rel="stylesheet" href={tailwindCss} />
         <link rel="stylesheet" href={appStyles} />
+        <link rel="stylesheet" href={sonnerStyles} />
         <Meta />
         <Links />
       </head>
