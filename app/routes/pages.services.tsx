@@ -110,7 +110,6 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 function ServicesPage() {
   const collection = useLoaderData<typeof loader>() || {};
-  
 
   const location = useLocation();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -241,11 +240,12 @@ function ServicesPage() {
 
   return (
     <>
-      <div className="flex justify-center pb-5">
+      <div className="flex justify-center">
         <img
-          src={'/services2.png'}
-          style={{height: '110px'}}
-          className="pt-3"
+          src={
+            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/services5.png'
+          }
+          className="services-header pe-3"
         />
       </div>
 

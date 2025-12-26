@@ -1006,7 +1006,7 @@ span {
 }
 @media (max-width: 600px) {
   .stock-footage-page-header {
-    height: 100px;
+    height: 90px;
   }
 }
 
@@ -1452,4 +1452,37 @@ span {
 /* Let toast buttons still be clickable */
 .au-toaster [data-sonner-toast] {
   pointer-events: auto;
+}
+@media (min-width: 1025px) {
+  .products-header {
+    padding-top: 10px;
+    height: 100px;
+  }
+}
+@media (max-width: 1024px) {
+  .products-header {
+    padding-top: 7px;
+    height: 80px;
+  }
+}
+@media (min-width: 1025px) {
+  .services-header {
+    padding-top: 10px;
+    margin-bottom: 10px;
+    height: 100px;
+  }
+}
+@media (min-width: 670px) and (max-width: 1024px) {
+  .services-header {
+    padding-top: 10px;
+    margin-bottom: 10px;
+    height: 90px;
+  }
+}
+@media (max-width: 669px) {
+  .services-header {
+    padding-top: 10px;
+    margin-bottom: 25px;
+    height: 80px;
+  }
 }
