@@ -8,17 +8,10 @@ const ProductsHeader = () => {
   return (
     <>
       <div className="flex justify-center pb-3" id="prints">
-        <img
-          src={'/prints.png'}
-          style={{height: '100px'}}
-          className="pt-[25px] pe-2"
-        ></img>
+        <img src={'/prints.png'} className="products-header pe-2"></img>
       </div>
 
-      
       <HeroPrints />
-
-      
     </>
   );
 };
