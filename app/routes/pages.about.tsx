@@ -40,7 +40,6 @@ export async function loader(args: LoaderFunctionArgs) {
       isLoggedIn: undefined,
     };
   }
-  
 
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
@@ -80,7 +79,6 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function AboutPage() {
   const data = useLoaderData<typeof loader>();
-  
 
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
@@ -171,11 +169,7 @@ export default function AboutPage() {
     <>
       <section id="about">
         <div className="flex justify-center img-container">
-          <img
-            src={'/about2.png'}
-            style={{height: '100px'}}
-            className="pt-5 mb-5"
-          />
+          <img src={'/about2.png'} className="about-header ps-4" />
         </div>
         <div
           className="anchors"
@@ -470,8 +464,13 @@ export default function AboutPage() {
         </div>
       </section>
       <section>
-        <div className="flex justify-center pt-5">
-          <img src={'/featured.png'} className="featured-img" />
+        <div className="flex justify-center pt-5 me-4">
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+            }
+            className="featured-img"
+          />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>Framed Canvas Wall Art</p>

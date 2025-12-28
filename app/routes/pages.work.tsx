@@ -28,7 +28,6 @@ export async function loader(args: LoaderFunctionArgs) {
       isLoggedIn: undefined,
     };
   }
-  
 
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
@@ -70,8 +69,13 @@ function WorkPage() {
   const collection = useLoaderData<typeof loader>() || {};
   return (
     <>
-      <div className="flex justify-center pb-5 ps-5">
-        <img src={'/work2.png'} style={{height: '115px'}} className="pt-3" />
+      <div className="flex justify-center">
+        <img
+          src={
+            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/work5.png'
+          }
+          className="work-header"
+        />
       </div>
       <div>
         <Sectiontitle text="Seaforestation (Trailer)" />
@@ -99,8 +103,13 @@ function WorkPage() {
       </div>
       <script src="https://player.vimeo.com/api/player.js"></script>
       <section>
-        <div className="flex justify-center pt-5">
-          <img src={'/featured.png'} className="featured-img" />
+        <div className="flex justify-center pt-5 me-4">
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+            }
+            className="featured-img"
+          />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>Framed Canvas Wall Art</p>
