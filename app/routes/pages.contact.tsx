@@ -66,16 +66,14 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 function ContactPage() {
   const collection = useLoaderData<typeof loader>() || {};
-  
 
   return (
     <>
-      <div className="flex flex-col items-center pt-4">
+      <div className="flex flex-col items-center pt-3">
         <img
-          src="/contact2.png"
+          src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/contact4.png"
           alt="Contact Banner"
-          className="mb-5"
-          style={{height: '100px'}}
+          className="contact-header"
         />
         <ContactForm />
       </div>
