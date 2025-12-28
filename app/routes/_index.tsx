@@ -98,8 +98,13 @@ export default function Homepage() {
     <div className="home">
       <Hero></Hero>
       <section>
-        <div className="flex justify-center pt-5">
-          <img src={'/featured.png'} className="featured-img" />
+        <div className="flex justify-center pt-5 me-4">
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+            }
+            className="featured-img"
+          />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>Framed Canvas Wall Art</p>
