@@ -168,8 +168,20 @@ export default function AboutPage() {
   return (
     <>
       <section id="about">
-        <div className="flex justify-center img-container">
-          <img src={'/about2.png'} className="about-header ps-4" />
+        <div className="header-container">
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
+            }
+            className="icon-header"
+          />
+
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/about.png'
+            }
+            className="about-header"
+          />
         </div>
         <div
           className="anchors"
