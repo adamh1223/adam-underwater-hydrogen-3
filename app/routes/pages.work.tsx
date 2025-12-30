@@ -69,13 +69,23 @@ function WorkPage() {
   const collection = useLoaderData<typeof loader>() || {};
   return (
     <>
-      <div className="flex justify-center">
-        <img
-          src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/work5.png'
-          }
-          className="work-header"
-        />
+      <div className="flex justify-center items-center gap-4 mt-3">
+        <div className="h-16">
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
+            }
+            className="h-16"
+          />
+        </div>
+        <div>
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/work.png'
+            }
+            className="h-12"
+          />
+        </div>
       </div>
       <div>
         <Sectiontitle text="Seaforestation (Trailer)" />
