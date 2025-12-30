@@ -69,12 +69,22 @@ function ContactPage() {
 
   return (
     <>
-      <div className="flex flex-col items-center pt-3">
+      <div className="header-container">
         <img
-          src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/contact4.png"
-          alt="Contact Banner"
+          src={
+            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
+          }
+          className="icon-header"
+        />
+
+        <img
+          src={
+            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/contact.png'
+          }
           className="contact-header"
         />
+      </div>
+      <div className="flex justify-center">
         <ContactForm />
       </div>
       <section>

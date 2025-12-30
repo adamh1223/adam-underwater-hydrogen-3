@@ -6,10 +6,6 @@
   --color-dark: #000;
 }
 
-img {
-  border-radius: 4px;
-}
-
 /*
 * --------------------------------------------------
 * Non anchor links
@@ -1454,70 +1450,96 @@ span {
   pointer-events: auto;
 }
 @media (min-width: 1025px) {
-  .products-header {
-    padding-top: 10px;
-    height: 100px;
+  .header-container {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 10px;
   }
-}
-@media (max-width: 1024px) {
-  .products-header {
-    padding-top: 7px;
-    height: 80px;
-  }
-}
-@media (min-width: 1025px) {
-  .about-header {
-    height: 97px;
-    padding-top: 15px;
-    padding-bottom: 10px;
+  .icon-header {
+    height: 52px;
   }
   .work-header {
-    height: 100px;
+    height: 40px;
   }
-  .contact-header {
-    margin-bottom: 20px;
-    height: 90px;
+  .about-header {
+    height: 40px;
   }
   .services-header {
-    padding-top: 20px;
-    margin-bottom: 15px;
-    height: 80px;
+    height: 40px;
+  }
+  .prints-header {
+    height: 40px;
+  }
+  .stock-header {
+    height: 40px;
+  }
+  .contact-header {
+    height: 40px;
   }
 }
+
 @media (min-width: 670px) and (max-width: 1024px) {
-  .about-header {
-    height: 90px;
-    padding-top: 12px;
-    padding-bottom: 10px;
+  .header-container {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 7px;
+  }
+  .icon-header {
+    height: 46px;
   }
   .work-header {
-    height: 90px;
+    height: 32px;
   }
-  .contact-header {
-    margin-bottom: 20px;
-    height: 80px;
+  .about-header {
+    height: 32px;
   }
   .services-header {
-    padding-top: 17px;
-    margin-bottom: 15px;
-    height: 75px;
+    height: 32px;
+  }
+  .prints-header {
+    height: 32px;
+  }
+  .stock-header {
+    height: 32px;
+  }
+  .contact-header {
+    height: 32px;
   }
 }
 @media (max-width: 669px) {
-  .about-header {
-    height: 75px;
-    padding-top: 10px;
+  .header-container {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 5px;
+  }
+  .icon-header {
+    height: 40px;
   }
   .work-header {
-    height: 85px;
+    height: 28px;
   }
-  .contact-header {
-    margin-bottom: 15px;
-    height: 70px;
+  .about-header {
+    height: 28px;
   }
   .services-header {
-    padding-top: 17px;
-    margin-bottom: 25px;
-    height: 70px;
+    height: 28px;
+  }
+  .prints-header {
+    height: 28px;
+  }
+  .stock-header {
+    height: 28px;
+  }
+  .contact-header {
+    height: 28px;
   }
 }

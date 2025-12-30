@@ -240,21 +240,23 @@ function ServicesPage() {
 
   return (
     <>
-      <div className="flex justify-center">
+      <div className="header-container">
         <img
           src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/services5.png'
+            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
           }
-          className="services-header pe-[30px]"
+          className="icon-header"
+        />
+
+        <img
+          src={
+            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/services.png'
+          }
+          className="services-header"
         />
       </div>
 
-      <div
-        className="anchors"
-        style={{
-          gridTemplateColumns: '1fr 1fr 1fr',
-        }}
-      >
+      <div className="anchors">
         <Button variant="outline" className="anchor">
           <a onClick={(evt) => handleClick('video', evt)}>Underwater Video</a>
         </Button>
