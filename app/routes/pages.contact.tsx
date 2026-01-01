@@ -69,7 +69,7 @@ function ContactPage() {
 
   return (
     <>
-      <div className="header-container">
+      <div className="contact-header-container">
         <img
           src={
             'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'

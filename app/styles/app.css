@@ -1450,6 +1450,14 @@ span {
   pointer-events: auto;
 }
 @media (min-width: 1025px) {
+  .about-paragraphs-container {
+    margin: 30px 100px;
+  }
+  .about-paragraphs {
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+  }
   .header-container {
     margin-top: 12px;
     margin-bottom: 12px;
@@ -1482,6 +1490,14 @@ span {
 }
 
 @media (min-width: 670px) and (max-width: 1024px) {
+  .about-paragraphs-container {
+    margin: 30px 50px;
+  }
+  .about-paragraphs {
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+  }
   .header-container {
     margin-top: 12px;
     margin-bottom: 12px;
@@ -1491,28 +1507,34 @@ span {
     column-gap: 7px;
   }
   .icon-header {
-    height: 46px;
+    height: 48px;
   }
   .work-header {
-    height: 32px;
+    height: 36px;
   }
   .about-header {
-    height: 32px;
+    height: 36px;
   }
   .services-header {
-    height: 32px;
+    height: 36px;
   }
   .prints-header {
-    height: 32px;
+    height: 36px;
   }
   .stock-header {
-    height: 32px;
+    height: 36px;
   }
   .contact-header {
-    height: 32px;
+    height: 36px;
   }
 }
 @media (max-width: 669px) {
+  .about-paragraphs-container {
+    margin: 30px 20px;
+  }
+  .about-paragraphs {
+    padding: 10px;
+  }
   .header-container {
     margin-top: 12px;
     margin-bottom: 12px;
@@ -1521,25 +1543,41 @@ span {
     align-items: center;
     column-gap: 5px;
   }
+  .services-header-container {
+    margin-top: 12px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 5px;
+  }
+  .contact-header-container {
+    margin-top: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    column-gap: 5px;
+  }
   .icon-header {
-    height: 40px;
+    height: 44px;
   }
   .work-header {
-    height: 28px;
+    height: 32px;
   }
   .about-header {
-    height: 28px;
+    height: 32px;
   }
   .services-header {
-    height: 28px;
+    height: 32px;
   }
   .prints-header {
-    height: 28px;
+    height: 32px;
   }
   .stock-header {
-    height: 28px;
+    height: 32px;
   }
   .contact-header {
-    height: 28px;
+    height: 32px;
   }
 }
