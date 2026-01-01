@@ -27,19 +27,22 @@ function Hero() {
 
   return (
     <section className="flex flex-col items-center justify-center text-center main">
-      <div className="content">
-        {/* <h1 className="max-w-2xl font-bold text-4xl tracking-tight pb-2 px-3">
-          Underwater Video and Photo
-        </h1> */}
-        <div className="pb-3" id="prints">
+      <div>
+        <div className="pb-[80px]" id="prints">
           <img src={'/vp3.png'} className="p-3 hero-img"></img>
+          <div className="flex flex-col justify-center pt-3">
+            <div className="flex justify-center">
+              <Button size="lg" className="w-48 cursor-pointer">
+                <Link to="/pages/work">Video</Link>
+              </Button>
+            </div>
+            <div className="flex justify-center">
+              <Button size="lg" className="mt-5 w-48 cursor-pointer">
+                <Link to="/collections/prints">View All Prints</Link>
+              </Button>
+            </div>
+          </div>
         </div>
-        <Button size="lg" className="mt-5 w-48 cursor-pointer">
-          <Link to="/pages/work">Video</Link>
-        </Button>
-        <Button size="lg" className="mt-5 w-48 cursor-pointer">
-          <Link to="/collections/prints">View All Prints</Link>
-        </Button>
       </div>
       <div className="media-container">
         <img
@@ -54,8 +57,6 @@ function Hero() {
           className={`video ${isVideoReady ? 'visible' : ''}`}
           title="Background Video"
         ></iframe>
-
-        {/* <div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1018553050?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="website"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script> */}
       </div>
     </section>
   );

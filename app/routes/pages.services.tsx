@@ -240,7 +240,7 @@ function ServicesPage() {
 
   return (
     <>
-      <div className="header-container">
+      <div className="services-header-container">
         <img
           src={
             'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
@@ -256,7 +256,7 @@ function ServicesPage() {
         />
       </div>
 
-      <div className="anchors">
+      <div className="anchors mb-2">
         <Button variant="outline" className="anchor">
           <a onClick={(evt) => handleClick('video', evt)}>Underwater Video</a>
         </Button>

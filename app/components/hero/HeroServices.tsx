@@ -39,8 +39,8 @@ function HeroServices() {
         <p className="flex justify-center font-semibold text-l pb-4">
           Professional Underwater Cinematography shot in 8K
         </p>
-        <div className="flex justify-center">
-          <Card className="my-7 p-5">
+        <div className="flex justify-center returns">
+          <Card className="mb-3 p-5">
             <div>
               <p className="statement">
                 Canon EOS R5C and Nauticam Underwater Housing
