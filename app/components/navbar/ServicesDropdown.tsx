@@ -65,7 +65,7 @@ function ServicesDropdown({
       openDelay={100}
       closeDelay={100}
     >
-      <div ref={containerRef} className="flex items-center gap-1">
+      <div ref={containerRef} className="flex items-center">
         <RadixHoverCard.Trigger asChild>
           <NavLink
             to={triggerUrl}

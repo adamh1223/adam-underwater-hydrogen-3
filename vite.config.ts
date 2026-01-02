@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['ski-nav-instances-shadows.tryhydrogen.dev'],
+    allowedHosts: ['gained-shared-image-neo.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),
