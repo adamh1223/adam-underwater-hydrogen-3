@@ -28,9 +28,9 @@ function Hero() {
   return (
     <section className="flex flex-col items-center justify-center text-center main">
       <div>
-        <div className="pb-[80px]" id="prints">
+        <div className="pb-[40px]" id="prints">
           <img src={'/vp3.png'} className="p-3 hero-img"></img>
-          <div className="flex flex-col justify-center pt-3">
+          <div className="flex flex-col justify-center pt-5">
             <div className="flex justify-center">
               <Button size="lg" className="w-48 cursor-pointer">
                 <Link to="/pages/work">Video</Link>

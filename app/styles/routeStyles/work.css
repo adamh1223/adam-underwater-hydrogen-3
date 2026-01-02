@@ -15,13 +15,13 @@
 }
 @media (min-width: 500px) and (max-width: 599px) {
   .clip {
-    width: 80vw;
+    width: 85vw;
     height: 25vh;
   }
 }
 @media (min-width: 600px) and (max-width: 699px) {
   .clip {
-    width: 80vw;
+    width: 85vw;
     height: 30vh;
   }
 }
