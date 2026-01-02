@@ -29,6 +29,7 @@ export default async function handleRequest(
       'https://fpoxvfuxgtlyphowqdgf.supabase.co',
       'https://aethtsbnwylikosxhnkh.supabase.co',
     ],
+    fontSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://fonts.gstatic.com'],
     frameSrc: ['https://player.vimeo.com/', 'https://vimeo.com/'],
   });
 
