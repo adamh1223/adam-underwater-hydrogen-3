@@ -28,7 +28,7 @@ body {
   height: 100%;
   overflow: hidden;
   z-index: -1;
-  background-image: url('/images/print1.jpg');
+  background-image: url('/print1.jpg');
 }
 
 /* Placeholder image */

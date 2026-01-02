@@ -20,23 +20,23 @@ function RecommendedProducts({
             <div className="recommended-products-grid gap-x-5 gap-y-5">
               {response
                 ? response.products.nodes.map((product) => {
-                    
                     const isVideo = product.tags?.includes('Video');
                     const isRecommendedProduct =
                       product.tags?.includes('recommended');
                     const isInWishlist = wishlistProducts?.includes(product.id);
+
+                    if (isVideo || !isRecommendedProduct) {
+                      return null;
+                    }
+
                     return (
-                      <>
-                        {!isVideo && isRecommendedProduct && (
-                          <ProductCarousel
-                            product={product}
-                            layout="grid"
-                            key={product.id}
-                            isInWishlist={isInWishlist}
-                            isLoggedIn={isLoggedIn}
-                          />
-                        )}
-                      </>
+                      <ProductCarousel
+                        product={product}
+                        layout="grid"
+                        key={product.id}
+                        isInWishlist={isInWishlist}
+                        isLoggedIn={isLoggedIn}
+                      />
                     );
                   })
                 : null}

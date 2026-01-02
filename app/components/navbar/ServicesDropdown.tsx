@@ -9,6 +9,7 @@ function ServicesDropdown({
   menuItems,
   publicStoreDomain,
   primaryDomainUrl,
+  enableMobileToggle = false,
 }: {
   menuItems: any;
   publicStoreDomain: string;

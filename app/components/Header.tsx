@@ -1,4 +1,4 @@
-import {Suspense, useEffect, useState} from 'react';
+import {Fragment, Suspense, useEffect, useState} from 'react';
 import * as RadixHoverCard from '@radix-ui/react-hover-card';
 import {
   Await,
@@ -107,7 +107,7 @@ export function HeaderMenu({
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
 
   const enableMobileToggle = windowWidth !== undefined && windowWidth < 500;
 
@@ -199,7 +199,11 @@ export function HeaderMenu({
                         );
                         break;
                     }
-                    return <>{renderContent}</>;
+                    return (
+                      <Fragment key={item.id ?? item.title}>
+                        {renderContent}
+                      </Fragment>
+                    );
                   })}
                 </div>
                 <div className="2.2 flex justify-center w-full">
@@ -262,7 +266,11 @@ export function HeaderMenu({
                         );
                         break;
                     }
-                    return <>{renderContent}</>;
+                    return (
+                      <Fragment key={item.id ?? item.title}>
+                        {renderContent}
+                      </Fragment>
+                    );
                   })}
                 </div>
               </div>
@@ -356,7 +364,11 @@ export function HeaderMenu({
                         );
                         break;
                     }
-                    return <>{renderContent}</>;
+                    return (
+                      <Fragment key={item.id ?? item.title}>
+                        {renderContent}
+                      </Fragment>
+                    );
                   })}
                 </div>
                 <div className="2.2 flex justify-center w-full">
@@ -419,7 +431,11 @@ export function HeaderMenu({
                         );
                         break;
                     }
-                    return <>{renderContent}</>;
+                    return (
+                      <Fragment key={item.id ?? item.title}>
+                        {renderContent}
+                      </Fragment>
+                    );
                   })}
                 </div>
               </div>
@@ -507,7 +523,11 @@ export function HeaderMenu({
                       );
                   }
 
-                  return <>{renderContent}</>;
+                  return (
+                    <Fragment key={item.id ?? item.title}>
+                      {renderContent}
+                    </Fragment>
+                  );
                 })}
               </div>
 
@@ -574,7 +594,9 @@ export function HeaderMenu({
                     );
                 }
 
-                return <>{renderContent}</>;
+                return (
+                  <Fragment key={item.id ?? item.title}>{renderContent}</Fragment>
+                );
               })}
             </div>
           </nav>
@@ -656,7 +678,9 @@ export function HeaderMenu({
                     );
                     break;
                 }
-                return <>{renderContent}</>;
+                return (
+                  <Fragment key={item.id ?? item.title}>{renderContent}</Fragment>
+                );
               })}
             </div>
             <div className="2.2 flex justify-center w-full">
@@ -719,7 +743,9 @@ export function HeaderMenu({
                     );
                     break;
                 }
-                return <>{renderContent}</>;
+                return (
+                  <Fragment key={item.id ?? item.title}>{renderContent}</Fragment>
+                );
               })}
             </div>
           </div>
