@@ -87,7 +87,7 @@ function WorkPage() {
       <div>
         <Sectiontitle text="Seaforestation (Trailer)" />
       </div>
-      <div className="clip-wrapper flex justify-center position-relative">
+      <div className="clip-wrapper flex justify-center position-relative px-[40px] pt-[20px] pb-[10px]">
         <iframe
           className="clip"
           src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
@@ -98,9 +98,9 @@ function WorkPage() {
 
       {/* <script src="https://player.vimeo.com/api/player.js"></script> */}
       <div>
-        <Sectiontitle text="Urchinomics x Sumiré Uni Co" />
+        <Sectiontitle text="Urchinomics/Sumiré Uni Co" />
       </div>
-      <div className="clip-wrapper flex justify-center position-relative p-[50px]">
+      <div className="clip-wrapper flex justify-center position-relative px-[40px] pt-[20px] pb-[15px]">
         <iframe
           className="clip"
           src="https://player.vimeo.com/video/795362432?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
@@ -110,7 +110,7 @@ function WorkPage() {
       </div>
       <script src="https://player.vimeo.com/api/player.js"></script>
       <section>
-        <div className="flex justify-center pt-5 me-4">
+        <div className="flex justify-center me-4">
           <img
             src={
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
