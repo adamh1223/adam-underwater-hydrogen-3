@@ -108,7 +108,8 @@ export function HeaderMenu({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  
+
+  const enableMobileToggle = windowWidth !== undefined && windowWidth < 500;
 
   return (
     <>
@@ -162,6 +163,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></AboutDropdown>
                         );
                         break;
@@ -171,6 +173,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></ServicesDropdown>
                         );
                         break;
@@ -221,6 +224,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></AboutDropdown>
                         );
                         break;
@@ -230,6 +234,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></ServicesDropdown>
                         );
                         break;
@@ -315,6 +320,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></AboutDropdown>
                         );
                         break;
@@ -324,6 +330,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></ServicesDropdown>
                         );
                         break;
@@ -374,6 +381,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></AboutDropdown>
                         );
                         break;
@@ -383,6 +391,7 @@ export function HeaderMenu({
                             menuItems={item}
                             publicStoreDomain={publicStoreDomain}
                             primaryDomainUrl={primaryDomainUrl}
+                            enableMobileToggle={enableMobileToggle}
                           ></ServicesDropdown>
                         );
                         break;
@@ -462,6 +471,7 @@ export function HeaderMenu({
                           menuItems={item}
                           publicStoreDomain={publicStoreDomain}
                           primaryDomainUrl={primaryDomainUrl}
+                          enableMobileToggle={enableMobileToggle}
                         />
                       );
                       break;
@@ -472,6 +482,7 @@ export function HeaderMenu({
                           menuItems={item}
                           publicStoreDomain={publicStoreDomain}
                           primaryDomainUrl={primaryDomainUrl}
+                          enableMobileToggle={enableMobileToggle}
                         />
                       );
                       break;
@@ -527,6 +538,7 @@ export function HeaderMenu({
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
+                        enableMobileToggle={enableMobileToggle}
                       />
                     );
                     break;
@@ -537,6 +549,7 @@ export function HeaderMenu({
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
+                        enableMobileToggle={enableMobileToggle}
                       />
                     );
                     break;
@@ -607,6 +620,7 @@ export function HeaderMenu({
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
+                        enableMobileToggle={enableMobileToggle}
                       ></AboutDropdown>
                     );
                     break;
@@ -616,6 +630,7 @@ export function HeaderMenu({
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
+                        enableMobileToggle={enableMobileToggle}
                       ></ServicesDropdown>
                     );
                     break;
@@ -666,6 +681,7 @@ export function HeaderMenu({
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
+                        enableMobileToggle={enableMobileToggle}
                       ></AboutDropdown>
                     );
                     break;
@@ -675,6 +691,7 @@ export function HeaderMenu({
                         menuItems={item}
                         publicStoreDomain={publicStoreDomain}
                         primaryDomainUrl={primaryDomainUrl}
+                        enableMobileToggle={enableMobileToggle}
                       ></ServicesDropdown>
                     );
                     break;
