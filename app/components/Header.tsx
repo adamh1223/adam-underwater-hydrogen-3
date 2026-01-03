@@ -116,7 +116,7 @@ export function HeaderMenu({
         <>
           <nav role="navigation">
             <div className="main-navbar-small-top-row ">
-              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 ps-4 py-2 mt-4">
+              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 ps-2 py-2 mt-4">
                 <NavLink
                   end
                   onClick={close}
@@ -139,8 +139,8 @@ export function HeaderMenu({
               )}
             </div>
             <div className="main-navbar-small-bottom-row mb-3 mt-2">
-              <div className="2 flex flex-wrap items-center justify-center gap-2 nav-links-container">
-                <div className="2.1 flex flex-wrap justify-center gap-2 w-full">
+              <div className="2 flex items-center justify-center nav-links-container">
+                <div className="2.1 flex justify-center gap-[8px] w-full">
                   {menuFirstHalf.map((item) => {
                     if (!item.url) return null;
 
@@ -184,14 +184,11 @@ export function HeaderMenu({
                             prefetch="intent"
                             to={url}
                           >
-                            <Button
-                              variant="ghost2"
-                              className="relative group px-2 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-                            >
+                            <button className="text-sm font-md relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
                               {item.title}
                               {/* animated underline */}
                               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-                            </Button>
+                            </button>
                           </NavLink>
                         );
                         break;
@@ -203,7 +200,7 @@ export function HeaderMenu({
                     );
                   })}
                 </div>
-                <div className="2.2 flex justify-center w-full">
+                <div className="2.2 flex justify-center w-full gap-[12px] ps-[8px]">
                   {menuSecondHalf.map((item) => {
                     if (!item.url) return null;
 
@@ -247,7 +244,7 @@ export function HeaderMenu({
                             prefetch="intent"
                             to={url}
                           >
-                            <button className="text-primary hover:bg-accent hover:text-accent-foreground relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer">
+                            <button className="text-sm font-medium text-primary hover:bg-accent hover:text-accent-foreground relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer whitespace-nowrap flex-shrink-0">
                               {item.title}
                               {/* animated underline */}
                               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
@@ -296,7 +293,7 @@ export function HeaderMenu({
             </div>
             <div className="main-navbar-small-bottom-row mb-3 mt-2">
               <div className="2 flex items-center nav-links-container">
-                <div className="2.1 flex justify-center w-full">
+                <div className="2.1 flex justify-center w-full gap-[8px]">
                   {menuFirstHalf.map((item) => {
                     if (!item.url) return null;
 
@@ -340,7 +337,7 @@ export function HeaderMenu({
                             prefetch="intent"
                             to={url}
                           >
-                            <button className=" text-sm font-medium relative group pe-[12px] ps-[6px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:text-accent-foreground">
+                            <button className=" text-sm font-medium relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:text-accent-foreground whitespace-nowrap flex-shrink-0">
                               {item.title}
                               {/* animated underline */}
                               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
@@ -356,7 +353,7 @@ export function HeaderMenu({
                     );
                   })}
                 </div>
-                <div className="2.2 flex justify-center w-full">
+                <div className="2.2 flex justify-center w-full gap-[12px] ps-[8px]">
                   {menuSecondHalf.map((item) => {
                     if (!item.url) return null;
 
@@ -402,7 +399,7 @@ export function HeaderMenu({
                                 prefetch="intent"
                                 to={url}
                               >
-                                <button className="text-sm font-medium relative group px-[6px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
+                                <button className="text-sm font-medium relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground whitespace-nowrap flex-shrink-0">
                                   {item.title}
                                   {/* animated underline */}
                                   <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
@@ -449,7 +446,7 @@ export function HeaderMenu({
               </div>
 
               {/* ⭐ SHIFTED LEFT 30px */}
-              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[32px] mt-[16px]">
+              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[32px] mt-[16px] gap-[12px] ">
                 {menuFirstHalf.map((item) => {
                   if (!item.url) return null;
 
@@ -519,7 +516,7 @@ export function HeaderMenu({
               )}
             </div>
 
-            <div className="flex justify-center mb-3">
+            <div className="flex justify-center mb-3 gap-[12px] ps-[6px]">
               {menuSecondHalf.map((item) => {
                 if (!item.url) return null;
 
@@ -665,7 +662,7 @@ export function HeaderMenu({
                 );
               })}
             </div>
-            <div className="2.2 flex justify-center w-full">
+            <div className="2.2 flex justify-center w-full ps-[8px]">
               {menuSecondHalf.map((item) => {
                 if (!item.url) return null;
 

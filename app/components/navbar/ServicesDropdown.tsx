@@ -73,7 +73,7 @@ function ServicesDropdown({
             end
             prefetch="intent"
           >
-            <button className="relative group about-dropdown-button ps-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground text-sm font-md">
+            <button className="relative group about-dropdown-button py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground text-sm font-md">
               {menuItems.title}
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
             </button>
@@ -85,7 +85,7 @@ function ServicesDropdown({
             type="button"
             aria-label={`Toggle ${menuItems.title} menu`}
             aria-expanded={open}
-            className="h-8 ps-1 pe-[6px] text-primary hover:bg-accent hover:text-accent-foreground"
+            className="dropdownbutton-services h-8 ps-[1px]  text-primary hover:bg-accent hover:text-accent-foreground"
             onClick={(event) => {
               event.preventDefault();
               setOpen((currentOpen) => !currentOpen);
