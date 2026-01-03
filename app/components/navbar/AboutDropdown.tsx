@@ -73,34 +73,33 @@ function AboutDropdown({
             end
             prefetch="intent"
           >
-            <button className="relative group about-dropdown-button ps-[4px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground text-sm font-md">
+            <div className="relative group about-dropdown-button px-[4px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground text-sm font-md flex justify-center items-center">
               {menuItems.title}
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-            </button>
+              {enableMobileToggle && (
+                <button
+                  type="button"
+                  // variant="ghost2"
+                  // size="icon"
+                  aria-label={`Toggle ${menuItems.title} menu`}
+                  aria-expanded={open}
+                  className="dropdownbutton-about ps-[1px] text-primary hover:bg-accent hover:text-accent-foreground"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setOpen((currentOpen) => !currentOpen);
+                  }}
+                >
+                  <ChevronUp
+                    className={`rounded-md border border-input transition-transform duration-200 ${
+                      open ? 'rotate-180' : 'rotate-0'
+                    }`}
+                    size={18}
+                  />
+                </button>
+              )}
+            </div>
           </NavLink>
         </RadixHoverCard.Trigger>
-
-        {enableMobileToggle && (
-          <button
-            type="button"
-            // variant="ghost2"
-            // size="icon"
-            aria-label={`Toggle ${menuItems.title} menu`}
-            aria-expanded={open}
-            className="dropdownbutton-about h-8 ps-[1px] text-primary hover:bg-accent hover:text-accent-foreground"
-            onClick={(event) => {
-              event.preventDefault();
-              setOpen((currentOpen) => !currentOpen);
-            }}
-          >
-            <ChevronUp
-              className={`rounded-md border border-input transition-transform duration-200 ${
-                open ? 'rotate-180' : 'rotate-0'
-              }`}
-              size={18}
-            />
-          </button>
-        )}
       </div>
 
       <RadixHoverCard.Portal>
