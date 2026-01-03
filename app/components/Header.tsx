@@ -108,7 +108,7 @@ export function HeaderMenu({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const enableMobileToggle = windowWidth !== undefined && windowWidth < 500;
+  const enableMobileToggle = true;
 
   return (
     <>
@@ -490,13 +490,11 @@ export function HeaderMenu({
                           prefetch="intent"
                           to={url}
                         >
-                          <Button
-                            variant="ghost2"
-                            className="relative group px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-                          >
+                          <button className="text-sm font-md relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
                             {item.title}
+                            {/* animated underline */}
                             <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-                          </Button>
+                          </button>
                         </NavLink>
                       );
                   }
@@ -560,13 +558,11 @@ export function HeaderMenu({
                         prefetch="intent"
                         to={url}
                       >
-                        <Button
-                          variant="ghost2"
-                          className="relative group px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-                        >
+                        <button className="text-sm font-md relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
                           {item.title}
+                          {/* animated underline */}
                           <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-                        </Button>
+                        </button>
                       </NavLink>
                     );
                 }
@@ -643,14 +639,11 @@ export function HeaderMenu({
                         prefetch="intent"
                         to={url}
                       >
-                        <Button
-                          variant="ghost2"
-                          className="relative group px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-                        >
+                        <button className="text-sm font-md relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
                           {item.title}
                           {/* animated underline */}
                           <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-                        </Button>
+                        </button>
                       </NavLink>
                     );
                     break;
@@ -706,14 +699,11 @@ export function HeaderMenu({
                         prefetch="intent"
                         to={url}
                       >
-                        <Button
-                          variant="ghost2"
-                          className="relative group px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-                        >
+                        <button className="text-sm font-md relative group py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
                           {item.title}
                           {/* animated underline */}
                           <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-                        </Button>
+                        </button>
                       </NavLink>
                     );
                     break;
