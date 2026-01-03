@@ -1306,7 +1306,7 @@ span {
     width: 80%;
   }
 }
-@media (max-width: 460px) {
+/* @media (max-width: 460px) {
   .about-dropdown-button {
     padding-left: 8px;
     padding-right: 8px;
@@ -1323,7 +1323,7 @@ span {
     padding-left: 8px;
     padding-right: 8px;
   }
-}
+} */
 @media (min-width: 460px) {
   .services-dropdown-button {
     padding-left: 12px;

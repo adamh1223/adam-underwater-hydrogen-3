@@ -73,36 +73,31 @@ function ServicesDropdown({
             end
             prefetch="intent"
           >
-            <Button
-              variant="ghost2"
-              className="relative group services-dropdown-button py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-            >
+            <button className="relative group about-dropdown-button ps-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground text-sm font-md">
               {menuItems.title}
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-            </Button>
+            </button>
           </NavLink>
         </RadixHoverCard.Trigger>
 
         {enableMobileToggle && (
-          <Button
+          <button
             type="button"
-            variant="ghost2"
-            size="icon"
             aria-label={`Toggle ${menuItems.title} menu`}
             aria-expanded={open}
-            className="p-1 h-8 w-8 flex items-center justify-center"
+            className="h-8 ps-1 pe-[6px] text-primary hover:bg-accent hover:text-accent-foreground"
             onClick={(event) => {
               event.preventDefault();
               setOpen((currentOpen) => !currentOpen);
             }}
           >
             <ChevronUp
-              className={`transition-transform duration-200 ${
+              className={`rounded-md border border-input transition-transform duration-200 ${
                 open ? 'rotate-180' : 'rotate-0'
               }`}
               size={18}
             />
-          </Button>
+          </button>
         )}
       </div>
 
