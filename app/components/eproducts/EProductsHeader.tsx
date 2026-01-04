@@ -19,7 +19,7 @@ const EProductsHeader = () => {
           className="stock-header"
         />
       </div>
-      <p className="subheader-stock">
+      <p className="subheader-stock text-center">
         Bring your videos to life with professionally shot underwater footage.
       </p>
     </>
