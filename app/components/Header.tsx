@@ -90,7 +90,7 @@ export function HeaderMenu({
   isLoggedIn?: HeaderProps['isLoggedIn'];
   cart?: HeaderProps['cart'];
 }) {
-  const className = `header-menu-${viewport} main-navbar flex xl:flex-row sm:justify-between sm:items-center lg:justify-between flex-wrap navbar`;
+  const className = `header-menu-${viewport} main-navbar flex xl:flex-row sm:justify-between sm:items-center lg:justify-between navbar`;
   const {close} = useAside();
   // IF the order ever changes in shopify admin, we may have to update these two variables as well
   // If we remove a menu item it might look off
@@ -200,7 +200,7 @@ export function HeaderMenu({
                     );
                   })}
                 </div>
-                <div className="2.2 flex justify-center w-full gap-[2px]">
+                <div className="2.2 flex justify-center w-full gap-[2px] ps-[2px]">
                   {menuSecondHalf.map((item) => {
                     if (!item.url) return null;
 
@@ -265,7 +265,7 @@ export function HeaderMenu({
           </nav>
         </>
       )}
-      {windowWidth != undefined && windowWidth < 768 && windowWidth >= 500 && (
+      {windowWidth != undefined && windowWidth < 730 && windowWidth >= 500 && (
         <>
           <nav role="navigation">
             <div className="main-navbar-small-top-row ">
@@ -353,7 +353,7 @@ export function HeaderMenu({
                     );
                   })}
                 </div>
-                <div className="2.2 flex justify-center w-full gap-[2px]">
+                <div className="2.2 flex justify-center w-full gap-[2px] ps-[2px]">
                   {menuSecondHalf.map((item) => {
                     if (!item.url) return null;
 
@@ -422,7 +422,7 @@ export function HeaderMenu({
           </nav>
         </>
       )}
-      {windowWidth != undefined && windowWidth >= 768 && windowWidth < 1024 && (
+      {windowWidth != undefined && windowWidth >= 730 && windowWidth < 930 && (
         <>
           <nav
             className={`${className} flex w-full flex-col gap-2`}
@@ -577,9 +577,158 @@ export function HeaderMenu({
           </nav>
         </>
       )}
-      {windowWidth != undefined && windowWidth >= 1024 && (
+      {windowWidth != undefined &&
+        windowWidth >= 930 &&
+        windowWidth <= 1024 && (
+          <nav className={`${className}`} role="navigation">
+            <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 ps-2 pt-[15px] pb-4">
+              <NavLink
+                end
+                onClick={close}
+                prefetch="intent"
+                to="/"
+                className="logo-container"
+              >
+                <img
+                  src={imageURL}
+                  className="logo"
+                  style={{height: '2.5rem'}}
+                ></img>
+              </NavLink>
+            </div>
+            <div className="2 flex items-center nav-links-container py-4">
+              <div className="2.1 flex justify-center w-full gap-[2px]">
+                {menuFirstHalf.map((item) => {
+                  if (!item.url) return null;
+
+                  // if the url is internal, we strip the domain
+                  const url =
+                    item.url.includes('myshopify.com') ||
+                    item.url.includes(publicStoreDomain) ||
+                    item.url.includes(primaryDomainUrl)
+                      ? new URL(item.url).pathname
+                      : item.url;
+
+                  let renderContent;
+                  switch (item.title) {
+                    case 'About':
+                      renderContent = (
+                        <AboutDropdown
+                          menuItems={item}
+                          publicStoreDomain={publicStoreDomain}
+                          primaryDomainUrl={primaryDomainUrl}
+                          enableMobileToggle={enableMobileToggle}
+                        ></AboutDropdown>
+                      );
+                      break;
+                    case 'Services':
+                      renderContent = (
+                        <ServicesDropdown
+                          menuItems={item}
+                          publicStoreDomain={publicStoreDomain}
+                          primaryDomainUrl={primaryDomainUrl}
+                          enableMobileToggle={enableMobileToggle}
+                        ></ServicesDropdown>
+                      );
+                      break;
+
+                    default:
+                      renderContent = (
+                        <NavLink
+                          className="relative z-10"
+                          end
+                          onClick={close}
+                          prefetch="intent"
+                          to={url}
+                        >
+                          <button className="text-sm font-md relative group px-[4px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
+                            {item.title}
+                            {/* animated underline */}
+                            <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
+                          </button>
+                        </NavLink>
+                      );
+                      break;
+                  }
+                  return (
+                    <Fragment key={item.id ?? item.title}>
+                      {renderContent}
+                    </Fragment>
+                  );
+                })}
+              </div>
+              <div className="2.2 flex justify-center w-full gap-[2px] ps-[2px]">
+                {menuSecondHalf.map((item) => {
+                  if (!item.url) return null;
+
+                  // if the url is internal, we strip the domain
+                  const url =
+                    item.url.includes('myshopify.com') ||
+                    item.url.includes(publicStoreDomain) ||
+                    item.url.includes(primaryDomainUrl)
+                      ? new URL(item.url).pathname
+                      : item.url;
+
+                  let renderContent;
+                  switch (item.title) {
+                    case 'About':
+                      renderContent = (
+                        <AboutDropdown
+                          menuItems={item}
+                          publicStoreDomain={publicStoreDomain}
+                          primaryDomainUrl={primaryDomainUrl}
+                          enableMobileToggle={enableMobileToggle}
+                        ></AboutDropdown>
+                      );
+                      break;
+                    case 'Services':
+                      renderContent = (
+                        <ServicesDropdown
+                          menuItems={item}
+                          publicStoreDomain={publicStoreDomain}
+                          primaryDomainUrl={primaryDomainUrl}
+                          enableMobileToggle={enableMobileToggle}
+                        ></ServicesDropdown>
+                      );
+                      break;
+
+                    default:
+                      renderContent = (
+                        <NavLink
+                          className="relative z-10"
+                          end
+                          onClick={close}
+                          prefetch="intent"
+                          to={url}
+                        >
+                          <button className="text-sm font-medium relative group px-[4px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:text-accent-foreground whitespace-nowrap flex-shrink-0">
+                            {item.title}
+
+                            {/* animated underline */}
+                            <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
+                          </button>
+                        </NavLink>
+                      );
+                      break;
+                  }
+                  return (
+                    <Fragment key={item.id ?? item.title}>
+                      {renderContent}
+                    </Fragment>
+                  );
+                })}
+              </div>
+            </div>
+            {cart && (
+              <div className="3 flex gap-3 items-center ctas-cart-search-container py-4">
+                <HeaderCtas cart={cart} isLoggedIn={isLoggedIn} />
+              </div>
+            )}
+          </nav>
+        )}
+      {windowWidth != undefined && windowWidth > 1024 && (
         <nav className={`${className}`} role="navigation">
-          <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 px-4 pt-[15px] pb-4">
+          <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 ps-2 pt-[15px] pb-4">
             <NavLink
               end
               onClick={close}
@@ -595,7 +744,7 @@ export function HeaderMenu({
             </NavLink>
           </div>
           <div className="2 flex items-center nav-links-container py-4">
-            <div className="2.1 flex justify-center w-full">
+            <div className="2.1 flex justify-center w-full gap-[10px]">
               {menuFirstHalf.map((item) => {
                 if (!item.url) return null;
 
@@ -655,7 +804,7 @@ export function HeaderMenu({
                 );
               })}
             </div>
-            <div className="2.2 flex justify-center w-full ps-[4px]">
+            <div className="2.2 flex justify-center w-full gap-[10px] ps-1">
               {menuSecondHalf.map((item) => {
                 if (!item.url) return null;
 
@@ -699,8 +848,9 @@ export function HeaderMenu({
                         prefetch="intent"
                         to={url}
                       >
-                        <button className="text-sm font-md relative group px-[4px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:bg-accent hover:text-accent-foreground">
+                        <button className="text-sm font-medium relative group px-[4px] py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer text-primary hover:text-accent-foreground whitespace-nowrap flex-shrink-0">
                           {item.title}
+
                           {/* animated underline */}
                           <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
                         </button>
