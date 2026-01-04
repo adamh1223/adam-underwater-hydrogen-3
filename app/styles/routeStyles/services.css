@@ -180,7 +180,7 @@ body {
 }
 
 @media (max-width: 700px) {
-  .hero-img,
+
   .featured-img {
     height: 70px;
   }
