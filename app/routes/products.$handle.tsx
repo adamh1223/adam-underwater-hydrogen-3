@@ -183,6 +183,8 @@ export default function Product() {
     customer?.customer?.id === 'gid://shopify/Customer/7968375079049';
 
   const customerId = customer?.customer?.id ?? '';
+  console.log(customer, 'customer');
+
   const customerFirstName = customer?.customer?.firstName ?? '';
   const customerLastName = customer?.customer?.lastName ?? '';
   const customerName = `${customerFirstName} ${customerLastName}`.trim();

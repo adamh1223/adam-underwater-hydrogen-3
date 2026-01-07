@@ -11,7 +11,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const customerId = (form.get('customerId') as string) ?? '';
     const stars = (form.get('stars') as string) ?? '';
     const title = (form.get('title') as string) ?? '';
-    const customerName = (form.get('customerName') as string) ?? '';
+    let customerName = (form.get('customerName') as string) ?? '';
     const createdAt = form.get('createdAt') as string;
     const imageFile = form.get('image') as File | null;
     const isFeaturedValue = form.get('isFeatured') as string | null;
@@ -85,6 +85,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         existingReviews = [];
       }
     }
+    console.log(existingReviews, '000existing');
 
     const targetIndex = existingReviews.findIndex(
       (review) => review?.createdAt === createdAt,
@@ -95,11 +96,14 @@ export async function action({request, context}: ActionFunctionArgs) {
     }
 
     const targetReview = existingReviews[targetIndex] ?? {};
+    customerName = isAdminCustomer ? targetReview.customerName : customerName;
+    console.log(targetReview, '000target');
 
     if (
       customerId &&
       targetReview?.customerId &&
-      targetReview.customerId !== customerId
+      targetReview.customerId !== customerId &&
+      !isAdminCustomer
     ) {
       return json({error: 'Not authorized to edit this review'}, {status: 403});
     }
@@ -130,8 +134,8 @@ export async function action({request, context}: ActionFunctionArgs) {
       customerName: customerName || targetReview?.customerName || '',
       customerImage: newCustomerImage,
       isFeatured: isAdminCustomer
-        ? isFeatured ?? targetReview?.isFeatured ?? false
-        : targetReview?.isFeatured ?? false,
+        ? (isFeatured ?? targetReview?.isFeatured ?? false)
+        : (targetReview?.isFeatured ?? false),
       updatedAt: new Date().toISOString(),
     };
 
@@ -217,7 +221,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         }),
       });
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
     return json({success: true, reviews: updatedReviews});
   } catch (error) {
