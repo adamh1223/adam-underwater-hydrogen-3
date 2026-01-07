@@ -28,7 +28,6 @@ export async function loader(args: LoaderFunctionArgs) {
 
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-  
 
   let customer = null;
   try {
@@ -78,7 +77,6 @@ export async function loadCriticalData({context}: LoaderFunctionArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 export function loadDeferredData({context}: LoaderFunctionArgs) {
-  
   const recommendedProducts = context.storefront
     .query(RECOMMENDED_PRODUCTS_QUERY)
     .catch((error) => {
@@ -102,7 +100,7 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
-  
+  console.log(data, 'datadata');
 
   return (
     <div className="home">
@@ -126,6 +124,9 @@ export default function Homepage() {
         wishlistProducts={data.wishlistProducts}
         isLoggedIn={data.isLoggedIn}
       />
+      <div className="flex justify-center font-bold text-xl pb-2">
+        <p>What our customers are saying</p>
+      </div>
       <FeaturedProductReviews reviews={data.featuredReviews} />
     </div>
   );
