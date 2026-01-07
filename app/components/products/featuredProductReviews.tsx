@@ -16,29 +16,15 @@ interface FeaturedReviewsQuery {
   };
 }
 
-type TaggedReview = Review & {tags?: string[] | string; tag?: string};
-
-const parseTags = (value?: string[] | string) => {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  return value
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter(Boolean);
-};
-
-const isFeaturedReview = (review: TaggedReview) => {
-  const tags = parseTags(review.tags ?? review.tag);
-  return tags.includes('featured');
-};
+type FeaturedReview = Review & {isFeatured?: boolean};
 
 const parseReviewsValue = (value?: string | null) => {
-  if (!value) return [] as TaggedReview[];
+  if (!value) return [] as FeaturedReview[];
   try {
-    const parsed = JSON.parse(value) as TaggedReview[];
+    const parsed = JSON.parse(value) as FeaturedReview[];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return [] as TaggedReview[];
+    return [] as FeaturedReview[];
   }
 };
 
@@ -56,7 +42,9 @@ function FeaturedProductReviews({
             {(response) => {
               if (!response) return null;
               const featuredReviews = response.products.nodes.flatMap((node) =>
-                parseReviewsValue(node.metafield?.value).filter(isFeaturedReview),
+                parseReviewsValue(node.metafield?.value).filter(
+                  (review) => review.isFeatured === true,
+                ),
               );
 
               if (!featuredReviews.length) return null;

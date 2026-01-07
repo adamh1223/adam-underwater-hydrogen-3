@@ -739,7 +739,13 @@ export default function Product() {
 
   const handleEditReview = async (
     reviewToEdit: any,
-    updates: {text: string; title: string; stars: number; image?: File | null},
+    updates: {
+      text: string;
+      title: string;
+      stars: number;
+      image?: File | null;
+      isFeatured?: boolean;
+    },
   ) => {
     if (!customerId || !reviewToEdit?.createdAt) return;
 
@@ -753,6 +759,9 @@ export default function Product() {
     form.append('customerName', customerName);
     if (updates.image) {
       form.append('image', updates.image);
+    }
+    if (isAdmin && typeof updates.isFeatured === 'boolean') {
+      form.append('isFeatured', updates.isFeatured ? 'yes' : 'no');
     }
 
     try {

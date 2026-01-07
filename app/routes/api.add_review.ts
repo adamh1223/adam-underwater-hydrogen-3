@@ -178,6 +178,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         title,
         customerName,
         customerImage,
+        isFeatured: false,
       },
     ];
 

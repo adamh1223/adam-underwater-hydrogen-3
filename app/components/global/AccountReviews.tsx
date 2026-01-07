@@ -167,7 +167,13 @@ const AccountReviews = ({
 
   const handleEditReview = async (
     entry: UserProductReview,
-    updates: {text: string; title: string; stars: number; image?: File | null},
+    updates: {
+      text: string;
+      title: string;
+      stars: number;
+      image?: File | null;
+      isFeatured?: boolean;
+    },
   ) => {
     if (!customerId || !entry.review?.createdAt) return;
 
@@ -181,6 +187,9 @@ const AccountReviews = ({
     form.append('customerName', customerName ?? '');
     if (updates.image) {
       form.append('image', updates.image);
+    }
+    if (typeof updates.isFeatured === 'boolean') {
+      form.append('isFeatured', updates.isFeatured ? 'yes' : 'no');
     }
 
     try {
@@ -260,6 +269,7 @@ const AccountReviews = ({
               currentCustomerId={customerId ?? undefined}
               onRemove={() => handleRemoveReview(entry)}
               onEdit={(review, update) => handleEditReview(entry, update)}
+              isAdmin={false}
             />
           </div>
         </div>

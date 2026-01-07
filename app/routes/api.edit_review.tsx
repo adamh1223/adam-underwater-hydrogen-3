@@ -14,6 +14,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const customerName = (form.get('customerName') as string) ?? '';
     const createdAt = form.get('createdAt') as string;
     const imageFile = form.get('image') as File | null;
+    const isFeaturedValue = form.get('isFeatured') as string | null;
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -29,6 +30,13 @@ export async function action({request, context}: ActionFunctionArgs) {
     if (!adminToken) {
       return json({error: 'SHOPIFY_ADMIN_TOKEN not found'}, {status: 500});
     }
+
+    const isAdminCustomer =
+      customerId === 'gid://shopify/Customer/7968375079049';
+    const isFeatured =
+      isFeaturedValue === null
+        ? undefined
+        : isFeaturedValue.toLowerCase() === 'yes';
 
     const existingResponse = await fetch(
       `https://${shop}/admin/api/2024-10/graphql.json`,
@@ -121,6 +129,9 @@ export async function action({request, context}: ActionFunctionArgs) {
       title: title || targetReview?.title || '',
       customerName: customerName || targetReview?.customerName || '',
       customerImage: newCustomerImage,
+      isFeatured: isAdminCustomer
+        ? isFeatured ?? targetReview?.isFeatured ?? false
+        : targetReview?.isFeatured ?? false,
       updatedAt: new Date().toISOString(),
     };
 
