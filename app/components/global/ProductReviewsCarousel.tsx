@@ -15,7 +15,13 @@ interface ProductReviewsCarouselProps {
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
     review: Review,
-    updates: {text: string; title: string; stars: number; image?: File | null},
+    updates: {
+      text: string;
+      title: string;
+      stars: number;
+      image?: File | null;
+      isFeatured?: boolean;
+    },
   ) => Promise<void> | void;
 }
 

@@ -17,6 +17,7 @@ export interface Review {
   title?: string;
   customerName?: string;
   customerImage?: string;
+  isFeatured?: boolean;
 }
 
 interface ProductReviewsDisplayProps {
@@ -26,7 +27,13 @@ interface ProductReviewsDisplayProps {
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
     review: Review,
-    updates: {text: string; title: string; stars: number; image?: File | null},
+    updates: {
+      text: string;
+      title: string;
+      stars: number;
+      image?: File | null;
+      isFeatured?: boolean;
+    },
   ) => Promise<void> | void;
 }
 
@@ -65,6 +72,9 @@ const ProductReviewsDisplay = ({
     displayText.slice(0, REVIEW_CHAR_LIMIT),
   );
   const [editStars, setEditStars] = useState(parsedStars);
+  const [editIsFeatured, setEditIsFeatured] = useState(
+    review.isFeatured ?? false,
+  );
 
   const isCurrentUserReview =
     customerId && resolvedCustomerId && customerId === resolvedCustomerId;
@@ -76,7 +86,14 @@ const ProductReviewsDisplay = ({
     setEditStars(parsedStars);
     setSelectedImage(null);
     setImagePreview(customerImage ?? null);
-  }, [displayTitle, displayText, parsedStars, customerImage]);
+    setEditIsFeatured(review.isFeatured ?? false);
+  }, [
+    displayTitle,
+    displayText,
+    parsedStars,
+    customerImage,
+    review.isFeatured,
+  ]);
 
   const resetEditState = () => {
     setEditTitle(displayTitle);
@@ -84,6 +101,7 @@ const ProductReviewsDisplay = ({
     setEditStars(parsedStars);
     setSelectedImage(null);
     setImagePreview(customerImage ?? null);
+    setEditIsFeatured(review.isFeatured ?? false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +131,7 @@ const ProductReviewsDisplay = ({
         title: editTitle,
         stars: editStars,
         image: selectedImage,
+        isFeatured: isAdmin ? editIsFeatured : undefined,
       });
       setIsEditing(false);
     } finally {
@@ -138,7 +157,7 @@ const ProductReviewsDisplay = ({
                   </div>
                 </div>
                 <div>
-                  <div className="review-right-side-container">
+                <div className="review-right-side-container">
                     <div className="ps-1 pt-2 pe-2 flex justify-end">
                       <div className="review-right-side">
                         <Button
@@ -169,6 +188,32 @@ const ProductReviewsDisplay = ({
                   </div>
                 </div>
               </div>
+
+              {isAdmin && (
+                <div className="mx-5 mb-4">
+                  <p className="mb-2 font-semibold">isFeatured:</p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={editIsFeatured ? 'default' : 'outline'}
+                      onClick={() => setEditIsFeatured(true)}
+                      disabled={isSaving}
+                      className="cursor-pointer"
+                    >
+                      Yes
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={!editIsFeatured ? 'default' : 'outline'}
+                      onClick={() => setEditIsFeatured(false)}
+                      disabled={isSaving}
+                      className="cursor-pointer"
+                    >
+                      No
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {imagePreview && (
                 <div className="mt-3 flex justify-center">
