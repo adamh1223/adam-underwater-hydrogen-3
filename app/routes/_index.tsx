@@ -12,9 +12,11 @@ import ProductCarousel from '~/components/products/productCarousel';
 import {
   FEATURED_COLLECTION_QUERY,
   RECOMMENDED_PRODUCTS_QUERY,
+  FEATURED_REVIEWS_QUERY,
 } from '~/lib/homeQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import FeaturedProductReviews from '~/components/products/featuredProductReviews';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -85,8 +87,16 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
       return null;
     });
 
+  const featuredReviews = context.storefront
+    .query(FEATURED_REVIEWS_QUERY)
+    .catch((error) => {
+      console.error(error);
+      return null;
+    });
+
   return {
     recommendedProducts,
+    featuredReviews,
   };
 }
 
@@ -116,6 +126,7 @@ export default function Homepage() {
         wishlistProducts={data.wishlistProducts}
         isLoggedIn={data.isLoggedIn}
       />
+      <FeaturedProductReviews reviews={data.featuredReviews} />
     </div>
   );
 }

@@ -62,6 +62,21 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
 ` as const;
 
+export const FEATURED_REVIEWS_QUERY = `#graphql
+  query FeaturedReviews($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    products(first: 25, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        id
+        title
+        metafield(namespace: "custom", key: "reviews") {
+          value
+        }
+      }
+    }
+  }
+` as const;
+
 export const POST_REVIEW_MUTATION = `#graphql 
   mutation MetafieldsSet($metafields: MetafieldsSetInput!) {
   metafieldsSet(metafields: $metafields) {
