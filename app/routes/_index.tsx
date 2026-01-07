@@ -45,6 +45,7 @@ export async function loader(args: LoaderFunctionArgs) {
     };
   }
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
+const currentCustomerId = customer.data.customer.id
 
   if (!customer.data.customer.metafield?.value) {
     return [];
@@ -53,7 +54,7 @@ export async function loader(args: LoaderFunctionArgs) {
     customer.data.customer.metafield?.value,
   ) as string[];
 
-  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
+  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn, currentCustomerId};
 }
 
 /**
@@ -127,7 +128,8 @@ export default function Homepage() {
       <div className="flex justify-center font-bold text-xl pb-2">
         <p>What our customers are saying</p>
       </div>
-      <FeaturedProductReviews reviews={data.featuredReviews} />
+      <FeaturedProductReviews reviews={data.featuredReviews} 
+      currentCustomerId={data.currentCustomerId}/>
     </div>
   );
 }

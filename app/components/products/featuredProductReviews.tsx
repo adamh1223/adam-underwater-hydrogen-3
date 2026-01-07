@@ -30,8 +30,10 @@ const parseReviewsValue = (value?: string | null) => {
 
 function FeaturedProductReviews({
   reviews,
+  currentCustomerId,
 }: {
   reviews: Promise<FeaturedReviewsQuery | null>;
+  currentCustomerId: string;
 }) {
   return (
     <>
@@ -52,7 +54,10 @@ function FeaturedProductReviews({
               return (
                 <ProductReviewsCarousel
                   reviews={featuredReviews}
-                  isAdmin={false}
+                  isAdmin={
+                    currentCustomerId === 'gid://shopify/Customer/7968375079049'
+                  }
+                  currentCustomerId={currentCustomerId}
                 />
               );
             }}

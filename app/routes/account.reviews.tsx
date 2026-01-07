@@ -71,7 +71,6 @@ export async function loader({context}: LoaderFunctionArgs) {
     console.error('Unable to parse wishlist', error);
   }
   const isLoggedIn = context.customerAccount.isLoggedIn();
-  
 
   return {products, customer, wishlistProducts, isLoggedIn};
 }
@@ -82,6 +81,8 @@ export default function AccountReviewsRoute() {
   const outletContext = useOutletContext<{customer: CustomerFragment}>();
 
   const resolvedCustomer = customer ?? outletContext.customer;
+  console.log(resolvedCustomer, 'resolved');
+
   const customerId = resolvedCustomer?.id;
   const customerName = [
     resolvedCustomer?.firstName ?? '',
@@ -89,7 +90,6 @@ export default function AccountReviewsRoute() {
   ]
     .join(' ')
     .trim();
-  
 
   return (
     <div className="account-reviews space-y-6">
