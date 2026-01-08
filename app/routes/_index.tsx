@@ -6,7 +6,6 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
-import VideoPreview from '~/components/video/VideoPreview';
 import Hero from '~/components/hero/Hero';
 import ProductCarousel from '~/components/products/productCarousel';
 import {
@@ -138,8 +137,20 @@ export default function Homepage() {
         reviews={data.featuredReviews}
         currentCustomerId={data.currentCustomerId}
       />
-      <video src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/IMG_9152.MOV"></video>
-      <div>hi</div>
+      <section className="home-video">
+        <video
+          className="home-video__player"
+          controls
+          playsInline
+          preload="metadata"
+        >
+          <source
+            src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/IMG_9152.MOV"
+            type="video/quicktime"
+          />
+          Your browser does not support the video tag.
+        </video>
+      </section>
     </div>
   );
 }
