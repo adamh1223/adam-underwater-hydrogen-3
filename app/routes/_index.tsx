@@ -45,7 +45,7 @@ export async function loader(args: LoaderFunctionArgs) {
     };
   }
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
-const currentCustomerId = customer.data.customer.id
+  const currentCustomerId = customer.data.customer.id;
 
   if (!customer.data.customer.metafield?.value) {
     return [];
@@ -54,7 +54,13 @@ const currentCustomerId = customer.data.customer.id
     customer.data.customer.metafield?.value,
   ) as string[];
 
-  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn, currentCustomerId};
+  return {
+    ...deferredData,
+    ...criticalData,
+    wishlistProducts,
+    isLoggedIn,
+    currentCustomerId,
+  };
 }
 
 /**
@@ -128,8 +134,11 @@ export default function Homepage() {
       <div className="flex justify-center font-bold text-xl pb-2">
         <p>What our customers are saying</p>
       </div>
-      <FeaturedProductReviews reviews={data.featuredReviews} 
-      currentCustomerId={data.currentCustomerId}/>
+      <FeaturedProductReviews
+        reviews={data.featuredReviews}
+        currentCustomerId={data.currentCustomerId}
+      />
+      <video src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/IMG_9152.MOV"></video>
     </div>
   );
 }
