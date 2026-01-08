@@ -139,6 +139,7 @@ export default function Homepage() {
         currentCustomerId={data.currentCustomerId}
       />
       <video src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/IMG_9152.MOV"></video>
+      <div>hi</div>
     </div>
   );
 }
