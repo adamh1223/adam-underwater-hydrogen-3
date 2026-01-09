@@ -14,6 +14,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     let customerName = (form.get('customerName') as string) ?? '';
     const createdAt = form.get('createdAt') as string;
     const imageFile = form.get('image') as File | null;
+    const videoFile = form.get('video') as File | null;
     const isFeaturedValue = form.get('isFeatured') as string | null;
 
     if (!productId) {
@@ -69,12 +70,9 @@ export async function action({request, context}: ActionFunctionArgs) {
     if (imageFile) {
       customerImage = await uploadImage(context.env, imageFile);
     }
-
-    if (imageFile) {
-      // const promisedImages = imageFiles?.map((file: File) =>
-      //   uploadImage(context.env, file),
-      // );
-      // customerImages = await Promise.all(promisedImages);
+    let customerVideo;
+    if (videoFile) {
+      customerVideo = await uploadImage(context.env, videoFile);
     }
 
     let existingReviews: any[] = [];
@@ -125,6 +123,23 @@ export async function action({request, context}: ActionFunctionArgs) {
         return json({error: 'Image upload failed'}, {status: 500});
       }
     }
+    let newCustomerVideo = targetReview?.customerVideo;
+    if (videoFile && typeof videoFile !== 'string') {
+      try {
+        const uploadedUrl = await uploadImage(context.env, videoFile as File);
+        if (targetReview?.customerVideo) {
+          try {
+            await deleteImage(context.env, targetReview.customerVideo);
+          } catch (error) {
+            console.error('Failed to delete previous review video', error);
+          }
+        }
+        newCustomerVideo = uploadedUrl;
+      } catch (error) {
+        console.error('Failed to upload new review video', error);
+        return json({error: 'Video upload failed'}, {status: 500});
+      }
+    }
 
     const updatedReview = {
       ...targetReview,
@@ -133,6 +148,7 @@ export async function action({request, context}: ActionFunctionArgs) {
       title: title || targetReview?.title || '',
       customerName: customerName || targetReview?.customerName || '',
       customerImage: newCustomerImage,
+      customerVideo: newCustomerVideo,
       isFeatured: isAdminCustomer
         ? (isFeatured ?? targetReview?.isFeatured ?? false)
         : (targetReview?.isFeatured ?? false),
@@ -212,6 +228,7 @@ export async function action({request, context}: ActionFunctionArgs) {
               stars,
               reviewText,
               reviewImage: customerImage,
+              reviewVideo: customerVideo,
             },
             routing: {
               method: 'single',

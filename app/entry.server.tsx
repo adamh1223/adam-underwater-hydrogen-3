@@ -16,7 +16,15 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    mediaSrc: [
+      "'self'",
+      'blob:',
+      'data:',
+      'https://fpoxvfuxgtlyphowqdgf.supabase.co',
+    ],
     connectSrc: [
+      "'self'",
+      'https://fpoxvfuxgtlyphowqdgf.supabase.co',
       'wss://patient-mite-notably.ngrok-free.app:3000',
       'https://api.courier.com/send',
       'https://cdn.shopify.com',
@@ -29,7 +37,12 @@ export default async function handleRequest(
       'https://fpoxvfuxgtlyphowqdgf.supabase.co',
       'https://aethtsbnwylikosxhnkh.supabase.co',
     ],
-    fontSrc: ["'self'", 'data:', 'https://cdn.shopify.com', 'https://fonts.gstatic.com'],
+    fontSrc: [
+      "'self'",
+      'data:',
+      'https://cdn.shopify.com',
+      'https://fonts.gstatic.com',
+    ],
     frameSrc: ['https://player.vimeo.com/', 'https://vimeo.com/'],
   });
 

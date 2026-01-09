@@ -244,9 +244,13 @@ function ReviewForm({
                 {videoPreview && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <video
-                      src={videoPreview}
-                      className="h-12 w-12 object-cover rounded"
-                    />
+                      className="home-video__player"
+                      controls
+                      playsInline
+                      preload="metadata"
+                    >
+                      <source src={videoPreview} type="video/mp4" />
+                    </video>
                     <span className="truncate max-w-[160px]">
                       {selectedVideo?.name}
                     </span>
