@@ -61,8 +61,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const title = form.get('title') as string;
     const customerName = form.get('customerName') as string;
     const imageFile = form.get('image') as File | null;
-
-    
+    const videoFile = form.get('video') as File | null;
 
     if (!productId) {
       return json({error: 'Missing productId'}, {status: 400});
@@ -73,7 +72,6 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
     const shop = 'fuyqg4-fh.myshopify.com';
-    
 
     if (!adminToken) {
       return json({error: 'SHOPIFY_ADMIN_TOKEN not found'}, {status: 500});
@@ -158,14 +156,10 @@ export async function action({request, context}: ActionFunctionArgs) {
     if (imageFile) {
       customerImage = await uploadImage(context.env, imageFile);
     }
-
-    if (imageFile) {
-      // const promisedImages = imageFiles?.map((file: File) =>
-      //   uploadImage(context.env, file),
-      // );
-      // customerImages = await Promise.all(promisedImages);
+    let customerVideo;
+    if (videoFile) {
+      customerVideo = await uploadImage(context.env, videoFile);
     }
-    
 
     // Append new review
     const updatedReviews = [
@@ -178,6 +172,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         title,
         customerName,
         customerImage,
+        customerVideo,
         isFeatured: false,
       },
     ];
@@ -252,6 +247,7 @@ export async function action({request, context}: ActionFunctionArgs) {
               stars,
               reviewText,
               reviewImage: customerImage,
+              reviewVideo: customerVideo,
             },
             routing: {
               method: 'single',
@@ -261,7 +257,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         }),
       });
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
     return json({success: true, reviews: updatedReviews});
   } catch (error) {

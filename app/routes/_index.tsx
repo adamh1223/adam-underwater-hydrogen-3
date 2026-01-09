@@ -146,7 +146,7 @@ export default function Homepage() {
         >
           <source
             src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/IMG_9152.MOV"
-            type="video/quicktime"
+            type="video/mp4"
           />
           Your browser does not support the video tag.
         </video>

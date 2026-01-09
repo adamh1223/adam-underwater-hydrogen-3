@@ -5,6 +5,7 @@ import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {Button} from '../ui/button';
 import {Input} from '../ui/input';
 import {ReloadIcon} from '@radix-ui/react-icons';
+import ReviewMediaCarousel from './ReviewMediaCarousel';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -17,6 +18,7 @@ export interface Review {
   title?: string;
   customerName?: string;
   customerImage?: string;
+  customerVideo?: string;
   isFeatured?: boolean;
 }
 
@@ -58,7 +60,27 @@ const ProductReviewsDisplay = ({
   const loaderCustomerId = routeData?.customer?.customer?.id;
   const resolvedCustomerId = currentCustomerId ?? loaderCustomerId;
 
-  const {title, stars, customerName, text, customerId, customerImage} = review;
+  const {
+    title,
+    stars,
+    customerName,
+    text,
+    customerId,
+    customerImage,
+    customerVideo,
+  } = review;
+  console.log(review, 'reviewlog');
+
+  const urls = [
+    {
+      url: customerVideo,
+      type: 'video',
+    },
+    {
+      url: customerImage,
+      type: 'image',
+    },
+  ];
 
   const parsedStars =
     typeof stars === 'string' ? parseInt(stars, 10) : (stars ?? 0);
@@ -157,7 +179,7 @@ const ProductReviewsDisplay = ({
                   </div>
                 </div>
                 <div>
-                <div className="review-right-side-container">
+                  <div className="review-right-side-container">
                     <div className="ps-1 pt-2 pe-2 flex justify-end">
                       <div className="review-right-side">
                         <Button
@@ -355,15 +377,30 @@ const ProductReviewsDisplay = ({
                   </div>
                 </>
               )}
-
-              {customerImage && (
-                <div className="mt-3 mb-5 flex justify-center">
-                  <img
-                    src={customerImage}
-                    alt="Review"
-                    className="max-h-56 rounded object-contain"
-                  />
-                </div>
+              {customerImage && customerVideo ? (
+                <ReviewMediaCarousel url={urls} />
+              ) : (
+                <>
+                  {customerImage && (
+                    <div className="mt-3 mb-5 flex justify-center">
+                      <img
+                        src={customerImage}
+                        alt="Review"
+                        className="max-h-56 rounded object-contain"
+                      />
+                    </div>
+                  )}
+                  {customerVideo && (
+                    <video
+                      className="home-video__player"
+                      controls
+                      playsInline
+                      preload="metadata"
+                    >
+                      <source src={customerVideo} type="video/mp4" />
+                    </video>
+                  )}
+                </>
               )}
               <Card className="mt-3 mb-4 mx-4 w-[90%]">
                 <CardHeader>
