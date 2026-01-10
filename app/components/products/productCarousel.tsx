@@ -7,7 +7,13 @@ import {
   CarouselItem,
   CarouselApi,
 } from '../ui/carousel';
-import {Link, NavLink, Navigate, useLoaderData, useNavigate} from '@remix-run/react';
+import {
+  Link,
+  NavLink,
+  Navigate,
+  useLoaderData,
+  useNavigate,
+} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon, Divide} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
