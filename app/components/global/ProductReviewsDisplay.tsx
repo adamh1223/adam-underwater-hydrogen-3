@@ -391,14 +391,18 @@ const ProductReviewsDisplay = ({
                     </div>
                   )}
                   {customerVideo && (
-                    <video
-                      className="home-video__player"
-                      controls
-                      playsInline
-                      preload="metadata"
-                    >
-                      <source src={customerVideo} type="video/mp4" />
-                    </video>
+                    <>
+                      <div className="home-video px-2 pt-2">
+                        <video
+                          className="home-video__player"
+                          controls
+                          playsInline
+                          preload="metadata"
+                        >
+                          <source src={customerVideo} type="video/mp4" />
+                        </video>
+                      </div>
+                    </>
                   )}
                 </>
               )}

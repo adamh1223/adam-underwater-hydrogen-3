@@ -137,20 +137,6 @@ export default function Homepage() {
         reviews={data.featuredReviews}
         currentCustomerId={data.currentCustomerId}
       />
-      <section className="home-video">
-        <video
-          className="home-video__player"
-          controls
-          playsInline
-          preload="metadata"
-        >
-          <source
-            src="https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/IMG_9152.MOV"
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-      </section>
     </div>
   );
 }

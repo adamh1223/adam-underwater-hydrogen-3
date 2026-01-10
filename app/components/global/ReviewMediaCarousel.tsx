@@ -46,7 +46,7 @@ export const ReviewMediaCarousel = ({
   url: ReviewMedia[];
 }) => {
   const cardClassName =
-    'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-5 pb-3';
+    'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer';
 
   const cardContentClassName = 'flex flex-col h-full';
 
@@ -101,24 +101,22 @@ export const ReviewMediaCarousel = ({
     w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
 
   return (
-    <article className="group relative h-full">
-      <Card className={cardClassName}>
+    <article className="group relative">
+      <div className={cardClassName}>
         <div className={cardContentClassName}>
-          <div
-            className={`relative w-full h-full rounded ${'top-part-card-grid'}`}
-          >
+          <div className={`relative w-full rounded ${'top-part-card-grid'}`}>
             <Carousel
               setApi={setCarouselApi}
-              className="w-full max-w-7xl transform-none pb-4"
+              className="w-full max-w-7xl transform-none"
             >
               <CarouselContent>
                 {url?.map((img, idx) => (
                   <CarouselItem
-                    className="flex items-center justify-center"
+                    className="flex items-center justify-center review-media-slide"
                     key={idx}
                   >
                     <div
-                      className={`flex items-center justify-center w-[85%] pt-5 pb-[12px] ps-4 pe-4
+                      className={`flex items-center justify-center w-[95%] pb-[12px]
 
                         `}
                     >
@@ -162,7 +160,7 @@ export const ReviewMediaCarousel = ({
             </Carousel>
           </div>
         </div>
-      </Card>
+      </div>
     </article>
   );
 };

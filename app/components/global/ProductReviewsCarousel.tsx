@@ -80,7 +80,7 @@ export default function ProductReviewsCarousel({
             {sortedReviews.map((review, index) => (
               <CarouselItem
                 key={review?.createdAt ?? index}
-                className="flex justify-center items-stretch"
+                className="flex justify-center items-stretch xxxxx"
                 style={slideStyle}
               >
                 <ProductReviewsDisplay
