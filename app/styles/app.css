@@ -1257,6 +1257,23 @@ span {
   grid-template-columns: 1fr;
 }
 
+.review-left-side-display {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.review-left-side-display .review-summary-card {
+  margin-top: auto;
+}
+
+.customer-media-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto 0;
+}
+
 .review-right-side {
   display: grid;
   grid-template-columns: 1fr;
