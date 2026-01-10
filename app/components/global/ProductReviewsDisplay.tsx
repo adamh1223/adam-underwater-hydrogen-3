@@ -310,7 +310,7 @@ const ProductReviewsDisplay = ({
       ) : (
         <>
           <div className="review-container">
-            <div className="review-left-side">
+            <div className="review-left-side review-left-side-display">
               {(isCurrentUserReview || isAdmin) && (
                 <>
                   <div className="stars-writtenby-buttons">
@@ -377,36 +377,38 @@ const ProductReviewsDisplay = ({
                   </div>
                 </>
               )}
-              {customerImage && customerVideo ? (
-                <ReviewMediaCarousel url={urls} />
-              ) : (
-                <>
-                  {customerImage && (
-                    <div className="mt-3 mb-5 flex justify-center">
-                      <img
-                        src={customerImage}
-                        alt="Review"
-                        className="max-h-56 rounded object-contain"
-                      />
-                    </div>
-                  )}
-                  {customerVideo && (
-                    <>
-                      <div className="home-video px-2 pt-2">
-                        <video
-                          className="home-video__player"
-                          controls
-                          playsInline
-                          preload="metadata"
-                        >
-                          <source src={customerVideo} type="video/mp4" />
-                        </video>
+              <div className="customer-media-container">
+                {customerImage && customerVideo ? (
+                  <ReviewMediaCarousel url={urls} />
+                ) : (
+                  <>
+                    {customerImage && (
+                      <div className="mt-3 mb-5 flex justify-center">
+                        <img
+                          src={customerImage}
+                          alt="Review"
+                          className="max-h-56 rounded object-contain"
+                        />
                       </div>
-                    </>
-                  )}
-                </>
-              )}
-              <Card className="mt-3 mb-4 mx-4 w-[90%]">
+                    )}
+                    {customerVideo && (
+                      <>
+                        <div className="home-video px-2 pt-2">
+                          <video
+                            className="home-video__player"
+                            controls
+                            playsInline
+                            preload="metadata"
+                          >
+                            <source src={customerVideo} type="video/mp4" />
+                          </video>
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+              <Card className="review-summary-card mt-3 mb-4 mx-4 w-[90%]">
                 <CardHeader>
                   <p className="review-title font-bold">{displayTitle}</p>
                 </CardHeader>
