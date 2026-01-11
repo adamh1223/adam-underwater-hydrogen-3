@@ -922,7 +922,7 @@ export default function Product() {
   }, [location, windowWidth]);
   return (
     <>
-      <section className="product px-[40px] pt-[20px]">
+      <section className="product pt-[20px]">
         {/* Link tree */}
         <ol className="flex flex-wrap items-center gap-1.5 break-words text-lg text-muted-foreground sm:gap-2.5">
           <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
