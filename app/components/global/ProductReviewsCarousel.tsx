@@ -1,12 +1,5 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import ProductReviewsDisplay, {Review} from './ProductReviewsDisplay';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '../ui/carousel';
 
 interface ProductReviewsCarouselProps {
   reviews: Review[];
@@ -32,15 +25,28 @@ export default function ProductReviewsCarousel({
   onRemove,
   onEdit,
 }: ProductReviewsCarouselProps) {
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [visibleHeight, setVisibleHeight] = useState(500);
 
   useEffect(() => {
-    function handleResize() {
-      setWindowWidth(window.innerWidth);
-    }
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
+    const element = contentRef.current;
+    if (!element) return undefined;
+
+    const updateHeight = () => {
+      setContentHeight(element.offsetHeight);
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(element);
+    window.addEventListener('resize', updateHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateHeight);
+    };
   }, []);
 
   const sortedReviews = useMemo(() => {
@@ -51,37 +57,26 @@ export default function ProductReviewsCarousel({
     });
   }, [reviews]);
 
-  const slidesPerView = useMemo(() => {
-    if (windowWidth === undefined) return 3;
-    if (windowWidth >= 1024) return 3;
-    if (windowWidth >= 720) return 2;
-    return 1;
-  }, [windowWidth]);
-
-  const slideStyle = useMemo(() => {
-    const percent = 100 / slidesPerView;
-    return {flex: `0 0 ${percent}%`, maxWidth: `${percent}%`};
-  }, [slidesPerView]);
+  const maxHeight =
+    contentHeight > visibleHeight ? `${visibleHeight}px` : undefined;
 
   if (!sortedReviews.length) return null;
 
   return (
     <>
-      <div className="reviews-container flex justify-center mt-3">
-        <Carousel
-          className="you-may-like-carousel w-full"
-          opts={{
-            loop: true,
-            align: slidesPerView === 1 ? 'center' : 'start',
-            slidesToScroll: 1,
-          }}
+      <div className="reviews-container mt-3 w-full">
+        <div
+          className="w-full overflow-hidden transition-[max-height] duration-300 ease-in-out"
+          style={{maxHeight}}
         >
-          <CarouselContent className="!flex !items-stretch !justify-start">
+          <div
+            ref={contentRef}
+            className="columns-2 gap-6 md:columns-3 lg:columns-4"
+          >
             {sortedReviews.map((review, index) => (
-              <CarouselItem
+              <div
                 key={review?.createdAt ?? index}
-                className="flex justify-center items-stretch xxxxx"
-                style={slideStyle}
+                className="mb-[10px] break-inside-avoid"
               >
                 <ProductReviewsDisplay
                   review={review}
@@ -90,12 +85,21 @@ export default function ProductReviewsCarousel({
                   onEdit={onEdit}
                   isAdmin={isAdmin}
                 />
-              </CarouselItem>
+              </div>
             ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+          </div>
+        </div>
+        {contentHeight > visibleHeight && (
+          <div className="mt-4 flex justify-center">
+            <button
+              className="rounded-full border border-black px-6 py-2 text-sm font-medium transition hover:bg-black hover:text-white"
+              type="button"
+              onClick={() => setVisibleHeight((prev) => prev + 500)}
+            >
+              Load More Reviews
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
