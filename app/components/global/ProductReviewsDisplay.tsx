@@ -408,7 +408,7 @@ const ProductReviewsDisplay = ({
                   </>
                 )}
               </div>
-              <Card className="review-summary-card mt-3 mb-4 mx-4 w-[90%]">
+              <Card className="review-summary-card mt-3 mb-4 mx-4">
                 <CardHeader>
                   <p className="review-title font-bold">{displayTitle}</p>
                 </CardHeader>

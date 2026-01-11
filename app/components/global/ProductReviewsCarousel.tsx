@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import ProductReviewsDisplay, {Review} from './ProductReviewsDisplay';
+import {Button} from '../ui/button';
 
 interface ProductReviewsCarouselProps {
   reviews: Review[];
@@ -27,7 +28,7 @@ export default function ProductReviewsCarousel({
 }: ProductReviewsCarouselProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState(0);
-  const [visibleHeight, setVisibleHeight] = useState(500);
+  const [visibleHeight, setVisibleHeight] = useState(1000);
 
   useEffect(() => {
     const element = contentRef.current;
@@ -64,14 +65,14 @@ export default function ProductReviewsCarousel({
 
   return (
     <>
-      <div className="reviews-container mt-3 w-full">
+      <div className="reviews-container mt-3 px-3 w-full">
         <div
           className="w-full overflow-hidden transition-[max-height] duration-300 ease-in-out"
           style={{maxHeight}}
         >
           <div
             ref={contentRef}
-            className="columns-2 gap-6 md:columns-3 lg:columns-4"
+            className="columns-2 gap-3 md:columns-3 lg:columns-4"
           >
             {sortedReviews.map((review, index) => (
               <div
@@ -91,13 +92,14 @@ export default function ProductReviewsCarousel({
         </div>
         {contentHeight > visibleHeight && (
           <div className="mt-4 flex justify-center">
-            <button
-              className="rounded-full border border-black px-6 py-2 text-sm font-medium transition hover:bg-black hover:text-white"
+            <Button
+              variant="secondary"
+              className="cursor-pointer rounded border border-black px-6 py-2 text-sm font-medium transition hover:text-white"
               type="button"
-              onClick={() => setVisibleHeight((prev) => prev + 500)}
+              onClick={() => setVisibleHeight((prev) => prev + 1000)}
             >
               Load More Reviews
-            </button>
+            </Button>
           </div>
         )}
       </div>
