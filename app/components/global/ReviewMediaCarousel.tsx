@@ -265,7 +265,7 @@ export const ReviewMediaCarousel = ({
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <div className="absolute inset-0 z-20 flex items-center justify-between px-6">
+                <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-4">
                   <Button
                     onClick={(event) => {
                       event.stopPropagation();
@@ -289,7 +289,7 @@ export const ReviewMediaCarousel = ({
                 </div>
               </Carousel>
               {zoomTotalItems > 1 && (
-                <div className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-3">
+                <div className="absolute bottom-20 left-0 right-0 z-20 flex items-center justify-center gap-3">
                   {Array.from({length: zoomTotalItems}).map((_, idx) => (
                     <button
                       key={`zoom-dot-${idx}`}
