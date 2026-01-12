@@ -1645,3 +1645,7 @@ span {
 .review-media-slide {
   max-height: 300px;
 }
+
+.x-icon {
+  z-index: 50000;
+}
