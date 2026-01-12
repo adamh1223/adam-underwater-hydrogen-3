@@ -6,6 +6,7 @@ import {Button} from '../ui/button';
 import {Input} from '../ui/input';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import ReviewMediaCarousel from './ReviewMediaCarousel';
+import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -251,11 +252,13 @@ const ProductReviewsDisplay = ({
 
               {imagePreview && (
                 <div className="mt-3 flex justify-center">
-                  <img
-                    src={imagePreview}
-                    alt="Edited review"
-                    className="max-h-56 rounded object-contain mb-3"
-                  />
+                  <ImageZoom>
+                    <img
+                      src={imagePreview}
+                      alt="Edited review"
+                      className="max-h-56 rounded object-contain mb-3 cursor-zoom-in"
+                    />
+                  </ImageZoom>
                 </div>
               )}
 
@@ -398,11 +401,13 @@ const ProductReviewsDisplay = ({
                   <>
                     {customerImage && (
                       <div className="mb-3 flex justify-center">
-                        <img
-                          src={customerImage}
-                          alt="Review"
-                          className="max-h-56 rounded object-contain"
-                        />
+                        <ImageZoom>
+                          <img
+                            src={customerImage}
+                            alt="Review"
+                            className="max-h-56 rounded object-contain cursor-zoom-in"
+                          />
+                        </ImageZoom>
                       </div>
                     )}
                     {customerVideo && (
