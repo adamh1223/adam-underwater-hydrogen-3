@@ -4,6 +4,7 @@ import {Button} from '../ui/button';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import Sectiontitle from '../global/Sectiontitle';
 import {ReloadIcon} from '@radix-ui/react-icons';
+import {Link} from '@remix-run/react';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -269,17 +270,27 @@ function ReviewForm({
                   'Submit'
                 )}
               </Button>
+              {!isLoggedIn && (
+                <>
+                  <div className="pt-2 sign-in-link">
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Please{' '}
+                      <Link
+                        to="/account/login"
+                        className="text-blue-500 underline"
+                      >
+                        sign in
+                      </Link>{' '}
+                      to leave a review.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </>
       ) : (
         <div>{reviewSubmittedMessage}</div>
-      )}
-
-      {!isLoggedIn && (
-        <p className="text-sm text-muted-foreground mt-2">
-          Please sign in to leave a review.
-        </p>
       )}
     </>
   );
