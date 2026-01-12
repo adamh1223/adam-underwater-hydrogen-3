@@ -505,7 +505,7 @@ export const ProductCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && layout === 'grid' && (
-              <div className="absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
+              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -521,7 +521,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && (
-              <div className="absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5 ms-3">
+              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5 ms-3">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}

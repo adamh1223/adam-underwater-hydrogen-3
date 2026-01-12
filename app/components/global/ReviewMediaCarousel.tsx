@@ -107,7 +107,7 @@ export const ReviewMediaCarousel = ({
           <div className={`relative w-full rounded ${'top-part-card-grid'}`}>
             <Carousel
               setApi={setCarouselApi}
-              className="w-full max-w-7xl transform-none"
+              className="w-full max-w-7xl transform-none mb-3"
             >
               <CarouselContent>
                 {url?.map((img, idx) => (
@@ -116,7 +116,7 @@ export const ReviewMediaCarousel = ({
                     key={idx}
                   >
                     <div
-                      className={`flex items-center justify-center w-[95%] pb-[12px]
+                      className={`flex items-center justify-center w-[90%] pb-[12px]
 
                         `}
                     >

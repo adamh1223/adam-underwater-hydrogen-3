@@ -70,7 +70,6 @@ const ProductReviewsDisplay = ({
     customerVideo,
   } = review;
   console.log(review, 'reviewlog');
-
   const urls = [
     {
       url: customerVideo,
@@ -365,11 +364,13 @@ const ProductReviewsDisplay = ({
                   <div className="stars-writtenby py-4">
                     <div className="flex items-center justify-center">
                       <div>
-                        <Rating value={parsedStars} readOnly>
-                          {Array.from({length: 5}).map((_, index) => (
-                            <RatingButton key={index} className="stars" />
-                          ))}
-                        </Rating>
+                        <div className="flex justify-center">
+                          <Rating value={parsedStars} readOnly>
+                            {Array.from({length: 5}).map((_, index) => (
+                              <RatingButton key={index} className="stars" />
+                            ))}
+                          </Rating>
+                        </div>
 
                         <p>Written by {displayAuthor}</p>
                       </div>
@@ -383,7 +384,7 @@ const ProductReviewsDisplay = ({
                 ) : (
                   <>
                     {customerImage && (
-                      <div className="mt-3 mb-5 flex justify-center">
+                      <div className="mb-3 flex justify-center">
                         <img
                           src={customerImage}
                           alt="Review"
@@ -393,7 +394,7 @@ const ProductReviewsDisplay = ({
                     )}
                     {customerVideo && (
                       <>
-                        <div className="home-video px-2 pt-2">
+                        <div className="home-video px-2">
                           <video
                             className="home-video__player"
                             controls
@@ -408,7 +409,7 @@ const ProductReviewsDisplay = ({
                   </>
                 )}
               </div>
-              <Card className="review-summary-card mt-3 mb-4 mx-4">
+              <Card className="review-summary-card mt-3 mb-2 mx-2">
                 <CardHeader>
                   <p className="review-title font-bold">{displayTitle}</p>
                 </CardHeader>
