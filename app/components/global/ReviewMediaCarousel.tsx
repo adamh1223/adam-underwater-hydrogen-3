@@ -15,12 +15,7 @@ import {
   useNavigate,
 } from '@remix-run/react';
 import {Button} from '../ui/button';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  Divide,
-  XIcon,
-} from 'lucide-react';
+import {ChevronLeftIcon, ChevronRightIcon, Divide, XIcon} from 'lucide-react';
 import {Money} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {ProductItemFragment, CollectionQuery} from 'storefrontapi.generated';
@@ -38,11 +33,7 @@ import {
 } from '../ui/tooltip';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {toast} from 'sonner';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-} from '../ui/dialog';
+import {Dialog, DialogClose, DialogContent} from '../ui/dialog';
 
 interface ReviewMedia {
   url: string;
@@ -67,8 +58,9 @@ export const ReviewMediaCarousel = ({
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [zoomIndex, setZoomIndex] = useState(0);
-  const [zoomCarouselApi, setZoomCarouselApi] =
-    useState<CarouselApi | null>(null);
+  const [zoomCarouselApi, setZoomCarouselApi] = useState<CarouselApi | null>(
+    null,
+  );
   const [zoomCurrentIndex, setZoomCurrentIndex] = useState(0);
   const [zoomTotalItems, setZoomTotalItems] = useState(0);
 
@@ -117,8 +109,7 @@ export const ReviewMediaCarousel = ({
   }, [zoomCarouselApi, isZoomOpen, zoomIndex]);
 
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
-  const scrollZoomToIndex = (index: number) =>
-    zoomCarouselApi?.scrollTo(index);
+  const scrollZoomToIndex = (index: number) => zoomCarouselApi?.scrollTo(index);
   console.log(url, 'url');
 
   const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
@@ -208,7 +199,7 @@ export const ReviewMediaCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && (
-              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
+              <div className="carousel-preview-dots absolute bottom-[-50px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -228,8 +219,8 @@ export const ReviewMediaCarousel = ({
       </div>
       <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
         <DialogContent className="h-dvh w-dvw max-w-none rounded-none border-0 bg-transparent p-0 shadow-none">
-          <DialogClose className="absolute right-6 top-6 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80">
-            <XIcon className="h-5 w-5" />
+          <DialogClose className="absolute right-6 top-[100px] z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border rounded-md cursor-pointer text-white hover:bg-black/80">
+            <XIcon className="h-[300px] w-5 x-icon" />
             <span className="sr-only">Close</span>
           </DialogClose>
           <div className="relative z-10 flex h-full w-full items-center justify-center">
@@ -265,7 +256,7 @@ export const ReviewMediaCarousel = ({
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-4">
+                <div className="absolute bottom-[-50px] left-1/2 z-20 flex -translate-x-1/2 items-center gap-4">
                   <Button
                     onClick={(event) => {
                       event.stopPropagation();
@@ -289,7 +280,7 @@ export const ReviewMediaCarousel = ({
                 </div>
               </Carousel>
               {zoomTotalItems > 1 && (
-                <div className="absolute bottom-20 left-0 right-0 z-20 flex items-center justify-center gap-3">
+                <div className="absolute bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-3">
                   {Array.from({length: zoomTotalItems}).map((_, idx) => (
                     <button
                       key={`zoom-dot-${idx}`}
