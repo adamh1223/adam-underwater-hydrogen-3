@@ -87,6 +87,19 @@ const ProductReviewsDisplay = ({
   const displayTitle = title?.trim() ? title : 'Review';
   const displayAuthor = customerName?.trim() ? customerName : 'Anonymous';
   const displayText = text ?? '';
+  const displayDate = (() => {
+    const iso = review.createdAt;
+    if (!iso) return '';
+
+    // Expecting: YYYY-MM-DDT...
+    const year = iso.slice(0, 4);
+    const month = iso.slice(5, 7);
+    const day = iso.slice(8, 10);
+
+    if (!year || !month || !day) return iso;
+
+    return `${Number(month)}/${Number(day)}/${year}`;
+  })();
 
   const [editTitle, setEditTitle] = useState(displayTitle);
   const [editText, setEditText] = useState(
@@ -410,9 +423,16 @@ const ProductReviewsDisplay = ({
                 )}
               </div>
               <Card className="review-summary-card mt-3 mb-2 mx-2">
-                <CardHeader>
-                  <p className="review-title font-bold">{displayTitle}</p>
-                </CardHeader>
+                <div>
+                  <div className="ps-5 pt-3">
+                    <p className="review-title font-bold">{displayTitle}</p>
+                  </div>
+                  <div className="ps-5">
+                    <p className="text-muted-foreground text-sm">
+                      {displayDate}
+                    </p>
+                  </div>
+                </div>
                 <CardContent>
                   <p className="review-body">{displayText}</p>
                 </CardContent>
