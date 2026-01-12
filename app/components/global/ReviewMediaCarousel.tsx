@@ -33,6 +33,7 @@ import {
 } from '../ui/tooltip';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {toast} from 'sonner';
+import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
 
 interface ReviewMedia {
   url: string;
@@ -121,10 +122,12 @@ export const ReviewMediaCarousel = ({
                         `}
                     >
                       {img.type === 'image' && (
-                        <img
-                          src={img.url}
-                          className={`rounded object-cover transform group-hover:scale-105 transition-transform duration-500`}
-                        />
+                        <ImageZoom>
+                          <img
+                            src={img.url}
+                            className={`rounded object-cover transform group-hover:scale-105 transition-transform duration-500 cursor-zoom-in`}
+                          />
+                        </ImageZoom>
                       )}
                       {img.type === 'video' && (
                         <video

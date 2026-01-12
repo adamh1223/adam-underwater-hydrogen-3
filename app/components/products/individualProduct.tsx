@@ -103,7 +103,6 @@ function IndividualProduct({
                         <img
                           className="max-h-full object-contain carousel-item cursor-zoom-in"
                           src={url.url}
-                          alt={url.altText || productName}
                         />
                       </ImageZoom>
                     </div>
