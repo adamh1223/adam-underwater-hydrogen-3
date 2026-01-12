@@ -924,7 +924,7 @@ export default function Product() {
     <>
       <section className="product pt-[20px]">
         {/* Link tree */}
-        <ol className="flex flex-wrap items-center gap-1.5 break-words text-lg text-muted-foreground sm:gap-2.5">
+        <ol className="px-[30px] mb-3 flex flex-wrap items-center gap-1.5 break-words text-lg text-muted-foreground sm:gap-2.5">
           <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
             <Link to="/">Home</Link>
           </li>
@@ -1063,7 +1063,7 @@ export default function Product() {
           </>
         )}
         {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 px-[35px]">
           {standardCarouselImages && standardCarouselImages?.length > 1 && (
             <IndividualProduct
               productName={title}

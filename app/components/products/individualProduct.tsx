@@ -79,7 +79,7 @@ function IndividualProduct({
   return (
     <>
       <div className="grid grid-cols-1">
-        <div className="grid grid-cols-1 px-4 product-carousel-container relative">
+        <div className="grid grid-cols-1 px-2 product-carousel-container relative">
           {orientation === 'Landscape' && (
             <Carousel
               className="print-carousel-individual-horizontal mx-3 flex items-center justify-center"
@@ -92,7 +92,7 @@ function IndividualProduct({
                     className="flex items-center justify-center"
                     key={idx}
                   >
-                    <div className="p-4 flex items-center justify-center">
+                    <div className="flex items-center justify-center">
                       {/* <img
                         src={url.url}
                         alt={url.altText || productName}
@@ -127,7 +127,7 @@ function IndividualProduct({
                     className="flex items-center justify-center"
                     key={idx}
                   >
-                    <div className="p-4 flex items-center justify-center">
+                    <div className="flex items-center justify-center">
                       <ImageZoom>
                         <img
                           src={url.url}

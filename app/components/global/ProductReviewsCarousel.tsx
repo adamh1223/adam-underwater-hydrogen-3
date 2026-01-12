@@ -28,7 +28,7 @@ export default function ProductReviewsCarousel({
 }: ProductReviewsCarouselProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState(0);
-  const [visibleHeight, setVisibleHeight] = useState(1000);
+  const [visibleHeight, setVisibleHeight] = useState(700);
 
   useEffect(() => {
     const element = contentRef.current;
