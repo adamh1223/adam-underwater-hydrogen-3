@@ -171,17 +171,17 @@ export const ReviewMediaCarousel = ({
                 ))}
               </CarouselContent>
 
-              <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+              <div className="absolute inset-0 z-40 flex items-center justify-center gap-4 pointer-events-none">
                 <Button
                   onClick={decreaseIndex}
-                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer`}
+                  className={`pointer-events-auto rounded-full w-10 h-10 p-0 shadow-none cursor-pointer bg-black/60 hover:bg-black/75`}
                   variant="secondary"
                 >
                   <ChevronLeftIcon className="h-6 w-6 text-white" />
                 </Button>
                 <Button
                   onClick={increaseIndex}
-                  className={`cursor-pointer pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none`}
+                  className={`cursor-pointer pointer-events-auto rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75`}
                   variant="secondary"
                 >
                   <ChevronRightIcon className="h-6 w-6 text-white" />
