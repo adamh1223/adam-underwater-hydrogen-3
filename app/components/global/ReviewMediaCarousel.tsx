@@ -217,16 +217,16 @@ export const ReviewMediaCarousel = ({
           </div>
           <div className="flex flex-1 items-center justify-center pb-10">
             <div className="flex w-full max-w-7xl flex-col items-center gap-6">
-              <div className="grid w-full place-items-center">
-                <div className="w-full [grid-column:1] [grid-row:1]">
+              <div className="flex w-full flex-col items-center gap-6">
+                <div className="w-full">
                   <Carousel
                     setApi={setZoomCarouselApi}
                     className="w-full transform-none"
                   >
-                    <CarouselContent>
+                    <CarouselContent className="ml-0">
                       {url?.map((media, idx) => (
                         <CarouselItem
-                          className="flex items-center justify-center"
+                          className="flex items-center justify-center pl-0"
                           key={`${media.url}-${idx}`}
                         >
                           <div className="flex h-full w-full items-center justify-center px-4">
@@ -253,7 +253,7 @@ export const ReviewMediaCarousel = ({
                   </Carousel>
                 </div>
                 {zoomTotalItems > 1 && (
-                  <div className="z-20 flex w-full items-end justify-center gap-3 pb-6 [grid-column:1] [grid-row:1]">
+                  <div className="z-20 flex w-full items-center justify-center gap-3 pb-2">
                     {Array.from({length: zoomTotalItems}).map((_, idx) => (
                       <button
                         key={`zoom-dot-${idx}`}
