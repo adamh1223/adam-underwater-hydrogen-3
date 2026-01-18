@@ -254,14 +254,16 @@ export const ReviewMediaCarousel = ({
                       ))}
                     </CarouselContent>
                   </Carousel>
-                  {zoomTotalItems > 1 && (
-                    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center gap-4">
+                </div>
+                {zoomTotalItems > 1 && (
+                  <>
+                    <div className="flex w-full items-center justify-center gap-4">
                       <Button
                         onClick={(event) => {
                           event.stopPropagation();
                           scrollZoomToIndex(zoomCurrentIndex - 1);
                         }}
-                        className="pointer-events-auto rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
+                        className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
                         variant="secondary"
                       >
                         <ChevronLeftIcon className="h-6 w-6 text-white" />
@@ -271,29 +273,27 @@ export const ReviewMediaCarousel = ({
                           event.stopPropagation();
                           scrollZoomToIndex(zoomCurrentIndex + 1);
                         }}
-                        className="pointer-events-auto rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
+                        className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
                         variant="secondary"
                       >
                         <ChevronRightIcon className="h-6 w-6 text-white" />
                       </Button>
                     </div>
-                  )}
-                </div>
-                {zoomTotalItems > 1 && (
-                  <div className="z-20 flex w-full items-center justify-center gap-3 pb-2">
-                    {Array.from({length: zoomTotalItems}).map((_, idx) => (
-                      <button
-                        key={`zoom-dot-${idx}`}
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          scrollZoomToIndex(idx);
-                        }}
-                        className={`h-2 w-2 rounded-full border border-white/60 ${idx === zoomCurrentIndex ? 'bg-white' : 'bg-white/30'}`}
-                        aria-label={`Go to slide ${idx + 1}`}
-                      />
-                    ))}
-                  </div>
+                    <div className="z-20 flex w-full items-center justify-center gap-3 pb-2">
+                      {Array.from({length: zoomTotalItems}).map((_, idx) => (
+                        <button
+                          key={`zoom-dot-${idx}`}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            scrollZoomToIndex(idx);
+                          }}
+                          className={`h-2 w-2 rounded-full border border-white/60 ${idx === zoomCurrentIndex ? 'bg-white' : 'bg-white/30'}`}
+                          aria-label={`Go to slide ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
