@@ -6,6 +6,7 @@ import {Button} from '../ui/button';
 import {Input} from '../ui/input';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import ReviewMediaCarousel from './ReviewMediaCarousel';
+import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
 import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
 
 const REVIEW_CHAR_LIMIT = 200;
@@ -394,9 +395,16 @@ const ProductReviewsDisplay = ({
                   </div>
                 </>
               )}
-              <div className="customer-media-container">
+                <div className="customer-media-container">
                 {customerImage && customerVideo ? (
-                  <ReviewMediaCarousel url={urls} />
+                  <CarouselZoom items={urls}>
+                    {(openAtIndex) => (
+                      <ReviewMediaCarousel
+                        url={urls}
+                        onImageClick={openAtIndex}
+                      />
+                    )}
+                  </CarouselZoom>
                 ) : (
                   <>
                     {customerImage && (

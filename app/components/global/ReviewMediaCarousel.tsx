@@ -1,39 +1,14 @@
 // app/components/productCarousel.tsx
 import React, {useEffect, useState} from 'react';
-import {Card, CardContent} from '../ui/card';
 import {
   Carousel,
+  CarouselApi,
   CarouselContent,
   CarouselItem,
-  CarouselApi,
 } from '../ui/carousel';
-import {
-  Link,
-  NavLink,
-  Navigate,
-  useLoaderData,
-  useNavigate,
-} from '@remix-run/react';
 import {Button} from '../ui/button';
-import {ChevronLeftIcon, ChevronRightIcon, Divide, XIcon} from 'lucide-react';
-import {Money} from '@shopify/hydrogen';
-import {useVariantUrl} from '~/lib/variants';
-import {ProductItemFragment, CollectionQuery} from 'storefrontapi.generated';
-import {PartialPredictiveSearchResult} from '../SearchResultsPredictive';
-import {CurrencyCode} from '@shopify/hydrogen/storefront-api-types';
+import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
 import '../../styles/routeStyles/product.css';
-import {LoaderFunctionArgs, redirect} from '@remix-run/server-runtime';
-import {ReloadIcon} from '@radix-ui/react-icons';
-import {FaHeart, FaRegHeart} from 'react-icons/fa';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
-import {useIsLoggedIn} from '~/lib/hooks';
-import {toast} from 'sonner';
-import {Dialog, DialogClose, DialogContent} from '../ui/dialog';
 
 interface ReviewMedia {
   url: string;
@@ -42,26 +17,20 @@ interface ReviewMedia {
 
 export const ReviewMediaCarousel = ({
   url,
+  onImageClick,
 }: {
   // accept full product OR a looser shape (to silence type-checking when your caller doesn't have full objects)
   url: ReviewMedia[];
+  onImageClick?: (index: number) => void;
 }) => {
   const cardClassName =
     'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer';
 
   const cardContentClassName = 'flex flex-col h-full';
 
-  const navigate = useNavigate();
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const [isZoomOpen, setIsZoomOpen] = useState(false);
-  const [zoomIndex, setZoomIndex] = useState(0);
-  const [zoomCarouselApi, setZoomCarouselApi] = useState<CarouselApi | null>(
-    null,
-  );
-  const [zoomCurrentIndex, setZoomCurrentIndex] = useState(0);
-  const [zoomTotalItems, setZoomTotalItems] = useState(0);
 
   useEffect(() => {
     if (!carouselApi) return;
@@ -78,29 +47,7 @@ export const ReviewMediaCarousel = ({
     return () => void carouselApi.off('select', updateCarouselState);
   }, [carouselApi]);
 
-  useEffect(() => {
-    if (!zoomCarouselApi) return;
-
-    const updateZoomState = () => {
-      setZoomCurrentIndex(zoomCarouselApi.selectedScrollSnap());
-      setZoomTotalItems(zoomCarouselApi.scrollSnapList().length);
-    };
-
-    updateZoomState();
-
-    zoomCarouselApi.on('select', updateZoomState);
-
-    return () => void zoomCarouselApi.off('select', updateZoomState);
-  }, [zoomCarouselApi]);
-
-  useEffect(() => {
-    if (!zoomCarouselApi || !isZoomOpen) return;
-    zoomCarouselApi.scrollTo(zoomIndex, true);
-  }, [zoomCarouselApi, isZoomOpen, zoomIndex]);
-
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
-  const scrollZoomToIndex = (index: number) => zoomCarouselApi?.scrollTo(index);
-  console.log(url, 'url');
 
   const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.stopPropagation();
@@ -111,18 +58,6 @@ export const ReviewMediaCarousel = ({
     evt.stopPropagation();
     scrollToIndex(currentIndex - 1);
   };
-
-  const openZoomAtIndex = (index: number) => {
-    setZoomIndex(index);
-    setIsZoomOpen(true);
-  };
-
-  let locationName: string | undefined;
-  let locationState: string | undefined;
-  let locationCountry: string | undefined;
-
-  const titleCase = (w: string) =>
-    w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
 
   return (
     <article className="group relative">
@@ -147,7 +82,7 @@ export const ReviewMediaCarousel = ({
                       {img.type === 'image' && (
                         <button
                           type="button"
-                          onClick={() => openZoomAtIndex(idx)}
+                          onClick={() => onImageClick?.(idx)}
                           className="cursor-zoom-in"
                         >
                           <img
