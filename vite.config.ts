@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['blond-romance-char-starts.tryhydrogen.dev'],
+    allowedHosts: ['ages-wilderness-payment-pop.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

@@ -107,7 +107,7 @@ export const ReviewMediaCarousel = ({
                 ))}
               </CarouselContent>
 
-              <div className="absolute inset-0 z-40 flex items-center justify-center gap-4 pointer-events-none">
+              <div className="absolute inset-0 z-500 flex items-center justify-between pointer-events-none">
                 <Button
                   onClick={decreaseIndex}
                   className={`pointer-events-auto rounded-full w-10 h-10 p-0 shadow-none cursor-pointer bg-black/60 hover:bg-black/75`}
@@ -125,7 +125,7 @@ export const ReviewMediaCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && (
-              <div className="carousel-preview-dots absolute bottom-[-50px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
+              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}

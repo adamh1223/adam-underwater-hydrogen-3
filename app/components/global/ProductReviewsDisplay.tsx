@@ -378,7 +378,7 @@ const ProductReviewsDisplay = ({
               )}
               {!isCurrentUserReview && !isAdmin && (
                 <>
-                  <div className="stars-writtenby py-4">
+                  <div className="stars-writtenby pt-4 pb-2">
                     <div className="flex items-center justify-center">
                       <div>
                         <div className="flex justify-center">
