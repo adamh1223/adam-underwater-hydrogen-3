@@ -210,18 +210,18 @@ export const ReviewMediaCarousel = ({
       <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
         <DialogContent
           overlayClassName="bg-background/80 backdrop-blur-md transition-all"
-          className="flex h-dvh w-dvw max-w-none flex-col rounded-none border-0 bg-transparent p-0 shadow-none top-0 left-0 translate-x-0 translate-y-0"
+          className="flex h-dvh w-dvw max-w-none flex-col rounded-none border-0 bg-transparent p-[3vw] shadow-none"
         >
-          <div className="flex h-full w-full flex-col gap-6 p-[3vw]">
-            <div className="flex w-full items-start justify-end">
-              <DialogClose className="inline-flex h-10 w-10 items-center justify-center rounded-md border cursor-pointer text-white hover:bg-black/80">
-                <XIcon className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </DialogClose>
-            </div>
-            <div className="flex flex-1 items-center justify-center">
-              <div className="flex w-full max-w-7xl flex-col items-center gap-6">
-                <div className="w-full">
+          <div className="flex w-full items-start justify-end p-6">
+            <DialogClose className="inline-flex h-10 w-10 items-center justify-center rounded-md border cursor-pointer text-white hover:bg-black/80">
+              <XIcon className="h-5 w-5" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+          <div className="flex flex-1 items-center justify-center pb-10">
+            <div className="flex w-full max-w-7xl flex-col items-center gap-6">
+              <div className="flex w-full flex-col items-center gap-6">
+                <div className="relative w-full">
                   <Carousel
                     setApi={setZoomCarouselApi}
                     className="w-full transform-none"
@@ -236,12 +236,12 @@ export const ReviewMediaCarousel = ({
                             {media.type === 'image' && (
                               <img
                                 src={media.url}
-                                className="max-h-[calc(100vh-12rem)] w-auto max-w-[90vw] rounded-lg object-contain"
+                                className="max-h-[90vh] w-auto max-w-[90vw] rounded-lg object-contain"
                               />
                             )}
                             {media.type === 'video' && (
                               <video
-                                className="max-h-[calc(100vh-12rem)] w-auto max-w-[90vw] rounded-lg"
+                                className="max-h-[90vh] w-auto max-w-[90vw] rounded-lg"
                                 controls
                                 playsInline
                                 preload="metadata"
