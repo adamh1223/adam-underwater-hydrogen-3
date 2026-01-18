@@ -74,9 +74,9 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
               'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed inset-0 z-[1001] flex h-dvh w-dvw flex-col bg-transparent p-0 shadow-none duration-200',
             )}
           >
-            <div className="flex h-full w-full flex-col gap-6 p-[3vw]">
+            <div className="flex h-full w-full flex-col gap-3 p-4">
               <div className="flex w-full items-start justify-end">
-                <DialogClose className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80">
+                <DialogClose className="inline-flex h-10 w-10 items-center justify-center text-white hover:bg-accent border rounded-md cursor-pointer">
                   <XIcon className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </DialogClose>

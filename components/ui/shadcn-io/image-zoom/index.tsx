@@ -69,7 +69,7 @@ export const ImageZoom = ({
             <button
               type="button"
               onClick={onUnzoom}
-              className="absolute right-6 top-6 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+              className="absolute right-6 top-6 z-10 inline-flex h-10 w-10 items-center justify-center text-white hover:bg-accent border rounded-md cursor-pointer"
               aria-label="Close"
             >
               <XIcon className="h-5 w-5" />
