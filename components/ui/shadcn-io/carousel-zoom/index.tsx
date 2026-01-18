@@ -71,7 +71,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
           <DialogOverlay className="transition-all data-[state=closed]:bg-transparent data-[state=closed]:backdrop-blur-0 data-[state=open]:bg-background/80 data-[state=open]:backdrop-blur-md motion-reduce:transition-none" />
           <DialogPrimitive.Content
             className={cn(
-              'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed inset-0 z-[1001] flex h-dvh w-dvw flex-col bg-transparent p-0 shadow-none duration-200 motion-reduce:animate-none',
+              'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed inset-0 z-[1001] flex h-dvh w-dvw flex-col bg-transparent p-0 shadow-none duration-200',
             )}
           >
             <div className="flex h-full w-full flex-col gap-6 p-[3vw]">
