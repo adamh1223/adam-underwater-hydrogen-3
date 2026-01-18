@@ -71,12 +71,12 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
           <DialogOverlay className="bg-background/80 backdrop-blur-md" />
           <DialogPrimitive.Content
             className={cn(
-              'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed inset-0 z-50 flex h-dvh w-dvw flex-col bg-transparent p-0 shadow-none duration-200',
+              'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed inset-0 z-[1001] flex h-dvh w-dvw flex-col bg-transparent p-0 shadow-none duration-200',
             )}
           >
             <div className="flex h-full w-full flex-col gap-6 p-[3vw]">
               <div className="flex w-full items-start justify-end">
-                <DialogClose className="inline-flex h-10 w-10 items-center justify-center rounded-md border cursor-pointer text-white hover:bg-black/80">
+                <DialogClose className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80">
                   <XIcon className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </DialogClose>
@@ -84,7 +84,10 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
               <div className="flex flex-1 items-center justify-center">
                 <div className="flex w-full max-w-7xl flex-col items-center gap-6">
                   <div className="w-full">
-                    <Carousel setApi={setZoomCarouselApi} className="w-full transform-none">
+                    <Carousel
+                      setApi={setZoomCarouselApi}
+                      className="w-full transform-none"
+                    >
                       <CarouselContent className="ml-0">
                         {items?.map((media, idx) => (
                           <CarouselItem
@@ -114,48 +117,48 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                       </CarouselContent>
                     </Carousel>
                   </div>
-                  {zoomTotalItems > 1 && (
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="z-20 flex w-full items-center justify-center gap-3">
-                        {Array.from({length: zoomTotalItems}).map((_, idx) => (
-                          <button
-                            key={`zoom-dot-${idx}`}
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              scrollZoomToIndex(idx);
-                            }}
-                            className={`h-2 w-2 rounded-full border border-white/60 ${idx === zoomCurrentIndex ? 'bg-white' : 'bg-white/30'}`}
-                            aria-label={`Go to slide ${idx + 1}`}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex w-full items-center justify-center gap-4">
-                        <Button
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            scrollZoomToIndex(zoomCurrentIndex - 1);
-                          }}
-                          className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
-                          variant="secondary"
-                        >
-                          <ChevronLeftIcon className="h-6 w-6 text-white" />
-                        </Button>
-                        <Button
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            scrollZoomToIndex(zoomCurrentIndex + 1);
-                          }}
-                          className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
-                          variant="secondary"
-                        >
-                          <ChevronRightIcon className="h-6 w-6 text-white" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
+              {zoomTotalItems > 1 && (
+                <div className="flex flex-col items-center gap-3 pb-6">
+                  <div className="flex w-full items-center justify-center gap-4">
+                    <Button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        scrollZoomToIndex(zoomCurrentIndex - 1);
+                      }}
+                      className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
+                      variant="secondary"
+                    >
+                      <ChevronLeftIcon className="h-6 w-6 text-white" />
+                    </Button>
+                    <Button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        scrollZoomToIndex(zoomCurrentIndex + 1);
+                      }}
+                      className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
+                      variant="secondary"
+                    >
+                      <ChevronRightIcon className="h-6 w-6 text-white" />
+                    </Button>
+                  </div>
+                  <div className="z-20 flex w-full items-center justify-center gap-3">
+                    {Array.from({length: zoomTotalItems}).map((_, idx) => (
+                      <button
+                        key={`zoom-dot-${idx}`}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          scrollZoomToIndex(idx);
+                        }}
+                        className={`h-2 w-2 rounded-full border border-white/60 ${idx === zoomCurrentIndex ? 'bg-white' : 'bg-white/30'}`}
+                        aria-label={`Go to slide ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </DialogPrimitive.Content>
         </DialogPortal>
