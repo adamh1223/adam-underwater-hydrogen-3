@@ -7,8 +7,9 @@ import {
   CarouselItem,
 } from '../ui/carousel';
 import {Button} from '../ui/button';
-import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
+import {ChevronLeftIcon, ChevronRightIcon, XIcon} from 'lucide-react';
 import '../../styles/routeStyles/product.css';
+
 
 interface ReviewMedia {
   url: string;
@@ -142,99 +143,7 @@ export const ReviewMediaCarousel = ({
           </div>
         </div>
       </div>
-      <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
-        <DialogContent
-          overlayClassName="bg-background/80 backdrop-blur-md transition-all"
-          className="flex h-dvh w-dvw max-w-none flex-col rounded-none border-0 bg-transparent p-[3vw] shadow-none"
-        >
-          <div className="flex w-full items-start justify-end p-6">
-            <DialogClose className="inline-flex h-10 w-10 items-center justify-center rounded-md border cursor-pointer text-white hover:bg-black/80">
-              <XIcon className="h-5 w-5" />
-              <span className="sr-only">Close</span>
-            </DialogClose>
-          </div>
-          <div className="flex flex-1 items-center justify-center pb-10">
-            <div className="flex w-full max-w-7xl flex-col items-center gap-6">
-              <div className="flex w-full flex-col items-center gap-6">
-                <div className="relative w-full">
-                  <Carousel
-                    setApi={setZoomCarouselApi}
-                    className="w-full transform-none"
-                  >
-                    <CarouselContent className="ml-0">
-                      {url?.map((media, idx) => (
-                        <CarouselItem
-                          className="flex items-center justify-center pl-0"
-                          key={`${media.url}-${idx}`}
-                        >
-                          <div className="flex h-full w-full items-center justify-center px-4">
-                            {media.type === 'image' && (
-                              <img
-                                src={media.url}
-                                className="max-h-[90vh] w-auto max-w-[90vw] rounded-lg object-contain"
-                              />
-                            )}
-                            {media.type === 'video' && (
-                              <video
-                                className="max-h-[90vh] w-auto max-w-[90vw] rounded-lg"
-                                controls
-                                playsInline
-                                preload="metadata"
-                              >
-                                <source src={media.url} type="video/mp4" />
-                              </video>
-                            )}
-                          </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </Carousel>
-                </div>
-                {zoomTotalItems > 1 && (
-                  <>
-                    <div className="flex w-full items-center justify-center gap-4">
-                      <Button
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          scrollZoomToIndex(zoomCurrentIndex - 1);
-                        }}
-                        className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
-                        variant="secondary"
-                      >
-                        <ChevronLeftIcon className="h-6 w-6 text-white" />
-                      </Button>
-                      <Button
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          scrollZoomToIndex(zoomCurrentIndex + 1);
-                        }}
-                        className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
-                        variant="secondary"
-                      >
-                        <ChevronRightIcon className="h-6 w-6 text-white" />
-                      </Button>
-                    </div>
-                    <div className="z-20 flex w-full items-center justify-center gap-3 pb-2">
-                      {Array.from({length: zoomTotalItems}).map((_, idx) => (
-                        <button
-                          key={`zoom-dot-${idx}`}
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            scrollZoomToIndex(idx);
-                          }}
-                          className={`h-2 w-2 rounded-full border border-white/60 ${idx === zoomCurrentIndex ? 'bg-white' : 'bg-white/30'}`}
-                          aria-label={`Go to slide ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </article>
   );
 };
