@@ -208,7 +208,10 @@ export const ReviewMediaCarousel = ({
         </div>
       </div>
       <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
-        <DialogContent className="flex h-dvh w-dvw max-w-none flex-col rounded-none border-0 bg-transparent p-0 shadow-none">
+        <DialogContent
+          overlayClassName="bg-background/80 backdrop-blur-md transition-all"
+          className="flex h-dvh w-dvw max-w-none flex-col rounded-none border-0 bg-transparent p-[3vw] shadow-none"
+        >
           <div className="flex w-full items-start justify-end p-6">
             <DialogClose className="inline-flex h-10 w-10 items-center justify-center rounded-md border cursor-pointer text-white hover:bg-black/80">
               <XIcon className="h-5 w-5" />
@@ -233,12 +236,12 @@ export const ReviewMediaCarousel = ({
                             {media.type === 'image' && (
                               <img
                                 src={media.url}
-                                className="max-h-[80vh] w-auto max-w-[90vw] rounded-lg object-contain"
+                                className="max-h-[90vh] w-auto max-w-[90vw] rounded-lg object-contain"
                               />
                             )}
                             {media.type === 'video' && (
                               <video
-                                className="max-h-[80vh] w-auto max-w-[90vw] rounded-lg"
+                                className="max-h-[90vh] w-auto max-w-[90vw] rounded-lg"
                                 controls
                                 playsInline
                                 preload="metadata"
