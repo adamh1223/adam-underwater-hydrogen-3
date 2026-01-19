@@ -190,7 +190,7 @@ function EProductsContainer({
       >
         <Card className={cardClassName}>
           {layout === 'list' && (
-            <div className="cursor-pointer absolute top-[7px] right-[40px] z-50 p-1">
+            <div className="cursor-pointer absolute top-[8px] right-[20px] z-50 p-1">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
