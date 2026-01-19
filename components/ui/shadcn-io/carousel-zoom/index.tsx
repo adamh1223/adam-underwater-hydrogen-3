@@ -121,13 +121,13 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
               </div>
               {zoomTotalItems > 1 && (
                 <div className="flex flex-col items-center gap-3 pb-6">
-                  <div className="flex w-full items-center justify-center gap-4">
+                  <div className="flex w-full items-center justify-center gap-4 ">
                     <Button
                       onClick={(event) => {
                         event.stopPropagation();
                         scrollZoomToIndex(zoomCurrentIndex - 1);
                       }}
-                      className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
+                      className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-accent rounded-md cursor-pointer border"
                       variant="secondary"
                     >
                       <ChevronLeftIcon className="h-6 w-6 text-white" />
@@ -137,7 +137,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                         event.stopPropagation();
                         scrollZoomToIndex(zoomCurrentIndex + 1);
                       }}
-                      className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-black/75"
+                      className="rounded-full w-10 h-10 p-0 shadow-none bg-black/60 hover:bg-accent rounded-md cursor-pointer border"
                       variant="secondary"
                     >
                       <ChevronRightIcon className="h-6 w-6 text-white" />
