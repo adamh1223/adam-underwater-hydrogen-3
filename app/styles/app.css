@@ -449,21 +449,23 @@ button.reset:hover:not(:has(> *)) {
   .recommended-products-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: 20px;
-    padding: 20px 50px 0 50px;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 12px;
   }
   .recommended-products-grid-simple {
     display: grid;
     grid-template-columns: 1fr;
-    column-gap: 20px;
-    padding: 20px 50px 0 50px;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 12px;
   }
   .prods-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: 20px;
-    row-gap: 20px;
-    padding: 20px 50px 0 50px;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 12px;
     align-items: stretch;
   }
   .prods-grid > * {
@@ -472,8 +474,8 @@ button.reset:hover:not(:has(> *)) {
   .prods-grid-favorites {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    column-gap: 20px;
-    row-gap: 20px;
+    column-gap: 12px;
+    row-gap: 12px;
     padding: 0 50px 0 50px;
   }
 }
@@ -481,21 +483,23 @@ button.reset:hover:not(:has(> *)) {
   .recommended-products-grid {
     display: grid;
     grid-template-columns: 1fr;
-    column-gap: 20px;
-    padding: 20px 20px 0 20px;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 12px;
   }
   .recommended-products-grid-simple {
     display: grid;
     grid-template-columns: 1fr;
-    column-gap: 20px;
-    padding: 20px 20px 0 20px;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 12px;
   }
   .prods-grid {
     display: grid;
     grid-template-columns: 1fr;
-    column-gap: 20px;
-    row-gap: 20px;
-    padding: 20px 20px 0 20px;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 12px;
     align-items: stretch;
   }
   .prods-grid > * {
@@ -504,9 +508,9 @@ button.reset:hover:not(:has(> *)) {
   .prods-grid-favorites {
     display: grid;
     grid-template-columns: 1fr;
-    column-gap: 20px;
-    row-gap: 20px;
-    padding: 0 20px 0 20px;
+    column-gap: 12px;
+    row-gap: 12px;
+    padding: 0 12px 0 12px;
   }
 }
 
@@ -1648,4 +1652,8 @@ span {
 
 .x-icon {
   z-index: 50000;
+}
+
+.list-card-container {
+  row-gap: 12px;
 }

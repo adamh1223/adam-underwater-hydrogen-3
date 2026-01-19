@@ -104,12 +104,12 @@ export const ProductCarousel = ({
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-5 pb-3'
-      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 my-3 cursor-pointer';
+      : 'transform group-hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-[12px]';
 
   const cardContentClassName =
     layout === 'grid'
       ? 'flex flex-col h-full'
-      : 'px-8 md:px-6 gap-y-4 grid list-view-large-row pt-4 pb-4';
+      : 'px-8 md:px-6 gap-y-4 grid list-view-large-row py-4';
 
   const variantUrl = useVariantUrl(handle);
 
@@ -339,7 +339,7 @@ export const ProductCarousel = ({
   const loginValue = useIsLoggedIn(isLoggedIn);
 
   return (
-    <article className="group relative h-full">
+    <article className="group relative h-full mb-[12px]">
       <Card className={cardClassName}>
         {layout === 'list' && (
           <div className="cursor-pointer absolute top-[20px] right-[40px] z-50 p-1">

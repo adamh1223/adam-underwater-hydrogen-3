@@ -45,6 +45,7 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import RecommendedProducts from '~/components/products/recommendedProducts';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection?.title ?? ''} Collection`}];
@@ -204,7 +205,7 @@ export default function Collection() {
   };
 
   const layoutClassName =
-    layout === 'grid' ? 'prods-grid gap-x-5' : 'mt-6 grid';
+    layout === 'grid' ? 'prods-grid gap-x-5' : 'mt-[12px] grid';
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
@@ -627,6 +628,11 @@ export default function Collection() {
           }}
         />
       </div>
+      {/* {collection?.handle === 'stock' && <RecommendedProducts
+        products={data?.recommendedProducts}
+        isLoggedIn={data.isLoggedIn}
+      />} */}
+      {/* add recommendedproducts to bottom of stock footage page */}
     </div>
   );
 }
