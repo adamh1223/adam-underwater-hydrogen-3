@@ -76,6 +76,7 @@ const ProductReviewsDisplay = ({
     {
       url: customerVideo,
       type: 'video',
+      posterUrl: customerImage ?? undefined,
     },
     {
       url: customerImage,
@@ -425,8 +426,8 @@ const ProductReviewsDisplay = ({
                             className="home-video__player"
                             controls
                             playsInline
-                            
-                            poster={customerVideo}
+                            preload="metadata"
+                            poster={customerImage ?? undefined}
                           >
                             <source src={customerVideo} type="video/mp4" />
                           </video>
