@@ -9,6 +9,7 @@ import {
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon, XIcon} from 'lucide-react';
 import '../../styles/routeStyles/product.css';
+import ReviewVideoPlayer from './ReviewVideoPlayer';
 
 
 interface ReviewMedia {
@@ -94,15 +95,10 @@ export const ReviewMediaCarousel = ({
                         </button>
                       )}
                       {img.type === 'video' && (
-                        <video
+                        <ReviewVideoPlayer
                           className="home-video__player"
-                          controls
-                          playsInline
-                          preload="metadata"
-                          poster={img.posterUrl}
-                        >
-                          <source src={img.url} type="video/mp4" />
-                        </video>
+                          src={img.url}
+                        />
                       )}
                     </div>
                   </CarouselItem>

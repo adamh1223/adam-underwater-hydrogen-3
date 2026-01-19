@@ -8,6 +8,7 @@ import {ReloadIcon} from '@radix-ui/react-icons';
 import ReviewMediaCarousel from './ReviewMediaCarousel';
 import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
 import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
+import ReviewVideoPlayer from './ReviewVideoPlayer';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -422,15 +423,10 @@ const ProductReviewsDisplay = ({
                     {customerVideo && (
                       <>
                         <div className="home-video px-2">
-                          <video
+                          <ReviewVideoPlayer
                             className="home-video__player"
-                            controls
-                            playsInline
-                            preload="metadata"
-                            poster={customerImage ?? undefined}
-                          >
-                            <source src={customerVideo} type="video/mp4" />
-                          </video>
+                            src={customerVideo}
+                          />
                         </div>
                       </>
                     )}
