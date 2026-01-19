@@ -14,6 +14,7 @@ import '../../styles/routeStyles/product.css';
 interface ReviewMedia {
   url: string;
   type: string;
+  posterUrl?: string;
 }
 
 export const ReviewMediaCarousel = ({
@@ -97,8 +98,8 @@ export const ReviewMediaCarousel = ({
                           className="home-video__player"
                           controls
                           playsInline
-                          preload='auto'
-                          poster={img.url}
+                          preload="metadata"
+                          poster={img.posterUrl}
                         >
                           <source src={img.url} type="video/mp4" />
                         </video>
