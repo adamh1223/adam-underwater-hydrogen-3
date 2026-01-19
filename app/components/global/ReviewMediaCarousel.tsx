@@ -97,7 +97,8 @@ export const ReviewMediaCarousel = ({
                           className="home-video__player"
                           controls
                           playsInline
-                          preload="metadata"
+                          preload='auto'
+                          poster={img.url}
                         >
                           <source src={img.url} type="video/mp4" />
                         </video>

@@ -425,7 +425,8 @@ const ProductReviewsDisplay = ({
                             className="home-video__player"
                             controls
                             playsInline
-                            preload="metadata"
+                            
+                            poster={customerVideo}
                           >
                             <source src={customerVideo} type="video/mp4" />
                           </video>
