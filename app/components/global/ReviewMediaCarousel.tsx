@@ -15,6 +15,7 @@ import ReviewVideoPlayer from './ReviewVideoPlayer';
 interface ReviewMedia {
   url: string;
   type: string;
+  posterUrl?: string;
 }
 
 export const ReviewMediaCarousel = ({

@@ -77,6 +77,7 @@ const ProductReviewsDisplay = ({
     {
       url: customerVideo,
       type: 'video',
+      posterUrl: customerImage ?? undefined,
     },
     {
       url: customerImage,
