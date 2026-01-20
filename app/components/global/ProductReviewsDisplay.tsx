@@ -191,7 +191,7 @@ const ProductReviewsDisplay = ({
                         <RatingButton key={index} className="stars" />
                       ))}
                     </Rating>
-                    <p>Written by {displayAuthor}</p>
+                    <p>{displayAuthor}</p>
                   </div>
                 </div>
                 <div>
@@ -340,7 +340,7 @@ const ProductReviewsDisplay = ({
                           ))}
                         </Rating>
 
-                        <p>Written by {displayAuthor}</p>
+                        <p>{displayAuthor}</p>
                       </div>
                     </div>
                     <div>
@@ -391,7 +391,7 @@ const ProductReviewsDisplay = ({
                           </Rating>
                         </div>
 
-                        <p>Written by {displayAuthor}</p>
+                        <p>{displayAuthor}</p>
                       </div>
                     </div>
                   </div>
