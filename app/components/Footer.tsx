@@ -124,7 +124,7 @@ function FooterMenu({
         </Button>
       </div>
       <div className="flex justify-center my-5 text-muted-foreground">
-        <p>Copyright 2024 Adam Underwater, All rights reserved.</p>
+        <p>Copyright 2026 Adam Underwater, All rights reserved.</p>
       </div>
 
       {/* {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
