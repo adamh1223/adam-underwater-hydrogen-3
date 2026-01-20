@@ -422,7 +422,7 @@ const ProductReviewsDisplay = ({
                     )}
                     {customerVideo && (
                       <>
-                        <div className="home-video px-2">
+                        <div className="home-video px-2 pb-2">
                           <ReviewVideoPlayer
                             className="home-video__player"
                             src={customerVideo}
