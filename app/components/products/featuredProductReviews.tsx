@@ -3,6 +3,7 @@ import {Suspense} from 'react';
 import ProductReviewsCarousel from '../global/ProductReviewsCarousel';
 import {Separator} from '../ui/separator';
 import type {Review} from '../global/ProductReviewsDisplay';
+import {Rating, RatingButton} from '../ui/shadcn-io/rating';
 
 interface FeaturedReviewsQuery {
   products: {
@@ -63,6 +64,9 @@ function FeaturedProductReviews({
               const averageRating = totalRatings
                 ? totalStars / totalRatings
                 : 0;
+              const formattedAverageRating = totalRatings
+                ? averageRating.toFixed(2)
+                : '0.0';
 
               if (!featuredReviews.length) return null;
               //   let parsedReviews: any[] = [];
@@ -134,13 +138,48 @@ function FeaturedProductReviews({
               return (
                 <>
                   <div className="flex flex-col items-center gap-1 pb-4 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      {totalRatings.toLocaleString()} total rating
-                      {totalRatings === 1 ? '' : 's'} site-wide
-                    </p>
-                    <p className="text-lg font-semibold">
-                      Average rating: {averageRating.toFixed(2)} / 5
-                    </p>
+                    <div className="average-product-rating">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="relative flex items-center"
+                          aria-hidden="true"
+                        >
+                          <Rating
+                            readOnly
+                            value={5}
+                            className="text-muted-foreground"
+                            aria-label="Maximum rating of 5 stars"
+                          >
+                            {Array.from({length: 5}).map((_, index) => (
+                              <RatingButton key={index} className="h-5 w-5 p-0.5" />
+                            ))}
+                          </Rating>
+                          <div
+                            className="absolute inset-0 overflow-hidden text-yellow-400"
+                            style={{
+                              width: `${(averageRating / 5) * 100 + 2}%`,
+                            }}
+                          >
+                            <Rating readOnly value={5} className="text-yellow-400">
+                              {Array.from({length: 5}).map((_, index) => (
+                                <RatingButton
+                                  key={index}
+                                  className="h-5 w-5 p-0.5"
+                                  aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                />
+                              ))}
+                            </Rating>
+                          </div>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {formattedAverageRating} (
+                          {totalRatings === 1
+                            ? '1 review'
+                            : `${totalRatings.toLocaleString()} reviews`}
+                          )
+                        </span>
+                      </div>
+                    </div>
                   </div>
                   <ProductReviewsCarousel
                     reviews={featuredReviews}
