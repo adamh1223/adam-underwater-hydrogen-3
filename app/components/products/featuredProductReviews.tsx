@@ -45,12 +45,15 @@ function FeaturedProductReviews({
           <Await resolve={reviews}>
             {(response) => {
               if (!response) return null;
-              const allReviews = response.products.nodes.flatMap((node) =>
+              const allReviews = response.products.nodes.flatMap((node) => 
                 parseReviewsValue(node.metafield?.value),
               );
+              
               const featuredReviews = allReviews.filter(
                 (review) => review.isFeatured === true,
               );
+              console.log(response.products, 'response');
+              
 
               const totalRatings = allReviews.length;
               const totalStars = allReviews.reduce((sum, review) => {
@@ -71,72 +74,7 @@ function FeaturedProductReviews({
                 : '0.0';
 
               if (!featuredReviews.length) return null;
-              //   let parsedReviews: any[] = [];
-              //   try {
-              //     const rawReviews = featuredReviews;
-              //     parsedReviews = rawReviews
-              //       ? (JSON.parse(rawReviews) as any[])
-              //       : [];
-              //   } catch (error) {
-              //     console.error(
-              //       'Unable to parse product reviews metafield',
-              //       error,
-              //     );
-              //     parsedReviews = [];
-              //   }
-              //   const [reviewsList, setReviewsList] = useState(parsedReviews);
-              //   const updateExistingReviews = (newReviews: any[]) => {
-              //     setReviewsList(newReviews);
-              //   };
-              //   const handleEditReview = async (
-              //     reviewToEdit: any,
-              //     updates: {
-              //       text: string;
-              //       title: string;
-              //       stars: number;
-              //       image?: File | null;
-              //       isFeatured?: boolean;
-              //     },
-              //   ) => {
-              //     if (!currentCustomerId || !reviewToEdit?.createdAt) return;
-
-              //     const form = new FormData();
-              //     form.append('productId', product.id);
-              //     form.append('customerId', currentCustomerId);
-              //     form.append('createdAt', reviewToEdit.createdAt);
-              //     form.append('review', updates.text);
-              //     form.append('stars', updates.stars.toString());
-              //     form.append('title', updates.title);
-              //     form.append('customerName', customerName);
-              //     if (updates.image) {
-              //       form.append('image', updates.image);
-              //     }
-              //     if (isAdmin && typeof updates.isFeatured === 'boolean') {
-              //       form.append('isFeatured', updates.isFeatured ? 'yes' : 'no');
-              //     }
-
-              //     try {
-              //       const response = await fetch('/api/edit_review', {
-              //         method: 'POST',
-              //         body: form,
-              //         headers: {Accept: 'application/json'},
-              //       });
-
-              //       if (!response.ok) {
-              //         console.error(
-              //           'Failed to edit review',
-              //           await response.text(),
-              //         );
-              //         return;
-              //       }
-
-              //       const data = await response.json();
-              //       const updatedReviews = data?.reviews ?? [];
-              //       setReviewsList(updatedReviews);
-              //     } catch (error) {
-              //       console.error('Error editing review', error);
-              //     }
-              //   };
+            
               return (
                 <>
                   <div className="flex flex-col items-center gap-1 pt-3 pb-1 text-center">
