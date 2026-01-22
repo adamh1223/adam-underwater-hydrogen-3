@@ -1,5 +1,5 @@
 import {Await} from '@remix-run/react';
-import {Suspense, useState} from 'react';
+import {Suspense} from 'react';
 import ProductReviewsCarousel from '../global/ProductReviewsCarousel';
 import {Separator} from '../ui/separator';
 import type {Review} from '../global/ProductReviewsDisplay';
@@ -43,11 +43,26 @@ function FeaturedProductReviews({
           <Await resolve={reviews}>
             {(response) => {
               if (!response) return null;
-              const featuredReviews = response.products.nodes.flatMap((node) =>
-                parseReviewsValue(node.metafield?.value).filter(
-                  (review) => review.isFeatured === true,
-                ),
+              const allReviews = response.products.nodes.flatMap((node) =>
+                parseReviewsValue(node.metafield?.value),
               );
+              const featuredReviews = allReviews.filter(
+                (review) => review.isFeatured === true,
+              );
+
+              const totalRatings = allReviews.length;
+              const totalStars = allReviews.reduce((sum, review) => {
+                const starsValue =
+                  typeof review.stars === 'string'
+                    ? Number(review.stars)
+                    : review.stars;
+                return Number.isFinite(starsValue)
+                  ? sum + (starsValue ?? 0)
+                  : sum;
+              }, 0);
+              const averageRating = totalRatings
+                ? totalStars / totalRatings
+                : 0;
 
               if (!featuredReviews.length) return null;
               //   let parsedReviews: any[] = [];
@@ -117,14 +132,26 @@ function FeaturedProductReviews({
               //     }
               //   };
               return (
-                <ProductReviewsCarousel
-                  reviews={featuredReviews}
-                  isAdmin={
-                    currentCustomerId === 'gid://shopify/Customer/7968375079049'
-                  }
-                  currentCustomerId={currentCustomerId}
-                  //   onEdit={}
-                />
+                <>
+                  <div className="flex flex-col items-center gap-1 pb-4 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      {totalRatings.toLocaleString()} total rating
+                      {totalRatings === 1 ? '' : 's'} site-wide
+                    </p>
+                    <p className="text-lg font-semibold">
+                      Average rating: {averageRating.toFixed(2)} / 5
+                    </p>
+                  </div>
+                  <ProductReviewsCarousel
+                    reviews={featuredReviews}
+                    isAdmin={
+                      currentCustomerId ===
+                      'gid://shopify/Customer/7968375079049'
+                    }
+                    currentCustomerId={currentCustomerId}
+                    //   onEdit={}
+                  />
+                </>
               );
             }}
           </Await>
