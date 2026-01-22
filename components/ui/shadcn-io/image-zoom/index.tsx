@@ -6,6 +6,7 @@ import Zoom, {
   type UncontrolledProps,
 } from 'react-medium-image-zoom';
 import {cn} from '~/lib/utils';
+import {XIcon} from 'lucide-react';
 
 export type ImageZoomProps = UncontrolledProps & {
   isZoomed?: ControlledProps['isZoomed'];
@@ -62,6 +63,19 @@ export const ImageZoom = ({
         // ✅ This is the key: keeps the zoomed image inset from the viewport edges,
         // which makes it effectively max out at ~90vw/90vh.
         zoomMargin={zoomMargin} // :contentReference[oaicite:1]{index=1}
+        ZoomContent={({img, onUnzoom}) => (
+          <>
+            {img}
+            <button
+              type="button"
+              onClick={onUnzoom}
+              className="absolute right-6 top-6 z-10 inline-flex h-10 w-10 items-center justify-center text-white hover:bg-accent border rounded-md cursor-pointer"
+              aria-label="Close"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+          </>
+        )}
         classDialog={cn(
           '[&::backdrop]:hidden',
           // ✅ full viewport dialog => positioning is consistent regardless of scroll

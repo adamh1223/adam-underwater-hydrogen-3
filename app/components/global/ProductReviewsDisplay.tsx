@@ -5,6 +5,10 @@ import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {Button} from '../ui/button';
 import {Input} from '../ui/input';
 import {ReloadIcon} from '@radix-ui/react-icons';
+import ReviewMediaCarousel from './ReviewMediaCarousel';
+import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
+import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
+import ReviewVideoPlayer from './ReviewVideoPlayer';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -17,6 +21,7 @@ export interface Review {
   title?: string;
   customerName?: string;
   customerImage?: string;
+  customerVideo?: string;
   isFeatured?: boolean;
 }
 
@@ -58,7 +63,27 @@ const ProductReviewsDisplay = ({
   const loaderCustomerId = routeData?.customer?.customer?.id;
   const resolvedCustomerId = currentCustomerId ?? loaderCustomerId;
 
-  const {title, stars, customerName, text, customerId, customerImage} = review;
+  const {
+    title,
+    stars,
+    customerName,
+    text,
+    customerId,
+    customerImage,
+    customerVideo,
+  } = review;
+  console.log(review, 'reviewlog');
+  const urls = [
+    {
+      url: customerVideo,
+      type: 'video',
+      posterUrl: customerImage ?? undefined,
+    },
+    {
+      url: customerImage,
+      type: 'image',
+    },
+  ];
 
   const parsedStars =
     typeof stars === 'string' ? parseInt(stars, 10) : (stars ?? 0);
@@ -66,6 +91,19 @@ const ProductReviewsDisplay = ({
   const displayTitle = title?.trim() ? title : 'Review';
   const displayAuthor = customerName?.trim() ? customerName : 'Anonymous';
   const displayText = text ?? '';
+  const displayDate = (() => {
+    const iso = review.createdAt;
+    if (!iso) return '';
+
+    // Expecting: YYYY-MM-DDT...
+    const year = iso.slice(0, 4);
+    const month = iso.slice(5, 7);
+    const day = iso.slice(8, 10);
+
+    if (!year || !month || !day) return iso;
+
+    return `${Number(month)}/${Number(day)}/${year}`;
+  })();
 
   const [editTitle, setEditTitle] = useState(displayTitle);
   const [editText, setEditText] = useState(
@@ -153,11 +191,11 @@ const ProductReviewsDisplay = ({
                         <RatingButton key={index} className="stars" />
                       ))}
                     </Rating>
-                    <p>Written by {displayAuthor}</p>
+                    <p>{displayAuthor}</p>
                   </div>
                 </div>
                 <div>
-                <div className="review-right-side-container">
+                  <div className="review-right-side-container">
                     <div className="ps-1 pt-2 pe-2 flex justify-end">
                       <div className="review-right-side">
                         <Button
@@ -217,11 +255,13 @@ const ProductReviewsDisplay = ({
 
               {imagePreview && (
                 <div className="mt-3 flex justify-center">
-                  <img
-                    src={imagePreview}
-                    alt="Edited review"
-                    className="max-h-56 rounded object-contain mb-3"
-                  />
+                  <ImageZoom>
+                    <img
+                      src={imagePreview}
+                      alt="Edited review"
+                      className="max-h-56 rounded object-contain mb-3 cursor-zoom-in"
+                    />
+                  </ImageZoom>
                 </div>
               )}
 
@@ -288,7 +328,7 @@ const ProductReviewsDisplay = ({
       ) : (
         <>
           <div className="review-container">
-            <div className="review-left-side">
+            <div className="review-left-side review-left-side-display">
               {(isCurrentUserReview || isAdmin) && (
                 <>
                   <div className="stars-writtenby-buttons">
@@ -300,7 +340,7 @@ const ProductReviewsDisplay = ({
                           ))}
                         </Rating>
 
-                        <p>Written by {displayAuthor}</p>
+                        <p>{displayAuthor}</p>
                       </div>
                     </div>
                     <div>
@@ -340,35 +380,70 @@ const ProductReviewsDisplay = ({
               )}
               {!isCurrentUserReview && !isAdmin && (
                 <>
-                  <div className="stars-writtenby py-4">
+                  <div className="stars-writtenby pt-4 pb-2">
                     <div className="flex items-center justify-center">
                       <div>
-                        <Rating value={parsedStars} readOnly>
-                          {Array.from({length: 5}).map((_, index) => (
-                            <RatingButton key={index} className="stars" />
-                          ))}
-                        </Rating>
+                        <div className="flex justify-center">
+                          <Rating value={parsedStars} readOnly>
+                            {Array.from({length: 5}).map((_, index) => (
+                              <RatingButton key={index} className="stars" />
+                            ))}
+                          </Rating>
+                        </div>
 
-                        <p>Written by {displayAuthor}</p>
+                        <p>{displayAuthor}</p>
                       </div>
                     </div>
                   </div>
                 </>
               )}
-
-              {customerImage && (
-                <div className="mt-3 mb-5 flex justify-center">
-                  <img
-                    src={customerImage}
-                    alt="Review"
-                    className="max-h-56 rounded object-contain"
-                  />
+                <div className="customer-media-container">
+                {customerImage && customerVideo ? (
+                  <CarouselZoom items={urls}>
+                    {(openAtIndex) => (
+                      <ReviewMediaCarousel
+                        url={urls}
+                        onImageClick={openAtIndex}
+                      />
+                    )}
+                  </CarouselZoom>
+                ) : (
+                  <>
+                    {customerImage && (
+                      <div className="mb-3 flex justify-center">
+                        <ImageZoom>
+                          <img
+                            src={customerImage}
+                            alt="Review"
+                            className="max-h-56 rounded object-contain cursor-zoom-in"
+                          />
+                        </ImageZoom>
+                      </div>
+                    )}
+                    {customerVideo && (
+                      <>
+                        <div className="home-video px-2 pb-2">
+                          <ReviewVideoPlayer
+                            className="home-video__player"
+                            src={customerVideo}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+              <Card className="review-summary-card mt-3 mb-2 mx-2">
+                <div>
+                  <div className="ps-5 pt-3">
+                    <p className="review-title font-bold">{displayTitle}</p>
+                  </div>
+                  <div className="ps-5">
+                    <p className="text-muted-foreground text-sm">
+                      {displayDate}
+                    </p>
+                  </div>
                 </div>
-              )}
-              <Card className="mt-3 mb-4 mx-4 w-[90%]">
-                <CardHeader>
-                  <p className="review-title font-bold">{displayTitle}</p>
-                </CardHeader>
                 <CardContent>
                   <p className="review-body">{displayText}</p>
                 </CardContent>

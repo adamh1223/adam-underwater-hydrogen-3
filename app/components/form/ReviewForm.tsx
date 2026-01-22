@@ -4,6 +4,7 @@ import {Button} from '../ui/button';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import Sectiontitle from '../global/Sectiontitle';
 import {ReloadIcon} from '@radix-ui/react-icons';
+import {Link} from '@remix-run/react';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -24,15 +25,16 @@ function ReviewForm({
   isBlocked: Boolean;
   updateExistingReviews: (reviews: any[]) => void;
 }) {
-  
-
   const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
   const [review, setReview] = useState('');
   const [stars, setStars] = useState(0);
   const [title, setTitle] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileVideoInputRef = useRef<HTMLInputElement | null>(null);
 
   const [reviewSubmittedMessage, setReviewSubmittedMessage] =
     useState<string>();
@@ -58,10 +60,11 @@ function ReviewForm({
     }
   };
   const [fileError, setFileError] = useState('');
+  const [videoFileError, setVideoFileError] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    
+
     setFileError('');
     if (file && file?.size / (1024 * 1024) > 20) {
       setFileError('Image exceeds 20 mb limit');
@@ -72,7 +75,18 @@ function ReviewForm({
   };
 
   const triggerFileSelect = () => fileInputRef.current?.click();
-  
+  const triggerVideoFileSelect = () => fileVideoInputRef.current?.click();
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const videoFile = e.target.files?.[0] ?? null;
+    setVideoFileError('');
+    if (videoFile && videoFile?.size / (1024 * 1024) > 40) {
+      setFileError('Image exceeds 40 mb limit');
+      return;
+    }
+    setSelectedVideo(videoFile);
+    setVideoPreview(videoFile ? URL.createObjectURL(videoFile) : null);
+  };
 
   const disableSubmitButton =
     !review || !stars || !title || userReviewExists || isBlocked;
@@ -92,6 +106,9 @@ function ReviewForm({
 
       if (selectedImage) {
         form.append('image', selectedImage);
+      }
+      if (selectedVideo) {
+        form.append('video', selectedVideo);
       }
 
       const response = await fetch('/api/add_review', {
@@ -206,6 +223,41 @@ function ReviewForm({
                 )}
               </div>
 
+              <input
+                ref={fileVideoInputRef}
+                type="file"
+                accept="video/mp4,.mov"
+                className="hidden"
+                onChange={handleVideoFileChange}
+                disabled={!isLoggedIn}
+              />
+
+              <div className="flex items-center gap-3 mb-5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={triggerVideoFileSelect}
+                  disabled={!isLoggedIn}
+                  className="cursor-pointer"
+                >
+                  Upload Video
+                </Button>
+                {videoPreview && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <video
+                      className="home-video__player"
+                      controls
+                      playsInline
+                      preload="metadata"
+                    >
+                      <source src={videoPreview} type="video/mp4" />
+                    </video>
+                    <span className="truncate max-w-[160px]">
+                      {selectedVideo?.name}
+                    </span>
+                  </div>
+                )}
+              </div>
               {/* Submit */}
               <Button
                 onClick={handleSubmit}
@@ -218,17 +270,27 @@ function ReviewForm({
                   'Submit'
                 )}
               </Button>
+              {!isLoggedIn && (
+                <>
+                  <div className="pt-2 sign-in-link">
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Please{' '}
+                      <Link
+                        to="/account/login"
+                        className="text-blue-500 underline"
+                      >
+                        sign in
+                      </Link>{' '}
+                      to leave a review.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </>
       ) : (
         <div>{reviewSubmittedMessage}</div>
-      )}
-
-      {!isLoggedIn && (
-        <p className="text-sm text-muted-foreground mt-2">
-          Please sign in to leave a review.
-        </p>
       )}
     </>
   );

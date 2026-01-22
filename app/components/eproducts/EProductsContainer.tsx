@@ -43,7 +43,7 @@ function EProductsContainer({
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-5'
-      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-8 h-full gap-y-3';
+      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-[12px] h-full gap-y-3';
 
   const cardContentClassName =
     layout === 'grid'
@@ -186,11 +186,11 @@ function EProductsContainer({
           const dollarsAmount = formatCurrency(price);
           return ( */}
       <article
-        className={`group relative h-full ${layout === 'list' && 'pb-5'}`}
+        className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
       >
         <Card className={cardClassName}>
           {layout === 'list' && (
-            <div className="cursor-pointer absolute top-[7px] right-[40px] z-50 p-1">
+            <div className="cursor-pointer absolute top-[8px] right-[20px] z-50 p-1">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

@@ -6,7 +6,6 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
-import VideoPreview from '~/components/video/VideoPreview';
 import Hero from '~/components/hero/Hero';
 import ProductCarousel from '~/components/products/productCarousel';
 import {
@@ -45,7 +44,7 @@ export async function loader(args: LoaderFunctionArgs) {
     };
   }
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
-const currentCustomerId = customer.data.customer.id
+  const currentCustomerId = customer.data.customer.id;
 
   if (!customer.data.customer.metafield?.value) {
     return [];
@@ -54,7 +53,13 @@ const currentCustomerId = customer.data.customer.id
     customer.data.customer.metafield?.value,
   ) as string[];
 
-  return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn, currentCustomerId};
+  return {
+    ...deferredData,
+    ...criticalData,
+    wishlistProducts,
+    isLoggedIn,
+    currentCustomerId,
+  };
 }
 
 /**
@@ -128,8 +133,10 @@ export default function Homepage() {
       <div className="flex justify-center font-bold text-xl pb-2">
         <p>What our customers are saying</p>
       </div>
-      <FeaturedProductReviews reviews={data.featuredReviews} 
-      currentCustomerId={data.currentCustomerId}/>
+      <FeaturedProductReviews
+        reviews={data.featuredReviews}
+        currentCustomerId={data.currentCustomerId}
+      />
     </div>
   );
 }

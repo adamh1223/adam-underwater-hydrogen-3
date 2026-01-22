@@ -20,7 +20,7 @@ function RecommendedProducts({
         <Suspense fallback={<div>Loading...</div>}>
           <Await resolve={products}>
             {(response) => (
-              <div className="recommended-products-grid gap-x-5 gap-y-5">
+              <div className="recommended-products-grid">
                 {response
                   ? response.products.nodes.map((product) => {
                       const isVideo = product.tags?.includes('Video');
