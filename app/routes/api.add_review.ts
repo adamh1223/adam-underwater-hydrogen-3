@@ -169,6 +169,8 @@ export async function action({request, context}: ActionFunctionArgs) {
         createdAt: new Date().toISOString(),
         customerId,
         stars,
+        productId,
+        productName,
         title,
         customerName,
         customerImage,

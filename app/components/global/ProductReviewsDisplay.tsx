@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useRouteLoaderData} from '@remix-run/react';
+import {Link, useRouteLoaderData} from '@remix-run/react';
 import {Card, CardContent, CardHeader} from '../ui/card';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {Button} from '../ui/button';
@@ -9,6 +9,7 @@ import ReviewMediaCarousel from './ReviewMediaCarousel';
 import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
 import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
 import ReviewVideoPlayer from './ReviewVideoPlayer';
+import { replaceSpacesWithDashes } from '~/utils/grammer';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -17,6 +18,7 @@ export interface Review {
   createdAt?: string;
   customerId?: string;
   productId?: string;
+  productName?: string;
   stars?: number | string;
   title?: string;
   customerName?: string;
@@ -69,10 +71,12 @@ const ProductReviewsDisplay = ({
     customerName,
     text,
     customerId,
+    productId,
+    productName,
     customerImage,
     customerVideo,
   } = review;
-  console.log(review, 'reviewlog');
+  console.log(productName, 'prodname');
   const urls = [
     {
       url: customerVideo,
@@ -446,6 +450,13 @@ const ProductReviewsDisplay = ({
                 </div>
                 <CardContent>
                   <p className="review-body">{displayText}</p>
+                  <Link
+                    to={`/products/${replaceSpacesWithDashes(productName)}`}
+                    className="w-full flex justify-center text-blue-500 underline hover:text-muted-foreground cursor-pointer"
+                  >
+
+                  <p>{productName}</p>
+                  </Link>
                 </CardContent>
               </Card>
             </div>
