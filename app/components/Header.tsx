@@ -920,12 +920,12 @@ function HeaderCtas({
               >
                 {/* <LuAlignLeft className="w-6 h-6" /> */}
                 {/* Place dropdown arrow here */}
-                <LuUser className="w-6 h-6 bg-primary rounded-full text-white" />
+                <LuUser className="lu-user-icon bg-primary rounded-full text-white"/>
                 <button
                   type="button"
                   aria-label="Toggle account menu"
                   aria-expanded={accountMenuOpen}
-                  className="ps-[1px] text-primary cursor-default"
+                  className="account-dropdown-arrow-button ps-[1px] text-primary cursor-default"
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
@@ -933,7 +933,7 @@ function HeaderCtas({
                   }}
                 >
                   <ChevronUp
-                    className={`rounded-md border border-input transition-transform duration-200 ${
+                    className={` account-dropdown-arrow-icon rounded-md border border-input transition-transform duration-200 ${
                       accountMenuOpen ? 'rotate-180' : 'rotate-0'
                     }`}
                     size={18}

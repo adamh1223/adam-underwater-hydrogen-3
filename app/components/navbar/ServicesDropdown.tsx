@@ -88,7 +88,7 @@ function ServicesDropdown({
                   }}
                 >
                   <ChevronUp
-                    className={`rounded-md border border-input transition-transform duration-200 ${
+                    className={`dropdownbutton-about-icon rounded-md border border-input transition-transform duration-200 ${
                       open ? 'rotate-180' : 'rotate-0'
                     }`}
                     size={18}

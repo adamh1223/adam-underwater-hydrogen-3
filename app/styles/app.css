@@ -1656,3 +1656,22 @@ span {
 .list-card-container {
   row-gap: 12px;
 }
+
+.lu-user-icon {
+  height: 22px;
+  width: 22px;
+}
+
+.account-dropdown-arrow-icon {
+  height: 22px;
+  width: 30px;
+}
+
+.account-dropdown-arrow-button{
+
+}
+
+.dropdownbutton-about-icon {
+  height: 20px;
+  width: 23px;
+}
