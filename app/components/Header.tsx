@@ -912,7 +912,8 @@ function HeaderCtas({
                 variant="outline"
                 className="flex gap-4 max-w-[100px] cursor-pointer"
               >
-                <LuAlignLeft className="w-6 h-6" />
+                {/* <LuAlignLeft className="w-6 h-6" /> */}
+                {/* Place dropdown arrow here */}
                 <LuUser className="w-6 h-6 bg-primary rounded-full text-white" />
                 {/* <Suspense fallback="Sign in">
                 <Await resolve={isLoggedIn} errorElement="Sign in">

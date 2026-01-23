@@ -277,7 +277,7 @@ function ReviewForm({
                       Please{' '}
                       <Link
                         to="/account/login"
-                        className="text-blue-500 underline"
+                        className="text-primary underline"
                       >
                         sign in
                       </Link>{' '}
