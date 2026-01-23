@@ -105,7 +105,7 @@ export const ReviewMediaCarousel = ({
                 ))}
               </CarouselContent>
 
-              <div className="absolute inset-0 z-200 flex items-center justify-between pointer-events-none">
+              <div className="absolute inset-0 z-100 flex items-center justify-between pointer-events-none">
                 <Button
                   onClick={decreaseIndex}
                   className={`pointer-events-auto rounded-full w-7 h-7 p-0 shadow-none cursor-pointer bg-black/60 hover:bg-black/75`}
