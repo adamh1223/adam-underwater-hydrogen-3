@@ -101,7 +101,7 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
 
   return (
     <Aside type="search" heading="SEARCH">
-      <div className="predictive-search mt-[8px]">
+      <div className="mt-[8px] cart-main ">
         <br />
         <SearchFormPredictive>
           {({fetchResults, inputRef}) => {

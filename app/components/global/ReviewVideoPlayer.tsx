@@ -70,9 +70,9 @@ const ReviewVideoPlayer = ({src, className}: ReviewVideoPlayerProps) => {
       playsInline
       preload="metadata"
       crossOrigin="anonymous"
-      poster={poster}
+      // poster='https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
     >
-      <source src={src} type="video/mp4" />
+      <source src={`${src}#t=0.001`} type="video/mp4" />
     </video>
   );
 };
