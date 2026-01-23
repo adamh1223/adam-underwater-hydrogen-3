@@ -446,7 +446,7 @@ export function HeaderMenu({
               </div>
 
               {/* ⭐ SHIFTED LEFT 30px */}
-              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[18px] mt-[16px] gap-[2px] ">
+              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[9px] mt-[16px] gap-[2px] ">
                 {menuFirstHalf.map((item) => {
                   if (!item.url) return null;
 
