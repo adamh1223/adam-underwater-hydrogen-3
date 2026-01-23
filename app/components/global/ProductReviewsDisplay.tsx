@@ -332,6 +332,7 @@ const ProductReviewsDisplay = ({
       ) : (
         <>
           <div className="review-container">
+            
             <div className="review-left-side review-left-side-display">
               {(isCurrentUserReview || isAdmin) && (
                 <>
@@ -347,6 +348,7 @@ const ProductReviewsDisplay = ({
                         <p>{displayAuthor}</p>
                       </div>
                     </div>
+                    
                     <div>
                       <div className="review-right-side-container">
                         <div className="ps-1 pt-2 pe-2 flex justify-end">
@@ -384,7 +386,7 @@ const ProductReviewsDisplay = ({
               )}
               {!isCurrentUserReview && !isAdmin && (
                 <>
-                  <div className="stars-writtenby pt-4 pb-2">
+                  <div className="stars-writtenby pt-4">
                     <div className="flex items-center justify-center">
                       <div>
                         <div className="flex justify-center">
@@ -395,12 +397,19 @@ const ProductReviewsDisplay = ({
                           </Rating>
                         </div>
 
-                        <p>{displayAuthor}</p>
+                        <div className='flex justify-center'>{displayAuthor}</div>
                       </div>
                     </div>
                   </div>
                 </>
               )}
+              <Link
+                    to={`/products/${replaceSpacesWithDashes(productName)}`}
+                    className="w-full flex justify-center "
+                  >
+
+                  <p className='hover:text-primary hover:underline text-muted-foreground pb-2'>{productName}</p>
+                  </Link>
                 <div className="customer-media-container">
                 {customerImage && customerVideo ? (
                   <CarouselZoom items={urls}>
@@ -450,13 +459,7 @@ const ProductReviewsDisplay = ({
                 </div>
                 <CardContent>
                   <p className="review-body">{displayText}</p>
-                  <Link
-                    to={`/products/${replaceSpacesWithDashes(productName)}`}
-                    className="w-full flex justify-center text-blue-500 underline hover:text-muted-foreground cursor-pointer"
-                  >
-
-                  <p>{productName}</p>
-                  </Link>
+                  
                 </CardContent>
               </Card>
             </div>
