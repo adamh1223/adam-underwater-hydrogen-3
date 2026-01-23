@@ -24,7 +24,7 @@ import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
 import {useIsLoggedIn} from '~/lib/hooks';
-import {Divide} from 'lucide-react';
+import {ChevronUp, Divide} from 'lucide-react';
 import {log} from 'util';
 
 interface HeaderProps {
@@ -890,6 +890,7 @@ function HeaderCtas({
     icon: string;
   };
   const loginValue = useIsLoggedIn(isLoggedIn);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const links: NavLink[] = [
     {href: '/', label: 'Home', icon: 'home-icon'},
@@ -904,17 +905,40 @@ function HeaderCtas({
     <nav className="header-ctas" role="navigation">
       {/* <HeaderMenuMobileToggle /> */}
 
-      <RadixHoverCard.Root openDelay={100} closeDelay={100}>
+      <RadixHoverCard.Root
+        open={accountMenuOpen}
+        onOpenChange={setAccountMenuOpen}
+        openDelay={100}
+        closeDelay={100}
+      >
         <RadixHoverCard.Trigger asChild>
           <NavLink prefetch="intent" to="/account">
             <div className="account-menu-dropdown">
               <Button
                 variant="outline"
-                className="flex gap-4 max-w-[100px] cursor-pointer"
+                className="flex items-center gap-2 max-w-[100px] cursor-pointer"
               >
                 {/* <LuAlignLeft className="w-6 h-6" /> */}
                 {/* Place dropdown arrow here */}
                 <LuUser className="w-6 h-6 bg-primary rounded-full text-white" />
+                <button
+                  type="button"
+                  aria-label="Toggle account menu"
+                  aria-expanded={accountMenuOpen}
+                  className="ps-[1px] text-primary cursor-default"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setAccountMenuOpen((currentOpen) => !currentOpen);
+                  }}
+                >
+                  <ChevronUp
+                    className={`rounded-md border border-input transition-transform duration-200 ${
+                      accountMenuOpen ? 'rotate-180' : 'rotate-0'
+                    }`}
+                    size={18}
+                  />
+                </button>
                 {/* <Suspense fallback="Sign in">
                 <Await resolve={isLoggedIn} errorElement="Sign in">
                   {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
