@@ -959,6 +959,7 @@ export default function Product() {
         {windowWidth && windowWidth < 1024 && (
           <>
             <br />
+            <div className='individual-product-header-container px-[35px]'>
 
             <div className="title-button-wrapper">
               <span className="capitalize text-3xl font-bold">{title}</span>
@@ -1060,6 +1061,7 @@ export default function Product() {
               </a>
             )}
             <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
+            </div>
           </>
         )}
         {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
@@ -1241,7 +1243,7 @@ export default function Product() {
         {windowWidth && windowWidth < 1024 && !isVideo && (
           <div className="items-top ">
             <div className="flex justify-end card-accordion-container">
-              <Card className="py-2 px-4 w-full">
+              <Card className="py-2 px-4 mx-[20px] mb-2 w-full">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1">
                     <AccordionTrigger>Print Specs</AccordionTrigger>
