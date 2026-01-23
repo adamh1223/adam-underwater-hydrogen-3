@@ -238,7 +238,7 @@ export default function AboutPage() {
                 href="https://gifts.worldwildlife.org/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline"
+                className="text-primary underline"
               >
                 The World Wildlife Fund
               </a>
@@ -247,7 +247,7 @@ export default function AboutPage() {
                 href="https://www.urchinomics.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline"
+                className="text-primary underline"
               >
                 Urchinomics
               </a>
@@ -256,7 +256,7 @@ export default function AboutPage() {
                 href="https://www.santamonicabay.org/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline"
+                className="text-primary underline"
               >
                 The Bay Foundation
               </a>
@@ -265,7 +265,7 @@ export default function AboutPage() {
                 href="https://www.paradeigm.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline"
+                className="text-primary underline"
               >
                 Paradeigm Films
               </a>
@@ -274,7 +274,7 @@ export default function AboutPage() {
                 href="https://odysseyfreediving.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline"
+                className="text-primary underline"
               >
                 Odyssey Freediving
               </a>{' '}
@@ -297,7 +297,7 @@ export default function AboutPage() {
                 href="/products"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline"
+                className="text-primary underline"
               >
                 Products
               </a>{' '}
@@ -312,7 +312,7 @@ export default function AboutPage() {
                 href="https://seaforestfilm.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 underline"
+                className="text-primary underline"
               >
                 seaforestfilm.com
               </a>{' '}
@@ -469,7 +469,7 @@ export default function AboutPage() {
                   href="https://odysseyfreediving.com/products/neptune-long-blade-fins"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 underline"
+                  className="text-primary underline"
                 >
                   Neptune Long Blade Freediving Fins
                 </a>{' '}
