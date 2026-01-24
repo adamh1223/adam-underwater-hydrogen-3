@@ -105,7 +105,7 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
             </>
           )}
           {/* 720–1023px (2 slides) */}
-          {windowWidth && windowWidth < 1024 && windowWidth >= 720 && (
+          {windowWidth && windowWidth < 1024 && (
             <>
               {cards.map((card: CardData, idx: number) => (
                 <CarouselItem
@@ -147,12 +147,12 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
             </>
           )}
           {/* < 720px (1 slide) */}
-          {windowWidth && windowWidth < 720 && (
+          {/* {windowWidth && windowWidth < 720 && (
             <>
               {cards.map((card: CardData, idx: number) => (
                 <CarouselItem
                   key={idx}
-                  style={slideStyleForCount(1)}
+                  style={slideStyleForCount(2)}
                   className="flex justify-center"
                 >
                   <Card className="w-full">
@@ -187,7 +187,7 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
                 </CarouselItem>
               ))}
             </>
-          )}
+          )} */}
         </CarouselContent>
 
         <CarouselPrevious />
