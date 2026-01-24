@@ -845,10 +845,10 @@ span {
 }
 @media (max-width: 768px) {
   .inthebox-carousel [data-slot='carousel-previous'] {
-    left: 0.75rem !important;
+    left: -2.3rem !important;
   }
   .inthebox-carousel [data-slot='carousel-next'] {
-    right: 0.75rem !important;
+    right: -2.3rem !important;
   }
 }
 
