@@ -19,6 +19,7 @@ import {
   CardDescription,
   CardHeader,
 } from '~/components/ui/card';
+import Sectiontitle from '~/components/global/Sectiontitle';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Orders'}];
@@ -50,15 +51,18 @@ export default function Orders() {
   const {customer} = useLoaderData<{customer: CustomerOrdersFragment}>();
   const {orders} = customer;
   return (
-    <section className="orders flex justify-center">
+    <>
+    <Sectiontitle text="My Orders" />
+    <section className="orders flex justify-center pt-3">
       {orders.nodes.length ? <OrdersTable orders={orders} /> : <EmptyOrders />}
     </section>
+    </>
   );
 }
 
 function OrdersTable({orders}: Pick<CustomerOrdersFragment, 'orders'>) {
   return (
-    <div className="acccount-orders w-[70%]">
+    <div className="acccount-orders w-full">
       {orders?.nodes.length ? (
         <PaginatedResourceSection connection={orders}>
           {({node: order}) => <OrderItem key={order.id} order={order} />}

@@ -92,7 +92,7 @@ export default function AccountReviewsRoute() {
     .trim();
 
   return (
-    <div className="account-reviews space-y-6">
+    <div className="account-reviews space-y-3">
       <Sectiontitle text="My Reviews" />
       <AccountReviews
         products={products}

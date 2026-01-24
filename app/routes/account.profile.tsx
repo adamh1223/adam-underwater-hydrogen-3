@@ -16,6 +16,7 @@ import {
 import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
+import Sectiontitle from '~/components/global/Sectiontitle';
 
 export type ActionResponse = {
   error: string | null;
@@ -92,8 +93,10 @@ export default function AccountProfile() {
   const customer = action?.customer ?? account?.customer;
 
   return (
+    <>
+    <Sectiontitle text="My Profile" />
     <div className="account-profile flex justify-center">
-      <Card className="m-5 w-[70%]">
+      <Card className="mx-2 mt-3 w-[95%]">
         <div className="p-4">
           <h2>My profile</h2>
         </div>
@@ -158,5 +161,6 @@ export default function AccountProfile() {
         </Form>
       </Card>
     </div>
+    </>
   );
 }
