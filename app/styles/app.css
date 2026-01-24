@@ -825,22 +825,22 @@ span {
 }
 @media (max-width: 550px) {
   .inthebox-carousel {
-    width: 63vw;
+    width: 70vw;
   }
 }
 @media (min-width: 551px) and (max-width: 720px) {
   .inthebox-carousel {
-    width: 55vw;
+    width: 75vw;
   }
 }
 @media (min-width: 720px) and (max-width: 1023px) {
   .inthebox-carousel {
-    width: 75vw;
+    width: 85vw;
   }
 }
 @media (min-width: 1024px) {
   .inthebox-carousel {
-    width: 80vw;
+    width: 88vw;
   }
 }
 

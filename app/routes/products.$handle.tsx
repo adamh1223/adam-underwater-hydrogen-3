@@ -1770,7 +1770,7 @@ const navigate = useNavigate();
               </div>
             </div>
 
-            <div className="gap-x-5 py-5 px-[70px]">
+            <div className="gap-x-5 py-5">
               <ThreeUpCarouselBox cards={cards} />
             </div>
           </section>
