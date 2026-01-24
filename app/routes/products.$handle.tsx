@@ -1481,7 +1481,7 @@ const navigate = useNavigate();
                     </div>
                     <div className="flex justify-center ">
                       <div className="how-its-made-description-container justify-start xl:mt-2">
-                        <Card>
+                        <Card className='mx-4'>
                           <CardContent>
                             Quality matters - In this video, I break down how I
                             make each framed canvas print by hand, using premium
