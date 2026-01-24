@@ -66,7 +66,7 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
                 <CarouselItem
                   key={idx}
                   style={slideStyleForCount(3)}
-                  className="flex justify-center"
+                  className="flex justify-center mx-2"
                 >
                   <Card className="w-full">
                     <CardHeader>
