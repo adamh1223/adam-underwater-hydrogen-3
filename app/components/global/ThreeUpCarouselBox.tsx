@@ -31,9 +31,12 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const carouselGapRem = 1;
+
   function slideStyleForCount(count: number) {
-    const percent = 100 / count;
-    return {flex: `0 0 ${percent}%`, maxWidth: `${percent}%`};
+    const gapTotalRem = (count - 1) * carouselGapRem;
+    const width = `calc((100% - ${gapTotalRem}rem) / ${count})`;
+    return {flex: `0 0 ${width}`, maxWidth: width};
   }
 
   // Determine slides per view + alignment logic
@@ -58,7 +61,7 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
           slidesToScroll: 1,
         }}
       >
-        <CarouselContent className="!flex !items-stretch !justify-start">
+        <CarouselContent className="!flex !items-stretch !justify-start gap-4">
           {/* ≥ 1024px (3 slides) */}
           {windowWidth && windowWidth >= 1024 && (
             <>
@@ -66,7 +69,7 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
                 <CarouselItem
                   key={idx}
                   style={slideStyleForCount(3)}
-                  className="flex justify-center mx-2"
+                  className="flex justify-center"
                 >
                   <Card className="w-full">
                     <CardHeader>
@@ -110,7 +113,7 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
                   style={slideStyleForCount(2)}
                   className="flex justify-center items-stretch"
                 >
-                  <Card className="group w-full max-w-[420px] mx-2 p-4 overflow-visible">
+                  <Card className="group w-full max-w-[420px] p-4 overflow-visible">
                     <CardHeader>
                       <div className="flex justify-start">
                         <img
