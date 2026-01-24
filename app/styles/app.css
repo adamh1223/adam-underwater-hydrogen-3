@@ -843,6 +843,14 @@ span {
     width: 88vw;
   }
 }
+@media (max-width: 768px) {
+  .inthebox-carousel [data-slot='carousel-previous'] {
+    left: 0.75rem !important;
+  }
+  .inthebox-carousel [data-slot='carousel-next'] {
+    right: 0.75rem !important;
+  }
+}
 
 /* Make sure carousel content acts like a centered flex row */
 .you-may-like-carousel .carousel__content,
