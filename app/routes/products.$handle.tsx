@@ -5,6 +5,7 @@ import {
   Link,
   useRouteLoaderData,
   useLocation,
+  useNavigate,
 } from '@remix-run/react';
 import {
   getSelectedProductOptions,
@@ -785,7 +786,7 @@ export default function Product() {
       console.error('Error editing review', error);
     }
   };
-
+const navigate = useNavigate();
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
 
@@ -802,11 +803,10 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(true);
-      toast('Added to Favor', {
-        description: 'Navigate to my favorites to view all',
+      toast.success('Added to Favorites', {
         action: {
-          label: 'Undo',
-          onClick: () => console.log('Undo'),
+          label: 'View All Favorites',
+          onClick: () => navigate('/account/favorites'),
         },
       });
       setPendingWishlistChange(false);
@@ -828,7 +828,12 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(false);
-      // toast.success('Removed from Favorites');
+      toast.success('Removed from Favorites', {
+        action: {
+          label: 'View All Favorites',
+          onClick: () => navigate('/account/favorites'),
+        },
+      });
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);

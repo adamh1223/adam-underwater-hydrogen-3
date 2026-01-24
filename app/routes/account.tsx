@@ -36,14 +36,14 @@ export default function AccountLayout() {
     customer.firstName ? (
       // `Welcome, ${customer.firstName}`
       <>
-        <div className="flex justify-center pt-5">
-          <img src={'/account.png'} style={{height: '95px'}}></img>
+        <div className="flex justify-center">
+          <img src={'/account.png'} style={{height: '80px'}}></img>
         </div>
         <div className="flex justify-center">Welcome, {customer.firstName}</div>
       </>
     ) : (
-      <div className="flex justify-center pt-5">
-        <img src={'/account.png'} style={{height: '95px'}} className=""></img>
+      <div className="flex justify-center pt-3">
+        <img src={'/account.png'} style={{height: '80px'}} className=""></img>
       </div>
     )
   ) : (
@@ -55,7 +55,6 @@ export default function AccountLayout() {
       <h1>{heading}</h1>
       <br />
       <AccountMenu />
-      <br />
       <br />
       <Outlet context={{customer}} />
     </div>

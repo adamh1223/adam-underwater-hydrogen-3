@@ -29,6 +29,7 @@ import {
 } from '~/components/ui/card';
 import '../styles/routeStyles/addresses.css';
 import {Button} from '~/components/ui/button';
+import Sectiontitle from '~/components/global/Sectiontitle';
 
 export type ActionResponse = {
   addressId?: string | null;
@@ -266,6 +267,7 @@ export default function Addresses() {
 
   return (
     <>
+    <Sectiontitle text="My Addresses" />
       <p className="subheader">
         Speed up your checkout process by saving your address
       </p>
