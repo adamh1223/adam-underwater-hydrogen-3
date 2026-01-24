@@ -39,17 +39,8 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
     return {flex: `0 0 ${width}`, maxWidth: width};
   }
 
-  // Determine slides per view + alignment logic
-  let slidesPerView = 1;
-  let carouselAlign: 'start' | 'center' = 'start';
-  if (windowWidth && windowWidth >= 1024) {
-    slidesPerView = 3;
-  } else if (windowWidth && windowWidth >= 720) {
-    slidesPerView = 2;
-  } else {
-    slidesPerView = 1;
-    carouselAlign = 'center'; // only center single-slide mode
-  }
+const carouselAlign: 'start' | 'center' = 'start';
+ 
 
   return (
     <div className="w-full flex justify-center">
