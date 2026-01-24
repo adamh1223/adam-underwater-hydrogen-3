@@ -48,7 +48,7 @@ function FooterMenu({
 
     <>
       <div className="footer-container px-5">
-        <div className="flex items-center justify-center w-full my-8">
+        <div className="flex items-center justify-center w-full">
           <div className="flex-1 h-px bg-muted" />
           <span className="px-4 text-muted-foreground">
             <div className="social-icons">
@@ -76,7 +76,7 @@ function FooterMenu({
         </div>
       </div> 
 
-      <div className="flex justify-evenly pb-[100px] text-muted-foreground pt-5 mx-5">
+      <div className="flex justify-evenly pb-[40px] text-muted-foreground mx-5">
         <div className="help">
           <div className="footer-title flex justify-center text-3xl mb-2">
             Help
