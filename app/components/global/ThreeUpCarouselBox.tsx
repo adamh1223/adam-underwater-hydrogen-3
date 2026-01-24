@@ -104,7 +104,7 @@ const carouselAlign: 'start' | 'center' = 'start';
                   style={slideStyleForCount(2)}
                   className="flex justify-center items-stretch"
                 >
-                  <Card className="group w-full max-w-[420px] p-4 overflow-visible">
+                  <Card className="group w-full p-1 overflow-visible">
                     <CardHeader>
                       <div className="flex justify-start">
                         <img
@@ -118,8 +118,8 @@ const carouselAlign: 'start' | 'center' = 'start';
                       </div>
                       <hr />
                     </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-center">
+                    <div>
+                      <div className="flex justify-center px-1 pt-2">
                         <img
                           src={card.image}
                           alt={card.title}
@@ -127,11 +127,11 @@ const carouselAlign: 'start' | 'center' = 'start';
                         />
                       </div>
                       <div className="flex justify-center pt-2">
-                        <div className="max-w-[85%] text-center">
+                        <div className="max-w-[95%] text-center">
                           {card.description}
                         </div>
                       </div>
-                    </CardContent>
+                    </div>
                   </Card>
                 </CarouselItem>
               ))}
