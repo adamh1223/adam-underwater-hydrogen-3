@@ -249,8 +249,9 @@ function ReviewForm({
                       controls
                       playsInline
                       preload="metadata"
+                      crossOrigin="anonymous"
                     >
-                      <source src={videoPreview} type="video/mp4" />
+                      <source src={`${videoPreview}#t=0.001`} type="video/mp4" />
                     </video>
                     <span className="truncate max-w-[160px]">
                       {selectedVideo?.name}
