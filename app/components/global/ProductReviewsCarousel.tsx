@@ -15,6 +15,7 @@ interface ProductReviewsCarouselProps {
       title: string;
       stars: number;
       image?: File | null;
+      video?: File | null;
       isFeatured?: boolean;
     },
   ) => Promise<void> | void;
