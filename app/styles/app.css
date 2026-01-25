@@ -1294,9 +1294,27 @@ span {
   width: 75vw;
 }
 
+@media (max-width: 460px) {
 .stars-writtenby-buttons {
   display: grid;
-  grid-template-columns: 4fr 1fr;
+  grid-template-columns: 2fr 1fr;
+}
+.reviewbuttons-container {
+  display: flex;
+  justify-content: start;
+  padding: 8px 0 0 0;
+}
+}
+@media (min-width: 461px) {
+.stars-writtenby-buttons {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+}
+.reviewbuttons-container {
+  display: flex;
+  justify-content: end;
+  padding: 8px 8px 0 4px;
+}
 }
 
 .stars-writtenby {
@@ -1701,4 +1719,16 @@ span {
 .dropdownbutton-about-icon {
   height: 20px;
   width: 23px;
+}
+
+@media (max-width: 459px) {
+.reviewbutton {
+  width: 50px;
+}
+}
+
+@media (min-width: 460px) {
+.reviewbutton {
+  width: 56px;
+}
 }

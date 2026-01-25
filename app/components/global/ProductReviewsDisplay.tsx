@@ -217,13 +217,13 @@ const ProductReviewsDisplay = ({
                 </div>
                 <div className="review-right-side-slot">
                   <div className="review-right-side-container">
-                    <div className="ps-1 pt-2 pe-2 flex justify-end">
+                    <div className="reviewbuttons-container">
                       <div className="review-right-side">
                         <Button
                         size='reviewbtn'
                           onClick={handleEdit}
                           disabled={isSaving}
-                          className="cursor-pointer w-14 mb-2"
+                          className="reviewbutton cursor-pointer mb-2"
                         >
                           {isSaving ? (
                             <ReloadIcon className="animate-spin" />
@@ -240,7 +240,7 @@ const ProductReviewsDisplay = ({
                             setIsEditing(false);
                           }}
                           disabled={isSaving}
-                          className="cursor-pointer w-14"
+                          className="cursor-pointer reviewbutton"
                         >
                           Cancel
                         </Button>
@@ -407,14 +407,14 @@ const ProductReviewsDisplay = ({
                     
                     <div className="review-right-side-slot">
                       <div className="review-right-side-container">
-                        <div className="ps-1 pt-2 pe-2 flex justify-end">
+                        <div className="reviewbuttons-container">
                           <div className="review-right-side">
                             <Button
                               variant="destructive"
                               size='reviewbtn'
                               onClick={handleRemove}
                               disabled={isRemoving}
-                              className="mb-2 cursor-pointer w-14"
+                              className="mb-2 cursor-pointer reviewbutton"
                             >
                               {isRemoving ? (
                                 <ReloadIcon className="animate-spin" />
@@ -431,7 +431,7 @@ const ProductReviewsDisplay = ({
                                 setIsEditing(true);
                               }}
                               disabled={isSaving}
-                              className="cursor-pointer w-14"
+                              className="cursor-pointer reviewbutton"
                             >
                               Edit
                             </Button>
