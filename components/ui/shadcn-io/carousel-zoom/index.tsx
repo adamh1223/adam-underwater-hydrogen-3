@@ -133,8 +133,9 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                                   controls
                                   playsInline
                                   preload="metadata"
+                                  crossOrigin="anonymous"
                                 >
-                                  <source src={media.url} type="video/mp4" />
+                                  <source src={`${media.url}#t=0.001`} type="video/mp4" />
                                 </video>
                               )}
                             </div>
