@@ -199,7 +199,7 @@ const ProductReviewsDisplay = ({
   };
 
   return (
-    <Card className="review-card h-full w-full">
+    <Card className="review-card w-full">
       {isEditing ? (
         <>
           <div className="review-container">
@@ -285,7 +285,7 @@ const ProductReviewsDisplay = ({
                     <img
                       src={imagePreview}
                       alt="Edited review"
-                      className="max-h-56 rounded object-contain mb-3 cursor-zoom-in"
+                      className="max-h-56 object-contain mb-3 cursor-zoom-in"
                     />
                   </ImageZoom>
                 </div>
