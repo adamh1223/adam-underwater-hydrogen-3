@@ -31,6 +31,7 @@ interface ProductReviewsDisplayProps {
   review: Review;
   isAdmin: Boolean;
   currentCustomerId?: string;
+  showProductLink?: boolean;
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
     review: Review,
@@ -51,6 +52,7 @@ const ProductReviewsDisplay = ({
   onRemove,
   onEdit,
   isAdmin,
+  showProductLink = false,
 }: ProductReviewsDisplayProps) => {
   const [isRemoving, setIsRemoving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -311,6 +313,7 @@ const ProductReviewsDisplay = ({
               {videoPreview && (
                 <div className="home-video px-2 pb-2">
                   <ReviewVideoPlayer
+                    key={videoPreview}
                     className="home-video__player"
                     src={videoPreview}
                   />
@@ -451,17 +454,16 @@ const ProductReviewsDisplay = ({
                   </div>
                 </>
               )}
-              <div className="w-full flex justify-center">
-
-              <Link
-                    to={`/products/${replaceSpacesWithDashes(productName)}`}
-                    
-                  >
-
-                  {/* <button className='cursor-pointer hover:text-primary hover:underline text-muted-foreground pb-2'>{productName}</button> */}
-                  <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:text-primary py-1 px-2 mb-2 mt-1">{productName}</button>
+              {showProductLink && productName && (
+                <div className="w-full flex justify-center">
+                  <Link to={`/products/${replaceSpacesWithDashes(productName)}`}>
+                    {/* <button className='cursor-pointer hover:text-primary hover:underline text-muted-foreground pb-2'>{productName}</button> */}
+                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:text-primary py-1 px-2 mb-2 mt-1">
+                      {productName}
+                    </button>
                   </Link>
-              </div>
+                </div>
+              )}
                 <div className="customer-media-container">
                 {customerImage && customerVideo ? (
                   <CarouselZoom items={urls}>

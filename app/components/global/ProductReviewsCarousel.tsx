@@ -6,6 +6,7 @@ interface ProductReviewsCarouselProps {
   reviews: Review[];
   isAdmin: Boolean;
   currentCustomerId?: string;
+  showProductLink?: boolean;
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
     review: Review,
@@ -25,6 +26,7 @@ export default function ProductReviewsCarousel({
   currentCustomerId,
   onRemove,
   onEdit,
+  showProductLink = false,
 }: ProductReviewsCarouselProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState(0);
@@ -85,6 +87,7 @@ export default function ProductReviewsCarousel({
                   onRemove={onRemove}
                   onEdit={onEdit}
                   isAdmin={isAdmin}
+                  showProductLink={showProductLink}
                 />
               </div>
             ))}
