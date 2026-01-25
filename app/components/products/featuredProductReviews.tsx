@@ -128,6 +128,7 @@ function FeaturedProductReviews({
                       'gid://shopify/Customer/7968375079049'
                     }
                     currentCustomerId={currentCustomerId}
+                    showProductLink
                     //   onEdit={}
                   />
                 </>
