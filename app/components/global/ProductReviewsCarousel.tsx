@@ -31,6 +31,27 @@ export default function ProductReviewsCarousel({
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState(0);
   const [visibleHeight, setVisibleHeight] = useState(700);
+  const [columnCount, setColumnCount] = useState(2);
+
+  useEffect(() => {
+    const getColumnCount = () => {
+      if (typeof window === 'undefined') return 2;
+      if (window.matchMedia('(min-width: 1024px)').matches) return 4;
+      if (window.matchMedia('(min-width: 768px)').matches) return 3;
+      return 2;
+    };
+
+    const updateColumnCount = () => {
+      setColumnCount(getColumnCount());
+    };
+
+    updateColumnCount();
+    window.addEventListener('resize', updateColumnCount);
+
+    return () => {
+      window.removeEventListener('resize', updateColumnCount);
+    };
+  }, []);
 
   useEffect(() => {
     const element = contentRef.current;
@@ -63,6 +84,14 @@ export default function ProductReviewsCarousel({
   const maxHeight =
     contentHeight > visibleHeight ? `${visibleHeight}px` : undefined;
 
+    const reviewColumns = useMemo(() => {
+    const columns = Array.from({length: columnCount}, () => [] as Review[]);
+    sortedReviews.forEach((review, index) => {
+      columns[index % columnCount].push(review);
+    });
+    return columns;
+  }, [sortedReviews, columnCount]);
+
   if (!sortedReviews.length) return null;
 
   return (
@@ -74,21 +103,23 @@ export default function ProductReviewsCarousel({
         >
           <div
             ref={contentRef}
-            className="columns-2 gap-3 md:columns-3 lg:columns-4"
+            className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4"
+            style={{columnFill: 'auto'}}
           >
-            {sortedReviews.map((review, index) => (
-              <div
-                key={review?.createdAt ?? index}
-                className="mb-[10px] break-inside-avoid"
-              >
-                <ProductReviewsDisplay
-                  review={review}
-                  currentCustomerId={currentCustomerId}
-                  onRemove={onRemove}
-                  onEdit={onEdit}
-                  isAdmin={isAdmin}
-                  showProductLink={showProductLink}
-                />
+            {reviewColumns.map((columnReviews, columnIndex) => (
+              <div key={`review-column-${columnIndex}`} className="flex flex-col gap-3">
+                {columnReviews.map((review, reviewIndex) => (
+                  <div key={review?.createdAt ?? `${columnIndex}-${reviewIndex}`}>
+                    <ProductReviewsDisplay
+                      review={review}
+                      currentCustomerId={currentCustomerId}
+                      onRemove={onRemove}
+                      onEdit={onEdit}
+                      isAdmin={isAdmin}
+                      showProductLink={showProductLink}
+                    />
+                  </div>
+                ))}
               </div>
             ))}
           </div>
