@@ -804,7 +804,7 @@ export function HeaderMenu({
                 );
               })}
             </div>
-            <div className="2.2 flex justify-center w-full gap-[10px] ps-1">
+            <div className="2.2 flex justify-center w-full gap-[10px] ps-[10px]">
               {menuSecondHalf.map((item) => {
                 if (!item.url) return null;
 
