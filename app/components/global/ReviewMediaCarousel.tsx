@@ -69,7 +69,7 @@ export const ReviewMediaCarousel = ({
           <div className={`relative w-full rounded ${'top-part-card-grid'}`}>
             <Carousel
               setApi={setCarouselApi}
-              className="w-full max-w-7xl transform-none mb-3"
+              className="w-full max-w-7xl transform-none mb-3 z-50"
             >
               <CarouselContent>
                 {url?.map((img, idx) => (
@@ -124,7 +124,7 @@ export const ReviewMediaCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && (
-              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
+              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 flex items-end justify-center gap-3 h-24 pt-5">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -133,7 +133,7 @@ export const ReviewMediaCarousel = ({
                       event.stopPropagation();
                       scrollToIndex(idx);
                     }}
-                    className={`h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
+                    className={`cursor-pointer z-60 h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
                 ))}
