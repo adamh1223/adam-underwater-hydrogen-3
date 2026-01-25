@@ -172,6 +172,7 @@ const AccountReviews = ({
       title: string;
       stars: number;
       image?: File | null;
+      video?: File | null;
       isFeatured?: boolean;
     },
   ) => {
@@ -187,6 +188,9 @@ const AccountReviews = ({
     form.append('customerName', customerName ?? '');
     if (updates.image) {
       form.append('image', updates.image);
+    }
+    if (updates.video) {
+      form.append('video', updates.video);
     }
     if (typeof updates.isFeatured === 'boolean') {
       form.append('isFeatured', updates.isFeatured ? 'yes' : 'no');

@@ -39,6 +39,7 @@ interface ProductReviewsDisplayProps {
       title: string;
       stars: number;
       image?: File | null;
+      video?: File | null;
       isFeatured?: boolean;
     },
   ) => Promise<void> | void;
@@ -57,6 +58,8 @@ const ProductReviewsDisplay = ({
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
 
   const routeData = useRouteLoaderData<{
     customer?: {customer?: {id?: string}};
@@ -128,12 +131,15 @@ const ProductReviewsDisplay = ({
     setEditStars(parsedStars);
     setSelectedImage(null);
     setImagePreview(customerImage ?? null);
+    setSelectedVideo(null);
+    setVideoPreview(customerVideo ?? null);
     setEditIsFeatured(review.isFeatured ?? false);
   }, [
     displayTitle,
     displayText,
     parsedStars,
     customerImage,
+    customerVideo,
     review.isFeatured,
   ]);
 
@@ -143,13 +149,21 @@ const ProductReviewsDisplay = ({
     setEditStars(parsedStars);
     setSelectedImage(null);
     setImagePreview(customerImage ?? null);
+    setSelectedVideo(null);
+    setVideoPreview(customerVideo ?? null);
     setEditIsFeatured(review.isFeatured ?? false);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setSelectedImage(file);
     setImagePreview(file ? URL.createObjectURL(file) : (customerImage ?? null));
+  };
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setSelectedVideo(file);
+    setVideoPreview(file ? URL.createObjectURL(file) : (customerVideo ?? null));
   };
 
   const handleRemove = async () => {
@@ -173,6 +187,7 @@ const ProductReviewsDisplay = ({
         title: editTitle,
         stars: editStars,
         image: selectedImage,
+        video: selectedVideo,
         isFeatured: isAdmin ? editIsFeatured : undefined,
       });
       setIsEditing(false);
@@ -275,7 +290,7 @@ const ProductReviewsDisplay = ({
                 accept="image/*"
                 className="hidden"
                 id={`edit-image-${review.createdAt}`}
-                onChange={handleFileChange}
+                onChange={handleImageFileChange}
               />
               <div className="flex justify-center">
                 <Button
@@ -290,6 +305,39 @@ const ProductReviewsDisplay = ({
                   disabled={isSaving}
                 >
                   Upload New Image
+                </Button>
+              </div>
+
+              {videoPreview && (
+                <div className="home-video px-2 pb-2">
+                  <ReviewVideoPlayer
+                    className="home-video__player"
+                    src={videoPreview}
+                  />
+                </div>
+              )}
+
+              {/* Video upload */}
+              <input
+                type="file"
+                accept="video/*"
+                className="hidden"
+                id={`edit-video-${review.createdAt}`}
+                onChange={handleVideoFileChange}
+              />
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    document
+                      .getElementById(`edit-video-${review.createdAt}`)
+                      ?.click()
+                  }
+                  className="cursor-pointer mb-4"
+                  disabled={isSaving}
+                >
+                  Upload New Video
                 </Button>
               </div>
               <div className="title-body-character-limit mx-5">

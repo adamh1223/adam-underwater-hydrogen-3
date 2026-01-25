@@ -747,6 +747,7 @@ export default function Product() {
       title: string;
       stars: number;
       image?: File | null;
+      video?: File | null;
       isFeatured?: boolean;
     },
   ) => {
@@ -762,6 +763,9 @@ export default function Product() {
     form.append('customerName', customerName);
     if (updates.image) {
       form.append('image', updates.image);
+    }
+    if (updates.video) {
+      form.append('video', updates.video);
     }
     if (isAdmin && typeof updates.isFeatured === 'boolean') {
       form.append('isFeatured', updates.isFeatured ? 'yes' : 'no');
