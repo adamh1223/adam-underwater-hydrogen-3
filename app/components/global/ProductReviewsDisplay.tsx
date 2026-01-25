@@ -186,19 +186,19 @@ const ProductReviewsDisplay = ({
       {isEditing ? (
         <>
           <div className="review-container">
-            <div className="review-left-side">
+            <div className="review-left-side  review-left-side-display">
               <div className="stars-writtenby-buttons">
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center rating-and-author">
                   <div>
                     <Rating value={editStars} onValueChange={setEditStars}>
                       {Array.from({length: 5}).map((_, index) => (
                         <RatingButton key={index} className="stars" />
                       ))}
                     </Rating>
-                    <p>{displayAuthor}</p>
+                    <div className='flex justify-center'>{displayAuthor}</div>
                   </div>
                 </div>
-                <div>
+                <div className="review-right-side-slot">
                   <div className="review-right-side-container">
                     <div className="ps-1 pt-2 pe-2 flex justify-end">
                       <div className="review-right-side">
