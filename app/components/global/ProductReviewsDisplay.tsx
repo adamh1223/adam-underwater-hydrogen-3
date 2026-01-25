@@ -220,6 +220,7 @@ const ProductReviewsDisplay = ({
                     <div className="ps-1 pt-2 pe-2 flex justify-end">
                       <div className="review-right-side">
                         <Button
+                        size='reviewbtn'
                           onClick={handleEdit}
                           disabled={isSaving}
                           className="cursor-pointer w-14 mb-2"
@@ -233,6 +234,7 @@ const ProductReviewsDisplay = ({
 
                         <Button
                           variant="outline"
+                          size='reviewbtn'
                           onClick={() => {
                             resetEditState();
                             setIsEditing(false);
@@ -249,11 +251,13 @@ const ProductReviewsDisplay = ({
               </div>
 
               {isAdmin && (
-                <div className="mx-5 mb-4">
-                  <p className="mb-2 font-semibold">isFeatured:</p>
+                <div className="mx-5 mb-4 mt-2 flex justify-center">
+
+                  <div className="flex justify-center items-center font-semibold me-2">isFeatured:</div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
+                      size='reviewbtn'
                       variant={editIsFeatured ? 'default' : 'outline'}
                       onClick={() => setEditIsFeatured(true)}
                       disabled={isSaving}
@@ -263,6 +267,7 @@ const ProductReviewsDisplay = ({
                     </Button>
                     <Button
                       type="button"
+                      size='reviewbtn'
                       variant={!editIsFeatured ? 'default' : 'outline'}
                       onClick={() => setEditIsFeatured(false)}
                       disabled={isSaving}
@@ -406,6 +411,7 @@ const ProductReviewsDisplay = ({
                           <div className="review-right-side">
                             <Button
                               variant="destructive"
+                              size='reviewbtn'
                               onClick={handleRemove}
                               disabled={isRemoving}
                               className="mb-2 cursor-pointer w-14"
@@ -419,6 +425,7 @@ const ProductReviewsDisplay = ({
 
                             <Button
                               variant="secondary"
+                              size='reviewbtn'
                               onClick={() => {
                                 resetEditState();
                                 setIsEditing(true);
@@ -455,7 +462,7 @@ const ProductReviewsDisplay = ({
                 </>
               )}
               {showProductLink && productName && (
-                <div className="w-full flex justify-center">
+                <div className="w-full flex justify-center pt-1">
                   <Link to={`/products/${replaceSpacesWithDashes(productName)}`}>
                     {/* <button className='cursor-pointer hover:text-primary hover:underline text-muted-foreground pb-2'>{productName}</button> */}
                     <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:text-primary py-1 px-2 mb-2 mt-1">
@@ -464,7 +471,7 @@ const ProductReviewsDisplay = ({
                   </Link>
                 </div>
               )}
-                <div className="customer-media-container">
+                <div className="customer-media-container pt-2 rounded-md">
                 {customerImage && customerVideo ? (
                   <CarouselZoom items={urls}>
                     {(openAtIndex) => (
