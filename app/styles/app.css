@@ -1305,6 +1305,25 @@ span {
   align-items: center;
 }
 
+@media (min-width: 600px) {
+  .review-left-side-display .stars-writtenby-buttons {
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
+
+  .review-left-side-display .stars-writtenby-buttons .rating-and-author {
+    grid-column: 2;
+    justify-self: center;
+  }
+
+  .review-left-side-display
+    .stars-writtenby-buttons
+    .review-right-side-slot {
+    grid-column: 3;
+    justify-self: end;
+  }
+}
+
 @media (max-width: 768px) {
   .faq-header-img {
     height: 75px;

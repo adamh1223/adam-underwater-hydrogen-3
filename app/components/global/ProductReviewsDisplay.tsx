@@ -349,7 +349,7 @@ const ProductReviewsDisplay = ({
                       </div>
                     </div>
                     
-                    <div>
+                    <div className="review-right-side-slot">
                       <div className="review-right-side-container">
                         <div className="ps-1 pt-2 pe-2 flex justify-end">
                           <div className="review-right-side">
