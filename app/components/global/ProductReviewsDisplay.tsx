@@ -337,7 +337,7 @@ const ProductReviewsDisplay = ({
               {(isCurrentUserReview || isAdmin) && (
                 <>
                   <div className="stars-writtenby-buttons">
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-center rating-and-author">
                       <div>
                         <Rating value={parsedStars} readOnly>
                           {Array.from({length: 5}).map((_, index) => (
@@ -345,7 +345,7 @@ const ProductReviewsDisplay = ({
                           ))}
                         </Rating>
 
-                        <p>{displayAuthor}</p>
+                        <div className='flex justify-center'>{displayAuthor}</div>
                       </div>
                     </div>
                     
