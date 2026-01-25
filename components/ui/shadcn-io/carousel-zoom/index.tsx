@@ -36,6 +36,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
   );
   const [zoomCurrentIndex, setZoomCurrentIndex] = React.useState(0);
   const [zoomTotalItems, setZoomTotalItems] = React.useState(0);
+  const scrollZoomToIndex = (index: number) => zoomCarouselApi?.scrollTo(index);
 
   React.useEffect(() => {
     if (!zoomCarouselApi) return;
@@ -56,12 +57,37 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
     zoomCarouselApi.scrollTo(zoomIndex, true);
   }, [zoomCarouselApi, isOpen, zoomIndex]);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsOpen(false);
+        return;
+      }
+
+      if (!zoomCarouselApi || zoomTotalItems <= 1) return;
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        scrollZoomToIndex(zoomCurrentIndex - 1);
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        scrollZoomToIndex(zoomCurrentIndex + 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, scrollZoomToIndex, zoomCarouselApi, zoomCurrentIndex, zoomTotalItems]);
+
   const openAtIndex = (index: number) => {
     setZoomIndex(index);
     setIsOpen(true);
   };
-
-  const scrollZoomToIndex = (index: number) => zoomCarouselApi?.scrollTo(index);
 
   return (
     <>
