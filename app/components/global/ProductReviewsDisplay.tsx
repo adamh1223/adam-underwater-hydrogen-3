@@ -308,10 +308,10 @@ const ProductReviewsDisplay = ({
                       .getElementById(`edit-image-${review.createdAt}`)
                       ?.click()
                   }
-                  className="cursor-pointer mb-4"
+                  className="cursor-pointer mb-4 whitespace-normal text-center max-w-full"
                   disabled={isSaving}
                 >
-                  Upload New Image
+                  Replace Image
                 </Button>
               </div>
 
@@ -342,10 +342,10 @@ const ProductReviewsDisplay = ({
                       .getElementById(`edit-video-${review.createdAt}`)
                       ?.click()
                   }
-                  className="cursor-pointer mb-4"
+                  className="cursor-pointer mb-4 whitespace-normal text-center max-w-full"
                   disabled={isSaving}
                 >
-                  Upload New Video
+                  Replace Video
                 </Button>
               </div>
               <div className="title-body-character-limit mx-5">
