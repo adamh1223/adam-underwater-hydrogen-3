@@ -1793,6 +1793,49 @@ const navigate = useNavigate();
                 <div className="flex-1 h-px bg-muted" />
               </div>
             </div>
+            <div className='flex justify-center py-2'>
+
+            <div className="average-product-rating">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="relative flex items-center"
+                      aria-hidden="true"
+                    >
+                      <Rating
+                        readOnly
+                        value={5}
+                        className="text-muted-foreground"
+                        aria-label={`Maximum rating of 5 stars`}
+                      >
+                        {Array.from({length: 5}).map((_, index) => (
+                          <RatingButton key={index} className="h-5 w-5 p-0.5" />
+                        ))}
+                      </Rating>
+                      <div
+                        className="absolute inset-0 overflow-hidden text-yellow-400"
+                        style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                      >
+                        <Rating readOnly value={5} className="text-yellow-400">
+                          {Array.from({length: 5}).map((_, index) => (
+                            <RatingButton
+                              key={index}
+                              className="h-5 w-5 p-0.5"
+                              aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                            />
+                          ))}
+                        </Rating>
+                      </div>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {formattedAverageRating} (
+                      {reviewsCount === 1
+                        ? '1 review'
+                        : `${reviewsCount} reviews`}
+                      )
+                    </span>
+                  </div>
+                </div>
+            </div>
             <div className="my-5" id="reviews">
               <ProductReviewsCarousel
                 reviews={reviewsList}

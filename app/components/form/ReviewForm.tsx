@@ -145,7 +145,8 @@ function ReviewForm({
 
   return (
     <>
-      <Sectiontitle text="Leave Product Review" />
+    <br/>
+      <Sectiontitle text="Leave Product Review"/>
       <br />
 
       {!reviewSubmittedMessage ? (
