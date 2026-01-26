@@ -1789,7 +1789,7 @@ const navigate = useNavigate();
                 <div className="flex-1 h-px bg-muted" />
               </div>
             </div>
-            <div className='flex justify-center py-2'>
+            <div className='flex justify-center pt-2'>
 
             <div className="average-product-rating">
                   <div className="flex items-center gap-2">
