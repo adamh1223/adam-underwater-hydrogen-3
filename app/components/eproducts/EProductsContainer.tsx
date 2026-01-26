@@ -139,11 +139,6 @@ function EProductsContainer({
           label: 'View All Favorites',
           onClick: () => navigate('/account/favorites'),
         },
-        style: {
-          background: 'red',
-          color: 'red',
-          border: '4px solid lime',
-        },
       });
       setPendingWishlistChange(false);
     } catch (error) {
