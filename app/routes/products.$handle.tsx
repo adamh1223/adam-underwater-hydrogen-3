@@ -1049,7 +1049,7 @@ const navigate = useNavigate();
                         className="absolute inset-0 overflow-hidden text-yellow-400"
                         style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                       >
-                        <Rating readOnly value={5} className="text-yellow-400">
+                        <Rating readOnly value={5} className="stars">
                           {Array.from({length: 5}).map((_, index) => (
                             <RatingButton
                               key={index}
@@ -1179,11 +1179,7 @@ const navigate = useNavigate();
                             className="absolute inset-0 overflow-hidden text-yellow-400"
                             style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                           >
-                            <Rating
-                              readOnly
-                              value={5}
-                              className="text-yellow-400"
-                            >
+                            <Rating readOnly value={5} className="stars">
                               {Array.from({length: 5}).map((_, index) => (
                                 <RatingButton
                                   key={index}
@@ -1815,7 +1811,7 @@ const navigate = useNavigate();
                         className="absolute inset-0 overflow-hidden text-yellow-400"
                         style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                       >
-                        <Rating readOnly value={5} className="text-yellow-400">
+                        <Rating readOnly value={5} className="stars">
                           {Array.from({length: 5}).map((_, index) => (
                             <RatingButton
                               key={index}
