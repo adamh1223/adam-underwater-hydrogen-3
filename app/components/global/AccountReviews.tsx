@@ -6,6 +6,7 @@ import ProductReviewsDisplay, {
   type Review,
 } from '~/components/global/ProductReviewsDisplay';
 import ProductCarousel from '../products/productCarousel';
+import {toast} from 'sonner';
 
 interface AccountReviewsProps {
   products: ProductReviewSource[];
@@ -160,6 +161,7 @@ const AccountReviews = ({
             : item,
         );
       });
+      toast.success('Review Deleted');
     } catch (error) {
       console.error('Error removing review', error);
     }
@@ -227,6 +229,7 @@ const AccountReviews = ({
             : item,
         );
       });
+      toast.success('Review Changes Saved');
     } catch (error) {
       console.error('Error editing review', error);
     }

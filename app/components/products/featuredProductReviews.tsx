@@ -3,7 +3,8 @@ import {Suspense, useEffect, useMemo, useState} from 'react';
 import ProductReviewsCarousel from '../global/ProductReviewsCarousel';
 import {Separator} from '../ui/separator';
 import type {Review} from '../global/ProductReviewsDisplay';
-import { Rating, RatingButton } from 'components/ui/shadcn-io/rating';
+import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
+import {toast} from 'sonner';
 
 
 interface FeaturedReviewsQuery {
@@ -118,6 +119,7 @@ function FeaturedReviewsContent({
       setAllReviews((prev) =>
         mergeProductReviews(prev, review.productId ?? '', updatedReviews),
       );
+      toast.success('Review Deleted');
     } catch (error) {
       console.error('Error removing review', error);
     }
@@ -172,6 +174,7 @@ function FeaturedReviewsContent({
       setAllReviews((prev) =>
         mergeProductReviews(prev, review.productId ?? '', updatedReviews),
       );
+      toast.success('Review Changes Saved');
     } catch (error) {
       console.error('Error editing review', error);
     }

@@ -5,6 +5,7 @@ import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import Sectiontitle from '../global/Sectiontitle';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {Link} from '@remix-run/react';
+import {toast} from 'sonner';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -117,6 +118,12 @@ function ReviewForm({
         headers: {Accept: 'application/json'},
       });
 
+      if (!response.ok) {
+        console.error('Failed to add review', await response.text());
+        setPendingReviewSubmit(false);
+        return;
+      }
+
       const json = await response.json();
       updateExistingReviews(json.reviews);
 
@@ -129,6 +136,7 @@ function ReviewForm({
       setSelectedImage(null);
       setImagePreview(null);
       setReviewSubmittedMessage('Review Submitted!');
+      toast.success('Review Posted');
     } catch (err) {
       setPendingReviewSubmit(false);
       console.error(err);
