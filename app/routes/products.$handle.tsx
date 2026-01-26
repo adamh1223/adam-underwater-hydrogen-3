@@ -732,6 +732,7 @@ export default function Product() {
       const data = await response.json();
       const updatedReviews = data?.reviews ?? [];
       setReviewsList(updatedReviews);
+      toast.success('Review Deleted');
     } catch (error) {
       console.error('Error removing review', error);
     }
@@ -786,6 +787,7 @@ export default function Product() {
       const data = await response.json();
       const updatedReviews = data?.reviews ?? [];
       setReviewsList(updatedReviews);
+      toast.success('Review Changes Saved');
     } catch (error) {
       console.error('Error editing review', error);
     }
