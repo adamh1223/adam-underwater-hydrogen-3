@@ -4,6 +4,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -46,6 +47,7 @@ export function Aside({
   const location = useLocation();
   const imageSource = determineActiveTypeImage();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const asideRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     function handleResize() {
@@ -61,6 +63,20 @@ export function Aside({
       close();
     }
     if (expanded) {
+      document.addEventListener(
+        'pointerdown',
+        (event) => {
+          const target = event.target;
+          if (!(target instanceof Node)) {
+            return;
+          }
+          if (asideRef.current?.contains(target)) {
+            return;
+          }
+          close();
+        },
+        {signal: abortController.signal},
+      );
       document.addEventListener(
         'keydown',
         function handler(event: KeyboardEvent) {
@@ -82,7 +98,7 @@ export function Aside({
     >
       <button className="close-outside" onClick={close} />
 
-      <aside className="border-l">
+      <aside className="border-l" ref={asideRef}>
         {windowWidth != null && windowWidth > 1023 && (
           <div className="mt-[70px]">
             <div className="flex justify-end pe-4">
