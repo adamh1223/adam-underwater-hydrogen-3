@@ -89,7 +89,7 @@ const ReviewVideoPlayer = ({
         <button
           type="button"
           onClick={onPlayClick}
-          className="absolute inset-0 flex items-center justify-center rounded bg-black/20 text-white transition hover:bg-black/40"
+          className="cursor-pointer absolute inset-0 flex items-center justify-center rounded bg-black/20 text-white transition hover:bg-black/40"
           aria-label="Play video"
         >
           <PlayIcon className="h-14 w-14" />

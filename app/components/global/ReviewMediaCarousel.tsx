@@ -27,7 +27,7 @@ export const ReviewMediaCarousel = ({
   onMediaClick?: (index: number, options?: {autoplay?: boolean}) => void;
 }) => {
   const cardClassName =
-    'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer';
+    'group-hover:shadow-xl h-full transition-shadow duration-500';
 
   const cardContentClassName = 'flex flex-col h-full';
 
