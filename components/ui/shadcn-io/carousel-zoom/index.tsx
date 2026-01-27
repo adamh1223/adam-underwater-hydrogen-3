@@ -25,12 +25,15 @@ type CarouselZoomItem = {
 
 export type CarouselZoomProps = {
   items: CarouselZoomItem[];
-  children: (openAtIndex: (index: number) => void) => React.ReactNode;
+  children: (
+    openAtIndex: (index: number, options?: {autoplay?: boolean}) => void,
+  ) => React.ReactNode;
 };
 
 export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [zoomIndex, setZoomIndex] = React.useState(0);
+  const [autoPlayIndex, setAutoPlayIndex] = React.useState<number | null>(null);
   const [zoomCarouselApi, setZoomCarouselApi] = React.useState<CarouselApi | null>(
     null,
   );
@@ -84,15 +87,24 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, scrollZoomToIndex, zoomCarouselApi, zoomCurrentIndex, zoomTotalItems]);
 
-  const openAtIndex = (index: number) => {
+  const openAtIndex = (index: number, options?: {autoplay?: boolean}) => {
     setZoomIndex(index);
+    setAutoPlayIndex(options?.autoplay ? index : null);
     setIsOpen(true);
   };
 
   return (
     <>
       {children(openAtIndex)}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          if (!open) {
+            setAutoPlayIndex(null);
+          }
+        }}
+      >
         <DialogPortal>
           <DialogOverlay className="transition-all data-[state=closed]:bg-transparent data-[state=closed]:backdrop-blur-0 data-[state=open]:bg-background/80 data-[state=open]:backdrop-blur-md motion-reduce:transition-none" />
           <DialogPrimitive.Content
@@ -131,6 +143,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                                 <video
                                   className="max-h-[calc(100vh-12rem)] w-auto max-w-[90vw] rounded-lg"
                                   controls
+                                  autoPlay={isOpen && autoPlayIndex === idx}
                                   playsInline
                                   preload="metadata"
                                   crossOrigin="anonymous"
