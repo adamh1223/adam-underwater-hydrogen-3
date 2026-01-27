@@ -7,7 +7,7 @@ import {
   CarouselItem,
 } from '../ui/carousel';
 import {Button} from '../ui/button';
-import {ChevronLeftIcon, ChevronRightIcon, XIcon} from 'lucide-react';
+import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
 import '../../styles/routeStyles/product.css';
 import ReviewVideoPlayer from './ReviewVideoPlayer';
 
@@ -20,11 +20,11 @@ interface ReviewMedia {
 
 export const ReviewMediaCarousel = ({
   url,
-  onImageClick,
+  onMediaClick,
 }: {
   // accept full product OR a looser shape (to silence type-checking when your caller doesn't have full objects)
   url: ReviewMedia[];
-  onImageClick?: (index: number) => void;
+  onMediaClick?: (index: number, options?: {autoplay?: boolean}) => void;
 }) => {
   const cardClassName =
     'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer';
@@ -85,7 +85,7 @@ export const ReviewMediaCarousel = ({
                       {img.type === 'image' && (
                         <button
                           type="button"
-                          onClick={() => onImageClick?.(idx)}
+                          onClick={() => onMediaClick?.(idx)}
                           className="cursor-zoom-in"
                         >
                           <img
@@ -98,6 +98,9 @@ export const ReviewMediaCarousel = ({
                         <ReviewVideoPlayer
                           className="home-video__player"
                           src={img.url}
+                          showControls={false}
+                          showPlayOverlay
+                          onPlayClick={() => onMediaClick?.(idx, {autoplay: true})}
                         />
                       )}
                     </div>

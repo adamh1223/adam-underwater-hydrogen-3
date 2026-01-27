@@ -1,11 +1,21 @@
 import React, {useEffect, useRef, useState} from 'react';
+import {PlayIcon} from 'lucide-react';
 
 interface ReviewVideoPlayerProps {
   src?: string;
   className?: string;
+  showControls?: boolean;
+  showPlayOverlay?: boolean;
+  onPlayClick?: () => void;
 }
 
-const ReviewVideoPlayer = ({src, className}: ReviewVideoPlayerProps) => {
+const ReviewVideoPlayer = ({
+  src,
+  className,
+  showControls = true,
+  showPlayOverlay = false,
+  onPlayClick,
+}: ReviewVideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [poster, setPoster] = useState<string | undefined>();
 
@@ -63,17 +73,29 @@ const ReviewVideoPlayer = ({src, className}: ReviewVideoPlayerProps) => {
   if (!src) return null;
 
   return (
-    <video
-      ref={videoRef}
-      className={className}
-      controls
-      playsInline
-      preload="metadata"
-      crossOrigin="anonymous"
-      // poster='https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
-    >
-      <source src={`${src}#t=0.001`} type="video/mp4" />
-    </video>
+    <div className="relative">
+      <video
+        ref={videoRef}
+        className={showControls ? className : `${className ?? ''} pointer-events-none`}
+        controls={showControls}
+        playsInline
+        preload="metadata"
+        crossOrigin="anonymous"
+        poster={poster}
+      >
+        <source src={`${src}#t=0.001`} type="video/mp4" />
+      </video>
+      {showPlayOverlay && (
+        <button
+          type="button"
+          onClick={onPlayClick}
+          className="absolute inset-0 flex items-center justify-center rounded bg-black/20 text-white transition hover:bg-black/40"
+          aria-label="Play video"
+        >
+          <PlayIcon className="h-14 w-14" />
+        </button>
+      )}
+    </div>
   );
 };
 

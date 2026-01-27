@@ -477,7 +477,7 @@ const ProductReviewsDisplay = ({
                     {(openAtIndex) => (
                       <ReviewMediaCarousel
                         url={urls}
-                        onImageClick={openAtIndex}
+                        onMediaClick={openAtIndex}
                       />
                     )}
                   </CarouselZoom>
@@ -495,14 +495,21 @@ const ProductReviewsDisplay = ({
                       </div>
                     )}
                     {customerVideo && (
-                      <>
-                        <div className="home-video px-2 pb-2">
-                          <ReviewVideoPlayer
-                            className="home-video__player"
-                            src={customerVideo}
-                          />
-                        </div>
-                      </>
+                      <CarouselZoom items={[{url: customerVideo, type: 'video'}]}>
+                        {(openAtIndex) => (
+                          <div className="home-video px-2 pb-2">
+                            <ReviewVideoPlayer
+                              className="home-video__player"
+                              src={customerVideo}
+                              showControls={false}
+                              showPlayOverlay
+                              onPlayClick={() =>
+                                openAtIndex(0, {autoplay: true})
+                              }
+                            />
+                          </div>
+                        )}
+                      </CarouselZoom>
                     )}
                   </>
                 )}
