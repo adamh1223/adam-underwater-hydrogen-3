@@ -1,9 +1,33 @@
-.EProductPreviewContainer {
+
+
+@media (max-width: 600px) {
+.EProductPreviewContainer-list {
   position: relative;
   display: inline-block;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+}
+}
+@media (min-width: 601px) and (max-width: 700px) {
+.EProductPreviewContainer-list {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 6px 8px 0 8px;
+}
+}
+@media (min-width: 701px) and (max-width: 800px) {
+.EProductPreviewContainer-list {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 6px 8px 0 8px;
+}
 }
 
 .EProductImage {

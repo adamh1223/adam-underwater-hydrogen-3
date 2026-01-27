@@ -302,8 +302,6 @@ function EProductsContainer({
                         className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                     )} */}
-                    <div>hi</div>
-                    <div>hi2</div>
               <Link
                 className="product-item"
                 key={product.id}
@@ -445,8 +443,8 @@ function EProductsContainer({
             </div>
           </div>}
           {layout === 'list' && windowWidth != undefined && windowWidth > 600 && <div className={cardContentClassName}>
-            {layout === 'grid' && (
-              <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
+            
+              <div className="cursor-pointer absolute top-1.5 right-4 z-50 p-1">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -486,7 +484,7 @@ function EProductsContainer({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-            )}
+            
             <div
               className={`relative evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
             >
@@ -497,8 +495,7 @@ function EProductsContainer({
                         className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                     )} */}
-                    <div>hi</div>
-                    <div>hi2</div>
+
               <Link
                 className="product-item"
                 key={product.id}
@@ -537,11 +534,11 @@ function EProductsContainer({
                     prefetch="intent"
                     to={variantUrl}
                   >
-                    <h2
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
+                    <div
+                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
                     >
                       {product.title}
-                    </h2>
+                    </div>
                     <p
                       className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
                     >

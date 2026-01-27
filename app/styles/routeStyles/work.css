@@ -1,6 +1,6 @@
 .clip-wrapper {
   display: flex;
-  margin: 10px 0 10px 0;
+  margin: 0 0 10px 0;
 }
 
 .vp-center {
@@ -10,13 +10,13 @@
 @media (max-width: 499px) {
   .clip {
     width: 80vw;
-    height: 25vh;
+    height: 50vh;
   }
 }
 @media (min-width: 500px) and (max-width: 599px) {
   .clip {
     width: 85vw;
-    height: 25vh;
+    height: 45vh;
   }
 }
 @media (min-width: 600px) and (max-width: 699px) {
