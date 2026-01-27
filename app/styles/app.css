@@ -1111,6 +1111,7 @@ span {
   }
   .grid-list-toggle-container {
     display: flex;
+    justify-content: end;
     gap: 1px;
   }
   /* Top row */

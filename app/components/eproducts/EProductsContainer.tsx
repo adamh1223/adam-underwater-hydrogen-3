@@ -48,7 +48,7 @@ function EProductsContainer({
   const cardContentClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'
-      : 'ps-3 pt-3 pb-3 gap-y-4 list-view-large-row h-full';
+      : 'list-view-large-row';
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();
   const disableButton = useIsVideoInCart(
@@ -184,7 +184,29 @@ function EProductsContainer({
         className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
       >
         <Card className={cardClassName}>
-          {layout === 'list' && (
+          {layout === 'list' && windowWidth != undefined && windowWidth <= 600 && (
+            <>
+            <div
+                  className={`product-title-container  text-start border-b py-1`}
+                >
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
+                  >
+                    <h2
+                      className={` product-title-font-list`}
+                    >
+                      {product.title}
+                    </h2>
+                    <p
+                      className={`text-muted-foreground $ product-location-font-list`}
+                    >
+                      {formattedLocation}
+                    </p>
+                  </Link>
+                </div>
             <div className="cursor-pointer absolute top-[8px] right-[20px] z-50 p-1">
               <TooltipProvider>
                 <Tooltip>
@@ -225,8 +247,9 @@ function EProductsContainer({
                 </Tooltip>
               </TooltipProvider>
             </div>
+            </>
           )}
-          <div className={cardContentClassName}>
+          {layout === 'grid' && <div className={cardContentClassName}>
             {layout === 'grid' && (
               <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
                 <TooltipProvider>
@@ -279,6 +302,8 @@ function EProductsContainer({
                         className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                     )} */}
+                    <div>hi</div>
+                    <div>hi2</div>
               <Link
                 className="product-item"
                 key={product.id}
@@ -287,6 +312,7 @@ function EProductsContainer({
               >
                 <EProductPreview EProduct={product} />
               </Link>
+              
             </div>
             {/* <div className="mt-4 text-center">
                 <h2 className="text-lg capitalize">{name}</h2>
@@ -305,7 +331,7 @@ function EProductsContainer({
               }
             >
               <div
-                className={`bottom-part-card-inside ${layout === 'list' && 'px-5'}`}
+                className={`bottom-part-card-inside`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
@@ -414,9 +440,334 @@ function EProductsContainer({
                     </Link>
                   </div>
                 )}
+                
               </div>
             </div>
-          </div>
+          </div>}
+          {layout === 'list' && windowWidth != undefined && windowWidth > 600 && <div className={cardContentClassName}>
+            {layout === 'grid' && (
+              <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={
+                          wishlistItem ? removeFromFavorites : addToFavorites
+                        }
+                        disabled={!loginValue}
+                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                      >
+                        {pendingWishlistChange ? (
+                          <ReloadIcon className="animate-spin" />
+                        ) : (
+                          <>
+                            {wishlistItem ? (
+                              <FaHeart />
+                            ) : (
+                              <>
+                                {loginValue ? (
+                                  <FaRegHeart />
+                                ) : (
+                                  <Link to="/account/login">
+                                    <FaRegHeart />
+                                  </Link>
+                                )}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-sm z-1000">
+                      {wishlistItem
+                        ? 'Remove from Favorites'
+                        : 'Save to Favorites'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+            <div
+              className={`relative evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+            >
+              {/* {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt="hi"
+                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )} */}
+                    <div>hi</div>
+                    <div>hi2</div>
+              <Link
+                className="product-item"
+                key={product.id}
+                prefetch="intent"
+                to={variantUrl}
+              >
+                <EProductPreview EProduct={product} />
+              </Link>
+              
+            </div>
+            {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+            <div
+              className={
+                layout === 'grid'
+                  ? `bottom-part-card-grid`
+                  : `bottom-part-card-list`
+              }
+            >
+              <div
+                className={`bottom-part-card-inside`}
+              >
+                <div
+                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                >
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
+                  >
+                    <h2
+                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
+                    >
+                      {product.title}
+                    </h2>
+                    <p
+                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                    >
+                      {formattedLocation}
+                    </p>
+                  </Link>
+                </div>
+                {product?.priceRange?.minVariantPrice && (
+                  <div
+                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                  >
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <span
+                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                      >
+                        <ProductPrice
+                          price={product?.priceRange?.minVariantPrice}
+                          compareAtPrice={
+                            product?.selectedOrFirstAvailableVariant
+                              ?.compareAtPrice
+                          }
+                        />
+
+                        {/* We need to get the compareat price in here */}
+                      </span>
+                    </Link>
+                  </div>
+                )}
+                {layout !== 'grid' &&
+                  (product as any).descriptionHtml &&
+                  windowWidth != undefined &&
+                  windowWidth > 786 && (
+                    <>
+                      <div>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <Card className="description-html-card-list ">
+                            <div
+                              className="p-3"
+                              dangerouslySetInnerHTML={{
+                                __html: (product as any).descriptionHtml,
+                              }}
+                            />
+                          </Card>
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                {product?.selectedOrFirstAvailableVariant?.id && (
+                  <div
+                    className={`flex product-add-to-cart-container w-full mx-auto ${
+                      layout === 'grid'
+                        ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                        : 'p-a-t-c-container-list justify-start'
+                    }`}
+                  >
+                    <AddToCartButton
+                      lines={[
+                        {
+                          merchandiseId:
+                            product?.selectedOrFirstAvailableVariant?.id,
+                          quantity: 1,
+                        },
+                      ]}
+                      disabled={disableButton}
+                      onClick={() => {
+                        open('cart');
+                      }}
+                    >
+                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                        Add To Cart
+                      </div>
+                    </AddToCartButton>
+                    <Link to={`/products/${product.handle}`}>
+                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                        <div
+                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                        >
+                          View Product
+                        </div>
+                      </button>
+                    </Link>
+                  </div>
+                )}
+                
+              </div>
+            </div>
+          </div>}
+          {layout === 'list' && windowWidth != undefined && windowWidth <= 600 && <div className={cardContentClassName}>
+            
+            <div
+              className={`relative evideo : 'top-part-card-list`}
+            >
+              {/* {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt="hi"
+                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )} */}
+                    
+              <Link
+                className="product-item"
+                key={product.id}
+                prefetch="intent"
+                to={variantUrl}
+              >
+                <EProductPreview EProduct={product} />
+              </Link>
+              
+            </div>
+            {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+            <div
+              className={
+                `bottom-part-card-list`
+              }
+            >
+              <div
+                className={`bottom-part-card-inside`}
+              >
+                
+                {product?.priceRange?.minVariantPrice && (
+                  <div
+                    className={`flex justify-start`}
+                  >
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <span
+                        className={` product-price-font-list flex flex-row gap-2`}
+                      >
+                        <ProductPrice
+                          price={product?.priceRange?.minVariantPrice}
+                          compareAtPrice={
+                            product?.selectedOrFirstAvailableVariant
+                              ?.compareAtPrice
+                          }
+                        />
+
+                        {/* We need to get the compareat price in here */}
+                      </span>
+                    </Link>
+                  </div>
+                )}
+                {
+                  (product as any).descriptionHtml &&
+                  windowWidth != undefined &&
+                  windowWidth > 786 && (
+                    <>
+                      <div>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <Card className="description-html-card-list ">
+                            <div
+                              className="p-3"
+                              dangerouslySetInnerHTML={{
+                                __html: (product as any).descriptionHtml,
+                              }}
+                            />
+                          </Card>
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                {product?.selectedOrFirstAvailableVariant?.id && (
+                  <div
+                    className={`flex product-add-to-cart-container w-full mx-auto
+                      p-a-t-c-container-list justify-start
+                    `}
+                  >
+                    <AddToCartButton
+                      lines={[
+                        {
+                          merchandiseId:
+                            product?.selectedOrFirstAvailableVariant?.id,
+                          quantity: 1,
+                        },
+                      ]}
+                      disabled={disableButton}
+                      onClick={() => {
+                        open('cart');
+                      }}
+                    >
+                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                        Add To Cart
+                      </div>
+                    </AddToCartButton>
+                    <Link to={`/products/${product.handle}`}>
+                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                        <div
+                          className={`eproducts-add-to-cart-btn-text-list w-full text-center`}
+                        >
+                          View Product
+                        </div>
+                      </button>
+                    </Link>
+                  </div>
+                )}
+                
+              </div>
+            </div>
+          </div>}
         </Card>
         {/* <div className="absolute top-5 right-2 z-5">
                 <FavoriteToggleButton EProductId={productId} productId={null} />
