@@ -244,7 +244,7 @@ const AccountReviews = ({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-y-2">
       {userReviews.map((entry) => (
         <div
           key={`${entry.productId}-${entry.review.createdAt}`}

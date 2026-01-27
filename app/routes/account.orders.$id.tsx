@@ -14,6 +14,7 @@ import {useEffect, useState} from 'react';
 import {generateCartDescription, includesTagName} from '~/lib/utils';
 import {PRODUCT_QUERY} from './products.$handle';
 import {variantQuery} from '~/lib/customerQueries';
+import Sectiontitle from '~/components/global/Sectiontitle';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
@@ -126,9 +127,10 @@ export default function OrderRoute() {
   
 
   return (
-    <div className="outer-container flex justify-center">
-      <div className="card-container flex justify-center w-[90%]">
-        <Card className="account-order p-[30px]">
+    <>
+    <Sectiontitle text="My Orders" />
+      <div className="mx-5 mt-3">
+        <Card className="account-order p-[10px]">
           <CardHeader>
             <p className="ms-2">
               <strong>Order {order.name}</strong>
@@ -442,7 +444,7 @@ export default function OrderRoute() {
           </CardContent>
         </Card>
       </div>
-    </div>
+   </>
   );
 }
 
