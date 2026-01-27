@@ -207,7 +207,7 @@ function EProductsContainer({
                     </p>
                   </Link>
                 </div>
-            <div className="cursor-pointer absolute top-[8px] right-[20px] z-50 p-1">
+            <div className="fav-btn-container-list cursor-pointer absolute  z-50">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -216,21 +216,33 @@ function EProductsContainer({
                         wishlistItem ? removeFromFavorites : addToFavorites
                       }
                       disabled={!loginValue}
-                      className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                      className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                     >
                       {pendingWishlistChange ? (
-                        <ReloadIcon className="animate-spin" />
+                        <div className='flex justify-center items-center'>
+
+                          <ReloadIcon className="animate-spin" />
+                        </div>
                       ) : (
                         <>
                           {wishlistItem ? (
-                            <FaHeart />
+                            <div className='flex justify-center items-center'>
+
+                              <FaHeart />
+                            </div>
                           ) : (
                             <>
                               {loginValue ? (
-                                <FaRegHeart />
-                              ) : (
-                                <Link to="/account/login">
+                                <div className='flex justify-center items-center'>
+
                                   <FaRegHeart />
+                                </div>
+                              ) : (
+                                
+                                <Link to="/account/login">
+                                  <div className='flex justify-center items-center'>
+                                  <FaRegHeart />
+                                </div>
                                 </Link>
                               )}
                             </>
@@ -251,7 +263,7 @@ function EProductsContainer({
           )}
           {layout === 'grid' && <div className={cardContentClassName}>
             {layout === 'grid' && (
-              <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
+              <div className="cursor-pointer absolute fav-btn-container-grid z-50 p-1">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -260,21 +272,39 @@ function EProductsContainer({
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }
                         disabled={!loginValue}
-                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        className="fav-btn-grid cursor-pointer  rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                       >
                         {pendingWishlistChange ? (
+                          <>
+                          <div className='flex justify-center items-center'>
+
                           <ReloadIcon className="animate-spin" />
+                          </div>
+                          </>
                         ) : (
                           <>
                             {wishlistItem ? (
+                              <>
+                              <div className='flex justify-center items-center'>
+
                               <FaHeart />
+                              </div>
+                              </>
                             ) : (
                               <>
                                 {loginValue ? (
+                                  <>
+                                  <div className='flex justify-center items-center'>
+
                                   <FaRegHeart />
+                                  </div>
+                                  </>
                                 ) : (
                                   <Link to="/account/login">
+                                    <div className='flex justify-center items-center'>
+
                                     <FaRegHeart />
+                                    </div>
                                   </Link>
                                 )}
                               </>
@@ -293,7 +323,7 @@ function EProductsContainer({
               </div>
             )}
             <div
-              className={`relative evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+              className={`relative evideo top-part-card-list`}
             >
               {/* {thumbnail && (
                       <img
@@ -444,7 +474,7 @@ function EProductsContainer({
           </div>}
           {layout === 'list' && windowWidth != undefined && windowWidth > 600 && <div className={cardContentClassName}>
             
-              <div className="cursor-pointer absolute top-1.5 right-4 z-50 p-1">
+              <div className="cursor-pointer absolute fav-btn-container-list z-50">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -453,21 +483,33 @@ function EProductsContainer({
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }
                         disabled={!loginValue}
-                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
                       >
                         {pendingWishlistChange ? (
-                          <ReloadIcon className="animate-spin" />
+                          <div className='flex justify-center items-center'>
+
+                            <ReloadIcon className="animate-spin" />
+                          </div>
                         ) : (
                           <>
                             {wishlistItem ? (
-                              <FaHeart />
+                              <div className='flex justify-center items-center'>
+
+                                <FaHeart />
+                              </div>
                             ) : (
                               <>
                                 {loginValue ? (
-                                  <FaRegHeart />
-                                ) : (
-                                  <Link to="/account/login">
+                                  <div className='flex justify-center items-center'>
+
                                     <FaRegHeart />
+                                  </div>
+                                ) : (
+                                  
+                                  <Link to="/account/login">
+                                    <div className='flex justify-center items-center'>
+                                    <FaRegHeart />
+                                  </div>
                                   </Link>
                                 )}
                               </>
@@ -639,7 +681,7 @@ function EProductsContainer({
           {layout === 'list' && windowWidth != undefined && windowWidth <= 600 && <div className={cardContentClassName}>
             
             <div
-              className={`relative evideo : 'top-part-card-list`}
+              className={`relative evideo top-part-card-list`}
             >
               {/* {thumbnail && (
                       <img
@@ -679,7 +721,7 @@ function EProductsContainer({
                 
                 {product?.priceRange?.minVariantPrice && (
                   <div
-                    className={`flex justify-start`}
+                    className={`flex justify-center`}
                   >
                     <Link
                       className="product-item"
