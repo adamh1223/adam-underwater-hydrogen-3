@@ -4,6 +4,7 @@ import {AddToCartButton} from '../AddToCartButton';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import EProductPreview from './EProductPreview';
+import EProductBundlePreview from './EProductBundlePreview';
 import {Money} from '@shopify/hydrogen';
 import {Link, useNavigate} from '@remix-run/react';
 import {useAside} from '../Aside';
@@ -51,6 +52,7 @@ function EProductsContainer({
       : 'list-view-large-row';
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();
+  const isBundle = product.tags.includes('Bundle');
   const disableButton = useIsVideoInCart(
     product?.selectedOrFirstAvailableVariant?.id,
     cart,
@@ -338,7 +340,11 @@ function EProductsContainer({
                 prefetch="intent"
                 to={variantUrl}
               >
-                <EProductPreview EProduct={product} />
+                {isBundle ? (
+                  <EProductBundlePreview product={product} />
+                ) : (
+                  <EProductPreview EProduct={product} />
+                )}
               </Link>
               
             </div>
@@ -544,7 +550,11 @@ function EProductsContainer({
                 prefetch="intent"
                 to={variantUrl}
               >
-                <EProductPreview EProduct={product} />
+                {isBundle ? (
+                  <EProductBundlePreview product={product} />
+                ) : (
+                  <EProductPreview EProduct={product} />
+                )}
               </Link>
               
             </div>
@@ -697,7 +707,11 @@ function EProductsContainer({
                 prefetch="intent"
                 to={variantUrl}
               >
-                <EProductPreview EProduct={product} />
+                {isBundle ? (
+                  <EProductBundlePreview product={product} />
+                ) : (
+                  <EProductPreview EProduct={product} />
+                )}
               </Link>
               
             </div>

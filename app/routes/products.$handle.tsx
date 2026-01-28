@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
+import IndividualVideoBundle from '~/components/eproducts/IndividualVideoBundle';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
 import {useEffect, useRef, useState} from 'react';
 import {RootLoader} from '~/root';
@@ -502,6 +503,7 @@ export default function Product() {
   standardCarouselImages.unshift(selectedVariant?.image);
 
   const isVideo = product.tags.includes('Video');
+  const isBundle = product.tags.includes('Bundle');
 
   let isHorOnly = product.tags
     .map((tag: any) => {
@@ -1017,7 +1019,9 @@ const navigate = useNavigate();
               <p className="text-muted-foreground">Framed Canvas Print</p>
             )}
             {isVideo && (
-              <p className="text-muted-foreground">Stock Footage Video</p>
+              <p className="text-muted-foreground">
+                {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
+              </p>
             )}
             <ProductPrice
               price={selectedVariant?.price}
@@ -1086,12 +1090,19 @@ const navigate = useNavigate();
               threeDViewImages={threeDImagesToUse}
             ></IndividualProduct>
           )}
-          {isVideo && (
+          {isVideo && !isBundle && (
             <IndividualVideoProduct
               productName={title}
               featuredImage={featuredImage?.url}
               WMLink={parsedWMLink}
             ></IndividualVideoProduct>
+          )}
+          {isVideo && isBundle && (
+            <IndividualVideoBundle
+              productName={title}
+              descriptionHtml={descriptionHtml}
+              tags={tags}
+            />
           )}
           {/* <ProductImage image={selectedVariant?.image} /> */}
           <div className="product-main">
@@ -1144,7 +1155,9 @@ const navigate = useNavigate();
                   <p className="text-muted-foreground">Framed Canvas Print</p>
                 )}
                 {isVideo && (
-                  <p className="text-muted-foreground">Stock Footage Video</p>
+                  <p className="text-muted-foreground">
+                    {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
+                  </p>
                 )}
                 <ProductPrice
                   price={selectedVariant?.price}
