@@ -210,37 +210,51 @@ export default function Collection() {
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
   const [filterState, setFilterState] = useState('All');
+  const [stockFilterState, setStockFilterState] = useState('All Clips');
   const [productState, setProductState] = useState(collection?.products);
   const [totalProductCount, setTotalProductCount] = useState(
     productState?.nodes?.length,
   );
   useEffect(() => {
-    let tag: string[] = [];
+    let filteredCollection = collection?.products?.nodes;
 
-    
-    const filteredCollection = collection?.products?.nodes?.filter((p: any) => {
-      if (filterState === 'All') {
-        return (
-          p.tags.includes('horOnly') ||
-          p.tags.includes('horPrimary') ||
-          p.tags.includes('vertOnly') ||
-          p.tags.includes('vertPrimary')
-        );
-      }
-      if (filterState === 'Horizontal') {
-        return p.tags.includes('horOnly') || p.tags.includes('horPrimary');
-      }
-      if (filterState === 'Vertical') {
-        return p.tags.includes('vertOnly') || p.tags.includes('vertPrimary');
-      }
-    });
+    if (collection?.handle === 'prints') {
+      filteredCollection = collection?.products?.nodes?.filter((p: any) => {
+        if (filterState === 'All') {
+          return (
+            p.tags.includes('horOnly') ||
+            p.tags.includes('horPrimary') ||
+            p.tags.includes('vertOnly') ||
+            p.tags.includes('vertPrimary')
+          );
+        }
+        if (filterState === 'Horizontal') {
+          return p.tags.includes('horOnly') || p.tags.includes('horPrimary');
+        }
+        if (filterState === 'Vertical') {
+          return p.tags.includes('vertOnly') || p.tags.includes('vertPrimary');
+        }
+      });
+    }
+
+    if (collection?.handle === 'stock') {
+      filteredCollection = collection?.products?.nodes?.filter((p: any) => {
+        if (stockFilterState === 'All Clips') {
+          return p.tags.includes('Video') && !p.tags.includes('Bundle');
+        }
+        if (stockFilterState === 'Discounted Bundles') {
+          return p.tags.includes('Bundle');
+        }
+        return true;
+      });
+    }
 
     setProductState((state: any) => ({
       ...state,
       nodes: filteredCollection,
     }));
     setTotalProductCount(filteredCollection?.length);
-  }, [filterState]);
+  }, [collection?.handle, collection?.products?.nodes, filterState, stockFilterState]);
 
   useEffect(() => {
     
@@ -293,6 +307,24 @@ export default function Collection() {
               <Checkbox />
               <p className="ms-1">Vertical</p>
             </div> */}
+        </div>
+      )}
+      {collection?.handle === 'stock' && (
+        <div className="flex justify-center pb-3">
+          <div className="toggle-container">
+            <button
+              className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}
+              onClick={() => setStockFilterState('All Clips')}
+            >
+              All Clips
+            </button>
+            <button
+              className={`toggle-option ${stockFilterState === 'Discounted Bundles' ? 'selected' : ''}`}
+              onClick={() => setStockFilterState('Discounted Bundles')}
+            >
+              Discounted Bundles
+            </button>
+          </div>
         </div>
       )}
       {windowWidth != undefined && windowWidth > 600 && (
@@ -549,7 +581,23 @@ export default function Collection() {
                 ...filteredProducts,
                 ...extraFilteredProducts,
               ];
-              setTotalProductCount(combinedProductSearches?.length);
+              const stockFilteredSearches =
+                collection?.handle === 'stock'
+                  ? combinedProductSearches.filter((product) => {
+                      if (stockFilterState === 'All Clips') {
+                        return (
+                          product.tags.includes('Video') &&
+                          !product.tags.includes('Bundle')
+                        );
+                      }
+                      if (stockFilterState === 'Discounted Bundles') {
+                        return product.tags.includes('Bundle');
+                      }
+                      return true;
+                    })
+                  : combinedProductSearches;
+
+              setTotalProductCount(stockFilteredSearches?.length);
 
               if (state === 'loading' && term.current) {
                 return <div>Loading...</div>;
@@ -563,7 +611,7 @@ export default function Collection() {
                 <>
                   <SearchResultsPredictive.Products
                     products={
-                      combinedProductSearches as unknown as EnhancedPartialSearchResult[]
+                      stockFilteredSearches as unknown as EnhancedPartialSearchResult[]
                     }
                     layout={layout}
                     term={term}
