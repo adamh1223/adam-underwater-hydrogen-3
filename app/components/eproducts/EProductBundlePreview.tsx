@@ -6,6 +6,8 @@ import {
   CarouselApi,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from '../ui/carousel';
 import '../../styles/components/EProductPreview.css';
 
@@ -165,7 +167,19 @@ function EProductBundlePreview({
         ))}
       </CarouselContent>
       {totalItems > 1 && (
-        <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 flex items-end justify-center gap-3 h-24 pt-5">
+        <>
+          <CarouselPrevious
+            inTheBox
+            className="z-10 border-white/60 bg-black/40 text-white hover:bg-black/60"
+          />
+          <CarouselNext
+            inTheBox
+            className="z-10 border-white/60 bg-black/40 text-white hover:bg-black/60"
+          />
+        </>
+      )}
+      {totalItems > 1 && (
+        <div className="carousel-preview-dots absolute bottom-0 left-0 right-0 flex items-end justify-center gap-3 h-24 pt-5">
           {Array.from({length: totalItems}).map((_, idx) => (
             <button
               key={idx}
