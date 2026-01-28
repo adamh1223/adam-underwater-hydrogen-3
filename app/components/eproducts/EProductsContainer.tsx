@@ -265,7 +265,7 @@ function EProductsContainer({
           )}
           {layout === 'grid' && <div className={cardContentClassName}>
             {layout === 'grid' && (
-              <div className="cursor-pointer absolute fav-btn-container-grid z-50 p-1">
+              <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -702,18 +702,7 @@ function EProductsContainer({
                       />
                     )} */}
                     
-              {isBundle ? (
-                <EProductBundlePreview product={product} />
-              ) : (
-                <Link
-                  className="product-item"
-                  key={product.id}
-                  prefetch="intent"
-                  to={variantUrl}
-                >
-                  <EProductPreview EProduct={product} />
-                </Link>
-              )}
+              
               
             </div>
             {/* <div className="mt-4 text-center">
