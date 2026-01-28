@@ -378,7 +378,7 @@ function EProductsContainer({
                     to={variantUrl}
                   >
                     <h2
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
+                      className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
                     >
                       {product.title}
                     </h2>

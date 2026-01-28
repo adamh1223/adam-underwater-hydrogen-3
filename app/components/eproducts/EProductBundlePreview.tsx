@@ -169,17 +169,17 @@ function EProductBundlePreview({
       {totalItems > 1 && (
         <>
           <CarouselPrevious
-            inTheBox
-            className="z-10 border-white/60 bg-black/40 text-white hover:bg-black/60"
+
+
           />
           <CarouselNext
-            inTheBox
-            className="z-10 border-white/60 bg-black/40 text-white hover:bg-black/60"
+
+
           />
         </>
       )}
       {totalItems > 1 && (
-        <div className="carousel-preview-dots absolute bottom-0 left-0 right-0 flex items-end justify-center gap-3 h-24 pt-5">
+        <div className="carousel-preview-dots absolute bottom-[-24px] left-0 right-0 flex items-end justify-center gap-3 h-32 z-[-5] pt-5">
           {Array.from({length: totalItems}).map((_, idx) => (
             <button
               key={idx}
