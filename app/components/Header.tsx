@@ -109,6 +109,20 @@ export function HeaderMenu({
   }, []);
 
   const enableMobileToggle = true;
+  const getMenuItemUrl = (itemUrl: string) => {
+    const normalizedUrl =
+      itemUrl.includes('myshopify.com') ||
+      itemUrl.includes(publicStoreDomain) ||
+      itemUrl.includes(primaryDomainUrl)
+        ? new URL(itemUrl).pathname
+        : itemUrl;
+
+    if (normalizedUrl.startsWith('/collections/stock/')) {
+      return '/collections/stock';
+    }
+
+    return normalizedUrl;
+  };
 
   return (
     <>
@@ -145,12 +159,7 @@ export function HeaderMenu({
                     if (!item.url) return null;
 
                     // if the url is internal, we strip the domain
-                    const url =
-                      item.url.includes('myshopify.com') ||
-                      item.url.includes(publicStoreDomain) ||
-                      item.url.includes(primaryDomainUrl)
-                        ? new URL(item.url).pathname
-                        : item.url;
+                    const url = getMenuItemUrl(item.url);
 
                     let renderContent;
                     switch (item.title) {
@@ -205,12 +214,7 @@ export function HeaderMenu({
                     if (!item.url) return null;
 
                     // if the url is internal, we strip the domain
-                    const url =
-                      item.url.includes('myshopify.com') ||
-                      item.url.includes(publicStoreDomain) ||
-                      item.url.includes(primaryDomainUrl)
-                        ? new URL(item.url).pathname
-                        : item.url;
+                    const url = getMenuItemUrl(item.url);
 
                     let renderContent;
                     switch (item.title) {
@@ -298,12 +302,7 @@ export function HeaderMenu({
                     if (!item.url) return null;
 
                     // if the url is internal, we strip the domain
-                    const url =
-                      item.url.includes('myshopify.com') ||
-                      item.url.includes(publicStoreDomain) ||
-                      item.url.includes(primaryDomainUrl)
-                        ? new URL(item.url).pathname
-                        : item.url;
+                    const url = getMenuItemUrl(item.url);
 
                     let renderContent;
                     switch (item.title) {
@@ -358,12 +357,7 @@ export function HeaderMenu({
                     if (!item.url) return null;
 
                     // if the url is internal, we strip the domain
-                    const url =
-                      item.url.includes('myshopify.com') ||
-                      item.url.includes(publicStoreDomain) ||
-                      item.url.includes(primaryDomainUrl)
-                        ? new URL(item.url).pathname
-                        : item.url;
+                    const url = getMenuItemUrl(item.url);
 
                     let renderContent;
                     switch (item.title) {
@@ -450,12 +444,7 @@ export function HeaderMenu({
                 {menuFirstHalf.map((item) => {
                   if (!item.url) return null;
 
-                  const url =
-                    item.url.includes('myshopify.com') ||
-                    item.url.includes(publicStoreDomain) ||
-                    item.url.includes(primaryDomainUrl)
-                      ? new URL(item.url).pathname
-                      : item.url;
+                  const url = getMenuItemUrl(item.url);
 
                   let renderContent;
                   switch (item.title) {
@@ -518,12 +507,7 @@ export function HeaderMenu({
               {menuSecondHalf.map((item) => {
                 if (!item.url) return null;
 
-                const url =
-                  item.url.includes('myshopify.com') ||
-                  item.url.includes(publicStoreDomain) ||
-                  item.url.includes(primaryDomainUrl)
-                    ? new URL(item.url).pathname
-                    : item.url;
+                const url = getMenuItemUrl(item.url);
 
                 let renderContent;
                 switch (item.title) {
@@ -602,12 +586,7 @@ export function HeaderMenu({
                   if (!item.url) return null;
 
                   // if the url is internal, we strip the domain
-                  const url =
-                    item.url.includes('myshopify.com') ||
-                    item.url.includes(publicStoreDomain) ||
-                    item.url.includes(primaryDomainUrl)
-                      ? new URL(item.url).pathname
-                      : item.url;
+                  const url = getMenuItemUrl(item.url);
 
                   let renderContent;
                   switch (item.title) {
@@ -662,12 +641,7 @@ export function HeaderMenu({
                   if (!item.url) return null;
 
                   // if the url is internal, we strip the domain
-                  const url =
-                    item.url.includes('myshopify.com') ||
-                    item.url.includes(publicStoreDomain) ||
-                    item.url.includes(primaryDomainUrl)
-                      ? new URL(item.url).pathname
-                      : item.url;
+                  const url = getMenuItemUrl(item.url);
 
                   let renderContent;
                   switch (item.title) {
@@ -749,12 +723,7 @@ export function HeaderMenu({
                 if (!item.url) return null;
 
                 // if the url is internal, we strip the domain
-                const url =
-                  item.url.includes('myshopify.com') ||
-                  item.url.includes(publicStoreDomain) ||
-                  item.url.includes(primaryDomainUrl)
-                    ? new URL(item.url).pathname
-                    : item.url;
+                const url = getMenuItemUrl(item.url);
 
                 let renderContent;
                 switch (item.title) {
@@ -809,12 +778,7 @@ export function HeaderMenu({
                 if (!item.url) return null;
 
                 // if the url is internal, we strip the domain
-                const url =
-                  item.url.includes('myshopify.com') ||
-                  item.url.includes(publicStoreDomain) ||
-                  item.url.includes(primaryDomainUrl)
-                    ? new URL(item.url).pathname
-                    : item.url;
+                const url = getMenuItemUrl(item.url);
 
                 let renderContent;
                 switch (item.title) {
