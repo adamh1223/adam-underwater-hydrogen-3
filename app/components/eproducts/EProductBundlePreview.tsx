@@ -169,11 +169,11 @@ function EProductBundlePreview({
       {totalItems > 1 && (
         <>
           <CarouselPrevious
-
+          className="!-left-4.5"
 
           />
           <CarouselNext
-
+          className="!-right-4.5"
 
           />
         </>
