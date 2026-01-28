@@ -310,7 +310,7 @@ export default function Collection() {
         </div>
       )}
       {collection?.handle === 'stock' && (
-        <div className="flex justify-center pb-3">
+        <div className="flex justify-center py-2">
           <div className="toggle-container">
             <button
               className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}

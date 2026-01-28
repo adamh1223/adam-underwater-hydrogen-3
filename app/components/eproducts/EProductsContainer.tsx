@@ -334,18 +334,19 @@ function EProductsContainer({
                         className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                     )} */}
-              <Link
-                className="product-item"
-                key={product.id}
-                prefetch="intent"
-                to={variantUrl}
-              >
-                {isBundle ? (
-                  <EProductBundlePreview product={product} />
-                ) : (
+             {isBundle ? (
+                <EProductBundlePreview product={product} />
+              ) : (
+                <Link
+                  className="product-item"
+                  key={product.id}
+                  prefetch="intent"
+                  to={variantUrl}
+                >
                   <EProductPreview EProduct={product} />
-                )}
-              </Link>
+                </Link>
+              )}
+              
               
             </div>
             {/* <div className="mt-4 text-center">
@@ -544,18 +545,18 @@ function EProductsContainer({
                       />
                     )} */}
 
-              <Link
-                className="product-item"
-                key={product.id}
-                prefetch="intent"
-                to={variantUrl}
-              >
-                {isBundle ? (
-                  <EProductBundlePreview product={product} />
-                ) : (
+              {isBundle ? (
+                <EProductBundlePreview product={product} />
+              ) : (
+                <Link
+                  className="product-item"
+                  key={product.id}
+                  prefetch="intent"
+                  to={variantUrl}
+                >
                   <EProductPreview EProduct={product} />
-                )}
-              </Link>
+                </Link>
+              )}
               
             </div>
             {/* <div className="mt-4 text-center">
@@ -701,18 +702,18 @@ function EProductsContainer({
                       />
                     )} */}
                     
-              <Link
-                className="product-item"
-                key={product.id}
-                prefetch="intent"
-                to={variantUrl}
-              >
-                {isBundle ? (
-                  <EProductBundlePreview product={product} />
-                ) : (
+              {isBundle ? (
+                <EProductBundlePreview product={product} />
+              ) : (
+                <Link
+                  className="product-item"
+                  key={product.id}
+                  prefetch="intent"
+                  to={variantUrl}
+                >
                   <EProductPreview EProduct={product} />
-                )}
-              </Link>
+                </Link>
+              )}
               
             </div>
             {/* <div className="mt-4 text-center">
