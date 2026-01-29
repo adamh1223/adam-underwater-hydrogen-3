@@ -136,8 +136,15 @@ function FeaturedReviewsContent({
       isFeatured?: boolean;
     },
   ) => {
+    console.log(review.productId, '222productid');
+    console.log(review.createdAt, '222createdat');
+    console.log(currentCustomerId, '222currentcustomer');
+    console.log(isAdmin, '222admin');
+    
     if (!review?.productId || !review?.createdAt) return;
     if (!currentCustomerId && !isAdmin) return;
+
+  
 
     const form = new FormData();
     form.append('productId', review.productId);

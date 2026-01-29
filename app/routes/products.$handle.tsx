@@ -1218,7 +1218,7 @@ const navigate = useNavigate();
               </>
             )}
 
-            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+            {!isBundle && <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />}
             <br />
 
             <ProductForm

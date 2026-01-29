@@ -23,7 +23,7 @@ const splitBundleDescriptions = (descriptionHtml?: string): string[] => {
   if (!descriptionHtml) return [];
 
   const withParagraphs = descriptionHtml
-    .split(/(?=<p>[\s\S]*?Clip\s*\d+:)/gi)
+    .split(/(?=<div>[\s\S]*)/gi)
     .map((section) => section.trim())
     .filter(Boolean);
 
@@ -70,13 +70,7 @@ function IndividualVideoBundle({
       {clips
         .filter((clip) => Boolean(clip.wmlinkId))
         .map((clip) => (
-          <div key={`bundle-clip-${clip.index}`} className="flex flex-col gap-6">
-            {clip.descriptionHtml && (
-              <div
-                className="bundle-clip-description text-start"
-                dangerouslySetInnerHTML={{__html: clip.descriptionHtml}}
-              />
-            )}
+          <div key={`bundle-clip-${clip.index}`} className="flex flex-row gap-6">
             <div className="clip-wrapper flex justify-center relative">
               <iframe
                 className="clip"
@@ -85,6 +79,13 @@ function IndividualVideoBundle({
                 title={`Bundle clip ${clip.index}`}
               ></iframe>
             </div>
+            {clip.descriptionHtml && (
+              <div
+                className="bundle-clip-description text-start"
+                dangerouslySetInnerHTML={{__html: clip.descriptionHtml}}
+              />
+            )}
+            
           </div>
         ))}
     </div>

@@ -9,10 +9,14 @@ type shopifyImage = {url: string; altText: string};
 function EProductPreview({
   EProduct,
   extraClassName,
+  layout
 }: {
   EProduct: ProductItemFragment & {images: {nodes: shopifyImage[]}};
   extraClassName?: string;
+  layout: string;
 }) {
+  console.log(layout, 'layout');
+  
   const [isHovered, setIsHovered] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef<HTMLIFrameElement>(null);

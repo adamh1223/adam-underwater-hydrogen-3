@@ -36,11 +36,12 @@ function EProductsContainer({
     selectedOrFirstAvailableVariant?: {id: string};
   };
   loading?: 'eager' | 'lazy';
-  layout: string | undefined;
+  layout: string;
   cart?: Promise<CartReturn | null>;
   isLoggedIn: Promise<boolean> | undefined;
   isInWishlist: boolean;
 }) {
+  
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-5'
@@ -343,7 +344,7 @@ function EProductsContainer({
                   prefetch="intent"
                   to={variantUrl}
                 >
-                  <EProductPreview EProduct={product} />
+                  <EProductPreview EProduct={product} layout={layout}/>
                 </Link>
               )}
               
@@ -554,7 +555,7 @@ function EProductsContainer({
                   prefetch="intent"
                   to={variantUrl}
                 >
-                  <EProductPreview EProduct={product} />
+                  <EProductPreview EProduct={product} layout={layout}/>
                 </Link>
               )}
               
