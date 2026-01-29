@@ -1,6 +1,7 @@
 import {createClient} from '@supabase/supabase-js';
 
-const BUCKET = 'main-bucket';
+const BUCKET = 'main-bucket-3';
+// CHANGE BUCKET TO CURRENT BUCKET NAME
 
 function getSupabase(env: Env) {
   const url = env.SUPABASE_URL;

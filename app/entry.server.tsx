@@ -21,10 +21,16 @@ export default async function handleRequest(
       'blob:',
       'data:',
       'https://fpoxvfuxgtlyphowqdgf.supabase.co',
+      'https://aethtsbnwylikosxhnkh.supabase.co',
+      'https://uctqtajkpjsifdxtmjwo.supabase.co',
+      // buckets 1,2,3 ^
     ],
     connectSrc: [
       "'self'",
       'https://fpoxvfuxgtlyphowqdgf.supabase.co',
+      'https://aethtsbnwylikosxhnkh.supabase.co',
+      'https://uctqtajkpjsifdxtmjwo.supabase.co',
+      // buckets 1,2,3 ^
       'wss://patient-mite-notably.ngrok-free.app:3000',
       'https://api.courier.com/send',
       'https://cdn.shopify.com',
@@ -36,6 +42,8 @@ export default async function handleRequest(
       'https://cdn.shopify.com',
       'https://fpoxvfuxgtlyphowqdgf.supabase.co',
       'https://aethtsbnwylikosxhnkh.supabase.co',
+      'https://uctqtajkpjsifdxtmjwo.supabase.co',
+      // buckets 1,2,3 ^
     ],
     fontSrc: [
       "'self'",
