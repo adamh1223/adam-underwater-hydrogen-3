@@ -1743,13 +1743,20 @@ span {
 }
 }
 
-
+.artist-pick {
+  width: 140px;
+  height: 30px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100 !important;
+  font-weight: 700;
+}
 .clip-icon {
   width: 70px;
   height: 25px;
   padding-top: 4px;
   padding-bottom: 4px;
-  z-index: 99999;
+  z-index: 100;
 }
 .four-k {
 
@@ -1757,6 +1764,14 @@ span {
 .slow-mo {
 
 }
+.fps {
+
+}
 .duration-tag {
 
+}
+
+.badge-img {
+  height: 24px;
+  margin-left: 4px
 }

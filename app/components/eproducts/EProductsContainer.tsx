@@ -78,6 +78,7 @@ function EProductsContainer({
     .find((t: string) => t?.startsWith?.('duration-'))
     ?.split('-')[1];
   const isSlowmo = product.tags.includes('slowmo');
+  const isArtistPick = product.tags.includes('artist-pick');
   const hasDurationTag = Boolean(durationTag);
   
 
@@ -194,7 +195,20 @@ function EProductsContainer({
         className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
       >
         <Card className={cardClassName}>
-          <div className="absolute left-2 top-2 z-40 flex flex-col gap-1">
+          <div className="absolute left-2 top-2 flex flex-col gap-1">
+            {isArtistPick && (
+              <button
+                disabled
+                className="artist-pick rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-md hover:bg-background disabled:cursor-default disabled:opacity-100"
+              >
+                Artist's Pick
+                <div className='flex justify-center items-end'>
+
+                <img src={'/badge1.png'} className='badge-img'/>
+                </div>
+                    
+              </button>
+            )}
             {hasDurationTag && (
               <button
                 disabled
@@ -212,6 +226,14 @@ function EProductsContainer({
                 className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
               >
                 Slow-mo
+              </button>
+            )}
+            {!isSlowmo && (
+              <button
+                disabled
+                className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              >
+                24fps
               </button>
             )}
             <button
