@@ -194,26 +194,29 @@ function EProductsContainer({
         className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
       >
         <Card className={cardClassName}>
-          <div className="absolute left-2 top-2 z-40 flex flex-col gap-2">
+          <div className="absolute left-2 top-2 z-40 flex flex-col gap-1">
             {hasDurationTag && (
               <button
                 disabled
-                className="rounded-md border border-border bg-background p-2 text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                className="clip-icon duration-tag flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
               >
+                
+
                 {durationTag}
+                
               </button>
             )}
             {isSlowmo && (
               <button
                 disabled
-                className="rounded-md border border-border bg-background p-2 text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
               >
                 Slow-mo
               </button>
             )}
             <button
               disabled
-              className="rounded-md border border-border bg-background p-2 text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
             >
               4K
             </button>

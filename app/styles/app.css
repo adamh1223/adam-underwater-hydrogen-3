@@ -1253,6 +1253,8 @@ span {
   color: rgb(214, 183, 72);
 }
 
+
+
 .review-card {
   width: 100%;
   height: 100%;
@@ -1739,4 +1741,22 @@ span {
 .reviewbutton {
   width: 56px;
 }
+}
+
+
+.clip-icon {
+  width: 70px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 99999;
+}
+.four-k {
+
+}
+.slow-mo {
+
+}
+.duration-tag {
+
 }
