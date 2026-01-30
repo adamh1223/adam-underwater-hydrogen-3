@@ -79,7 +79,11 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           </p>
 
           <div className="flex items-center justify-center pt-7 gap-2">
-            <StockForm updateCheck={setIsOrderReady} clipNames={clipNames} />
+            <StockForm
+              updateCheck={setIsOrderReady}
+              clipNames={clipNames}
+              isSubmitted={isOrderReady}
+            />
           </div>
           <p className="flex justify-center pt-7 px-8">
             Download links will be sent via email and available on the orders

@@ -103,11 +103,11 @@ export default function OrderRoute() {
   const tagDownloadLinks = productResponses
     ?.map((p) => {
       const productWithDownloadTag = p?.product?.tags?.filter((tag: any) =>
-        tag.includes('download'),
+        tag.includes('umclips'),
       );
       if (productWithDownloadTag?.length) {
         return {
-          url: productWithDownloadTag[0],
+          url: `https://storage.googleapis.com/${productWithDownloadTag[0]}`,
           text: p.product.title,
         };
       }

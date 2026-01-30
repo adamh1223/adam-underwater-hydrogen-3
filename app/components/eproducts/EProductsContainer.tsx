@@ -74,6 +74,10 @@ function EProductsContainer({
   let locationState: string | undefined;
   let locationCountry: string | undefined;
 
+  const durationTag = product.tags.find((t: string) => t?.startsWith?.('duration-'))?.split('-')[1];
+  console.log(durationTag, 'duration')
+  
+
   const titleCase = (w: string) =>
     w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
   if (locationTag) {
@@ -210,7 +214,10 @@ function EProductsContainer({
                     </p>
                   </Link>
                 </div>
+                
             <div className="fav-btn-container-list cursor-pointer absolute  z-50">
+              {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
+
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -267,6 +274,7 @@ function EProductsContainer({
           {layout === 'grid' && <div className={cardContentClassName}>
             {layout === 'grid' && (
               <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
+                <div>{durationTag}</div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>

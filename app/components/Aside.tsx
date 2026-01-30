@@ -70,6 +70,11 @@ export function Aside({
           if (!(target instanceof Node)) {
             return;
           }
+          const element =
+            target instanceof Element ? target : target.parentElement;
+          if (element?.closest('[data-stockform]')) {
+            return;
+          }
           if (asideRef.current?.contains(target)) {
             return;
           }

@@ -22,9 +22,11 @@ const courier = new CourierClient({
 function StockForm({
   updateCheck,
   clipNames,
+  isSubmitted,
 }: {
   updateCheck: React.Dispatch<React.SetStateAction<boolean>>;
   clipNames: string[];
+  isSubmitted: boolean;
 }) {
   const [formData, setFormData] = useState({
     clips: clipNames.join(', '),
@@ -45,7 +47,7 @@ function StockForm({
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePlatforms, setAgreePlatforms] = useState(false);
   const [error, setError] = useState('');
-  const [checkedBox, setCheckedBox] = useState(false);
+
 
   useEffect(() => {
     if (error) {
@@ -83,7 +85,7 @@ function StockForm({
       });
       
 
-      if (true) {
+      if (response.ok) {
         setStatus('Form submitted successfully!');
         setFormData({
           clips: '',
@@ -99,7 +101,7 @@ function StockForm({
           advertisement: '',
           other: '',
         });
-        setCheckedBox(true);
+        
         updateCheck(true);
         setAgreeTerms(false);
         setAgreePlatforms(false);
@@ -115,7 +117,7 @@ function StockForm({
 
   return (
     <>
-      <Checkbox checked={checkedBox}></Checkbox>
+      <Checkbox checked={isSubmitted}></Checkbox>
 
       <Dialog>
         <DialogTrigger asChild>
@@ -123,7 +125,7 @@ function StockForm({
             Stock Footage Licensing Form
           </Button>
         </DialogTrigger>
-        <DialogContent className="modal">
+        <DialogContent className="modal" data-stockform>
           <DialogHeader>
             <DialogTitle>
               Please list all channels where purchased stock footage will
