@@ -74,8 +74,11 @@ function EProductsContainer({
   let locationState: string | undefined;
   let locationCountry: string | undefined;
 
-  const durationTag = product.tags.find((t: string) => t?.startsWith?.('duration-'))?.split('-')[1];
-  console.log(durationTag, 'duration')
+  const durationTag = product.tags
+    .find((t: string) => t?.startsWith?.('duration-'))
+    ?.split('-')[1];
+  const isSlowmo = product.tags.includes('slowmo');
+  const hasDurationTag = Boolean(durationTag);
   
 
   const titleCase = (w: string) =>
@@ -191,6 +194,30 @@ function EProductsContainer({
         className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
       >
         <Card className={cardClassName}>
+          <div className="absolute left-2 top-2 z-40 flex flex-col gap-2">
+            {hasDurationTag && (
+              <button
+                disabled
+                className="rounded-md border border-border bg-background p-2 text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              >
+                {durationTag}
+              </button>
+            )}
+            {isSlowmo && (
+              <button
+                disabled
+                className="rounded-md border border-border bg-background p-2 text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              >
+                Slow-mo
+              </button>
+            )}
+            <button
+              disabled
+              className="rounded-md border border-border bg-background p-2 text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+            >
+              4K
+            </button>
+          </div>
           {layout === 'list' && windowWidth != undefined && windowWidth <= 600 && (
             <>
             <div
@@ -274,7 +301,6 @@ function EProductsContainer({
           {layout === 'grid' && <div className={cardContentClassName}>
             {layout === 'grid' && (
               <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
-                <div>{durationTag}</div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
