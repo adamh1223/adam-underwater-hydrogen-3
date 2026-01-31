@@ -89,6 +89,8 @@ export async function loader(args: LoaderFunctionArgs) {
   } else {
     wishlistProducts = [];
   }
+  console.log(wishlistProducts, '444wishlist');
+  
   
 
   return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
@@ -260,6 +262,7 @@ export default function Collection() {
     
 
     setTotalProductCount(collection?.products?.nodes?.length);
+    setStockFilterState('All Clips')
   }, [collection?.handle]);
 
   
@@ -640,13 +643,20 @@ export default function Collection() {
               };
               index: number;
             }) => {
+              console.log(wishlistProducts, '777wp');
+              console.log(product, '777p');
+              
               const isInWishlist = wishlistProducts?.includes(
                 product?.id,
+                
+                
               ) as boolean;
+              console.log(isInWishlist, '77iw');
               return (
                 <>
                   {collection?.handle === 'prints' && (
                     <ProductCarousel
+                     key={product.id}
                       product={product}
                       layout={layout}
                       isInWishlist={isInWishlist}
@@ -655,6 +665,7 @@ export default function Collection() {
                   )}
                   {collection?.handle === 'stock' && (
                     <EProductsContainer
+                    key={product.id}
                       product={product}
                       layout={layout}
                       cart={cart}

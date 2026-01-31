@@ -57,6 +57,8 @@ export async function loader(args: LoaderFunctionArgs) {
   const wishlistProducts = JSON.parse(
     customer.data.customer.metafield?.value,
   ) as string[];
+  console.log(wishlistProducts, 'wishlistprods');
+  
 
   const productNodes = await Promise.all(
     wishlistProducts?.map((id) =>

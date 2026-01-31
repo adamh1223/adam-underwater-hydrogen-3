@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['steal-beth-relief-timer.tryhydrogen.dev'],
+    allowedHosts: ['penalty-woods-zoning-dip.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

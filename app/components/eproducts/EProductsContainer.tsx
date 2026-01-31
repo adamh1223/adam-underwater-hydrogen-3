@@ -42,6 +42,7 @@ function EProductsContainer({
   isInWishlist: boolean;
 }) {
   
+  
   const cardClassName =
     layout === 'grid'
       ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-5'
@@ -69,6 +70,7 @@ function EProductsContainer({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
   const locationTag = product.tags.find((t: string) => t?.startsWith?.('loc_'));
   let locationName: string | undefined;
   let locationState: string | undefined;
@@ -131,6 +133,7 @@ function EProductsContainer({
   const navigate = useNavigate();
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
+  console.log(wishlistItem, '333wishlistitem', product, '333product');
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
   const addToFavorites = async () => {
     try {
