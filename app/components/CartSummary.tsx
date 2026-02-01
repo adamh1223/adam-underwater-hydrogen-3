@@ -2,11 +2,17 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useEffect, useRef, useState} from 'react';
-import {FetcherWithComponents, Link, redirect} from '@remix-run/react';
+import {
+  FetcherWithComponents,
+  Link,
+  redirect,
+  useRouteLoaderData,
+} from '@remix-run/react';
 import {Card, CardAction, CardContent, CardHeader} from './ui/card';
 import {Input} from './ui/input';
 import {Button} from './ui/button';
 import StockForm from './form/StockForm';
+import type {RootLoader} from '~/root';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -14,6 +20,8 @@ type CartSummaryProps = {
 };
 
 export function CartSummary({cart, layout}: CartSummaryProps) {
+  const rootData = useRouteLoaderData<RootLoader>('root');
+  const isAdmin = Boolean(rootData?.isAdmin);
   const clipProducts = cart.lines.nodes.filter((item) => {
     //@ts-expect-error not picking up tags somehow
     return item.merchandise.product.tags?.includes('Video');
@@ -22,7 +30,6 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
     (product) => product.merchandise.product.title,
   );
 
-  
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
   // const [isOrderReady, setIsOrderReady] = useState(defaultOrderValue);
@@ -95,7 +102,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         <div className="p-5">
           <CartCheckoutActions
             checkoutUrl={cart.checkoutUrl}
-            disabled={!isOrderReady}
+            disabled={!isAdmin && !isOrderReady}
           />
         </div>
       </div>

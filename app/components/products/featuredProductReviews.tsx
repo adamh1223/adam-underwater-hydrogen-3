@@ -5,6 +5,7 @@ import {Separator} from '../ui/separator';
 import type {Review} from '../global/ProductReviewsDisplay';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {toast} from 'sonner';
+import {ADMIN_CUSTOMER_ID} from '~/lib/admin';
 
 
 interface FeaturedReviewsQuery {
@@ -20,7 +21,6 @@ interface FeaturedReviewsQuery {
 }
 
 type FeaturedReview = Review & {isFeatured?: boolean};
-const ADMIN_CUSTOMER_ID = 'gid://shopify/Customer/7968375079049';
 
 const parseReviewsValue = (value?: string | null) => {
   if (!value) return [] as FeaturedReview[];
