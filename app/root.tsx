@@ -9,6 +9,7 @@ import {
 import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {CUSTOMER_WISHLIST} from './lib/customerQueries';
+import {ADMIN_CUSTOMER_ID} from '~/lib/admin';
 
 export type RootLoader = typeof loader;
 
@@ -117,6 +118,8 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     console.warn('Not logged in');
     customer = null;
   }
+  const customerId = customer?.data.customer.id ?? null;
+  const isAdmin = customerId === ADMIN_CUSTOMER_ID;
   const wishlistProducts = (() => {
     if (!customer) return [];
 
@@ -135,6 +138,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
   return {
     wishlistProducts,
     header,
+    isAdmin,
   };
 }
 
