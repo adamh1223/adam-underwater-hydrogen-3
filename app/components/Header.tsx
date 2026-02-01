@@ -863,12 +863,14 @@ function HeaderCtas({
 
   const links: NavLink[] = [
     {href: '/', label: 'Home', icon: 'home-icon'},
+    {href: 'account', label: 'My Account', icon: 'profile-icon'},
     {href: 'account/orders', label: 'My Orders', icon: 'orders-icon'},
     {href: 'account/favorites', label: 'My Favorites', icon: 'favorite-icon'},
     {href: 'account/reviews', label: 'My Reviews', icon: 'reviews-icon'},
-    {href: 'account/profile', label: 'My Profile', icon: 'profile-icon'},
     {href: 'account/addresses', label: 'My Addresses', icon: 'addresses-icon'},
   ];
+
+
 
   return (
     <nav className="header-ctas" role="navigation">
@@ -932,15 +934,21 @@ function HeaderCtas({
             {loginValue ? (
               <>
                 <div className="p-3">
-                  {customerFirstName && <div className='flex justify-center, items-center text-md'>
+                  {customerFirstName && 
+                  <>
+                  <div className='flex justify-center items-center text-md pb-3'>
                     
 <p>
 
                     Hello, {customerFirstName}
 </p>
                     
-                    </div>}
+                    </div>
+                    <hr />
+                    </>
+                    }
                   {links.map((link) => (
+                    
                     <Link to={link.href}>
                       <Button
                         key={link.href}
