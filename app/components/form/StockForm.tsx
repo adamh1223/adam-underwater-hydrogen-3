@@ -126,29 +126,49 @@ function StockForm({
           </Button>
         </DialogTrigger>
         <DialogContent className="modal" data-stockform>
-          <DialogHeader>
-            <DialogTitle>
+          <DialogHeader className='text-center pb-2'>
+            <DialogTitle className='text-center'>
               Please list all channels where purchased stock footage will
               appear.
             </DialogTitle>
-            <DialogDescription className="py-3">
-              By purchasing stock footage from Adam Underwater, you must list
-              the channels and/or films in which the stock footage will appear.
-              These channels are given access to the footage for use publicly.{' '}
+            <DialogDescription>
+            <div className='grid grid-cols-2 gap-x-5 pt-2'>
+              <div>
+
               <div className="flex justify-start one-entry">
                 Only one entry per platform is allowed.{' '}
               </div>
+              <div className='stock-text'>
+
+              By purchasing stock footage from Adam Underwater, you must list
+              the channels and/or films in which the stock footage will appear.
+              These channels are given access to the footage for use publicly.
+              </div>
+              </div>
+              <div>
+
+              <div className="flex justify-start one-entry">
+                Second-hand sale of purchased clips is not permitted.
+              </div>
+              <div className='stock-text'>
+
               Channels not listed are not given access to post this stock
               footage publicly, and are subject to a copyright infringement
               violation where stock footage from Adam Underwater appears.
-              Unauthorized platforms using stock footage may result in content
-              being taken down.{' '}
-              <div className="flex justify-start one-entry">
-                Second-hand sale of purchased clips is not permitted.
-              </div>{' '}
-              <div className="flex justify-start one-entry">
+              
+              </div>
+              </div>
+              
+            </div>
+            <div className="stock-statement flex justify-start items-center two-entry pt-4">
+
+            Unauthorized platforms using stock footage may result in content
+              being taken down.
+            </div>
+              <div className="stock-statement flex justify-start items-center two-entry">
                 All stock footage videos are final sale.
-              </div>{' '}
+              </div>
+
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center">

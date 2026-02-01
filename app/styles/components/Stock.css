@@ -1,3 +1,17 @@
+.stock-statement {
+  text-align: left; /* Align the text to the start of its parent */
+  margin: 0; /* Reset margin if needed */
+  position: relative; /* Required for positioning the pseudo-element */
+
+}
+
+.stock-statement::before {
+  content: '•'; /* Adds a bullet point */
+  margin-right: 4px; /* Space between bullet and text */
+  font-size: 1.2em; /* Adjust bullet size as needed */
+  color: inherit; /* Matches the text color */
+  display: inline-block;
+}
 .statement {
   text-align: left; /* Align the text to the start of its parent */
   margin: 0; /* Reset margin if needed */
