@@ -927,6 +927,7 @@ function HeaderCtas({
             {loginValue ? (
               <>
                 <div className="p-3">
+                  <div>Hello, </div>
                   {links.map((link) => (
                     <Link to={link.href}>
                       <Button
