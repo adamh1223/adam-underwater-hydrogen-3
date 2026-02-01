@@ -48,6 +48,8 @@ export function Aside({
   const imageSource = determineActiveTypeImage();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const asideRef = useRef<HTMLElement | null>(null);
+  const isStockFormOpen = () =>
+    Boolean(document.querySelector('[data-stockform]'));
 
   useEffect(() => {
     function handleResize() {
@@ -68,6 +70,9 @@ export function Aside({
         (event) => {
           const target = event.target;
           if (!(target instanceof Node)) {
+            return;
+          }
+          if (isStockFormOpen()) {
             return;
           }
           const element =
@@ -101,7 +106,14 @@ export function Aside({
       className={`overlay ${expanded ? 'expanded' : ''}`}
       role="dialog"
     >
-      <button className="close-outside" onClick={close} />
+      <button
+        className="close-outside"
+        onClick={() => {
+          if (!isStockFormOpen()) {
+            close();
+          }
+        }}
+      />
 
       <aside className="border-l" ref={asideRef}>
         {windowWidth != null && windowWidth > 1023 && (
