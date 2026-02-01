@@ -933,10 +933,10 @@ function HeaderCtas({
           >
             {loginValue ? (
               <>
-                <div className="p-3">
+                <div>
                   {customerFirstName && 
                   <>
-                  <div className='flex justify-center items-center text-md pb-3'>
+                  <div className='flex justify-center items-center text-md py-3'>
                     
 <p>
 
@@ -947,6 +947,8 @@ function HeaderCtas({
                     <hr />
                     </>
                     }
+                    <div className='p-3'>
+
                   {links.map((link) => (
                     
                     <Link to={link.href}>
@@ -970,6 +972,7 @@ function HeaderCtas({
                       </Button>
                     </Link>
                   ))}
+                    </div>
                 </div>
                 <hr />
                 <div className="pt-3 pe-3 pb-3 ps-2 cursor-pointer">
