@@ -7,6 +7,7 @@ import {
   NavLink,
   useAsyncValue,
   useLoaderData,
+  useRouteLoaderData,
 } from '@remix-run/react';
 import {
   type CartViewPayload,
@@ -26,6 +27,7 @@ import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {ChevronUp, Divide} from 'lucide-react';
 import {log} from 'util';
+import { RootLoader } from '~/root';
 
 interface HeaderProps {
   header: HeaderQuery & {
@@ -855,6 +857,9 @@ function HeaderCtas({
   };
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const rootData = useRouteLoaderData<RootLoader>('root');
+  const customerFirstName = rootData?.customerFirstName ?? '';
+  
 
   const links: NavLink[] = [
     {href: '/', label: 'Home', icon: 'home-icon'},
@@ -927,7 +932,14 @@ function HeaderCtas({
             {loginValue ? (
               <>
                 <div className="p-3">
-                  <div>Hello, </div>
+                  {customerFirstName && <div className='flex justify-center, items-center text-md'>
+                    
+<p>
+
+                    Hello, {customerFirstName}
+</p>
+                    
+                    </div>}
                   {links.map((link) => (
                     <Link to={link.href}>
                       <Button

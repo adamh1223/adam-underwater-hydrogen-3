@@ -120,6 +120,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
   }
   const customerId = customer?.data.customer.id ?? null;
   const isAdmin = customerId === ADMIN_CUSTOMER_ID;
+  const customerFirstName = customer?.data.customer.firstName ?? '';
   const wishlistProducts = (() => {
     if (!customer) return [];
 
@@ -137,6 +138,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
 
   return {
     wishlistProducts,
+    customerFirstName,
     header,
     isAdmin,
   };
