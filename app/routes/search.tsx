@@ -17,7 +17,7 @@ import {useEffect, useState} from 'react';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 
 export const meta: MetaFunction = () => {
-  return [{title: `Hydrogen | Search`}];
+  return [{title: `Adam Underwater | Search`}];
 };
 
 export async function loader({request, context}: LoaderFunctionArgs) {
