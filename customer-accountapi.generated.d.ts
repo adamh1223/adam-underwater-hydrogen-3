@@ -71,10 +71,10 @@ export type CustomerFragment = Pick<
   'id' | 'firstName' | 'lastName' | 'tags'
 > & {
   emailAddress?: CustomerAccountAPI.Maybe<
-    Pick<CustomerAccountAPI.CustomerEmailAddress, 'emailAddress'>
+    Pick<CustomerAccountAPI.CustomerEmailAddress, 'emailAddress' | 'marketingState'>
   >;
   phoneNumber?: CustomerAccountAPI.Maybe<
-    Pick<CustomerAccountAPI.CustomerPhoneNumber, 'phoneNumber'>
+    Pick<CustomerAccountAPI.CustomerPhoneNumber, 'phoneNumber' | 'marketingState'>
   >;
   defaultAddress?: CustomerAccountAPI.Maybe<
     Pick<
@@ -115,12 +115,6 @@ export type CustomerFragment = Pick<
   birthday?: CustomerAccountAPI.Maybe<
     Pick<CustomerAccountAPI.Metafield, 'value'>
   >;
-  marketingEmail?: CustomerAccountAPI.Maybe<
-    Pick<CustomerAccountAPI.Metafield, 'value'>
-  >;
-  marketingSms?: CustomerAccountAPI.Maybe<
-    Pick<CustomerAccountAPI.Metafield, 'value'>
-  >;
 };
 
 export type AddressFragment = Pick<
@@ -149,10 +143,10 @@ export type CustomerDetailsQuery = {
     'id' | 'firstName' | 'lastName' | 'tags'
   > & {
     emailAddress?: CustomerAccountAPI.Maybe<
-      Pick<CustomerAccountAPI.CustomerEmailAddress, 'emailAddress'>
+      Pick<CustomerAccountAPI.CustomerEmailAddress, 'emailAddress' | 'marketingState'>
     >;
     phoneNumber?: CustomerAccountAPI.Maybe<
-      Pick<CustomerAccountAPI.CustomerPhoneNumber, 'phoneNumber'>
+      Pick<CustomerAccountAPI.CustomerPhoneNumber, 'phoneNumber' | 'marketingState'>
     >;
     defaultAddress?: CustomerAccountAPI.Maybe<
       Pick<
@@ -191,12 +185,6 @@ export type CustomerDetailsQuery = {
       >;
     };
     birthday?: CustomerAccountAPI.Maybe<
-      Pick<CustomerAccountAPI.Metafield, 'value'>
-    >;
-    marketingEmail?: CustomerAccountAPI.Maybe<
-      Pick<CustomerAccountAPI.Metafield, 'value'>
-    >;
-    marketingSms?: CustomerAccountAPI.Maybe<
       Pick<CustomerAccountAPI.Metafield, 'value'>
     >;
   };
@@ -500,7 +488,7 @@ export type CustomerUpdateMutation = {
 };
 
 interface GeneratedQueryTypes {
-  '#graphql\n  query CustomerDetails {\n    customer {\n      ...Customer\n    }\n  }\n  #graphql\n  fragment Customer on Customer {\n    id\n    firstName\n    lastName\n    emailAddress {\n      emailAddress\n    }\n    phoneNumber {\n      phoneNumber\n    }\n    defaultAddress {\n      ...Address\n    }\n    addresses(first: 6) {\n      nodes {\n        ...Address\n      }\n    }\n    birthday: metafield(namespace: \"custom\", key: \"birthday\") {\n      value\n    }\n    marketingEmail: metafield(namespace: \"custom\", key: \"marketing_email\") {\n      value\n    }\n    marketingSms: metafield(namespace: \"custom\", key: \"marketing_sms\") {\n      value\n    }\n    tags\n  }\n  fragment Address on CustomerAddress {\n    id\n    formatted\n    firstName\n    lastName\n    company\n    address1\n    address2\n    territoryCode\n    zoneCode\n    city\n    zip\n    phoneNumber\n  }\n\n': {
+  '#graphql\n  query CustomerDetails {\n    customer {\n      ...Customer\n    }\n  }\n  #graphql\n  fragment Customer on Customer {\n    id\n    firstName\n    lastName\n    emailAddress {\n      emailAddress\n      marketingState\n    }\n    phoneNumber {\n      phoneNumber\n      marketingState\n    }\n    defaultAddress {\n      ...Address\n    }\n    addresses(first: 6) {\n      nodes {\n        ...Address\n      }\n    }\n    birthday: metafield(namespace: \"custom\", key: \"birthday\") {\n      value\n    }\n    tags\n  }\n  fragment Address on CustomerAddress {\n    id\n    formatted\n    firstName\n    lastName\n    company\n    address1\n    address2\n    territoryCode\n    zoneCode\n    city\n    zip\n    phoneNumber\n  }\n\n': {
     return: CustomerDetailsQuery;
     variables: CustomerDetailsQueryVariables;
   };

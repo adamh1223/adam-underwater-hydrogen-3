@@ -2,6 +2,8 @@ import type {CustomerFragment} from 'customer-accountapi.generated';
 import type {CustomerUpdateInput} from '@shopify/hydrogen/customer-account-api-types';
 import {
   CUSTOMER_UPDATE_MUTATION,
+  CUSTOMER_EMAIL_MARKETING_SUBSCRIBE,
+  CUSTOMER_EMAIL_MARKETING_UNSUBSCRIBE,
   CUSTOMER_UPDATE_WISHLIST,
 } from '~/graphql/customer-account/CustomerUpdateMutation';
 import {
@@ -24,6 +26,8 @@ import Sectiontitle from '~/components/global/Sectiontitle';
 export type ActionResponse = {
   error: string | null;
   customer: CustomerFragment | null;
+  birthday?: string;
+  marketingEmail?: boolean;
 };
 
 export const meta: MetaFunction = () => {
@@ -59,7 +63,6 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     const birthday = form.get('birthday');
     const marketingEmail = form.get('marketingEmail') === 'on';
-    const marketingSms = form.get('marketingSms') === 'on';
 
     // update customer and possibly password
     const {data, errors} = await customerAccount.mutate(
@@ -80,40 +83,20 @@ export async function action({request, context}: ActionFunctionArgs) {
     }
 
     const customerId = data.customerUpdate.customer.id;
-    const metafields = [
-      ...(birthday && typeof birthday === 'string' && birthday.length
-        ? [
-            {
-              key: 'birthday',
-              namespace: 'custom',
-              ownerId: customerId,
-              type: 'date',
-              value: birthday,
-            },
-          ]
-        : []),
-      {
-        key: 'marketing_email',
-        namespace: 'custom',
-        ownerId: customerId,
-        type: 'boolean',
-        value: String(marketingEmail),
-      },
-      {
-        key: 'marketing_sms',
-        namespace: 'custom',
-        ownerId: customerId,
-        type: 'boolean',
-        value: String(marketingSms),
-      },
-    ];
-
-    if (metafields.length) {
+    if (birthday && typeof birthday === 'string' && birthday.length) {
       const metafieldResponse = await customerAccount.mutate(
         CUSTOMER_UPDATE_WISHLIST,
         {
           variables: {
-            metafields,
+            metafields: [
+              {
+                key: 'birthday',
+                namespace: 'custom',
+                ownerId: customerId,
+                type: 'date',
+                value: birthday,
+              },
+            ],
           },
         },
       );
@@ -125,9 +108,24 @@ export async function action({request, context}: ActionFunctionArgs) {
       }
     }
 
+    const marketingMutation = marketingEmail
+      ? CUSTOMER_EMAIL_MARKETING_SUBSCRIBE
+      : CUSTOMER_EMAIL_MARKETING_UNSUBSCRIBE;
+    const marketingResponse = await customerAccount.mutate(marketingMutation);
+    const marketingErrors = marketingEmail
+      ? marketingResponse?.data?.customerEmailMarketingSubscribe?.userErrors ?? []
+      : marketingResponse?.data?.customerEmailMarketingUnsubscribe?.userErrors ??
+        [];
+
+    if (marketingErrors.length) {
+      throw new Error(marketingErrors[0].message);
+    }
+
     return {
       error: null,
       customer: data?.customerUpdate?.customer,
+      birthday: typeof birthday === 'string' ? birthday : undefined,
+      marketingEmail,
     };
   } catch (error: any) {
     return data(
@@ -148,9 +146,15 @@ export default function AccountProfile() {
     : account?.customer;
   const email = customer?.emailAddress?.emailAddress ?? '';
   const phone = customer?.phoneNumber?.phoneNumber ?? '';
-  const birthday = customer?.birthday?.value ?? '';
-  const marketingEmail = customer?.marketingEmail?.value === 'true';
-  const marketingSms = customer?.marketingSms?.value === 'true';
+  const birthday = action?.birthday ?? customer?.birthday?.value ?? '';
+  const marketingEmailState = customer?.emailAddress?.marketingState;
+  const marketingEmail =
+    action?.marketingEmail ??
+    (marketingEmailState === 'SUBSCRIBED' ||
+      marketingEmailState === 'PENDING');
+  const marketingSmsState = customer?.phoneNumber?.marketingState;
+  const marketingSms =
+    marketingSmsState === 'SUBSCRIBED' || marketingSmsState === 'PENDING';
 
   return (
     <>
