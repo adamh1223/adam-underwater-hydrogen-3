@@ -18,7 +18,18 @@ import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import FeaturedProductReviews from '~/components/products/featuredProductReviews';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Adam Underwater | Home'}];
+  const title = 'Adam Underwater | Underwater Video & Photo';
+  const description =
+    'Underwater video and photo services. Shop underwater wall art and stock footage';
+
+  return [
+    {title},
+    {name: 'description', content: description},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'twitter:title', content: title},
+    {property: 'twitter:description', content: description},
+  ];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

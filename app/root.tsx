@@ -55,7 +55,9 @@ export function links() {
       rel: 'preconnect',
       href: 'https://shop.app',
     },
-    {rel: 'icon', type: 'image/png', href: '/real-icon-2.png'},
+    {rel: 'icon', type: 'image/png', sizes: '32x32', href: '/real-icon-2.png'},
+    {rel: 'icon', type: 'image/png', sizes: '48x48', href: '/real-icon-2.png'},
+    {rel: 'apple-touch-icon', href: '/real-icon-2.png'},
   ];
 }
 
