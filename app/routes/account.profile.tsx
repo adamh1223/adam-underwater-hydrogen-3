@@ -129,14 +129,25 @@ export async function action({request, context}: ActionFunctionArgs) {
     if (marketingSms !== currentMarketingSms) {
       const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
       const storeDomain = context.env.PUBLIC_STORE_DOMAIN;
+      const adminDomainEnv = context.env.SHOPIFY_ADMIN_DOMAIN;
 
       if (!adminToken || !storeDomain) {
         throw new Error('Missing admin credentials to update SMS consent.');
       }
 
-      const adminDomain = storeDomain.replace(/^https?:\/\//, '');
+      const sanitizedStoreDomain = storeDomain.replace(/^https?:\/\//, '');
+      const adminDomain =
+        adminDomainEnv?.replace(/^https?:\/\//, '') ??
+        (sanitizedStoreDomain.includes('myshopify.com')
+          ? sanitizedStoreDomain
+          : null);
+      if (!adminDomain) {
+        throw new Error(
+          'Missing SHOPIFY_ADMIN_DOMAIN for Admin API requests.',
+        );
+      }
       const smsResponse = await fetch(
-        `https://${adminDomain}/admin/api/2024-10/graphql.json`,
+        `https://${adminDomain}/admin/api/2025-01/graphql.json`,
         {
           method: 'POST',
           headers: {
