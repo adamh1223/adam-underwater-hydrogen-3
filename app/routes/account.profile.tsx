@@ -4,8 +4,8 @@ import {
   CUSTOMER_UPDATE_MUTATION,
   CUSTOMER_EMAIL_MARKETING_SUBSCRIBE,
   CUSTOMER_EMAIL_MARKETING_UNSUBSCRIBE,
-  CUSTOMER_UPDATE_WISHLIST,
 } from '~/graphql/customer-account/CustomerUpdateMutation';
+import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 import {
   data,
   type ActionFunctionArgs,
@@ -84,27 +84,61 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     const customerId = data.customerUpdate.customer.id;
     if (birthday && typeof birthday === 'string' && birthday.length) {
-      const metafieldResponse = await customerAccount.mutate(
-        CUSTOMER_UPDATE_WISHLIST,
+      const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
+      const storeDomain = context.env.PUBLIC_STORE_DOMAIN;
+
+      if (!adminToken || !storeDomain) {
+        throw new Error('Missing admin credentials to update birthday.');
+      }
+
+      const adminDomain = storeDomain.replace(/^https?:\/\//, '');
+      const adminResponse = await fetch(
+        `https://${adminDomain}/admin/api/2024-10/graphql.json`,
         {
-          variables: {
-            metafields: [
-              {
-                key: 'birthday',
-                namespace: 'custom',
-                ownerId: customerId,
-                type: 'date',
-                value: birthday,
-              },
-            ],
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': adminToken,
           },
+          body: JSON.stringify({
+            query: ADMIN_METAFIELD_SET,
+            variables: {
+              metafields: [
+                {
+                  key: 'birthday',
+                  namespace: 'custom',
+                  ownerId: customerId,
+                  type: 'date',
+                  value: birthday,
+                },
+              ],
+            },
+          }),
         },
       );
 
+      const adminText = await adminResponse.text();
+      if (!adminResponse.ok) {
+        throw new Error(
+          `Admin API error (${adminResponse.status}): ${adminText}`,
+        );
+      }
+
+      let adminJson: any = {};
+      try {
+        adminJson = JSON.parse(adminText);
+      } catch (parseError) {
+        throw new Error('Invalid Admin API response.');
+      }
+
       const metafieldErrors =
-        metafieldResponse?.data?.metafieldsSet?.userErrors ?? [];
+        adminJson?.data?.metafieldsSet?.userErrors ??
+        adminJson?.errors ??
+        [];
       if (metafieldErrors.length) {
-        throw new Error(metafieldErrors[0].message);
+        const message =
+          metafieldErrors[0]?.message ?? 'Unable to update birthday.';
+        throw new Error(message);
       }
     }
 
