@@ -47,19 +47,29 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
  */
 export function links() {
   return [
+    // Google Search favicon (48x48)
     {
-      rel: 'preconnect',
-      href: 'https://cdn.shopify.com',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '48x48',
+      href: '/favicon-48.png',
     },
+
+    // Browser tab icon (high quality)
     {
-      rel: 'preconnect',
-      href: 'https://shop.app',
+      rel: 'icon',
+      type: 'image/png',
+      href: '/real-icon-2.png',
     },
-    {rel: 'icon', type: 'image/png', sizes: '32x32', href: '/real-icon-2.png'},
-    {rel: 'icon', type: 'image/png', sizes: '48x48', href: '/real-icon-2.png'},
-    {rel: 'apple-touch-icon', href: '/real-icon-2.png'},
+
+    // Apple
+    {
+      rel: 'apple-touch-icon',
+      href: '/real-icon-2.png',
+    },
   ];
 }
+
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte

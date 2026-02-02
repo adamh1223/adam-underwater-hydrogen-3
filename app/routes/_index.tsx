@@ -20,17 +20,25 @@ import FeaturedProductReviews from '~/components/products/featuredProductReviews
 export const meta: MetaFunction = () => {
   const title = 'Adam Underwater | Underwater Video & Photo';
   const description =
-    'Underwater video and photo services. Shop underwater wall art and stock footage';
+    'Underwater video and photo services. Shop underwater wall art and premium stock footage by Adam Hussain.';
 
   return [
-    {title},
-    {name: 'description', content: description},
-    {property: 'og:title', content: title},
-    {property: 'og:description', content: description},
-    {property: 'twitter:title', content: title},
-    {property: 'twitter:description', content: description},
+    { title },
+    { name: 'description', content: description },
+
+    // Open Graph (Google + social)
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:url', content: 'https://adamunderwater.com' },
+
+    // Twitter
+    { name: 'twitter:card', content: 'summary' },
+    { name: 'twitter:title', content: title },
+    { name: 'twitter:description', content: description },
   ];
 };
+
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
