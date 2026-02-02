@@ -121,12 +121,12 @@ export async function action({request, context}: ActionFunctionArgs) {
       throw new Error(marketingErrors[0].message);
     }
 
-    return {
+    return data({
       error: null,
-      customer: data?.customerUpdate?.customer,
+      customer: data?.customerUpdate?.customer ?? null,
       birthday: typeof birthday === 'string' ? birthday : undefined,
       marketingEmail,
-    };
+    });
   } catch (error: any) {
     return data(
       {error: error.message, customer: null},
