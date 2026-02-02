@@ -5,6 +5,7 @@ export const CUSTOMER_UPDATE_MUTATION = `#graphql
   ){
     customerUpdate(input: $customer) {
       customer {
+        id
         firstName
         lastName
         emailAddress {

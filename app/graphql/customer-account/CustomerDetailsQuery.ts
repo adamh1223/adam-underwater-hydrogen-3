@@ -4,6 +4,12 @@ export const CUSTOMER_FRAGMENT = `#graphql
     id
     firstName
     lastName
+    emailAddress {
+      emailAddress
+    }
+    phoneNumber {
+      phoneNumber
+    }
     defaultAddress {
       ...Address
     }
@@ -11,6 +17,15 @@ export const CUSTOMER_FRAGMENT = `#graphql
       nodes {
         ...Address
       }
+    }
+    birthday: metafield(namespace: "custom", key: "birthday") {
+      value
+    }
+    marketingEmail: metafield(namespace: "custom", key: "marketing_email") {
+      value
+    }
+    marketingSms: metafield(namespace: "custom", key: "marketing_sms") {
+      value
     }
     tags
   }
