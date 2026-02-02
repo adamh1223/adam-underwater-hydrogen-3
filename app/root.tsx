@@ -55,7 +55,7 @@ export function links() {
       rel: 'preconnect',
       href: 'https://shop.app',
     },
-    {rel: 'icon', type: 'image/png', href: '/real-icon.png'},
+    {rel: 'icon', type: 'image/png', href: '/real-icon-2.png'},
   ];
 }
 
