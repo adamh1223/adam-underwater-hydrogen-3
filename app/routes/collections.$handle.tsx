@@ -48,7 +48,7 @@ import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection?.title ?? ''} Collection`}];
+  return [{title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

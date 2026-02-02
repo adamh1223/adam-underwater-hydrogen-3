@@ -19,7 +19,7 @@ import {useEffect, useState} from 'react';
 import {shopifyImage} from '~/lib/types';
 
 export const meta: MetaFunction<typeof loader> = () => {
-  return [{title: `Hydrogen | Products`}];
+  return [{title: `Adam Underwater | Products`}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
