@@ -91,7 +91,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const currentMarketingSms = form.get('currentMarketingSms') === 'true';
 
     // update customer and possibly password
-    const {data, errors} = await customerAccount.mutate(
+    const {data: mutationData, errors} = await customerAccount.mutate(
       CUSTOMER_UPDATE_MUTATION,
       {
         variables: {
@@ -104,11 +104,11 @@ export async function action({request, context}: ActionFunctionArgs) {
       throw new Error(errors[0].message);
     }
 
-    if (!data?.customerUpdate?.customer) {
+    if (!mutationData?.customerUpdate?.customer) {
       throw new Error('Customer profile update failed.');
     }
 
-    const customerId = data.customerUpdate.customer.id;
+    const customerId = mutationData.customerUpdate.customer.id;
 
     if (marketingEmail !== currentMarketingEmail) {
       const marketingMutation = marketingEmail
@@ -192,7 +192,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     return data({
       error: null,
-      customer: data?.customerUpdate?.customer ?? null,
+      customer: mutationData?.customerUpdate?.customer ?? null,
       marketingEmail,
       marketingSms,
     });
