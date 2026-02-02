@@ -6,9 +6,11 @@ export const CUSTOMER_FRAGMENT = `#graphql
     lastName
     emailAddress {
       emailAddress
+      marketingState
     }
     phoneNumber {
       phoneNumber
+      marketingState
     }
     defaultAddress {
       ...Address
@@ -19,12 +21,6 @@ export const CUSTOMER_FRAGMENT = `#graphql
       }
     }
     birthday: metafield(namespace: "custom", key: "birthday") {
-      value
-    }
-    marketingEmail: metafield(namespace: "custom", key: "marketing_email") {
-      value
-    }
-    marketingSms: metafield(namespace: "custom", key: "marketing_sms") {
       value
     }
     tags

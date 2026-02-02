@@ -42,3 +42,35 @@ export const CUSTOMER_UPDATE_WISHLIST =
   }
 }
 ` as const;
+
+export const CUSTOMER_EMAIL_MARKETING_SUBSCRIBE = `#graphql
+  mutation CustomerEmailMarketingSubscribe {
+    customerEmailMarketingSubscribe {
+      emailAddress {
+        emailAddress
+        marketingState
+      }
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+` as const;
+
+export const CUSTOMER_EMAIL_MARKETING_UNSUBSCRIBE = `#graphql
+  mutation CustomerEmailMarketingUnsubscribe {
+    customerEmailMarketingUnsubscribe {
+      emailAddress {
+        emailAddress
+        marketingState
+      }
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+` as const;
