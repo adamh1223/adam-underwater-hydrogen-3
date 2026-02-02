@@ -5,7 +5,6 @@ import {
   CUSTOMER_EMAIL_MARKETING_SUBSCRIBE,
   CUSTOMER_EMAIL_MARKETING_UNSUBSCRIBE,
 } from '~/graphql/customer-account/CustomerUpdateMutation';
-import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 import {
   data,
   type ActionFunctionArgs,
@@ -26,9 +25,34 @@ import Sectiontitle from '~/components/global/Sectiontitle';
 export type ActionResponse = {
   error: string | null;
   customer: CustomerFragment | null;
-  birthday?: string;
   marketingEmail?: boolean;
+  marketingSms?: boolean;
 };
+
+const CUSTOMER_SMS_MARKETING_UPDATE = `#graphql
+  mutation CustomerSmsMarketingConsentUpdate(
+    $customerId: ID!
+    $smsMarketingConsent: SmsMarketingConsentInput!
+  ) {
+    customerSmsMarketingConsentUpdate(
+      customerId: $customerId
+      smsMarketingConsent: $smsMarketingConsent
+    ) {
+      customer {
+        id
+        phoneNumber {
+          phoneNumber
+          marketingState
+        }
+      }
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+` as const;
 
 export const meta: MetaFunction = () => {
   return [{title: 'Profile'}];
@@ -61,8 +85,10 @@ export async function action({request, context}: ActionFunctionArgs) {
       }
     }
 
-    const birthday = form.get('birthday');
     const marketingEmail = form.get('marketingEmail') === 'on';
+    const marketingSms = form.get('marketingSms') === 'on';
+    const currentMarketingEmail = form.get('currentMarketingEmail') === 'true';
+    const currentMarketingSms = form.get('currentMarketingSms') === 'true';
 
     // update customer and possibly password
     const {data, errors} = await customerAccount.mutate(
@@ -83,16 +109,33 @@ export async function action({request, context}: ActionFunctionArgs) {
     }
 
     const customerId = data.customerUpdate.customer.id;
-    if (birthday && typeof birthday === 'string' && birthday.length) {
+
+    if (marketingEmail !== currentMarketingEmail) {
+      const marketingMutation = marketingEmail
+        ? CUSTOMER_EMAIL_MARKETING_SUBSCRIBE
+        : CUSTOMER_EMAIL_MARKETING_UNSUBSCRIBE;
+      const marketingResponse = await customerAccount.mutate(marketingMutation);
+      const marketingErrors = marketingEmail
+        ? marketingResponse?.data?.customerEmailMarketingSubscribe?.userErrors ??
+          []
+        : marketingResponse?.data?.customerEmailMarketingUnsubscribe
+            ?.userErrors ?? [];
+
+      if (marketingErrors.length) {
+        throw new Error(marketingErrors[0].message);
+      }
+    }
+
+    if (marketingSms !== currentMarketingSms) {
       const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
       const storeDomain = context.env.PUBLIC_STORE_DOMAIN;
 
       if (!adminToken || !storeDomain) {
-        throw new Error('Missing admin credentials to update birthday.');
+        throw new Error('Missing admin credentials to update SMS consent.');
       }
 
       const adminDomain = storeDomain.replace(/^https?:\/\//, '');
-      const adminResponse = await fetch(
+      const smsResponse = await fetch(
         `https://${adminDomain}/admin/api/2024-10/graphql.json`,
         {
           method: 'POST',
@@ -101,65 +144,46 @@ export async function action({request, context}: ActionFunctionArgs) {
             'X-Shopify-Access-Token': adminToken,
           },
           body: JSON.stringify({
-            query: ADMIN_METAFIELD_SET,
+            query: CUSTOMER_SMS_MARKETING_UPDATE,
             variables: {
-              metafields: [
-                {
-                  key: 'birthday',
-                  namespace: 'custom',
-                  ownerId: customerId,
-                  type: 'date',
-                  value: birthday,
-                },
-              ],
+              customerId,
+              smsMarketingConsent: {
+                marketingState: marketingSms ? 'SUBSCRIBED' : 'UNSUBSCRIBED',
+                marketingOptInLevel: 'SINGLE_OPT_IN',
+              },
             },
           }),
         },
       );
 
-      const adminText = await adminResponse.text();
-      if (!adminResponse.ok) {
-        throw new Error(
-          `Admin API error (${adminResponse.status}): ${adminText}`,
-        );
+      const smsText = await smsResponse.text();
+      if (!smsResponse.ok) {
+        throw new Error(`Admin API error (${smsResponse.status}): ${smsText}`);
       }
 
-      let adminJson: any = {};
+      let smsJson: any = {};
       try {
-        adminJson = JSON.parse(adminText);
+        smsJson = JSON.parse(smsText);
       } catch (parseError) {
         throw new Error('Invalid Admin API response.');
       }
 
-      const metafieldErrors =
-        adminJson?.data?.metafieldsSet?.userErrors ??
-        adminJson?.errors ??
+      const smsErrors =
+        smsJson?.data?.customerSmsMarketingConsentUpdate?.userErrors ??
+        smsJson?.errors ??
         [];
-      if (metafieldErrors.length) {
+      if (smsErrors.length) {
         const message =
-          metafieldErrors[0]?.message ?? 'Unable to update birthday.';
+          smsErrors[0]?.message ?? 'Unable to update SMS marketing consent.';
         throw new Error(message);
       }
-    }
-
-    const marketingMutation = marketingEmail
-      ? CUSTOMER_EMAIL_MARKETING_SUBSCRIBE
-      : CUSTOMER_EMAIL_MARKETING_UNSUBSCRIBE;
-    const marketingResponse = await customerAccount.mutate(marketingMutation);
-    const marketingErrors = marketingEmail
-      ? marketingResponse?.data?.customerEmailMarketingSubscribe?.userErrors ?? []
-      : marketingResponse?.data?.customerEmailMarketingUnsubscribe?.userErrors ??
-        [];
-
-    if (marketingErrors.length) {
-      throw new Error(marketingErrors[0].message);
     }
 
     return data({
       error: null,
       customer: data?.customerUpdate?.customer ?? null,
-      birthday: typeof birthday === 'string' ? birthday : undefined,
       marketingEmail,
+      marketingSms,
     });
   } catch (error: any) {
     return data(
@@ -180,7 +204,6 @@ export default function AccountProfile() {
     : account?.customer;
   const email = customer?.emailAddress?.emailAddress ?? '';
   const phone = customer?.phoneNumber?.phoneNumber ?? '';
-  const birthday = action?.birthday ?? customer?.birthday?.value ?? '';
   const marketingEmailState = customer?.emailAddress?.marketingState;
   const marketingEmail =
     action?.marketingEmail ??
@@ -188,7 +211,8 @@ export default function AccountProfile() {
       marketingEmailState === 'PENDING');
   const marketingSmsState = customer?.phoneNumber?.marketingState;
   const marketingSms =
-    marketingSmsState === 'SUBSCRIBED' || marketingSmsState === 'PENDING';
+    action?.marketingSms ??
+    (marketingSmsState === 'SUBSCRIBED' || marketingSmsState === 'PENDING');
 
   return (
     <>
@@ -267,22 +291,14 @@ export default function AccountProfile() {
                     className="w-[250px]"
                   />
                 </div>
-                <label htmlFor="birthday" className="me-2">
-                  Birthday:
-                </label>
-                <div className="py-2">
-                  <Input
-                    id="birthday"
-                    name="birthday"
-                    type="date"
-                    aria-label="Birthday"
-                    defaultValue={birthday}
-                    className="w-[250px]"
-                  />
-                </div>
                 <div className="pt-4">
                   <h3>Marketing</h3>
                   <div className="py-2">
+                    <input
+                      type="hidden"
+                      name="currentMarketingEmail"
+                      value={marketingEmail ? 'true' : 'false'}
+                    />
                     <label
                       htmlFor="marketingEmail"
                       className="flex items-center gap-2"
@@ -297,6 +313,11 @@ export default function AccountProfile() {
                     </label>
                   </div>
                   <div className="py-2">
+                    <input
+                      type="hidden"
+                      name="currentMarketingSms"
+                      value={marketingSms ? 'true' : 'false'}
+                    />
                     <label
                       htmlFor="marketingSms"
                       className="flex items-center gap-2"
