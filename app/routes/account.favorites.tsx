@@ -99,55 +99,58 @@ export default function Favorites() {
   return (
     <>
       <Sectiontitle text="My Favorites" />
-      {products && <div className="prods-grid gap-x-5">
-        {products?.map((product) => {
-          {
-            product.tags.includes('prints') ? (
-              <div className="flex justify-center pb-2">
-                Framed Canvas Print:
-              </div>
-            ) : (
-              <div className="flex justify-center pb-2">
-                Stock Footage Clip:
-              </div>
-            );
-          }
-          if (product.tags.includes('Prints')) {
-            return (
-              <>
-                <ProductCarousel
-                  product={product}
-                  layout="grid"
-                  isInWishlist={true}
-                  isLoggedIn={isLoggedIn}
-                />
-              </>
-            );
-          }
-          if (product.tags.includes('Video')) {
-            return (
-              <>
-                <EProductsContainer
-                  product={product}
-                  layout="grid"
-                  isInWishlist={true}
-                  isLoggedIn={isLoggedIn}
-                />
-              </>
-            );
-          }
-        })}
-      </div>}
-      {!products && 
-      <div className='mt-3'>
-      {/* THIS IS CODE FOR APOSTROPHE */}
-      <p className='text-center'>You don&apos;t have any favorites yet.</p>
-      <div className="flex justify-center mt-4">
-        <Button variant="default">
-          <Link to="/collections/prints">Start Shopping →</Link>
-        </Button>
-      </div>
-    </div>}
+      {products?.length ? (
+        <div className="prods-grid gap-x-5">
+          {products.map((product) => {
+            {
+              product.tags.includes('prints') ? (
+                <div className="flex justify-center pb-2">
+                  Framed Canvas Print:
+                </div>
+              ) : (
+                <div className="flex justify-center pb-2">
+                  Stock Footage Clip:
+                </div>
+              );
+            }
+            if (product.tags.includes('Prints')) {
+              return (
+                <>
+                  <ProductCarousel
+                    product={product}
+                    layout="grid"
+                    isInWishlist={true}
+                    isLoggedIn={isLoggedIn}
+                  />
+                </>
+              );
+            }
+            if (product.tags.includes('Video')) {
+              return (
+                <>
+                  <EProductsContainer
+                    product={product}
+                    layout="grid"
+                    isInWishlist={true}
+                    isLoggedIn={isLoggedIn}
+                  />
+                </>
+              );
+            }
+          })}
+        </div>
+      ) : (
+        <div className="mt-3">
+          <p className="text-center">
+            You don&apos;t have any favorites yet.
+          </p>
+          <div className="flex justify-center mt-4">
+            <Button variant="default">
+              <Link to="/collections/prints">Start Shopping →</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

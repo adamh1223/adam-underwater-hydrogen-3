@@ -1,6 +1,13 @@
 import type {CustomerFragment} from 'customer-accountapi.generated';
 import type {CustomerUpdateInput} from '@shopify/hydrogen/customer-account-api-types';
-import {useEffect, useState, type ChangeEvent, type FormEvent} from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from 'react';
+import {toast} from 'sonner';
 import {
   CUSTOMER_UPDATE_MUTATION,
   CUSTOMER_EMAIL_MARKETING_SUBSCRIBE,
@@ -319,7 +326,8 @@ export async function action({request, context}: ActionFunctionArgs) {
 
 export default function AccountProfile() {
   const {customer} = useOutletContext<{customer: CustomerFragment}>();
-  const {state} = useNavigation();
+  const navigation = useNavigation();
+  const {state} = navigation;
   const action = useActionData<ActionResponse>();
   const email = customer?.emailAddress?.emailAddress ?? '';
   const phoneOnFile = customer?.phoneNumber?.phoneNumber ?? '';
@@ -332,6 +340,7 @@ export default function AccountProfile() {
   const [marketingSms, setMarketingSms] = useState(marketingSmsOnFile);
   const [phone, setPhone] = useState(phoneOnFile);
   const [clientError, setClientError] = useState<string | null>(null);
+  const shouldToastOnSuccessRef = useRef(false);
 
   useEffect(() => {
     setMarketingSms(marketingSmsOnFile);
@@ -372,10 +381,46 @@ export default function AccountProfile() {
       setClientError(
         'Please add a phone number and then try subscribing to SMS again.',
       );
+      shouldToastOnSuccessRef.current = false;
+      return;
     }
+
+    const form = event.currentTarget;
+    const firstNameValue =
+      (form.elements.namedItem('firstName') as HTMLInputElement | null)?.value ??
+      '';
+    const lastNameValue =
+      (form.elements.namedItem('lastName') as HTMLInputElement | null)?.value ??
+      '';
+    const marketingEmailChecked =
+      (
+        form.elements.namedItem('marketingEmail') as HTMLInputElement | null
+      )?.checked ?? marketingEmail;
+
+    shouldToastOnSuccessRef.current =
+      firstNameValue.trim() !== (customer.firstName ?? '').trim() ||
+      lastNameValue.trim() !== (customer.lastName ?? '').trim() ||
+      phone.trim() !== phoneOnFileValue ||
+      marketingEmailChecked !== marketingEmail ||
+      marketingSms !== marketingSmsOnFile;
   };
 
   const errorMessage = clientError ?? action?.error ?? null;
+
+  useEffect(() => {
+    if (navigation.state !== 'idle') return;
+    if (!action) return;
+
+    if (action.error) {
+      shouldToastOnSuccessRef.current = false;
+      return;
+    }
+
+    if (shouldToastOnSuccessRef.current) {
+      toast.success('Account updated');
+      shouldToastOnSuccessRef.current = false;
+    }
+  }, [action, navigation.state]);
 
   return (
     <>
