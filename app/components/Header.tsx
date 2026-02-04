@@ -20,6 +20,7 @@ import {useAside} from '~/components/Aside';
 import AboutDropdown from './navbar/AboutDropdown';
 import {Button} from './ui/button';
 import ServicesDropdown from './navbar/ServicesDropdown';
+import NotificationsDropdown from './navbar/NotificationsDropdown';
 
 import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
@@ -1005,6 +1006,7 @@ function HeaderCtas({
         </RadixHoverCard.Portal>
       </RadixHoverCard.Root>
 
+      <NotificationsDropdown />
       <CartToggle cart={cart} />
       <SearchToggle />
     </nav>

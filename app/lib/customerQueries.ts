@@ -24,7 +24,9 @@ export const variantQuery = `#graphql
             value
           }
           product {
+            id
             handle
+            tags
           }
         }
       }

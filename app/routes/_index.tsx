@@ -157,13 +157,15 @@ export default function Homepage() {
         wishlistProducts={data.wishlistProducts}
         isLoggedIn={data.isLoggedIn}
       />
-      <div className="flex justify-center font-bold text-xl pb-2">
-        <p>What our customers are saying</p>
+      <div id="featured-reviews">
+        <div className="flex justify-center font-bold text-xl pb-2">
+          <p>What our customers are saying</p>
+        </div>
+        <FeaturedProductReviews
+          reviews={data.featuredReviews}
+          currentCustomerId={data.currentCustomerId}
+        />
       </div>
-      <FeaturedProductReviews
-        reviews={data.featuredReviews}
-        currentCustomerId={data.currentCustomerId}
-      />
     </div>
   );
 }

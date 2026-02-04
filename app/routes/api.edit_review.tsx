@@ -1,6 +1,7 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 import {deleteImage, uploadImage} from '~/lib/supabase.server';
+import {createNotificationId} from '~/lib/notifications';
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
@@ -207,6 +208,104 @@ export async function action({request, context}: ActionFunctionArgs) {
       console.error('Admin API errors:', errors);
       return json({error: errors}, {status: 500});
     }
+
+    const wasFeatured = Boolean(targetReview?.isFeatured);
+    const isNowFeatured = Boolean(updatedReview?.isFeatured);
+    const reviewOwnerCustomerId = targetReview?.customerId as string | undefined;
+
+    if (isAdminCustomer && isNowFeatured && !wasFeatured && reviewOwnerCustomerId) {
+      try {
+        const existingCustomerNotificationsResponse = await fetch(
+          `https://${shop}/admin/api/2024-10/graphql.json`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Access-Token': adminToken,
+              'User-Agent': 'Hydrogen-Review-App',
+            },
+            body: JSON.stringify({
+              query: `#graphql
+                query CustomerNotifications($id: ID!) {
+                  customer(id: $id) {
+                    metafield(namespace: "custom", key: "notifications") {
+                      value
+                    }
+                  }
+                }
+              `,
+              variables: {id: reviewOwnerCustomerId},
+            }),
+          },
+        );
+
+        const existingCustomerNotificationsJson =
+          await existingCustomerNotificationsResponse.json();
+        const existingValue =
+          existingCustomerNotificationsJson?.data?.customer?.metafield?.value;
+
+        let customerNotifications: any[] = [];
+        if (typeof existingValue === 'string' && existingValue.length) {
+          try {
+            const parsed = JSON.parse(existingValue);
+            customerNotifications = Array.isArray(parsed) ? parsed : [];
+          } catch {
+            customerNotifications = [];
+          }
+        }
+
+        const alreadyNotified = customerNotifications.some(
+          (notification) =>
+            notification?.type === 'review_featured' &&
+            notification?.payload?.productId === productId &&
+            notification?.payload?.reviewCreatedAt === createdAt,
+        );
+
+        if (!alreadyNotified) {
+          customerNotifications.unshift({
+            id: createNotificationId(),
+            type: 'review_featured',
+            title: 'Your review has been featured!',
+            message:
+              'Your review has been featured on the home page! Check it out here.',
+            createdAt: new Date().toISOString(),
+            readAt: null,
+            href: '/#featured-reviews',
+            payload: {
+              productId,
+              productName,
+              reviewCreatedAt: createdAt,
+            },
+          });
+        }
+
+        await fetch(`https://${shop}/admin/api/2024-10/graphql.json`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': adminToken,
+            'User-Agent': 'Hydrogen-Review-App',
+          },
+          body: JSON.stringify({
+            query: ADMIN_METAFIELD_SET,
+            variables: {
+              metafields: [
+                {
+                  ownerId: reviewOwnerCustomerId,
+                  namespace: 'custom',
+                  key: 'notifications',
+                  type: 'json',
+                  value: JSON.stringify(customerNotifications.slice(0, 50)),
+                },
+              ],
+            },
+          }),
+        });
+      } catch (error) {
+        console.error('Unable to create review featured notification', error);
+      }
+    }
+
     const courierToken = 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08';
     try {
       await fetch('https://api.courier.com/send', {

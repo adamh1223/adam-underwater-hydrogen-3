@@ -24,8 +24,24 @@ export async function createAppLoadContext(
     AppSession.init(request, [env.SESSION_SECRET]),
   ]);
 
+  const hostname = new URL(request.url).hostname;
+  const isLocalHostname =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.ngrok-free.app') ||
+    hostname.endsWith('.tryhydrogen.dev');
+
+  // Hydrogen prefers the server-to-server delegate token when present. If that
+  // token is missing required Storefront API scopes locally, key homepage
+  // sections (recommended products / featured reviews) can silently fail.
+  // Using the public token for local development keeps local behavior aligned
+  // with production (where the delegate token is often unset).
+  const envForHydrogen = isLocalHostname
+    ? {...env, PRIVATE_STOREFRONT_API_TOKEN: ''}
+    : env;
+
   const hydrogenContext = createHydrogenContext({
-    env,
+    env: envForHydrogen,
     request,
     cache,
     waitUntil,
