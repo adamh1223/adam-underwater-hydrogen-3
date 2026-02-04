@@ -77,10 +77,10 @@ function OrdersTable({orders}: Pick<CustomerOrdersFragment, 'orders'>) {
 function EmptyOrders() {
   return (
     <div>
-      <p className="ms-5">You haven&apos;t placed any orders yet.</p>
-      <br />
-      <div className="flex justify-center">
-        <Button variant="default" className="ms-5">
+      {/* THIS IS CODE FOR APOSTROPHE */}
+      <p>You haven&apos;t placed any orders yet.</p>
+      <div className="flex justify-center mt-4">
+        <Button variant="default">
           <Link to="/collections/prints">Start Shopping →</Link>
         </Button>
       </div>

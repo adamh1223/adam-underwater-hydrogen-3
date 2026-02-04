@@ -7,6 +7,7 @@ import ProductReviewsDisplay, {
 } from '~/components/global/ProductReviewsDisplay';
 import ProductCarousel from '../products/productCarousel';
 import {toast} from 'sonner';
+import { Button } from '../ui/button';
 
 interface AccountReviewsProps {
   products: ProductReviewSource[];
@@ -237,9 +238,15 @@ const AccountReviews = ({
 
   if (!userReviews.length) {
     return (
-      <div className="mt-4 text-center text-muted-foreground">
-        <p>You haven&apos;t left any reviews yet.</p>
+      <div className='mt-3'>
+      {/* THIS IS CODE FOR APOSTROPHE */}
+      <p className='text-center'>You haven&apos;t left any product reviews yet.</p>
+      <div className="flex justify-center mt-4">
+        <Button variant="default">
+          <Link to="/collections/prints">Start Shopping →</Link>
+        </Button>
       </div>
+    </div>
     );
   }
 

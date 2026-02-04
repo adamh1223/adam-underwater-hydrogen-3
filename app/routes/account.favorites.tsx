@@ -16,6 +16,7 @@ import {
   type MetaFunction,
   type Fetcher,
   useLoaderData,
+  Link,
 } from '@remix-run/react';
 import {
   UPDATE_ADDRESS_MUTATION,
@@ -90,7 +91,7 @@ export default function Favorites() {
   return (
     <>
       <Sectiontitle text="My Favorites" />
-      <div className="prods-grid gap-x-5">
+      {products && <div className="prods-grid gap-x-5">
         {products?.map((product) => {
           {
             product.tags.includes('prints') ? (
@@ -128,7 +129,17 @@ export default function Favorites() {
             );
           }
         })}
+      </div>}
+      {!products && 
+      <div className='mt-3'>
+      {/* THIS IS CODE FOR APOSTROPHE */}
+      <p className='text-center'>You don&apos;t have any favorites yet.</p>
+      <div className="flex justify-center mt-4">
+        <Button variant="default">
+          <Link to="/collections/prints">Start Shopping →</Link>
+        </Button>
       </div>
+    </div>}
     </>
   );
 }
