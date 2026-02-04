@@ -52,17 +52,25 @@ export async function loader(args: LoaderFunctionArgs) {
   const customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
   const isLoggedIn = context.customerAccount.isLoggedIn();
 
-  if (!customer.data.customer.metafield?.value) {
-    return [];
+  let wishlistProducts: string[] = [];
+  const wishlistValue = customer.data.customer.metafield?.value;
+  if (typeof wishlistValue === 'string' && wishlistValue.length) {
+    try {
+      const parsed = JSON.parse(wishlistValue);
+      if (Array.isArray(parsed)) {
+        wishlistProducts = parsed.filter(
+          (value): value is string => typeof value === 'string',
+        );
+      }
+    } catch {
+      wishlistProducts = [];
+    }
   }
-  const wishlistProducts = JSON.parse(
-    customer.data.customer.metafield?.value,
-  ) as string[];
   console.log(wishlistProducts, 'wishlistprods');
   
 
   const productNodes = await Promise.all(
-    wishlistProducts?.map((id) =>
+    wishlistProducts.map((id) =>
       context.storefront.query(productQuery, {
         variables: {
           id,

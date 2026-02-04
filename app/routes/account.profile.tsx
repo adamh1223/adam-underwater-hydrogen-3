@@ -1,5 +1,6 @@
 import type {CustomerFragment} from 'customer-accountapi.generated';
 import type {CustomerUpdateInput} from '@shopify/hydrogen/customer-account-api-types';
+import {useEffect, useState, type ChangeEvent, type FormEvent} from 'react';
 import {
   CUSTOMER_UPDATE_MUTATION,
   CUSTOMER_EMAIL_MARKETING_SUBSCRIBE,
@@ -104,6 +105,20 @@ export async function action({request, context}: ActionFunctionArgs) {
     const currentPhoneValue =
       typeof currentPhone === 'string' ? currentPhone.trim() : '';
     const shouldUpdatePhone = phoneValue !== currentPhoneValue;
+    const effectivePhoneValue = shouldUpdatePhone
+      ? phoneValue
+      : currentPhoneValue;
+
+    if (marketingSms && !effectivePhoneValue.length) {
+      return data(
+        {
+          error:
+            'Please add a phone number and then try subscribing to SMS again.',
+          customer: null,
+        },
+        {status: 400},
+      );
+    }
 
     // update customer and possibly password
     const {data: mutationData, errors} = await customerAccount.mutate(
@@ -170,53 +185,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         } else {
           const adminEndpoint = `https://${adminDomain}/admin/api/2025-01/graphql.json`;
 
-          if (marketingSms !== currentMarketingSms) {
-            const smsResponse = await fetch(adminEndpoint, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Shopify-Access-Token': adminToken,
-              },
-              body: JSON.stringify({
-                query: CUSTOMER_SMS_MARKETING_UPDATE,
-                variables: {
-                 input: {
-                    customerId,
-                    smsMarketingConsent: {
-                      marketingState: marketingSms
-                        ? 'SUBSCRIBED'
-                        : 'UNSUBSCRIBED',
-                      marketingOptInLevel: 'SINGLE_OPT_IN',
-                    },
-                  },
-                },
-              }),
-            });
-
-            const smsText = await smsResponse.text();
-            if (!smsResponse.ok) {
-              actionError = `Admin API error (${smsResponse.status}): ${smsText}`;
-            } else {
-              let smsJson: any = {};
-              try {
-                smsJson = JSON.parse(smsText);
-              } catch (parseError) {
-                actionError = 'Invalid Admin API response.';
-              }
-
-              const smsErrors =
-                smsJson?.data?.customerSmsMarketingConsentUpdate?.userErrors ??
-                smsJson?.errors ??
-                [];
-              if (smsErrors.length) {
-                actionError =
-                  smsErrors[0]?.message ??
-                  'Unable to update SMS marketing consent.';
-              }
-            }
-          }
-
-          if (!actionError && shouldUpdatePhone) {
+          if (shouldUpdatePhone) {
             const phoneResponse = await fetch(adminEndpoint, {
               method: 'POST',
               headers: {
@@ -259,6 +228,58 @@ export async function action({request, context}: ActionFunctionArgs) {
               }
             }
           }
+
+          const shouldUpdateSmsConsent =
+            (marketingSms && (shouldUpdatePhone || marketingSms !== currentMarketingSms)) ||
+            (!marketingSms &&
+              !shouldUpdatePhone &&
+              marketingSms !== currentMarketingSms);
+
+          if (!actionError && shouldUpdateSmsConsent) {
+            const smsResponse = await fetch(adminEndpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Shopify-Access-Token': adminToken,
+              },
+              body: JSON.stringify({
+                query: CUSTOMER_SMS_MARKETING_UPDATE,
+                variables: {
+                  input: {
+                    customerId,
+                    smsMarketingConsent: {
+                      marketingState: marketingSms
+                        ? 'SUBSCRIBED'
+                        : 'UNSUBSCRIBED',
+                      marketingOptInLevel: 'SINGLE_OPT_IN',
+                    },
+                  },
+                },
+              }),
+            });
+
+            const smsText = await smsResponse.text();
+            if (!smsResponse.ok) {
+              actionError = `Admin API error (${smsResponse.status}): ${smsText}`;
+            } else {
+              let smsJson: any = {};
+              try {
+                smsJson = JSON.parse(smsText);
+              } catch (parseError) {
+                actionError = 'Invalid Admin API response.';
+              }
+
+              const smsErrors =
+                smsJson?.data?.customerSmsMarketingConsentUpdate?.userErrors ??
+                smsJson?.errors ??
+                [];
+              if (smsErrors.length) {
+                actionError =
+                  smsErrors[0]?.message ??
+                  'Unable to update SMS marketing consent.';
+              }
+            }
+          }
         }
       }
     }
@@ -297,23 +318,64 @@ export async function action({request, context}: ActionFunctionArgs) {
 }
 
 export default function AccountProfile() {
-  const account = useOutletContext<{customer: CustomerFragment}>();
+  const {customer} = useOutletContext<{customer: CustomerFragment}>();
   const {state} = useNavigation();
   const action = useActionData<ActionResponse>();
-  const customer = action?.customer
-    ? {...account?.customer, ...action?.customer}
-    : account?.customer;
   const email = customer?.emailAddress?.emailAddress ?? '';
-  const phone = customer?.phoneNumber?.phoneNumber ?? '';
+  const phoneOnFile = customer?.phoneNumber?.phoneNumber ?? '';
   const marketingEmailState = customer?.emailAddress?.marketingState;
   const marketingEmail =
-    action?.marketingEmail ??
-    (marketingEmailState === 'SUBSCRIBED' ||
-      marketingEmailState === 'PENDING');
+    marketingEmailState === 'SUBSCRIBED' || marketingEmailState === 'PENDING';
   const marketingSmsState = customer?.phoneNumber?.marketingState;
-  const marketingSms =
-    action?.marketingSms ??
-    (marketingSmsState === 'SUBSCRIBED' || marketingSmsState === 'PENDING');
+  const marketingSmsOnFile =
+    marketingSmsState === 'SUBSCRIBED' || marketingSmsState === 'PENDING';
+  const [marketingSms, setMarketingSms] = useState(marketingSmsOnFile);
+  const [phone, setPhone] = useState(phoneOnFile);
+  const [clientError, setClientError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMarketingSms(marketingSmsOnFile);
+  }, [marketingSmsOnFile]);
+
+  useEffect(() => {
+    if (action?.error) {
+      setMarketingSms(marketingSmsOnFile);
+    }
+  }, [action?.error, marketingSmsOnFile]);
+
+  useEffect(() => {
+    setPhone(phoneOnFile);
+  }, [phoneOnFile]);
+
+  const phoneOnFileValue = phoneOnFile.trim();
+
+  const handlePhoneChange = ({target}: ChangeEvent<HTMLInputElement>) => {
+    const nextPhone = target.value;
+    setPhone(nextPhone);
+    setClientError(null);
+
+    if (!phoneOnFileValue.length) return;
+
+    if (nextPhone.trim() !== phoneOnFileValue) {
+      setMarketingSms(false);
+      return;
+    }
+
+    setMarketingSms(marketingSmsOnFile);
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    setClientError(null);
+
+    if (marketingSms && !phone.trim().length) {
+      event.preventDefault();
+      setClientError(
+        'Please add a phone number and then try subscribing to SMS again.',
+      );
+    }
+  };
+
+  const errorMessage = clientError ?? action?.error ?? null;
 
   return (
     <>
@@ -324,7 +386,7 @@ export default function AccountProfile() {
             <h2>My profile</h2>
           </div>
 
-          <Form method="PUT">
+          <Form method="PUT" onSubmit={handleSubmit}>
             <div className="ps-4">
               <legend>Account information</legend>
             </div>
@@ -384,7 +446,7 @@ export default function AccountProfile() {
                   <input
                     type="hidden"
                     name="currentPhone"
-                    value={phone}
+                    value={phoneOnFile}
                   />
                   <Input
                     id="phone"
@@ -393,7 +455,8 @@ export default function AccountProfile() {
                     autoComplete="tel"
                     placeholder="Phone number"
                     aria-label="Phone number"
-                    defaultValue={phone}
+                    value={phone}
+                    onChange={handlePhoneChange}
                     className="w-[250px]"
                   />
                 </div>
@@ -422,7 +485,7 @@ export default function AccountProfile() {
                     <input
                       type="hidden"
                       name="currentMarketingSms"
-                      value={marketingSms ? 'true' : 'false'}
+                      value={marketingSmsOnFile ? 'true' : 'false'}
                     />
                     <label
                       htmlFor="marketingSms"
@@ -432,17 +495,21 @@ export default function AccountProfile() {
                         id="marketingSms"
                         name="marketingSms"
                         type="checkbox"
-                        defaultChecked={marketingSms}
+                        checked={marketingSms}
+                        onChange={(event) => {
+                          setClientError(null);
+                          setMarketingSms(event.target.checked);
+                        }}
                       />
                       Subscribed to SMS news and discounts
                     </label>
                   </div>
                 </div>
               </fieldset>
-              {action?.error ? (
+              {errorMessage ? (
                 <p>
                   <mark>
-                    <small>{action.error}</small>
+                    <small>{errorMessage}</small>
                   </mark>
                 </p>
               ) : (

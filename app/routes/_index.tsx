@@ -65,12 +65,20 @@ export async function loader(args: LoaderFunctionArgs) {
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
   const currentCustomerId = customer.data.customer.id;
 
-  if (!customer.data.customer.metafield?.value) {
-    return [];
+  let wishlistProducts: string[] = [];
+  const wishlistValue = customer.data.customer.metafield?.value;
+  if (typeof wishlistValue === 'string' && wishlistValue.length) {
+    try {
+      const parsed = JSON.parse(wishlistValue);
+      if (Array.isArray(parsed)) {
+        wishlistProducts = parsed.filter(
+          (value): value is string => typeof value === 'string',
+        );
+      }
+    } catch {
+      wishlistProducts = [];
+    }
   }
-  const wishlistProducts = JSON.parse(
-    customer.data.customer.metafield?.value,
-  ) as string[];
 
   return {
     ...deferredData,
