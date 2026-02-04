@@ -31,19 +31,12 @@ export type ActionResponse = {
 
 const CUSTOMER_SMS_MARKETING_UPDATE = `#graphql
   mutation CustomerSmsMarketingConsentUpdate(
-    $customerId: ID!
-    $smsMarketingConsent: SmsMarketingConsentInput!
+   $input: CustomerSmsMarketingConsentUpdateInput!
   ) {
-    customerSmsMarketingConsentUpdate(
-      customerId: $customerId
-      smsMarketingConsent: $smsMarketingConsent
-    ) {
+   customerSmsMarketingConsentUpdate(input: $input) {
       customer {
         id
-        phoneNumber {
-          phoneNumber
-          marketingState
-        }
+        phone
       }
       userErrors {
         field
@@ -187,10 +180,14 @@ export async function action({request, context}: ActionFunctionArgs) {
               body: JSON.stringify({
                 query: CUSTOMER_SMS_MARKETING_UPDATE,
                 variables: {
-                  customerId,
-                  smsMarketingConsent: {
-                    marketingState: marketingSms ? 'SUBSCRIBED' : 'UNSUBSCRIBED',
-                    marketingOptInLevel: 'SINGLE_OPT_IN',
+                 input: {
+                    customerId,
+                    smsMarketingConsent: {
+                      marketingState: marketingSms
+                        ? 'SUBSCRIBED'
+                        : 'UNSUBSCRIBED',
+                      marketingOptInLevel: 'SINGLE_OPT_IN',
+                    },
                   },
                 },
               }),
