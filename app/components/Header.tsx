@@ -1087,7 +1087,7 @@ function CartBadge({count}: {count: number | null}) {
         <NavLink to="/cart">
           <div>
             <LuShoppingCart className="relative -bottom-3 -right-1" />
-            <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
+            <span className="relative -top-6 -right-4 bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
               {count}
             </span>
           </div>

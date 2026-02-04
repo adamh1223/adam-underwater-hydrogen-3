@@ -57,7 +57,7 @@ function NotificationsDropdown() {
             >
               <div>
                 <LuBell className="relative -bottom-3 -right-1" />
-                <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
+                <span className="relative -top-6 -right-11 bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
                   {unreadCount}
                 </span>
               </div>
