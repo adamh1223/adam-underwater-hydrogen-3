@@ -875,8 +875,8 @@ function HeaderCtas({
 
   return (
     <nav className="header-ctas" role="navigation">
+      <NotificationsDropdown />
       {/* <HeaderMenuMobileToggle /> */}
-
       <RadixHoverCard.Root
         open={accountMenuOpen}
         onOpenChange={setAccountMenuOpen}
@@ -1006,7 +1006,7 @@ function HeaderCtas({
         </RadixHoverCard.Portal>
       </RadixHoverCard.Root>
 
-      <NotificationsDropdown />
+      
       <CartToggle cart={cart} />
       <SearchToggle />
     </nav>
