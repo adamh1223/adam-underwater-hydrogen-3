@@ -863,7 +863,7 @@ function HeaderCtas({
 
   const links: NavLink[] = [
     {href: '/', label: 'Home', icon: 'home-icon'},
-    {href: 'account', label: 'My Account', icon: 'profile-icon'},
+    {href: 'account/profile', label: 'My Account', icon: 'profile-icon'},
     {href: 'account/orders', label: 'My Orders', icon: 'orders-icon'},
     {href: 'account/favorites', label: 'My Favorites', icon: 'favorite-icon'},
     {href: 'account/reviews', label: 'My Reviews', icon: 'reviews-icon'},

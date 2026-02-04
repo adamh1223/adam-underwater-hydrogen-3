@@ -6,7 +6,7 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from '@remix-run/react';
-import favicon from '~/assets/favicon.svg';
+
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {CUSTOMER_WISHLIST} from './lib/customerQueries';
 import {ADMIN_CUSTOMER_ID} from '~/lib/admin';
