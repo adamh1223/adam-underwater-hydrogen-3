@@ -54,6 +54,21 @@ const CUSTOMER_SMS_MARKETING_UPDATE = `#graphql
   }
 ` as const;
 
+const CUSTOMER_PHONE_UPDATE = `#graphql
+  mutation CustomerPhoneUpdate($input: CustomerInput!) {
+    customerUpdate(input: $input) {
+      customer {
+        id
+        phone
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+` as const;
+
 export const meta: MetaFunction = () => {
   return [{title: 'Profile'}];
 };
@@ -72,6 +87,9 @@ export async function action({request, context}: ActionFunctionArgs) {
   }
 
   const form = await request.formData();
+  const formCustomerId = form.get('customerId');
+  const currentPhone = form.get('currentPhone');
+  const phone = form.get('phone');
 
   try {
     const customer: CustomerUpdateInput = {};
@@ -89,6 +107,10 @@ export async function action({request, context}: ActionFunctionArgs) {
     const marketingSms = form.get('marketingSms') === 'on';
     const currentMarketingEmail = form.get('currentMarketingEmail') === 'true';
     const currentMarketingSms = form.get('currentMarketingSms') === 'true';
+    const phoneValue = typeof phone === 'string' ? phone.trim() : '';
+    const currentPhoneValue =
+      typeof currentPhone === 'string' ? currentPhone.trim() : '';
+    const shouldUpdatePhone = phoneValue !== currentPhoneValue;
 
     // update customer and possibly password
     const {data: mutationData, errors} = await customerAccount.mutate(
@@ -108,7 +130,12 @@ export async function action({request, context}: ActionFunctionArgs) {
       throw new Error('Customer profile update failed.');
     }
 
-    const customerId = mutationData.customerUpdate.customer.id;
+    const customerId =
+      mutationData.customerUpdate.customer.id ||
+      (typeof formCustomerId === 'string' ? formCustomerId : '');
+    if (!customerId) {
+      throw new Error('Missing customer ID for profile updates.');
+    }
 
     if (marketingEmail !== currentMarketingEmail) {
       const marketingMutation = marketingEmail
@@ -126,13 +153,15 @@ export async function action({request, context}: ActionFunctionArgs) {
       }
     }
 
-    if (marketingSms !== currentMarketingSms) {
+    if (marketingSms !== currentMarketingSms || shouldUpdatePhone) {
       const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
       const storeDomain = context.env.PUBLIC_STORE_DOMAIN;
       const adminDomainEnv = context.env.SHOPIFY_ADMIN_DOMAIN;
 
       if (!adminToken || !storeDomain) {
-        throw new Error('Missing admin credentials to update SMS consent.');
+        throw new Error(
+          'Missing admin credentials to update customer profile data.',
+        );
       }
 
       const sanitizedStoreDomain = storeDomain.replace(/^https?:\/\//, '');
@@ -146,9 +175,11 @@ export async function action({request, context}: ActionFunctionArgs) {
           'Missing SHOPIFY_ADMIN_DOMAIN for Admin API requests.',
         );
       }
-      const smsResponse = await fetch(
-        `https://${adminDomain}/admin/api/2025-01/graphql.json`,
-        {
+
+      const adminEndpoint = `https://${adminDomain}/admin/api/2025-01/graphql.json`;
+
+      if (marketingSms !== currentMarketingSms) {
+        const smsResponse = await fetch(adminEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -164,35 +195,92 @@ export async function action({request, context}: ActionFunctionArgs) {
               },
             },
           }),
-        },
-      );
+        });
 
-      const smsText = await smsResponse.text();
-      if (!smsResponse.ok) {
-        throw new Error(`Admin API error (${smsResponse.status}): ${smsText}`);
+        const smsText = await smsResponse.text();
+        if (!smsResponse.ok) {
+          throw new Error(`Admin API error (${smsResponse.status}): ${smsText}`);
+        }
+
+        let smsJson: any = {};
+        try {
+          smsJson = JSON.parse(smsText);
+        } catch (parseError) {
+          throw new Error('Invalid Admin API response.');
+        }
+
+        const smsErrors =
+          smsJson?.data?.customerSmsMarketingConsentUpdate?.userErrors ??
+          smsJson?.errors ??
+          [];
+        if (smsErrors.length) {
+          const message =
+            smsErrors[0]?.message ?? 'Unable to update SMS marketing consent.';
+          throw new Error(message);
+        }
       }
 
-      let smsJson: any = {};
-      try {
-        smsJson = JSON.parse(smsText);
-      } catch (parseError) {
-        throw new Error('Invalid Admin API response.');
-      }
+      if (shouldUpdatePhone) {
+        const phoneResponse = await fetch(adminEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': adminToken,
+          },
+          body: JSON.stringify({
+            query: CUSTOMER_PHONE_UPDATE,
+            variables: {
+              input: {
+                id: customerId,
+                phone: phoneValue.length ? phoneValue : null,
+              },
+            },
+          }),
+        });
 
-      const smsErrors =
-        smsJson?.data?.customerSmsMarketingConsentUpdate?.userErrors ??
-        smsJson?.errors ??
-        [];
-      if (smsErrors.length) {
-        const message =
-          smsErrors[0]?.message ?? 'Unable to update SMS marketing consent.';
-        throw new Error(message);
+        const phoneText = await phoneResponse.text();
+        if (!phoneResponse.ok) {
+          throw new Error(
+            `Admin API error (${phoneResponse.status}): ${phoneText}`,
+          );
+        }
+
+        let phoneJson: any = {};
+        try {
+          phoneJson = JSON.parse(phoneText);
+        } catch (parseError) {
+          throw new Error('Invalid Admin API response.');
+        }
+
+        const phoneErrors =
+          phoneJson?.data?.customerUpdate?.userErrors ??
+          phoneJson?.errors ??
+          [];
+        if (phoneErrors.length) {
+          const message =
+            phoneErrors[0]?.message ?? 'Unable to update customer phone number.';
+          throw new Error(message);
+        }
       }
+    }
+
+    let updatedCustomer = mutationData?.customerUpdate?.customer ?? null;
+
+    if (shouldUpdatePhone && updatedCustomer) {
+      updatedCustomer = {
+        ...updatedCustomer,
+        phoneNumber: phoneValue.length
+          ? {
+              phoneNumber: phoneValue,
+              marketingState: updatedCustomer.phoneNumber?.marketingState,
+            }
+          : null,
+      };
     }
 
     return data({
       error: null,
-      customer: mutationData?.customerUpdate?.customer ?? null,
+      customer: updatedCustomer,
       marketingEmail,
       marketingSms,
     });
@@ -240,6 +328,7 @@ export default function AccountProfile() {
             </div>
             <CardContent className="ps-4">
               <fieldset>
+                <input type="hidden" name="customerId" value={customer.id} />
                 <label htmlFor="firstName" className="me-2">
                   First name:
                 </label>
@@ -290,6 +379,11 @@ export default function AccountProfile() {
                   Phone number:
                 </label>
                 <div className="py-2">
+                  <input
+                    type="hidden"
+                    name="currentPhone"
+                    value={phone}
+                  />
                   <Input
                     id="phone"
                     name="phone"
@@ -298,7 +392,6 @@ export default function AccountProfile() {
                     placeholder="Phone number"
                     aria-label="Phone number"
                     defaultValue={phone}
-                    readOnly
                     className="w-[250px]"
                   />
                 </div>
