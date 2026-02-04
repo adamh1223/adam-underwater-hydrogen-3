@@ -137,6 +137,9 @@ export async function action({request, context}: ActionFunctionArgs) {
       throw new Error('Missing customer ID for profile updates.');
     }
 
+    let updatedCustomer = mutationData?.customerUpdate?.customer ?? null;
+    let actionError: string | null = null;
+
     if (marketingEmail !== currentMarketingEmail) {
       const marketingMutation = marketingEmail
         ? CUSTOMER_EMAIL_MARKETING_SUBSCRIBE
@@ -149,7 +152,7 @@ export async function action({request, context}: ActionFunctionArgs) {
             ?.userErrors ?? [];
 
       if (marketingErrors.length) {
-        throw new Error(marketingErrors[0].message);
+        actionError = marketingErrors[0]?.message ?? actionError;
       }
     }
 
@@ -159,112 +162,109 @@ export async function action({request, context}: ActionFunctionArgs) {
       const adminDomainEnv = context.env.SHOPIFY_ADMIN_DOMAIN;
 
       if (!adminToken || !storeDomain) {
-        throw new Error(
-          'Missing admin credentials to update customer profile data.',
-        );
-      }
+        actionError =
+          'Phone and SMS updates require an Admin API access token with write_customers scope.';
+      } else {
+        const sanitizedStoreDomain = storeDomain.replace(/^https?:\/\//, '');
+        const adminDomain =
+          adminDomainEnv?.replace(/^https?:\/\//, '') ??
+          (sanitizedStoreDomain.includes('myshopify.com')
+            ? sanitizedStoreDomain
+            : null);
+        if (!adminDomain) {
+          actionError =
+            'Phone and SMS updates require SHOPIFY_ADMIN_DOMAIN for Admin API requests.';
+        } else {
+          const adminEndpoint = `https://${adminDomain}/admin/api/2025-01/graphql.json`;
 
-      const sanitizedStoreDomain = storeDomain.replace(/^https?:\/\//, '');
-      const adminDomain =
-        adminDomainEnv?.replace(/^https?:\/\//, '') ??
-        (sanitizedStoreDomain.includes('myshopify.com')
-          ? sanitizedStoreDomain
-          : null);
-      if (!adminDomain) {
-        throw new Error(
-          'Missing SHOPIFY_ADMIN_DOMAIN for Admin API requests.',
-        );
-      }
-
-      const adminEndpoint = `https://${adminDomain}/admin/api/2025-01/graphql.json`;
-
-      if (marketingSms !== currentMarketingSms) {
-        const smsResponse = await fetch(adminEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Shopify-Access-Token': adminToken,
-          },
-          body: JSON.stringify({
-            query: CUSTOMER_SMS_MARKETING_UPDATE,
-            variables: {
-              customerId,
-              smsMarketingConsent: {
-                marketingState: marketingSms ? 'SUBSCRIBED' : 'UNSUBSCRIBED',
-                marketingOptInLevel: 'SINGLE_OPT_IN',
+          if (marketingSms !== currentMarketingSms) {
+            const smsResponse = await fetch(adminEndpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Shopify-Access-Token': adminToken,
               },
-            },
-          }),
-        });
+              body: JSON.stringify({
+                query: CUSTOMER_SMS_MARKETING_UPDATE,
+                variables: {
+                  customerId,
+                  smsMarketingConsent: {
+                    marketingState: marketingSms ? 'SUBSCRIBED' : 'UNSUBSCRIBED',
+                    marketingOptInLevel: 'SINGLE_OPT_IN',
+                  },
+                },
+              }),
+            });
 
-        const smsText = await smsResponse.text();
-        if (!smsResponse.ok) {
-          throw new Error(`Admin API error (${smsResponse.status}): ${smsText}`);
-        }
+            const smsText = await smsResponse.text();
+            if (!smsResponse.ok) {
+              actionError = `Admin API error (${smsResponse.status}): ${smsText}`;
+            } else {
+              let smsJson: any = {};
+              try {
+                smsJson = JSON.parse(smsText);
+              } catch (parseError) {
+                actionError = 'Invalid Admin API response.';
+              }
 
-        let smsJson: any = {};
-        try {
-          smsJson = JSON.parse(smsText);
-        } catch (parseError) {
-          throw new Error('Invalid Admin API response.');
-        }
+              const smsErrors =
+                smsJson?.data?.customerSmsMarketingConsentUpdate?.userErrors ??
+                smsJson?.errors ??
+                [];
+              if (smsErrors.length) {
+                actionError =
+                  smsErrors[0]?.message ??
+                  'Unable to update SMS marketing consent.';
+              }
+            }
+          }
 
-        const smsErrors =
-          smsJson?.data?.customerSmsMarketingConsentUpdate?.userErrors ??
-          smsJson?.errors ??
-          [];
-        if (smsErrors.length) {
-          const message =
-            smsErrors[0]?.message ?? 'Unable to update SMS marketing consent.';
-          throw new Error(message);
-        }
-      }
-
-      if (shouldUpdatePhone) {
-        const phoneResponse = await fetch(adminEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Shopify-Access-Token': adminToken,
-          },
-          body: JSON.stringify({
-            query: CUSTOMER_PHONE_UPDATE,
-            variables: {
-              input: {
-                id: customerId,
-                phone: phoneValue.length ? phoneValue : null,
+          if (!actionError && shouldUpdatePhone) {
+            const phoneResponse = await fetch(adminEndpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Shopify-Access-Token': adminToken,
               },
-            },
-          }),
-        });
+              body: JSON.stringify({
+                query: CUSTOMER_PHONE_UPDATE,
+                variables: {
+                  input: {
+                    id: customerId,
+                    phone: phoneValue.length ? phoneValue : null,
+                  },
+                },
+              }),
+            });
 
-        const phoneText = await phoneResponse.text();
-        if (!phoneResponse.ok) {
-          throw new Error(
-            `Admin API error (${phoneResponse.status}): ${phoneText}`,
-          );
-        }
+            const phoneText = await phoneResponse.text();
+            if (!phoneResponse.ok) {
+              actionError = `Admin API error (${phoneResponse.status}): ${phoneText}`;
+            } else {
+              let phoneJson: any = {};
+              try {
+                phoneJson = JSON.parse(phoneText);
+              } catch (parseError) {
+                actionError = 'Invalid Admin API response.';
+              }
 
-        let phoneJson: any = {};
-        try {
-          phoneJson = JSON.parse(phoneText);
-        } catch (parseError) {
-          throw new Error('Invalid Admin API response.');
-        }
-
-        const phoneErrors =
-          phoneJson?.data?.customerUpdate?.userErrors ??
-          phoneJson?.errors ??
-          [];
-        if (phoneErrors.length) {
-          const message =
-            phoneErrors[0]?.message ?? 'Unable to update customer phone number.';
-          throw new Error(message);
+              const phoneErrors =
+                phoneJson?.data?.customerUpdate?.userErrors ??
+                phoneJson?.errors ??
+                [];
+              if (phoneErrors.length) {
+                const rawMessage =
+                  phoneErrors[0]?.message ??
+                  'Unable to update customer phone number.';
+                actionError = rawMessage.includes('write_customers')
+                  ? 'Phone updates require an Admin API access token with write_customers scope.'
+                  : rawMessage;
+              }
+            }
+          }
         }
       }
     }
-
-    let updatedCustomer = mutationData?.customerUpdate?.customer ?? null;
 
     if (shouldUpdatePhone && updatedCustomer) {
       updatedCustomer = {
@@ -278,12 +278,17 @@ export async function action({request, context}: ActionFunctionArgs) {
       };
     }
 
-    return data({
-      error: null,
-      customer: updatedCustomer,
-      marketingEmail,
-      marketingSms,
-    });
+    return data(
+      {
+        error: actionError,
+        customer: updatedCustomer,
+        marketingEmail,
+        marketingSms,
+      },
+      {
+        status: actionError ? 400 : 200,
+      },
+    );
   } catch (error: any) {
     return data(
       {error: error.message, customer: null},
