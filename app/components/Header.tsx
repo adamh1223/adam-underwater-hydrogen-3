@@ -886,9 +886,9 @@ function HeaderCtas({
         <RadixHoverCard.Trigger asChild>
           <NavLink prefetch="intent" to="/account">
             <div className="account-menu-dropdown">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 max-w-[100px] cursor-pointer"
+              <button
+                
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-[6px] py-2 flex items-center gap-[4px] cursor-pointer"
               >
                 {/* <LuAlignLeft className="w-6 h-6" /> */}
                 {/* Place dropdown arrow here */}
@@ -916,7 +916,7 @@ function HeaderCtas({
                   {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
                 </Await>
               </Suspense> */}
-              </Button>
+              </button>
             </div>
           </NavLink>
         </RadixHoverCard.Trigger>

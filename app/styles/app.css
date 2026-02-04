@@ -1715,13 +1715,17 @@ span {
 }
 
 .lu-user-icon {
-  height: 22px;
-  width: 22px;
+  height: 18px;
+  width: 18px;
 }
 
 .account-dropdown-arrow-icon {
-  height: 22px;
-  width: 30px;
+  height: 18px;
+  width: 26px;
+}
+.notification-dropdown-arrow-icon {
+  height: 18px;
+  width: 26px;
 }
 
 .account-dropdown-arrow-button{

@@ -49,26 +49,39 @@ function NotificationsDropdown() {
       closeDelay={100}
     >
       <RadixHoverCard.Trigger asChild>
-        <div className="flex items-center gap-1 cursor-pointer">
-          <NavLink prefetch="intent" to={notificationsUrl}>
-            <Button className="w-1" variant="outline">
+        <NavLink prefetch="intent" to={notificationsUrl}>
+          <div className="flex items-center cursor-pointer">
+            <button
+              
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-[6px] py-2 flex items-center gap-[0px] cursor-pointer"
+            >
               <div>
                 <LuBell className="relative -bottom-3 -right-1" />
                 <span className="relative -top-6 -right-5 bg-primary text-white rounded-full h-6 w-6 flex items-center justify-center text-xs">
                   {unreadCount}
                 </span>
               </div>
-            </Button>
-          </NavLink>
-          <span className="cursor-default text-primary">
-            <ChevronUp
-              className={`rounded-md border border-input transition-transform duration-200 ${
-                open ? 'rotate-180' : 'rotate-0'
-              }`}
-              size={18}
-            />
-          </span>
-        </div>
+              <button
+                type="button"
+                aria-label="Toggle notifications menu"
+                aria-expanded={open}
+                className="ps-[1px] text-primary cursor-default"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setOpen((currentOpen) => !currentOpen);
+                }}
+              >
+                <ChevronUp
+                  className={`notification-dropdown-arrow-icon rounded-md border border-input transition-transform duration-200 ${
+                    open ? 'rotate-180' : 'rotate-0'
+                  }`}
+                  size={18}
+                />
+              </button>
+            </button>
+          </div>
+        </NavLink>
       </RadixHoverCard.Trigger>
 
       <RadixHoverCard.Portal>
