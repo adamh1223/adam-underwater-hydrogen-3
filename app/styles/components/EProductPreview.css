@@ -40,26 +40,28 @@
 /* The video wrapper fills the same box as the image */
 .EProductVideoWrapper {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0px;
+  left: -6px;
   right: 0;
   bottom: 0;
   overflow: hidden;
   cursor: pointer;
   /* optional: border-radius and overflow hidden if you want rounded corners */
   border-radius: 4px;
+  vertical-align: middle;
 }
 
 /* The iframe fills its wrapper and does not capture pointer events */
 .EProductVideo {
-  width: 100%;
-  height: 100%;
+  width: 100.5%;
+  height: 100.5%;
   border: none;
   object-fit: cover;
   opacity: 0;
   transition: opacity 0.4s ease-in-out;
   pointer-events: none; /* important: clicks pass through to wrapper */
-  padding: 0 0 0 8px;
+  /* padding: 0 0 0 0px; */
+  vertical-align: middle;
 }
 
 /* When loaded, show video smoothly */
