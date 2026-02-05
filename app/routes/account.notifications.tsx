@@ -3,11 +3,13 @@ import {Link, useFetcher, useLoaderData, useNavigate} from '@remix-run/react';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Money} from '@shopify/hydrogen';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import {ChevronUp} from 'lucide-react';
+import {ArrowRight, ChevronUp} from 'lucide-react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {Button} from '~/components/ui/button';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import ReviewForm from '~/components/form/ReviewForm';
+import {ProductCarousel} from '~/components/products/productCarousel';
+import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import ProductReviewsDisplay, {
   type Review,
 } from '~/components/global/ProductReviewsDisplay';
@@ -345,7 +347,7 @@ function RecommendationsGrid({
   const isVideo = category === 'Video';
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="prods-grid gap-x-3">
       {products.map((product) => {
         const variantId = product.selectedOrFirstAvailableVariant?.id;
         const canAddToCart =
@@ -404,6 +406,9 @@ function NotificationDetail({
   customerName,
   userReviewsByProductId,
   isLoadingOrderDetails,
+  featuredReviewDetail,
+  isLoadingFeaturedReviewDetail,
+  isLoggedIn,
 }: {
   notification: Notification;
   recommendedProducts?: RecommendedProduct[];
@@ -413,6 +418,9 @@ function NotificationDetail({
   customerName?: string | null;
   userReviewsByProductId?: Record<string, Review | null> | null;
   isLoadingOrderDetails?: boolean;
+  featuredReviewDetail?: {product: unknown; review: Review} | null;
+  isLoadingFeaturedReviewDetail?: boolean;
+  isLoggedIn?: Promise<boolean> | undefined;
 }) {
   const category = notification.payload?.category;
   const navigate = useNavigate();
@@ -704,9 +712,59 @@ function NotificationDetail({
       )}
 
       {notification.type === 'review_featured' && (
-        <Button asChild variant="default">
-          <Link to="/#featured-reviews">View featured reviews →</Link>
-        </Button>
+        <>
+          <div className="rounded border p-4">
+            {isLoadingFeaturedReviewDetail || featuredReviewDetail === undefined ? (
+              <p className="text-sm text-muted-foreground">
+                Loading featured review…
+              </p>
+            ) : featuredReviewDetail ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+                <div className="min-w-0">
+                  {Array.isArray((featuredReviewDetail.product as any)?.tags) &&
+                  ((featuredReviewDetail.product as any).tags as string[]).includes(
+                    'Video',
+                  ) ? (
+                    <EProductsContainer
+                      product={featuredReviewDetail.product as any}
+                      layout="grid"
+                      isInWishlist={false}
+                      isLoggedIn={isLoggedIn}
+                    />
+                  ) : (
+                    <ProductCarousel
+                      product={featuredReviewDetail.product as any}
+                      layout="grid"
+                      isInWishlist={false}
+                      isLoggedIn={isLoggedIn}
+                    />
+                  )}
+                </div>
+
+                <div className="flex justify-center">
+                  <ArrowRight className="rotate-90 text-muted-foreground md:rotate-0" />
+                </div>
+
+                <div className="min-w-0">
+                  <ProductReviewsDisplay
+                    review={featuredReviewDetail.review}
+                    isAdmin={false}
+                    currentCustomerId={undefined}
+                    showProductLink={false}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Unable to load featured review details.
+              </p>
+            )}
+          </div>
+
+          <Button asChild variant="default">
+            <Link to="/#featured-reviews">View featured reviews →</Link>
+          </Button>
+        </>
       )}
 
       {notification.type === 'discount' && (
@@ -849,6 +907,11 @@ export default function AccountNotifications() {
     );
   }, [clientSelectedId, localNotifications]);
 
+  const isLoggedInPromise = useMemo(
+    () => Promise.resolve(Boolean(customerId)),
+    [customerId],
+  );
+
   const markReadFetcher = useFetcher();
   const lastMarkedRef = useRef<string | null>(null);
   const recommendedProductsFetcher = useFetcher<
@@ -865,6 +928,19 @@ export default function AccountNotifications() {
     | {ok: false; error: string}
   >();
   const lastRequestedOrderIdRef = useRef<string | null>(null);
+  const featuredReviewFetcher = useFetcher<
+    | {
+        ok: true;
+        notificationId: string | null;
+        product: unknown;
+        review: Review;
+      }
+    | {ok: false; notificationId: string | null; error: string}
+  >();
+  const lastRequestedFeaturedNotificationIdRef = useRef<string | null>(null);
+
+  const [featuredReviewDetailsByNotificationId, setFeaturedReviewDetailsByNotificationId] =
+    useState<Record<string, {product: unknown; review: Review} | null>>(() => ({}));
 
   useEffect(() => {
     if (!selected) return;
@@ -985,6 +1061,70 @@ export default function AccountNotifications() {
     lastRequestedOrderIdRef.current = null;
   }, [orderDetailsFetcher.data]);
 
+  useEffect(() => {
+    if (!selected) return;
+    if (selected.type !== 'review_featured') return;
+
+    const payload = selected.payload as Record<string, unknown> | null;
+    const productId =
+      typeof payload?.['productId'] === 'string'
+        ? (payload['productId'] as string)
+        : null;
+    const reviewCreatedAt =
+      typeof payload?.['reviewCreatedAt'] === 'string'
+        ? (payload['reviewCreatedAt'] as string)
+        : null;
+
+    if (!productId || !reviewCreatedAt) {
+      setFeaturedReviewDetailsByNotificationId((prev) => ({
+        ...prev,
+        [selected.id]: null,
+      }));
+      return;
+    }
+
+    if (featuredReviewDetailsByNotificationId[selected.id] !== undefined) return;
+    if (featuredReviewFetcher.state !== 'idle') return;
+    if (lastRequestedFeaturedNotificationIdRef.current === selected.id) return;
+
+    lastRequestedFeaturedNotificationIdRef.current = selected.id;
+    featuredReviewFetcher.load(
+      `/api/notification-featured-review?notificationId=${encodeURIComponent(
+        selected.id,
+      )}&productId=${encodeURIComponent(productId)}&reviewCreatedAt=${encodeURIComponent(
+        reviewCreatedAt,
+      )}`,
+    );
+  }, [
+    featuredReviewDetailsByNotificationId,
+    featuredReviewFetcher,
+    featuredReviewFetcher.state,
+    selected,
+  ]);
+
+  useEffect(() => {
+    const data = featuredReviewFetcher.data;
+    if (!data) return;
+
+    if (data.ok && data.notificationId) {
+      setFeaturedReviewDetailsByNotificationId((prev) => ({
+        ...prev,
+        [data.notificationId as string]: {product: data.product, review: data.review},
+      }));
+      lastRequestedFeaturedNotificationIdRef.current = null;
+      return;
+    }
+
+    const notificationId = data.notificationId ?? lastRequestedFeaturedNotificationIdRef.current;
+    if (notificationId) {
+      setFeaturedReviewDetailsByNotificationId((prev) => ({
+        ...prev,
+        [notificationId]: null,
+      }));
+    }
+    lastRequestedFeaturedNotificationIdRef.current = null;
+  }, [featuredReviewFetcher.data]);
+
   const selectedCategory =
     selected?.type === 'recommendations' ? selected.payload?.category : null;
   const selectedRecommendedProducts =
@@ -1009,6 +1149,15 @@ export default function AccountNotifications() {
     orderDetailsFetcher.state !== 'idle' &&
     lastRequestedOrderIdRef.current === selectedOrderId;
 
+  const selectedFeaturedReviewDetail =
+    selected?.type === 'review_featured'
+      ? featuredReviewDetailsByNotificationId[selected.id]
+      : undefined;
+  const isLoadingSelectedFeaturedReviewDetail =
+    selected?.type === 'review_featured' &&
+    featuredReviewFetcher.state !== 'idle' &&
+    lastRequestedFeaturedNotificationIdRef.current === selected.id;
+
   return (
     <>
       <a
@@ -1031,7 +1180,7 @@ export default function AccountNotifications() {
 
       {windowWidth != undefined && windowWidth > 860 && (
         <div className="notifs-layout mx-3 mt-3 grid gap-4">
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             {localNotifications.length ? (
               localNotifications.map((notification) => {
                 const isSelected = notification.id === clientSelectedId;
@@ -1065,7 +1214,7 @@ export default function AccountNotifications() {
             )}
           </div>
 
-          <div>
+          <div className="min-w-0">
             {selected ? (
               <NotificationDetail
                 notification={selected}
@@ -1077,6 +1226,9 @@ export default function AccountNotifications() {
                 orderDetails={selectedOrderDetails}
                 userReviewsByProductId={selectedUserReviewsByProductId}
                 isLoadingOrderDetails={isLoadingSelectedOrderDetails}
+                featuredReviewDetail={selectedFeaturedReviewDetail}
+                isLoadingFeaturedReviewDetail={isLoadingSelectedFeaturedReviewDetail}
+                isLoggedIn={isLoggedInPromise}
                 customerId={customerId}
                 customerName={customerName}
               />
@@ -1129,6 +1281,14 @@ export default function AccountNotifications() {
                     typeof orderId === 'string' &&
                     orderDetailsFetcher.state !== 'idle' &&
                     lastRequestedOrderIdRef.current === orderId;
+                  const accordionFeaturedReviewDetail =
+                    notification.type === 'review_featured'
+                      ? featuredReviewDetailsByNotificationId[notification.id]
+                      : undefined;
+                  const isLoadingFeaturedReviewDetail =
+                    notification.type === 'review_featured' &&
+                    featuredReviewFetcher.state !== 'idle' &&
+                    lastRequestedFeaturedNotificationIdRef.current === notification.id;
 
                   return (
                     <AccordionPrimitive.Item
@@ -1159,6 +1319,9 @@ export default function AccountNotifications() {
                             customerId={customerId}
                             customerName={customerName}
                             isLoadingOrderDetails={isLoadingOrderDetails}
+                            featuredReviewDetail={accordionFeaturedReviewDetail}
+                            isLoadingFeaturedReviewDetail={isLoadingFeaturedReviewDetail}
+                            isLoggedIn={isLoggedInPromise}
                           />
                         </div>
                       </AccordionPrimitive.Content>

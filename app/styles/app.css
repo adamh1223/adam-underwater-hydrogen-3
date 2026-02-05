@@ -1797,7 +1797,10 @@ span {
 }
 @media (min-width: 861px) {
   .notifs-layout {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .notifs-layout > * {
+    min-width: 0;
   }
 }
 @media (max-width: 860px) {
