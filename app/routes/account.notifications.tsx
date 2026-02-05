@@ -625,20 +625,23 @@ function NotificationDetail({
 
                         {isPrint && productId ? (
                           existingReview ? (
-                            <ProductReviewsDisplay
-                              review={{
-                                ...existingReview,
-                                productId,
-                                productName: lineItem.title,
-                                productHandle: lineItem.product?.handle,
-                              }}
-                              isAdmin={false}
-                              currentCustomerId={resolvedCustomerId ?? undefined}
-                              onRemove={(review) => handleRemoveReview(productId, review)}
-                              onEdit={(review, updates) =>
-                                handleEditReview(productId, review, updates)
-                              }
-                            />
+                            <div className='mt-3'>
+
+                              <ProductReviewsDisplay
+                                review={{
+                                  ...existingReview,
+                                  productId,
+                                  productName: lineItem.title,
+                                  productHandle: lineItem.product?.handle,
+                                }}
+                                isAdmin={false}
+                                currentCustomerId={resolvedCustomerId ?? undefined}
+                                onRemove={(review) => handleRemoveReview(productId, review)}
+                                onEdit={(review, updates) =>
+                                  handleEditReview(productId, review, updates)
+                                }
+                              />
+                            </div>
                           ) : (
                             <ReviewForm
                               productId={productId}
