@@ -272,10 +272,20 @@ export default function AccountNotifications() {
       ),
     );
   }, [markReadFetcher, selected]);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
 
   return (
     <>
-      <Sectiontitle text="Notifications" />
+    <Sectiontitle text="Notifications" />
+      {windowWidth != undefined && windowWidth > 830 && 
       <div className="notifs-layout mx-3 mt-3 grid gap-4">
         <div className="space-y-2">
           {localNotifications.length ? (
@@ -317,7 +327,50 @@ export default function AccountNotifications() {
             </div>
           )}
         </div>
-      </div>
+      </div>}
+      {windowWidth != undefined && windowWidth <= 830 && 
+      <div className="notifs-layout mx-3 mt-3 grid gap-4">
+        <div className="space-y-2">
+          {localNotifications.length ? (
+            localNotifications.map((notification) => {
+              const isSelected = notification.id === selectedId;
+              const isUnread = !notification.readAt && !isSelected;
+              return (
+                <Link
+                  key={notification.id}
+                  to={`/account/notifications?selected=${encodeURIComponent(
+                    notification.id,
+                  )}`}
+                  className="block"
+                >
+                  <NotificationPreview
+                    notification={notification}
+                    isSelected={isSelected}
+                    isUnread={isUnread}
+                  />
+                </Link>
+              );
+            })
+          ) : (
+            <div className="rounded border p-4 text-sm text-muted-foreground">
+              No notifications yet.
+            </div>
+          )}
+        </div>
+
+        <div>
+          {selected ? (
+            <NotificationDetail
+              notification={selected}
+              recommendedProducts={recommendedProducts}
+            />
+          ) : (
+            <div className="rounded border p-4 text-sm text-muted-foreground">
+              Select a notification to view it.
+            </div>
+          )}
+        </div>
+      </div>}
     </>
   );
 }
