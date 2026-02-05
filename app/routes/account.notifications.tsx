@@ -1,5 +1,5 @@
 import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Link, useFetcher, useLoaderData} from '@remix-run/react';
+import {Link, useFetcher, useLoaderData, useNavigate} from '@remix-run/react';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Money} from '@shopify/hydrogen';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
@@ -7,11 +7,15 @@ import {ChevronUp} from 'lucide-react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {Button} from '~/components/ui/button';
 import {AddToCartButton} from '~/components/AddToCartButton';
+import ReviewForm from '~/components/form/ReviewForm';
 import {
   getNotificationRecommendedProducts,
+  getNotificationOrderDetails,
   syncCustomerNotifications,
+  type NotificationOrderDetails,
 } from '~/lib/notifications.server';
 import type {Notification} from '~/lib/notifications';
+import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 
 type RecommendedProduct = {
   id: string;
@@ -33,13 +37,57 @@ type RecommendedProduct = {
   } | null;
 };
 
+function formatNotificationDateTime(createdAt: string, timeZone: string | null) {
+  if (!timeZone) return null;
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return null;
+
+  try {
+    const dateLabel = date.toLocaleDateString('en-US', {
+      timeZone,
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    const timeLabel = date.toLocaleTimeString('en-US', {
+      timeZone,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    return {
+      dateLabel,
+      timeLabel,
+      dateTimeLabel: `${dateLabel} ${timeLabel}`,
+    };
+  } catch {
+    const dateLabel = date.toLocaleDateString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    const timeLabel = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    return {
+      dateLabel,
+      timeLabel,
+      dateTimeLabel: `${dateLabel} ${timeLabel}`,
+    };
+  }
+}
+
 export async function loader({context, request}: LoaderFunctionArgs) {
   await context.customerAccount.handleAuthStatus();
 
   const url = new URL(request.url);
   const requestedSelectedId = url.searchParams.get('selected');
 
-  const {notifications} = await syncCustomerNotifications(context);
+  const {notifications, loggedIn} = await syncCustomerNotifications(context);
   const selectedId =
     requestedSelectedId &&
     notifications.some((notification) => notification.id === requestedSelectedId)
@@ -62,11 +110,44 @@ export async function loader({context, request}: LoaderFunctionArgs) {
     );
   }
 
+  let customerId: string | null = null;
+  let customerName: string | null = null;
+  if (loggedIn) {
+    const customerResponse = await context.customerAccount
+      .query(CUSTOMER_DETAILS_QUERY)
+      .catch(() => null);
+    const customer = customerResponse?.data?.customer;
+    if (customer?.id) {
+      customerId = customer.id as string;
+      const name = [
+        (customer.firstName as string | null | undefined) ?? '',
+        (customer.lastName as string | null | undefined) ?? '',
+      ]
+        .join(' ')
+        .trim();
+      customerName = name.length ? name : null;
+    }
+  }
+
+  let selectedLeaveReviewOrder: NotificationOrderDetails | null = null;
+  if (selectedNotification?.type === 'leave_review') {
+    const orderId = selectedNotification.payload?.orderId;
+    if (typeof orderId === 'string' && orderId.length) {
+      selectedLeaveReviewOrder = await getNotificationOrderDetails(
+        context,
+        orderId,
+      );
+    }
+  }
+
   return json({
     notifications,
     selectedId,
     selectedNotification,
     recommendedProducts,
+    customerId,
+    customerName,
+    selectedLeaveReviewOrder,
   });
 }
 
@@ -74,10 +155,14 @@ function NotificationPreview({
   notification,
   isSelected,
   isUnread,
+  dateLabel,
+  timeLabel,
 }: {
   notification: Notification;
   isSelected: boolean;
   isUnread: boolean;
+  dateLabel?: string | null;
+  timeLabel?: string | null;
 }) {
   return (
     <div
@@ -97,9 +182,20 @@ function NotificationPreview({
             {notification.message}
           </p>
         </div>
-        <p className="text-[11px] text-muted-foreground whitespace-nowrap">
-          {new Date(notification.createdAt).toLocaleDateString()}
-        </p>
+        {dateLabel || timeLabel ? (
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            {dateLabel ? (
+              <p className="whitespace-nowrap text-[11px] text-muted-foreground">
+                {dateLabel}
+              </p>
+            ) : null}
+            {timeLabel ? (
+              <p className="whitespace-nowrap text-[11px] text-muted-foreground">
+                {timeLabel}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -109,10 +205,14 @@ function MobileNotificationPreview({
   notification,
   isSelected,
   isUnread,
+  dateLabel,
+  timeLabel,
 }: {
   notification: Notification;
   isSelected: boolean;
   isUnread: boolean;
+  dateLabel?: string | null;
+  timeLabel?: string | null;
 }) {
   return (
     <div
@@ -134,13 +234,20 @@ function MobileNotificationPreview({
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-2">
-          <p className="whitespace-nowrap text-[11px] text-muted-foreground">
-            {new Date(notification.createdAt).toLocaleDateString()}
-          </p>
+          {dateLabel ? (
+            <p className="whitespace-nowrap text-[11px] text-muted-foreground">
+              {dateLabel}
+            </p>
+          ) : null}
+          {timeLabel ? (
+            <p className="whitespace-nowrap text-[11px] text-muted-foreground">
+              {timeLabel}
+            </p>
+          ) : null}
           <ChevronUp
             aria-hidden="true"
             size={18}
-            className={`rounded-md border border-input text-primary transition-transform duration-200 ${
+            className={`mt-1 translate-y-0.5 rounded-md border border-input text-primary transition-transform duration-200 ${
               isSelected ? 'rotate-180' : 'rotate-0'
             }`}
           />
@@ -227,26 +334,160 @@ function RecommendationsGrid({
 function NotificationDetail({
   notification,
   recommendedProducts,
+  dateTimeLabel,
+  orderDetails,
+  customerId,
+  customerName,
+  isLoadingOrderDetails,
 }: {
   notification: Notification;
   recommendedProducts?: RecommendedProduct[];
+  dateTimeLabel?: string | null;
+  orderDetails?: NotificationOrderDetails | null;
+  customerId?: string | null;
+  customerName?: string | null;
+  isLoadingOrderDetails?: boolean;
 }) {
   const category = notification.payload?.category;
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-3">
       <div className="rounded border p-4">
         <p className="text-lg font-semibold">{notification.title}</p>
-        <p className="text-sm text-muted-foreground">
-          {new Date(notification.createdAt).toLocaleString()}
-        </p>
+        {dateTimeLabel ? (
+          <p className="text-sm text-muted-foreground">{dateTimeLabel}</p>
+        ) : null}
         <p className="pt-3">{notification.message}</p>
       </div>
 
       {notification.type === 'leave_review' && (
-        <Button asChild variant="default">
-          <Link to="/account/reviews">Leave a review →</Link>
-        </Button>
+        <>
+          {isLoadingOrderDetails || orderDetails === undefined ? (
+            <div className="rounded border p-4 text-sm text-muted-foreground">
+              Loading order items…
+            </div>
+          ) : orderDetails ? (
+            <>
+              <Button asChild variant="default">
+                <Link
+                  to={`/account/orders/${encodeURIComponent(
+                    btoa(orderDetails.orderId),
+                  )}`}
+                >
+                  Order details →
+                </Link>
+              </Button>
+
+              {orderDetails.lineItems.length ? (
+                <div className="space-y-4">
+                  {orderDetails.lineItems.map((lineItem) => {
+                    const handle = lineItem.product?.handle;
+                    const productHref = handle ? `/products/${handle}` : null;
+                    const tags = lineItem.product?.tags ?? [];
+                    const isPrint =
+                      tags.includes('Prints') && !tags.includes('Video');
+
+                    return (
+                      <div key={lineItem.id} className="rounded border p-4">
+                        {productHref ? (
+                          <Link to={productHref} className="block">
+                            <div className="flex gap-3">
+                              {lineItem.image?.url ? (
+                                <img
+                                  src={lineItem.image.url}
+                                  alt={
+                                    lineItem.image.altText ??
+                                    lineItem.title ??
+                                    'Ordered item'
+                                  }
+                                  className="h-20 w-20 shrink-0 rounded object-cover"
+                                  loading="lazy"
+                                />
+                              ) : null}
+                              <div className="min-w-0">
+                                <p className="font-semibold line-clamp-2">
+                                  {lineItem.title}
+                                </p>
+                                {lineItem.variantTitle ? (
+                                  <p className="text-sm text-muted-foreground">
+                                    {lineItem.variantTitle}
+                                  </p>
+                                ) : null}
+                                <p className="text-sm text-muted-foreground">
+                                  Qty {lineItem.quantity}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        ) : (
+                          <div className="flex gap-3">
+                            {lineItem.image?.url ? (
+                              <img
+                                src={lineItem.image.url}
+                                alt={
+                                  lineItem.image.altText ??
+                                  lineItem.title ??
+                                  'Ordered item'
+                                }
+                                className="h-20 w-20 shrink-0 rounded object-cover"
+                                loading="lazy"
+                              />
+                            ) : null}
+                            <div className="min-w-0">
+                              <p className="font-semibold line-clamp-2">
+                                {lineItem.title}
+                              </p>
+                              {lineItem.variantTitle ? (
+                                <p className="text-sm text-muted-foreground">
+                                  {lineItem.variantTitle}
+                                </p>
+                              ) : null}
+                              <p className="text-sm text-muted-foreground">
+                                Qty {lineItem.quantity}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {isPrint && lineItem.product?.id ? (
+                          <ReviewForm
+                            productId={lineItem.product.id}
+                            productName={lineItem.title}
+                            customerId={customerId ?? undefined}
+                            customerName={customerName ?? undefined}
+                            updateExistingReviews={() => {}}
+                            userReviewExists={false}
+                            isBlocked={false}
+                            successToast={{
+                              message: 'Review Submitted',
+                              action: productHref
+                                ? {
+                                    label: 'View Review',
+                                    onClick: () =>
+                                      navigate(`${productHref}#reviews`),
+                                  }
+                                : undefined,
+                            }}
+                            submittedMessage="Review Submitted"
+                          />
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded border p-4 text-sm text-muted-foreground">
+                  No items found for this order.
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="rounded border p-4 text-sm text-muted-foreground">
+              Unable to load order items.
+            </div>
+          )}
+        </>
       )}
 
       {notification.type === 'review_featured' && (
@@ -291,6 +532,9 @@ export default function AccountNotifications() {
     selectedId,
     selectedNotification,
     recommendedProducts,
+    customerId,
+    customerName,
+    selectedLeaveReviewOrder,
   } = useLoaderData<typeof loader>();
 
   const [localNotifications, setLocalNotifications] =
@@ -299,6 +543,11 @@ export default function AccountNotifications() {
   useEffect(() => {
     setLocalNotifications(notifications);
   }, [notifications]);
+
+  const [clientTimeZone, setClientTimeZone] = useState<string | null>(null);
+  useEffect(() => {
+    setClientTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone ?? null);
+  }, []);
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
@@ -332,6 +581,15 @@ export default function AccountNotifications() {
       return initial;
     });
 
+  const [mobileOrderDetailsByOrderId, setMobileOrderDetailsByOrderId] = useState<
+    Record<string, NotificationOrderDetails | null>
+  >(() => {
+    if (selectedLeaveReviewOrder?.orderId) {
+      return {[selectedLeaveReviewOrder.orderId]: selectedLeaveReviewOrder};
+    }
+    return {};
+  });
+
   useEffect(() => {
     const category = selectedNotification?.payload?.category;
     if (
@@ -364,6 +622,11 @@ export default function AccountNotifications() {
     | {ok: false; error: string}
   >();
   const lastRequestedCategoryRef = useRef<'Prints' | 'Video' | null>(null);
+  const orderDetailsFetcher = useFetcher<
+    | {ok: true; order: NotificationOrderDetails}
+    | {ok: false; error: string}
+  >();
+  const lastRequestedOrderIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!selected) return;
@@ -432,108 +695,197 @@ export default function AccountNotifications() {
     lastRequestedCategoryRef.current = null;
   }, [recommendedProductsFetcher.data]);
 
+  useEffect(() => {
+    if (windowWidth == undefined || windowWidth > 830) return;
+    if (!selected) return;
+    if (selected.type !== 'leave_review') return;
+
+    const orderId = selected.payload?.orderId;
+    if (typeof orderId !== 'string' || !orderId.length) return;
+
+    if (mobileOrderDetailsByOrderId[orderId] !== undefined) return;
+    if (orderDetailsFetcher.state !== 'idle') return;
+    if (lastRequestedOrderIdRef.current === orderId) return;
+
+    lastRequestedOrderIdRef.current = orderId;
+    orderDetailsFetcher.load(
+      `/api/notification-order-details?orderId=${encodeURIComponent(orderId)}`,
+    );
+  }, [
+    mobileOrderDetailsByOrderId,
+    orderDetailsFetcher.state,
+    selected,
+    windowWidth,
+  ]);
+
+  useEffect(() => {
+    const data = orderDetailsFetcher.data;
+    if (!data) return;
+
+    if (data.ok) {
+      setMobileOrderDetailsByOrderId((prev) => ({
+        ...prev,
+        [data.order.orderId]: data.order,
+      }));
+      lastRequestedOrderIdRef.current = null;
+      return;
+    }
+
+    const lastOrderId = lastRequestedOrderIdRef.current;
+    if (lastOrderId) {
+      setMobileOrderDetailsByOrderId((prev) => ({
+        ...prev,
+        [lastOrderId]: null,
+      }));
+    }
+    lastRequestedOrderIdRef.current = null;
+  }, [orderDetailsFetcher.data]);
+
   return (
     <>
-    <Sectiontitle text="Notifications" />
-      {windowWidth != undefined && windowWidth > 830 && 
-      <div className="notifs-layout mx-3 mt-3 grid gap-4">
-        <div className="space-y-2">
-          {localNotifications.length ? (
-            localNotifications.map((notification) => {
-              const isSelected = notification.id === selectedId;
-              const isUnread = !notification.readAt && !isSelected;
-              return (
-                <Link
-                  key={notification.id}
-                  to={`/account/notifications?selected=${encodeURIComponent(
-                    notification.id,
-                  )}`}
-                  className="block"
-                >
-                  <NotificationPreview
-                    notification={notification}
-                    isSelected={isSelected}
-                    isUnread={isUnread}
-                  />
-                </Link>
-              );
-            })
-          ) : (
-            <div className="rounded border p-4 text-sm text-muted-foreground">
-              No notifications yet.
-            </div>
-          )}
-        </div>
+      <Sectiontitle text="Notifications" />
 
-        <div>
-          {selected ? (
-            <NotificationDetail
-              notification={selected}
-              recommendedProducts={recommendedProducts}
-            />
-          ) : (
-            <div className="rounded border p-4 text-sm text-muted-foreground">
-              Select a notification to view it.
-            </div>
-          )}
-        </div>
-      </div>}
-      {windowWidth != undefined && windowWidth <= 830 && 
-      <div className="notifs-layout mx-3 mt-3 grid gap-4">
-        <div className="space-y-2">
-          {localNotifications.length ? (
-            <AccordionPrimitive.Root
-              type="single"
-              collapsible
-              value={mobileSelectedId ?? ''}
-              onValueChange={(value) => setMobileSelectedId(value || null)}
-              className="space-y-2"
-            >
-              {localNotifications.map((notification) => {
-                const isSelected = notification.id === mobileSelectedId;
+      {windowWidth != undefined && windowWidth > 830 && (
+        <div className="notifs-layout mx-3 mt-3 grid gap-4">
+          <div className="space-y-2">
+            {localNotifications.length ? (
+              localNotifications.map((notification) => {
+                const isSelected = notification.id === selectedId;
                 const isUnread = !notification.readAt && !isSelected;
-                const category = notification.payload?.category;
-                const accordionRecommendedProducts =
-                  notification.type === 'recommendations' &&
-                  (category === 'Prints' || category === 'Video')
-                    ? mobileRecommendedProductsByCategory[category]
-                    : undefined;
-
-                return (
-                  <AccordionPrimitive.Item
-                    key={notification.id}
-                    value={notification.id}
-                    className="border-0"
-                  >
-                    <AccordionPrimitive.Header className="flex">
-                      <AccordionPrimitive.Trigger className="w-full border-0 bg-transparent p-0 text-left outline-none">
-                        <MobileNotificationPreview
-                          notification={notification}
-                          isSelected={isSelected}
-                          isUnread={isUnread}
-                        />
-                      </AccordionPrimitive.Trigger>
-                    </AccordionPrimitive.Header>
-
-                    <AccordionPrimitive.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm">
-                      <div className="pt-2">
-                        <NotificationDetail
-                          notification={notification}
-                          recommendedProducts={accordionRecommendedProducts}
-                        />
-                      </div>
-                    </AccordionPrimitive.Content>
-                  </AccordionPrimitive.Item>
+                const dateTime = formatNotificationDateTime(
+                  notification.createdAt,
+                  clientTimeZone,
                 );
-              })}
-            </AccordionPrimitive.Root>
-          ) : (
-            <div className="rounded border p-4 text-sm text-muted-foreground">
-              No notifications yet.
-            </div>
-          )}
+                return (
+                  <Link
+                    key={notification.id}
+                    to={`/account/notifications?selected=${encodeURIComponent(
+                      notification.id,
+                    )}`}
+                    className="block"
+                  >
+                    <NotificationPreview
+                      notification={notification}
+                      isSelected={isSelected}
+                      isUnread={isUnread}
+                      dateLabel={dateTime?.dateLabel}
+                      timeLabel={dateTime?.timeLabel}
+                    />
+                  </Link>
+                );
+              })
+            ) : (
+              <div className="rounded border p-4 text-sm text-muted-foreground">
+                No notifications yet.
+              </div>
+            )}
+          </div>
+
+          <div>
+            {selected ? (
+              <NotificationDetail
+                notification={selected}
+                recommendedProducts={recommendedProducts}
+                dateTimeLabel={
+                  formatNotificationDateTime(selected.createdAt, clientTimeZone)
+                    ?.dateTimeLabel
+                }
+                orderDetails={
+                  selected.type === 'leave_review'
+                    ? selectedLeaveReviewOrder
+                    : undefined
+                }
+                customerId={customerId}
+                customerName={customerName}
+              />
+            ) : (
+              <div className="rounded border p-4 text-sm text-muted-foreground">
+                Select a notification to view it.
+              </div>
+            )}
+          </div>
         </div>
-      </div>}
+      )}
+
+      {windowWidth != undefined && windowWidth <= 830 && (
+        <div className="notifs-layout mx-3 mt-3 grid gap-4">
+          <div className="space-y-2">
+            {localNotifications.length ? (
+              <AccordionPrimitive.Root
+                type="single"
+                collapsible
+                value={mobileSelectedId ?? ''}
+                onValueChange={(value) => setMobileSelectedId(value || null)}
+                className="space-y-2"
+              >
+                {localNotifications.map((notification) => {
+                  const isSelected = notification.id === mobileSelectedId;
+                  const isUnread = !notification.readAt && !isSelected;
+                  const dateTime = formatNotificationDateTime(
+                    notification.createdAt,
+                    clientTimeZone,
+                  );
+                  const category = notification.payload?.category;
+                  const accordionRecommendedProducts =
+                    notification.type === 'recommendations' &&
+                    (category === 'Prints' || category === 'Video')
+                      ? mobileRecommendedProductsByCategory[category]
+                      : undefined;
+                  const orderId = notification.payload?.orderId;
+                  const accordionOrderDetails =
+                    notification.type === 'leave_review' &&
+                    typeof orderId === 'string'
+                      ? mobileOrderDetailsByOrderId[orderId]
+                      : undefined;
+                  const isLoadingOrderDetails =
+                    notification.type === 'leave_review' &&
+                    typeof orderId === 'string' &&
+                    orderDetailsFetcher.state !== 'idle' &&
+                    lastRequestedOrderIdRef.current === orderId;
+
+                  return (
+                    <AccordionPrimitive.Item
+                      key={notification.id}
+                      value={notification.id}
+                      className="border-0"
+                    >
+                      <AccordionPrimitive.Header className="flex">
+                        <AccordionPrimitive.Trigger className="w-full border-0 bg-transparent p-0 text-left outline-none cursor-pointer">
+                          <MobileNotificationPreview
+                            notification={notification}
+                            isSelected={isSelected}
+                            isUnread={isUnread}
+                            dateLabel={dateTime?.dateLabel}
+                            timeLabel={dateTime?.timeLabel}
+                          />
+                        </AccordionPrimitive.Trigger>
+                      </AccordionPrimitive.Header>
+
+                      <AccordionPrimitive.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm">
+                        <div className="pt-2">
+                          <NotificationDetail
+                            notification={notification}
+                            recommendedProducts={accordionRecommendedProducts}
+                            dateTimeLabel={dateTime?.dateTimeLabel}
+                            orderDetails={accordionOrderDetails}
+                            customerId={customerId}
+                            customerName={customerName}
+                            isLoadingOrderDetails={isLoadingOrderDetails}
+                          />
+                        </div>
+                      </AccordionPrimitive.Content>
+                    </AccordionPrimitive.Item>
+                  );
+                })}
+              </AccordionPrimitive.Root>
+            ) : (
+              <div className="rounded border p-4 text-sm text-muted-foreground">
+                No notifications yet.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

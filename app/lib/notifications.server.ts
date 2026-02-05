@@ -1,5 +1,6 @@
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 import {variantQuery} from '~/lib/customerQueries';
+import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {
   createNotificationId,
   getUnreadCount,
@@ -603,5 +604,122 @@ export async function getNotificationRecommendedProducts(
   } catch (error) {
     console.error('Unable to load recommended products', error);
     return [];
+  }
+}
+
+export type NotificationOrderLineItem = {
+  id: string;
+  title: string;
+  variantTitle: string | null;
+  quantity: number;
+  image: {
+    url: string;
+    altText?: string | null;
+    width?: number | null;
+    height?: number | null;
+  } | null;
+  product: {
+    id: string;
+    handle: string;
+    tags: string[];
+  } | null;
+};
+
+export type NotificationOrderDetails = {
+  orderId: string;
+  orderName: string | null;
+  lineItems: NotificationOrderLineItem[];
+};
+
+export async function getNotificationOrderDetails(
+  context: any,
+  orderId: string,
+): Promise<NotificationOrderDetails | null> {
+  if (!orderId) return null;
+
+  try {
+    const {data, errors} = await context.customerAccount.query(
+      CUSTOMER_ORDER_QUERY,
+      {
+        variables: {orderId},
+      },
+    );
+
+    if (errors?.length || !data?.order) return null;
+    const order = data.order as any;
+
+    const rawLineItems = (order?.lineItems?.nodes ?? []) as Array<any>;
+    const lineItems = rawLineItems.slice(0, 50);
+    const variantIds = lineItems
+      .map((lineItem) => lineItem?.variantId)
+      .filter((id): id is string => typeof id === 'string' && id.length);
+
+    const uniqueVariantIds = Array.from(new Set(variantIds)).slice(0, 50);
+    const variantResults = await Promise.all(
+      uniqueVariantIds.map((id) =>
+        context.storefront.query(variantQuery, {variables: {id}}).catch(() => null),
+      ),
+    );
+
+    const productByVariantId = new Map<
+      string,
+      {id: string; handle: string; tags: string[]}
+    >();
+
+    for (const result of variantResults) {
+      const node = result?.node as any;
+      const product = node?.product;
+      if (!node?.id || !product?.id || !product?.handle) continue;
+      productByVariantId.set(node.id as string, {
+        id: product.id as string,
+        handle: product.handle as string,
+        tags: Array.isArray(product.tags) ? (product.tags as string[]) : [],
+      });
+    }
+
+    const hydratedLineItems: NotificationOrderLineItem[] = lineItems.map(
+      (lineItem) => {
+        const variantId =
+          typeof lineItem?.variantId === 'string' ? (lineItem.variantId as string) : null;
+        const product = variantId ? productByVariantId.get(variantId) ?? null : null;
+
+        return {
+          id: (lineItem?.id as string) ?? `${variantId ?? ''}-${Math.random()}`,
+          title: (lineItem?.title as string) ?? '',
+          variantTitle:
+            typeof lineItem?.variantTitle === 'string'
+              ? (lineItem.variantTitle as string)
+              : null,
+          quantity: typeof lineItem?.quantity === 'number' ? lineItem.quantity : 1,
+          image: lineItem?.image?.url
+            ? {
+                url: lineItem.image.url as string,
+                altText:
+                  typeof lineItem.image.altText === 'string'
+                    ? (lineItem.image.altText as string)
+                    : null,
+                width:
+                  typeof lineItem.image.width === 'number'
+                    ? (lineItem.image.width as number)
+                    : null,
+                height:
+                  typeof lineItem.image.height === 'number'
+                    ? (lineItem.image.height as number)
+                    : null,
+              }
+            : null,
+          product,
+        };
+      },
+    );
+
+    return {
+      orderId: (order?.id as string) ?? orderId,
+      orderName: typeof order?.name === 'string' ? (order.name as string) : null,
+      lineItems: hydratedLineItems,
+    };
+  } catch (error) {
+    console.error('Unable to load notification order details', error);
+    return null;
   }
 }

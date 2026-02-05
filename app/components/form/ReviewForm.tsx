@@ -9,6 +9,14 @@ import {toast} from 'sonner';
 
 const REVIEW_CHAR_LIMIT = 200;
 
+type ReviewFormSuccessToast = {
+  message: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+};
+
 function ReviewForm({
   productId,
   productName,
@@ -17,6 +25,8 @@ function ReviewForm({
   updateExistingReviews,
   userReviewExists,
   isBlocked,
+  successToast,
+  submittedMessage,
 }: {
   productId: string;
   productName: string;
@@ -25,6 +35,8 @@ function ReviewForm({
   userReviewExists: Boolean;
   isBlocked: Boolean;
   updateExistingReviews: (reviews: any[]) => void;
+  successToast?: ReviewFormSuccessToast;
+  submittedMessage?: string;
 }) {
   const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
   const [review, setReview] = useState('');
@@ -135,8 +147,14 @@ function ReviewForm({
       setTitle('');
       setSelectedImage(null);
       setImagePreview(null);
-      setReviewSubmittedMessage('Review Submitted!');
-      toast.success('Review Posted');
+      setReviewSubmittedMessage(submittedMessage ?? 'Review Submitted!');
+
+      const toastMessage = successToast?.message ?? 'Review Posted';
+      if (successToast?.action) {
+        toast.success(toastMessage, {action: successToast.action});
+      } else {
+        toast.success(toastMessage);
+      }
     } catch (err) {
       setPendingReviewSubmit(false);
       console.error(err);
