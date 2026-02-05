@@ -1,12 +1,10 @@
 import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Link, useFetcher, useLoaderData, useNavigate} from '@remix-run/react';
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {Money} from '@shopify/hydrogen';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import {ArrowRight, ChevronUp} from 'lucide-react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {Button} from '~/components/ui/button';
-import {AddToCartButton} from '~/components/AddToCartButton';
 import ReviewForm from '~/components/form/ReviewForm';
 import {ProductCarousel} from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
@@ -21,6 +19,7 @@ import {
 } from '~/lib/notifications.server';
 import type {Notification} from '~/lib/notifications';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
+import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {GET_REVIEW_QUERY} from '~/lib/homeQueries';
 import {toast} from 'sonner';
 
@@ -123,6 +122,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
 
   let customerId: string | null = null;
   let customerName: string | null = null;
+  let wishlistProducts: string[] = [];
   if (loggedIn) {
     const customerResponse = await context.customerAccount
       .query(CUSTOMER_DETAILS_QUERY)
@@ -137,6 +137,23 @@ export async function loader({context, request}: LoaderFunctionArgs) {
         .join(' ')
         .trim();
       customerName = name.length ? name : null;
+    }
+
+    const wishlistResponse = await context.customerAccount
+      .query(CUSTOMER_WISHLIST)
+      .catch(() => null);
+    const wishlistValue = wishlistResponse?.data?.customer?.metafield?.value;
+    if (typeof wishlistValue === 'string' && wishlistValue.length) {
+      try {
+        const parsed = JSON.parse(wishlistValue);
+        if (Array.isArray(parsed)) {
+          wishlistProducts = parsed.filter(
+            (value): value is string => typeof value === 'string' && value.length > 0,
+          );
+        }
+      } catch {
+        wishlistProducts = [];
+      }
     }
   }
 
@@ -207,11 +224,13 @@ export async function loader({context, request}: LoaderFunctionArgs) {
 
   return json({
     notifications,
+    loggedIn,
     selectedId,
     selectedNotification,
     recommendedProducts,
     customerId,
     customerName,
+    wishlistProducts,
     selectedLeaveReviewOrder,
     selectedLeaveReviewUserReviews,
   });
@@ -326,71 +345,51 @@ function MobileNotificationPreview({
 function RecommendationsGrid({
   products,
   category,
+  wishlistProducts,
+  isLoggedIn,
 }: {
   products?: RecommendedProduct[];
   category: 'Prints' | 'Video';
+  wishlistProducts?: string[];
+  isLoggedIn?: Promise<boolean> | undefined;
 }) {
   if (!products) {
     return (
-      <p className="text-sm text-muted-foreground">Loading recommendations…</p>
+      <p className="px-4 pb-4 text-sm text-muted-foreground">
+        Loading recommendations…
+      </p>
     );
   }
 
   if (!products.length) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="px-4 pb-4 text-sm text-muted-foreground">
         No recommendations available right now.
       </p>
     );
   }
 
-  const isVideo = category === 'Video';
-
   return (
-    <div className="prods-grid gap-x-3">
+    <div className="prods-grid gap-x-5">
       {products.map((product) => {
-        const variantId = product.selectedOrFirstAvailableVariant?.id;
-        const canAddToCart =
-          isVideo &&
-          Boolean(variantId) &&
-          product.selectedOrFirstAvailableVariant?.availableForSale;
+        const isInWishlist = wishlistProducts?.includes(product.id) ?? false;
 
-        return (
-          <div key={product.id} className="rounded border p-3">
-            <Link to={`/products/${product.handle}`} className="block">
-              {product.featuredImage?.url ? (
-                <img
-                  src={product.featuredImage.url}
-                  alt={product.featuredImage.altText ?? product.title}
-                  className="w-full h-auto rounded"
-                  loading="lazy"
-                />
-              ) : null}
-              <p className="pt-2 font-medium">{product.title}</p>
-              <div className="text-sm text-muted-foreground">
-                From <Money data={product.priceRange.minVariantPrice} />
-              </div>
-            </Link>
-
-            <div className="pt-3 flex flex-wrap gap-2">
-              <Button asChild variant="outline">
-                <Link to={`/products/${product.handle}`}>View Product</Link>
-              </Button>
-              {isVideo && (
-                <AddToCartButton
-                  disabled={!canAddToCart}
-                  lines={[
-                    {
-                      merchandiseId: variantId ?? '',
-                      quantity: 1,
-                    },
-                  ]}
-                >
-                  Add to cart
-                </AddToCartButton>
-              )}
-            </div>
-          </div>
+        return category === 'Video' ? (
+          <EProductsContainer
+            key={product.id}
+            product={product as any}
+            layout="grid"
+            isInWishlist={isInWishlist}
+            isLoggedIn={isLoggedIn}
+          />
+        ) : (
+          <ProductCarousel
+            key={product.id}
+            product={product as any}
+            layout="grid"
+            isInWishlist={isInWishlist}
+            isLoggedIn={isLoggedIn}
+          />
         );
       })}
     </div>
@@ -404,6 +403,7 @@ function NotificationDetail({
   orderDetails,
   customerId,
   customerName,
+  wishlistProducts,
   userReviewsByProductId,
   isLoadingOrderDetails,
   featuredReviewDetail,
@@ -416,6 +416,7 @@ function NotificationDetail({
   orderDetails?: NotificationOrderDetails | null;
   customerId?: string | null;
   customerName?: string | null;
+  wishlistProducts?: string[];
   userReviewsByProductId?: Record<string, Review | null> | null;
   isLoadingOrderDetails?: boolean;
   featuredReviewDetail?: {product: unknown; review: Review} | null;
@@ -711,35 +712,46 @@ function NotificationDetail({
         </>
       )}
 
-      {notification.type === 'review_featured' && (
-        <>
-          <div className="rounded border p-4">
-            {isLoadingFeaturedReviewDetail || featuredReviewDetail === undefined ? (
-              <p className="text-sm text-muted-foreground">
-                Loading featured review…
-              </p>
-            ) : featuredReviewDetail ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
-                <div className="min-w-0">
-                  {Array.isArray((featuredReviewDetail.product as any)?.tags) &&
-                  ((featuredReviewDetail.product as any).tags as string[]).includes(
-                    'Video',
-                  ) ? (
-                    <EProductsContainer
-                      product={featuredReviewDetail.product as any}
-                      layout="grid"
-                      isInWishlist={false}
-                      isLoggedIn={isLoggedIn}
-                    />
-                  ) : (
-                    <ProductCarousel
-                      product={featuredReviewDetail.product as any}
-                      layout="grid"
-                      isInWishlist={false}
-                      isLoggedIn={isLoggedIn}
-                    />
-                  )}
-                </div>
+	      {notification.type === 'review_featured' && (
+	        <>
+	          <div className="rounded border p-4">
+	            {isLoadingFeaturedReviewDetail || featuredReviewDetail === undefined ? (
+	              <p className="text-sm text-muted-foreground">
+	                Loading featured review…
+	              </p>
+	            ) : featuredReviewDetail ? (
+	              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+	                <div className="min-w-0">
+	                  {(() => {
+	                    const featuredProductId = (featuredReviewDetail.product as any)
+	                      ?.id as string | undefined;
+	                    const isInWishlist =
+	                      typeof featuredProductId === 'string' &&
+	                      (wishlistProducts ?? []).includes(featuredProductId);
+
+	                    const isVideoProduct =
+	                      Array.isArray((featuredReviewDetail.product as any)?.tags) &&
+	                      ((featuredReviewDetail.product as any).tags as string[]).includes(
+	                        'Video',
+	                      );
+
+	                    return isVideoProduct ? (
+	                      <EProductsContainer
+	                        product={featuredReviewDetail.product as any}
+	                        layout="grid"
+	                        isInWishlist={isInWishlist}
+	                        isLoggedIn={isLoggedIn}
+	                      />
+	                    ) : (
+	                      <ProductCarousel
+	                        product={featuredReviewDetail.product as any}
+	                        layout="grid"
+	                        isInWishlist={isInWishlist}
+	                        isLoggedIn={isLoggedIn}
+	                      />
+	                    );
+	                  })()}
+	                </div>
 
                 <div className="flex justify-center">
                   <ArrowRight className="rotate-90 text-muted-foreground md:rotate-0" />
@@ -781,8 +793,8 @@ function NotificationDetail({
 
       {notification.type === 'recommendations' &&
         (category === 'Prints' || category === 'Video') && (
-          <div className="rounded border p-4">
-            <p className="pb-3 font-semibold">
+          <div className="rounded border">
+            <p className="p-4 pb-2 font-semibold">
               {category === 'Video'
                 ? 'You may also like these stock footage clips'
                 : 'You may also like these prints'}
@@ -790,6 +802,8 @@ function NotificationDetail({
             <RecommendationsGrid
               products={recommendedProducts}
               category={category}
+              wishlistProducts={wishlistProducts}
+              isLoggedIn={isLoggedIn}
             />
           </div>
         )}
@@ -800,11 +814,13 @@ function NotificationDetail({
 export default function AccountNotifications() {
   const {
     notifications,
+    loggedIn,
     selectedId,
     selectedNotification,
     recommendedProducts,
     customerId,
     customerName,
+    wishlistProducts,
     selectedLeaveReviewOrder,
     selectedLeaveReviewUserReviews,
   } = useLoaderData<typeof loader>();
@@ -908,8 +924,8 @@ export default function AccountNotifications() {
   }, [clientSelectedId, localNotifications]);
 
   const isLoggedInPromise = useMemo(
-    () => Promise.resolve(Boolean(customerId)),
-    [customerId],
+    () => Promise.resolve(Boolean(loggedIn)),
+    [loggedIn],
   );
 
   const markReadFetcher = useFetcher();
@@ -1224,14 +1240,15 @@ export default function AccountNotifications() {
                     ?.dateTimeLabel
                 }
                 orderDetails={selectedOrderDetails}
-                userReviewsByProductId={selectedUserReviewsByProductId}
-                isLoadingOrderDetails={isLoadingSelectedOrderDetails}
-                featuredReviewDetail={selectedFeaturedReviewDetail}
-                isLoadingFeaturedReviewDetail={isLoadingSelectedFeaturedReviewDetail}
-                isLoggedIn={isLoggedInPromise}
-                customerId={customerId}
-                customerName={customerName}
-              />
+	                userReviewsByProductId={selectedUserReviewsByProductId}
+	                isLoadingOrderDetails={isLoadingSelectedOrderDetails}
+	                featuredReviewDetail={selectedFeaturedReviewDetail}
+	                isLoadingFeaturedReviewDetail={isLoadingSelectedFeaturedReviewDetail}
+	                wishlistProducts={wishlistProducts}
+	                isLoggedIn={isLoggedInPromise}
+	                customerId={customerId}
+	                customerName={customerName}
+	              />
             ) : (
               <div className="rounded border p-4 text-sm text-muted-foreground">
                 Select a notification to view it.
@@ -1316,13 +1333,14 @@ export default function AccountNotifications() {
                             dateTimeLabel={dateTime?.dateTimeLabel}
                             orderDetails={accordionOrderDetails}
                             userReviewsByProductId={accordionUserReviewsByProductId}
-                            customerId={customerId}
-                            customerName={customerName}
-                            isLoadingOrderDetails={isLoadingOrderDetails}
-                            featuredReviewDetail={accordionFeaturedReviewDetail}
-                            isLoadingFeaturedReviewDetail={isLoadingFeaturedReviewDetail}
-                            isLoggedIn={isLoggedInPromise}
-                          />
+	                            customerId={customerId}
+	                            customerName={customerName}
+	                            isLoadingOrderDetails={isLoadingOrderDetails}
+	                            featuredReviewDetail={accordionFeaturedReviewDetail}
+	                            isLoadingFeaturedReviewDetail={isLoadingFeaturedReviewDetail}
+	                            wishlistProducts={wishlistProducts}
+	                            isLoggedIn={isLoggedInPromise}
+	                          />
                         </div>
                       </AccordionPrimitive.Content>
                     </AccordionPrimitive.Item>

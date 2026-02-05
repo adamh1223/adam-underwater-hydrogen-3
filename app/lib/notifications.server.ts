@@ -62,33 +62,43 @@ const CUSTOMER_NOTIFICATIONS_SYNC_QUERY = `#graphql
   }
 ` as const;
 
-const NOTIFICATION_RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment NotificationProduct on Product {
-    id
-    title
-    handle
-    tags
-    featuredImage {
-      url
-      altText
-      width
-      height
-    }
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    selectedOrFirstAvailableVariant {
-      id
-      availableForSale
-      price {
-        amount
-        currencyCode
-      }
-    }
-  }
+	const NOTIFICATION_RECOMMENDED_PRODUCTS_QUERY = `#graphql
+	  fragment NotificationProduct on Product {
+	    id
+	    title
+	    handle
+	    tags
+	    featuredImage {
+	      url
+	      altText
+	      width
+	      height
+	    }
+	    images(first: 20) {
+	      nodes {
+	        url
+	        altText
+	      }
+	    }
+	    priceRange {
+	      minVariantPrice {
+	        amount
+	        currencyCode
+	      }
+	    }
+	    selectedOrFirstAvailableVariant {
+	      id
+	      availableForSale
+	      compareAtPrice {
+	        amount
+	        currencyCode
+	      }
+	      price {
+	        amount
+	        currencyCode
+	      }
+	    }
+	  }
 
   query NotificationRecommendedProducts(
     $first: Int!
