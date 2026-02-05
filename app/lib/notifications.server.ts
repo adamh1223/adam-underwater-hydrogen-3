@@ -187,30 +187,70 @@ function sortByCreatedAtDesc(notifications: Notification[]) {
   );
 }
 
-async function resolveOrderCategories(
+type RecommendationCategory = 'Prints' | 'Video';
+
+async function resolveOrderRecommendationDetails(
   storefront: any,
-  variantIds: string[],
-): Promise<Array<'Prints' | 'Video'>> {
+  lineItems: Array<{variantId?: unknown; title?: unknown}>,
+): Promise<{
+  categories: RecommendationCategory[];
+  purchasedTitleByCategory: Partial<Record<RecommendationCategory, string>>;
+}> {
+  const variantIds = lineItems
+    .map((lineItem) => lineItem?.variantId)
+    .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
   const uniqueVariantIds = Array.from(new Set(variantIds)).slice(0, 20);
-  if (!uniqueVariantIds.length) return [];
+  if (!uniqueVariantIds.length) {
+    return {categories: [], purchasedTitleByCategory: {}};
+  }
 
   const results = await Promise.all(
     uniqueVariantIds.map((id) =>
-      storefront
-        .query(variantQuery, {variables: {id}})
-        .catch(() => null),
+      storefront.query(variantQuery, {variables: {id}}).catch(() => null),
     ),
   );
 
-  const categories = new Set<'Prints' | 'Video'>();
+  const categories = new Set<RecommendationCategory>();
+  const categoriesByVariantId = new Map<string, RecommendationCategory[]>();
+
   for (const result of results) {
-    const tags = result?.node?.product?.tags;
-    if (!Array.isArray(tags)) continue;
-    if (tags.includes('Video')) categories.add('Video');
-    if (tags.includes('Prints')) categories.add('Prints');
+    const node = result?.node as any;
+    const tags = node?.product?.tags;
+    if (typeof node?.id !== 'string' || !Array.isArray(tags)) continue;
+
+    const variantCategories: RecommendationCategory[] = [];
+    if (tags.includes('Video')) variantCategories.push('Video');
+    if (tags.includes('Prints')) variantCategories.push('Prints');
+    if (!variantCategories.length) continue;
+
+    categoriesByVariantId.set(node.id, variantCategories);
+    variantCategories.forEach((category) => categories.add(category));
   }
 
-  return Array.from(categories);
+  const purchasedTitleByCategory: Partial<
+    Record<RecommendationCategory, string>
+  > = {};
+
+  for (const lineItem of lineItems) {
+    const variantId =
+      typeof lineItem?.variantId === 'string' ? lineItem.variantId : null;
+    if (!variantId) continue;
+
+    const variantCategories = categoriesByVariantId.get(variantId);
+    if (!variantCategories?.length) continue;
+
+    const title = typeof lineItem?.title === 'string' ? lineItem.title.trim() : '';
+    if (!title) continue;
+
+    for (const category of variantCategories) {
+      if (!purchasedTitleByCategory[category]) {
+        purchasedTitleByCategory[category] = title;
+      }
+    }
+  }
+
+  return {categories: Array.from(categories), purchasedTitleByCategory};
 }
 
 export async function syncCustomerNotifications(
@@ -391,62 +431,49 @@ export async function syncCustomerNotifications(
 
     if (!isDelivered) continue;
 
-    const existingRecommendationCategories = new Set(
-      notifications
-        .filter(
-          (n) => n.type === 'recommendations' && n.payload?.orderId === orderId,
-        )
-        .map((n) => n.payload?.category)
-        .filter((category): category is 'Prints' | 'Video' =>
-          category === 'Prints' || category === 'Video',
-        ),
-    );
-
-    if (
-      existingRecommendationCategories.has('Prints') &&
-      existingRecommendationCategories.has('Video')
-    ) {
-      continue;
-    }
-
-    const variantIds = (order.lineItems?.nodes ?? [])
-      .map((lineItem: any) => lineItem?.variantId)
-      .filter((id: any): id is string => typeof id === 'string' && id.length);
-
-    const categories = await resolveOrderCategories(
-      context.storefront,
-      variantIds,
-    );
-
-    const purchasedTitle = (order.lineItems?.nodes ?? [])
-      .map((lineItem: any) => lineItem?.title)
-      .find(
-        (title: any): title is string =>
-          typeof title === 'string' && title.trim().length,
+    const {categories, purchasedTitleByCategory} =
+      await resolveOrderRecommendationDetails(
+        context.storefront,
+        (order.lineItems?.nodes ?? []) as Array<{
+          variantId?: unknown;
+          title?: unknown;
+        }>,
       );
 
     for (const category of categories) {
-      if (existingRecommendationCategories.has(category)) continue;
-      if (
-        hasNotification(
-          notifications,
-          (n) =>
-            n.type === 'recommendations' &&
-            n.payload?.orderId === orderId &&
-            n.payload?.category === category,
-        )
-      ) {
-        continue;
+      const purchasedTitle = purchasedTitleByCategory[category];
+      const nextTitle = `Because you bought ${
+        purchasedTitle ?? (category === 'Video' ? 'a stock footage clip' : 'a print')
+      }`;
+      const nextMessage = `Here are more ${category.toLowerCase()} products we think you’d like.`;
+
+      let didUpdateExisting = false;
+      for (let index = 0; index < notifications.length; index += 1) {
+        const existing = notifications[index];
+        if (
+          existing.type === 'recommendations' &&
+          existing.payload?.orderId === orderId &&
+          existing.payload?.category === category
+        ) {
+          didUpdateExisting = true;
+          if (existing.title !== nextTitle || existing.message !== nextMessage) {
+            notifications[index] = {
+              ...existing,
+              title: nextTitle,
+              message: nextMessage,
+            };
+            didMutate = true;
+          }
+        }
       }
+
+      if (didUpdateExisting) continue;
 
       notifications.push({
         id: createNotificationId(),
         type: 'recommendations',
-        title: `Because you bought ${
-          purchasedTitle ??
-          (category === 'Video' ? 'a stock footage clip' : 'a print')
-        }`,
-        message: `Here are more ${category.toLowerCase()} products we think you’d like.`,
+        title: nextTitle,
+        message: nextMessage,
         createdAt: new Date().toISOString(),
         readAt: null,
         href: `/account/notifications`,
@@ -652,7 +679,7 @@ export async function getNotificationOrderDetails(
     const lineItems = rawLineItems.slice(0, 50);
     const variantIds = lineItems
       .map((lineItem) => lineItem?.variantId)
-      .filter((id): id is string => typeof id === 'string' && id.length);
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
     const uniqueVariantIds = Array.from(new Set(variantIds)).slice(0, 50);
     const variantResults = await Promise.all(

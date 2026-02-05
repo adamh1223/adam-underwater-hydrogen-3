@@ -1,6 +1,12 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
-import {Suspense} from 'react';
+import {
+  Await,
+  useLoaderData,
+  Link,
+  type MetaFunction,
+  useLocation,
+} from '@remix-run/react';
+import {Suspense, useEffect} from 'react';
 import {Image, Money} from '@shopify/hydrogen';
 import type {
   FeaturedCollectionFragment,
@@ -133,6 +139,28 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
+  const location = useLocation();
+
+  useEffect(() => {
+    const hashTarget = location.hash ? location.hash.replace('#', '') : null;
+    if (!hashTarget) return;
+
+    const targetElement = document.getElementById(hashTarget);
+    if (!targetElement) return;
+
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => {
+        targetElement.scrollIntoView({block: 'start'});
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
+    };
+  }, [location.hash]);
 
   return (
     <div className="home">
@@ -156,17 +184,14 @@ export default function Homepage() {
         wishlistProducts={data.wishlistProducts}
         isLoggedIn={data.isLoggedIn}
       />
-      <div>
+      <div id="featured-reviews" className="scroll-mt-28">
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>What our customers are saying</p>
         </div>
-        <div id='featured-reviews'>
-
         <FeaturedProductReviews
           reviews={data.featuredReviews}
           currentCustomerId={data.currentCustomerId}
         />
-        </div>
       </div>
     </div>
   );

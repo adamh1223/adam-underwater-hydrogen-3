@@ -8,6 +8,9 @@ import Sectiontitle from '~/components/global/Sectiontitle';
 import {Button} from '~/components/ui/button';
 import {AddToCartButton} from '~/components/AddToCartButton';
 import ReviewForm from '~/components/form/ReviewForm';
+import ProductReviewsDisplay, {
+  type Review,
+} from '~/components/global/ProductReviewsDisplay';
 import {
   getNotificationRecommendedProducts,
   getNotificationOrderDetails,
@@ -16,6 +19,8 @@ import {
 } from '~/lib/notifications.server';
 import type {Notification} from '~/lib/notifications';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
+import {GET_REVIEW_QUERY} from '~/lib/homeQueries';
+import {toast} from 'sonner';
 
 type RecommendedProduct = {
   id: string;
@@ -140,6 +145,60 @@ export async function loader({context, request}: LoaderFunctionArgs) {
     }
   }
 
+  let selectedLeaveReviewUserReviews: Record<string, Review | null> | null =
+    null;
+  if (selectedLeaveReviewOrder?.lineItems?.length && customerId) {
+    const printProductIds = Array.from(
+      new Set(
+        selectedLeaveReviewOrder.lineItems
+          .filter((lineItem) => {
+            const tags = lineItem.product?.tags ?? [];
+            return tags.includes('Prints') && !tags.includes('Video');
+          })
+          .map((lineItem) => lineItem.product?.id)
+          .filter((id): id is string => typeof id === 'string' && id.length > 0),
+      ),
+    );
+
+    const results = await Promise.all(
+      printProductIds.map(async (productId) => {
+        try {
+          const response = await context.storefront.query(GET_REVIEW_QUERY, {
+            variables: {productId},
+          });
+          const rawValue = response?.product?.metafield?.value;
+          if (!rawValue) return {productId, review: null as Review | null};
+
+          let parsed: Review[] = [];
+          try {
+            parsed = JSON.parse(rawValue) as Review[];
+          } catch {
+            parsed = [];
+          }
+
+          const matching = parsed
+            .filter((review) => review?.customerId === customerId)
+            .sort((a, b) =>
+              String(b?.createdAt ?? '').localeCompare(String(a?.createdAt ?? '')),
+            )[0];
+
+          return {productId, review: matching ?? null};
+        } catch (error) {
+          console.error('Unable to load product reviews', error);
+          return {productId, review: null as Review | null};
+        }
+      }),
+    );
+
+    selectedLeaveReviewUserReviews = results.reduce<Record<string, Review | null>>(
+      (acc, item) => {
+        acc[item.productId] = item.review;
+        return acc;
+      },
+      {},
+    );
+  }
+
   return json({
     notifications,
     selectedId,
@@ -148,6 +207,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
     customerId,
     customerName,
     selectedLeaveReviewOrder,
+    selectedLeaveReviewUserReviews,
   });
 }
 
@@ -338,6 +398,7 @@ function NotificationDetail({
   orderDetails,
   customerId,
   customerName,
+  userReviewsByProductId,
   isLoadingOrderDetails,
 }: {
   notification: Notification;
@@ -346,10 +407,118 @@ function NotificationDetail({
   orderDetails?: NotificationOrderDetails | null;
   customerId?: string | null;
   customerName?: string | null;
+  userReviewsByProductId?: Record<string, Review | null> | null;
   isLoadingOrderDetails?: boolean;
 }) {
   const category = notification.payload?.category;
   const navigate = useNavigate();
+  const resolvedCustomerId = typeof customerId === 'string' ? customerId : null;
+  const resolvedCustomerName = typeof customerName === 'string' ? customerName : '';
+
+  const [localUserReviewsByProductId, setLocalUserReviewsByProductId] = useState<
+    Record<string, Review | null>
+  >(() => userReviewsByProductId ?? {});
+
+  useEffect(() => {
+    setLocalUserReviewsByProductId(userReviewsByProductId ?? {});
+  }, [notification.id, userReviewsByProductId]);
+
+  const handleRemoveReview = async (productId: string, reviewToRemove: Review) => {
+    if (!resolvedCustomerId || !reviewToRemove?.createdAt) return;
+
+    const form = new FormData();
+    form.append('productId', productId);
+    form.append('customerId', resolvedCustomerId);
+    form.append('createdAt', reviewToRemove.createdAt);
+
+    try {
+      const response = await fetch('/api/remove_review', {
+        method: 'POST',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+
+      if (!response.ok) {
+        console.error('Failed to remove review', await response.text());
+        return;
+      }
+
+      const data = await response.json();
+      const updatedReviews: Review[] = data?.reviews ?? [];
+      const matching = updatedReviews
+        .filter((review) => review?.customerId === resolvedCustomerId)
+        .sort((a, b) =>
+          String(b?.createdAt ?? '').localeCompare(String(a?.createdAt ?? '')),
+        )[0];
+
+      setLocalUserReviewsByProductId((prev) => ({
+        ...prev,
+        [productId]: matching ?? null,
+      }));
+      toast.success('Review Deleted');
+    } catch (error) {
+      console.error('Error removing review', error);
+    }
+  };
+
+  const handleEditReview = async (
+    productId: string,
+    reviewToEdit: Review,
+    updates: {
+      text: string;
+      title: string;
+      stars: number;
+      image?: File | null;
+      video?: File | null;
+      isFeatured?: boolean;
+    },
+  ) => {
+    if (!resolvedCustomerId || !reviewToEdit?.createdAt) return;
+
+    const form = new FormData();
+    form.append('productId', productId);
+    form.append('customerId', resolvedCustomerId);
+    form.append('createdAt', reviewToEdit.createdAt);
+    form.append('review', updates.text);
+    form.append('stars', updates.stars.toString());
+    form.append('title', updates.title);
+    form.append('customerName', resolvedCustomerName);
+    if (updates.image) {
+      form.append('image', updates.image);
+    }
+    if (updates.video) {
+      form.append('video', updates.video);
+    }
+
+    try {
+      const response = await fetch('/api/edit_review', {
+        method: 'POST',
+        body: form,
+        headers: {Accept: 'application/json'},
+      });
+
+      if (!response.ok) {
+        console.error('Failed to edit review', await response.text());
+        return;
+      }
+
+      const data = await response.json();
+      const updatedReviews: Review[] = data?.reviews ?? [];
+      const matching = updatedReviews
+        .filter((review) => review?.customerId === resolvedCustomerId)
+        .sort((a, b) =>
+          String(b?.createdAt ?? '').localeCompare(String(a?.createdAt ?? '')),
+        )[0];
+
+      setLocalUserReviewsByProductId((prev) => ({
+        ...prev,
+        [productId]: matching ?? prev[productId] ?? null,
+      }));
+      toast.success('Review Changes Saved');
+    } catch (error) {
+      console.error('Error editing review', error);
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -387,6 +556,10 @@ function NotificationDetail({
                     const tags = lineItem.product?.tags ?? [];
                     const isPrint =
                       tags.includes('Prints') && !tags.includes('Video');
+                    const productId = lineItem.product?.id ?? null;
+                    const existingReview = productId
+                      ? localUserReviewsByProductId[productId]
+                      : null;
 
                     return (
                       <div key={lineItem.id} className="rounded border p-4">
@@ -450,27 +623,60 @@ function NotificationDetail({
                           </div>
                         )}
 
-                        {isPrint && lineItem.product?.id ? (
-                          <ReviewForm
-                            productId={lineItem.product.id}
-                            productName={lineItem.title}
-                            customerId={customerId ?? undefined}
-                            customerName={customerName ?? undefined}
-                            updateExistingReviews={() => {}}
-                            userReviewExists={false}
-                            isBlocked={false}
-                            successToast={{
-                              message: 'Review Submitted',
-                              action: productHref
-                                ? {
-                                    label: 'View Review',
-                                    onClick: () =>
-                                      navigate(`${productHref}#reviews`),
-                                  }
-                                : undefined,
-                            }}
-                            submittedMessage="Review Submitted"
-                          />
+                        {isPrint && productId ? (
+                          existingReview ? (
+                            <ProductReviewsDisplay
+                              review={{
+                                ...existingReview,
+                                productId,
+                                productName: lineItem.title,
+                                productHandle: lineItem.product?.handle,
+                              }}
+                              isAdmin={false}
+                              currentCustomerId={resolvedCustomerId ?? undefined}
+                              onRemove={(review) => handleRemoveReview(productId, review)}
+                              onEdit={(review, updates) =>
+                                handleEditReview(productId, review, updates)
+                              }
+                            />
+                          ) : (
+                            <ReviewForm
+                              productId={productId}
+                              productName={lineItem.title}
+                              customerId={resolvedCustomerId ?? undefined}
+                              customerName={resolvedCustomerName || undefined}
+                              updateExistingReviews={(updatedReviews) => {
+                                const matching = (updatedReviews ?? [])
+                                  .filter(
+                                    (review) =>
+                                      review?.customerId === resolvedCustomerId,
+                                  )
+                                  .sort((a, b) =>
+                                    String(b?.createdAt ?? '').localeCompare(
+                                      String(a?.createdAt ?? ''),
+                                    ),
+                                  )[0];
+
+                                setLocalUserReviewsByProductId((prev) => ({
+                                  ...prev,
+                                  [productId]: matching ?? null,
+                                }));
+                              }}
+                              userReviewExists={false}
+                              isBlocked={false}
+                              successToast={{
+                                message: 'Review Submitted',
+                                action: productHref
+                                  ? {
+                                      label: 'View Review',
+                                      onClick: () =>
+                                        navigate(`${productHref}#reviews`),
+                                    }
+                                  : undefined,
+                              }}
+                              submittedMessage="Review Submitted"
+                            />
+                          )
                         ) : null}
                       </div>
                     );
@@ -535,6 +741,7 @@ export default function AccountNotifications() {
     customerId,
     customerName,
     selectedLeaveReviewOrder,
+    selectedLeaveReviewUserReviews,
   } = useLoaderData<typeof loader>();
 
   const [localNotifications, setLocalNotifications] =
@@ -590,6 +797,17 @@ export default function AccountNotifications() {
     return {};
   });
 
+  const [mobileUserReviewsByOrderId, setMobileUserReviewsByOrderId] = useState<
+    Record<string, Record<string, Review | null> | null>
+  >(() => {
+    if (selectedLeaveReviewOrder?.orderId) {
+      return {
+        [selectedLeaveReviewOrder.orderId]: selectedLeaveReviewUserReviews ?? null,
+      };
+    }
+    return {};
+  });
+
   useEffect(() => {
     const category = selectedNotification?.payload?.category;
     if (
@@ -604,7 +822,7 @@ export default function AccountNotifications() {
   }, [recommendedProducts, selectedNotification]);
 
   const activeSelectedId =
-    windowWidth != undefined && windowWidth <= 830 ? mobileSelectedId : selectedId;
+    windowWidth != undefined && windowWidth <= 860 ? mobileSelectedId : selectedId;
 
   const selected = useMemo(() => {
     if (!activeSelectedId) return null;
@@ -623,7 +841,11 @@ export default function AccountNotifications() {
   >();
   const lastRequestedCategoryRef = useRef<'Prints' | 'Video' | null>(null);
   const orderDetailsFetcher = useFetcher<
-    | {ok: true; order: NotificationOrderDetails}
+    | {
+        ok: true;
+        order: NotificationOrderDetails;
+        userReviewsByProductId: Record<string, Review | null> | null;
+      }
     | {ok: false; error: string}
   >();
   const lastRequestedOrderIdRef = useRef<string | null>(null);
@@ -648,7 +870,7 @@ export default function AccountNotifications() {
   }, [markReadFetcher, selected]);
 
   useEffect(() => {
-    if (windowWidth == undefined || windowWidth > 830) return;
+    if (windowWidth == undefined || windowWidth > 860) return;
     if (!selected) return;
 
     if (selected.type !== 'recommendations') return;
@@ -696,7 +918,7 @@ export default function AccountNotifications() {
   }, [recommendedProductsFetcher.data]);
 
   useEffect(() => {
-    if (windowWidth == undefined || windowWidth > 830) return;
+    if (windowWidth == undefined || windowWidth > 860) return;
     if (!selected) return;
     if (selected.type !== 'leave_review') return;
 
@@ -727,6 +949,10 @@ export default function AccountNotifications() {
         ...prev,
         [data.order.orderId]: data.order,
       }));
+      setMobileUserReviewsByOrderId((prev) => ({
+        ...prev,
+        [data.order.orderId]: data.userReviewsByProductId ?? null,
+      }));
       lastRequestedOrderIdRef.current = null;
       return;
     }
@@ -734,6 +960,10 @@ export default function AccountNotifications() {
     const lastOrderId = lastRequestedOrderIdRef.current;
     if (lastOrderId) {
       setMobileOrderDetailsByOrderId((prev) => ({
+        ...prev,
+        [lastOrderId]: null,
+      }));
+      setMobileUserReviewsByOrderId((prev) => ({
         ...prev,
         [lastOrderId]: null,
       }));
@@ -745,7 +975,7 @@ export default function AccountNotifications() {
     <>
       <Sectiontitle text="Notifications" />
 
-      {windowWidth != undefined && windowWidth > 830 && (
+      {windowWidth != undefined && windowWidth > 860 && (
         <div className="notifs-layout mx-3 mt-3 grid gap-4">
           <div className="space-y-2">
             {localNotifications.length ? (
@@ -795,6 +1025,11 @@ export default function AccountNotifications() {
                     ? selectedLeaveReviewOrder
                     : undefined
                 }
+                userReviewsByProductId={
+                  selected.type === 'leave_review'
+                    ? selectedLeaveReviewUserReviews
+                    : undefined
+                }
                 customerId={customerId}
                 customerName={customerName}
               />
@@ -807,7 +1042,7 @@ export default function AccountNotifications() {
         </div>
       )}
 
-      {windowWidth != undefined && windowWidth <= 830 && (
+      {windowWidth != undefined && windowWidth <= 860 && (
         <div className="notifs-layout mx-3 mt-3 grid gap-4">
           <div className="space-y-2">
             {localNotifications.length ? (
@@ -836,6 +1071,11 @@ export default function AccountNotifications() {
                     notification.type === 'leave_review' &&
                     typeof orderId === 'string'
                       ? mobileOrderDetailsByOrderId[orderId]
+                      : undefined;
+                  const accordionUserReviewsByProductId =
+                    notification.type === 'leave_review' &&
+                    typeof orderId === 'string'
+                      ? mobileUserReviewsByOrderId[orderId]
                       : undefined;
                   const isLoadingOrderDetails =
                     notification.type === 'leave_review' &&
@@ -868,6 +1108,7 @@ export default function AccountNotifications() {
                             recommendedProducts={accordionRecommendedProducts}
                             dateTimeLabel={dateTime?.dateTimeLabel}
                             orderDetails={accordionOrderDetails}
+                            userReviewsByProductId={accordionUserReviewsByProductId}
                             customerId={customerId}
                             customerName={customerName}
                             isLoadingOrderDetails={isLoadingOrderDetails}
