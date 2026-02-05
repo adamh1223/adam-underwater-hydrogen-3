@@ -92,7 +92,11 @@ export async function loader({context, request}: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const requestedSelectedId = url.searchParams.get('selected');
 
-  const {notifications, loggedIn} = await syncCustomerNotifications(context);
+  const {notifications: rawNotifications, loggedIn} =
+    await syncCustomerNotifications(context);
+  const notifications = loggedIn
+    ? rawNotifications
+    : rawNotifications.filter((notification) => notification.type === 'discount');
   const selectedId =
     requestedSelectedId &&
     notifications.some((notification) => notification.id === requestedSelectedId)
@@ -769,15 +773,27 @@ export default function AccountNotifications() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const [mobileSelectedId, setMobileSelectedId] = useState<string | null>(
+  const notificationsTopAnchorRef = useRef<HTMLAnchorElement | null>(null);
+
+  const scrollToNotificationsTop = () => {
+    notificationsTopAnchorRef.current?.click();
+  };
+
+  const [clientSelectedId, setClientSelectedId] = useState<string | null>(
     selectedId ?? null,
   );
 
   useEffect(() => {
-    setMobileSelectedId(selectedId ?? null);
+    setClientSelectedId(selectedId ?? null);
   }, [selectedId]);
 
-  const [mobileRecommendedProductsByCategory, setMobileRecommendedProductsByCategory] =
+  const handleDesktopSelect = (nextId: string) => {
+    if (nextId === clientSelectedId) return;
+    setClientSelectedId(nextId);
+    scrollToNotificationsTop();
+  };
+
+  const [recommendedProductsByCategory, setRecommendedProductsByCategory] =
     useState<Partial<Record<'Prints' | 'Video', RecommendedProduct[]>>>(() => {
       const initial: Partial<Record<'Prints' | 'Video', RecommendedProduct[]>> =
         {};
@@ -791,7 +807,7 @@ export default function AccountNotifications() {
       return initial;
     });
 
-  const [mobileOrderDetailsByOrderId, setMobileOrderDetailsByOrderId] = useState<
+  const [orderDetailsByOrderId, setOrderDetailsByOrderId] = useState<
     Record<string, NotificationOrderDetails | null>
   >(() => {
     if (selectedLeaveReviewOrder?.orderId) {
@@ -800,7 +816,7 @@ export default function AccountNotifications() {
     return {};
   });
 
-  const [mobileUserReviewsByOrderId, setMobileUserReviewsByOrderId] = useState<
+  const [userReviewsByOrderId, setUserReviewsByOrderId] = useState<
     Record<string, Record<string, Review | null> | null>
   >(() => {
     if (selectedLeaveReviewOrder?.orderId) {
@@ -817,24 +833,21 @@ export default function AccountNotifications() {
       selectedNotification?.type === 'recommendations' &&
       (category === 'Prints' || category === 'Video')
     ) {
-      setMobileRecommendedProductsByCategory((prev) => ({
+      setRecommendedProductsByCategory((prev) => ({
         ...prev,
         [category]: recommendedProducts,
       }));
     }
   }, [recommendedProducts, selectedNotification]);
 
-  const activeSelectedId =
-    windowWidth != undefined && windowWidth <= 860 ? mobileSelectedId : selectedId;
-
   const selected = useMemo(() => {
-    if (!activeSelectedId) return null;
+    if (!clientSelectedId) return null;
     return (
       localNotifications.find(
-        (notification) => notification.id === activeSelectedId,
+        (notification) => notification.id === clientSelectedId,
       ) ?? null
     );
-  }, [activeSelectedId, localNotifications]);
+  }, [clientSelectedId, localNotifications]);
 
   const markReadFetcher = useFetcher();
   const lastMarkedRef = useRef<string | null>(null);
@@ -873,14 +886,13 @@ export default function AccountNotifications() {
   }, [markReadFetcher, selected]);
 
   useEffect(() => {
-    if (windowWidth == undefined || windowWidth > 860) return;
     if (!selected) return;
 
     if (selected.type !== 'recommendations') return;
     const category = selected.payload?.category;
     if (category !== 'Prints' && category !== 'Video') return;
 
-    if (mobileRecommendedProductsByCategory[category] !== undefined) return;
+    if (recommendedProductsByCategory[category] !== undefined) return;
     if (recommendedProductsFetcher.state !== 'idle') return;
     if (lastRequestedCategoryRef.current === category) return;
 
@@ -891,10 +903,10 @@ export default function AccountNotifications() {
       )}`,
     );
   }, [
-    mobileRecommendedProductsByCategory,
+    recommendedProductsByCategory,
+    recommendedProductsFetcher,
     recommendedProductsFetcher.state,
     selected,
-    windowWidth,
   ]);
 
   useEffect(() => {
@@ -902,7 +914,7 @@ export default function AccountNotifications() {
     if (!data) return;
 
     if (data.ok) {
-      setMobileRecommendedProductsByCategory((prev) => ({
+      setRecommendedProductsByCategory((prev) => ({
         ...prev,
         [data.category]: data.products,
       }));
@@ -912,7 +924,7 @@ export default function AccountNotifications() {
 
     const lastCategory = lastRequestedCategoryRef.current;
     if (lastCategory) {
-      setMobileRecommendedProductsByCategory((prev) => ({
+      setRecommendedProductsByCategory((prev) => ({
         ...prev,
         [lastCategory]: [],
       }));
@@ -921,14 +933,13 @@ export default function AccountNotifications() {
   }, [recommendedProductsFetcher.data]);
 
   useEffect(() => {
-    if (windowWidth == undefined || windowWidth > 860) return;
     if (!selected) return;
     if (selected.type !== 'leave_review') return;
 
     const orderId = selected.payload?.orderId;
     if (typeof orderId !== 'string' || !orderId.length) return;
 
-    if (mobileOrderDetailsByOrderId[orderId] !== undefined) return;
+    if (orderDetailsByOrderId[orderId] !== undefined) return;
     if (orderDetailsFetcher.state !== 'idle') return;
     if (lastRequestedOrderIdRef.current === orderId) return;
 
@@ -937,10 +948,10 @@ export default function AccountNotifications() {
       `/api/notification-order-details?orderId=${encodeURIComponent(orderId)}`,
     );
   }, [
-    mobileOrderDetailsByOrderId,
+    orderDetailsByOrderId,
+    orderDetailsFetcher,
     orderDetailsFetcher.state,
     selected,
-    windowWidth,
   ]);
 
   useEffect(() => {
@@ -948,11 +959,11 @@ export default function AccountNotifications() {
     if (!data) return;
 
     if (data.ok) {
-      setMobileOrderDetailsByOrderId((prev) => ({
+      setOrderDetailsByOrderId((prev) => ({
         ...prev,
         [data.order.orderId]: data.order,
       }));
-      setMobileUserReviewsByOrderId((prev) => ({
+      setUserReviewsByOrderId((prev) => ({
         ...prev,
         [data.order.orderId]: data.userReviewsByProductId ?? null,
       }));
@@ -962,11 +973,11 @@ export default function AccountNotifications() {
 
     const lastOrderId = lastRequestedOrderIdRef.current;
     if (lastOrderId) {
-      setMobileOrderDetailsByOrderId((prev) => ({
+      setOrderDetailsByOrderId((prev) => ({
         ...prev,
         [lastOrderId]: null,
       }));
-      setMobileUserReviewsByOrderId((prev) => ({
+      setUserReviewsByOrderId((prev) => ({
         ...prev,
         [lastOrderId]: null,
       }));
@@ -974,8 +985,48 @@ export default function AccountNotifications() {
     lastRequestedOrderIdRef.current = null;
   }, [orderDetailsFetcher.data]);
 
+  const selectedCategory =
+    selected?.type === 'recommendations' ? selected.payload?.category : null;
+  const selectedRecommendedProducts =
+    selected?.type === 'recommendations' &&
+    (selectedCategory === 'Prints' || selectedCategory === 'Video')
+      ? recommendedProductsByCategory[selectedCategory]
+      : undefined;
+
+  const selectedOrderId =
+    selected?.type === 'leave_review' ? selected.payload?.orderId : null;
+  const selectedOrderDetails =
+    selected?.type === 'leave_review' && typeof selectedOrderId === 'string'
+      ? orderDetailsByOrderId[selectedOrderId]
+      : undefined;
+  const selectedUserReviewsByProductId =
+    selected?.type === 'leave_review' && typeof selectedOrderId === 'string'
+      ? userReviewsByOrderId[selectedOrderId]
+      : undefined;
+  const isLoadingSelectedOrderDetails =
+    selected?.type === 'leave_review' &&
+    typeof selectedOrderId === 'string' &&
+    orderDetailsFetcher.state !== 'idle' &&
+    lastRequestedOrderIdRef.current === selectedOrderId;
+
   return (
     <>
+      <a
+        id="notifications-top"
+        href="#notifications-top"
+        ref={notificationsTopAnchorRef}
+        tabIndex={-1}
+        className="block h-0 scroll-mt-6"
+        onClick={(event) => {
+          event.preventDefault();
+          notificationsTopAnchorRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }}
+      >
+        <span className="sr-only">Notifications</span>
+      </a>
       <Sectiontitle text="Notifications" />
 
       {windowWidth != undefined && windowWidth > 860 && (
@@ -983,19 +1034,19 @@ export default function AccountNotifications() {
           <div className="space-y-2">
             {localNotifications.length ? (
               localNotifications.map((notification) => {
-                const isSelected = notification.id === selectedId;
+                const isSelected = notification.id === clientSelectedId;
                 const isUnread = !notification.readAt && !isSelected;
                 const dateTime = formatNotificationDateTime(
                   notification.createdAt,
                   clientTimeZone,
                 );
                 return (
-                  <Link
+                  <button
                     key={notification.id}
-                    to={`/account/notifications?selected=${encodeURIComponent(
-                      notification.id,
-                    )}`}
-                    className="block"
+                    type="button"
+                    onClick={() => handleDesktopSelect(notification.id)}
+                    className="block w-full border-0 bg-transparent p-0 text-left cursor-pointer"
+                    aria-current={isSelected ? 'true' : undefined}
                   >
                     <NotificationPreview
                       notification={notification}
@@ -1004,7 +1055,7 @@ export default function AccountNotifications() {
                       dateLabel={dateTime?.dateLabel}
                       timeLabel={dateTime?.timeLabel}
                     />
-                  </Link>
+                  </button>
                 );
               })
             ) : (
@@ -1018,21 +1069,14 @@ export default function AccountNotifications() {
             {selected ? (
               <NotificationDetail
                 notification={selected}
-                recommendedProducts={recommendedProducts}
+                recommendedProducts={selectedRecommendedProducts}
                 dateTimeLabel={
                   formatNotificationDateTime(selected.createdAt, clientTimeZone)
                     ?.dateTimeLabel
                 }
-                orderDetails={
-                  selected.type === 'leave_review'
-                    ? selectedLeaveReviewOrder
-                    : undefined
-                }
-                userReviewsByProductId={
-                  selected.type === 'leave_review'
-                    ? selectedLeaveReviewUserReviews
-                    : undefined
-                }
+                orderDetails={selectedOrderDetails}
+                userReviewsByProductId={selectedUserReviewsByProductId}
+                isLoadingOrderDetails={isLoadingSelectedOrderDetails}
                 customerId={customerId}
                 customerName={customerName}
               />
@@ -1052,12 +1096,12 @@ export default function AccountNotifications() {
               <AccordionPrimitive.Root
                 type="single"
                 collapsible
-                value={mobileSelectedId ?? ''}
-                onValueChange={(value) => setMobileSelectedId(value || null)}
+                value={clientSelectedId ?? ''}
+                onValueChange={(value) => setClientSelectedId(value || null)}
                 className="space-y-2"
               >
                 {localNotifications.map((notification) => {
-                  const isSelected = notification.id === mobileSelectedId;
+                  const isSelected = notification.id === clientSelectedId;
                   const isUnread = !notification.readAt && !isSelected;
                   const dateTime = formatNotificationDateTime(
                     notification.createdAt,
@@ -1067,18 +1111,18 @@ export default function AccountNotifications() {
                   const accordionRecommendedProducts =
                     notification.type === 'recommendations' &&
                     (category === 'Prints' || category === 'Video')
-                      ? mobileRecommendedProductsByCategory[category]
+                      ? recommendedProductsByCategory[category]
                       : undefined;
                   const orderId = notification.payload?.orderId;
                   const accordionOrderDetails =
                     notification.type === 'leave_review' &&
                     typeof orderId === 'string'
-                      ? mobileOrderDetailsByOrderId[orderId]
+                      ? orderDetailsByOrderId[orderId]
                       : undefined;
                   const accordionUserReviewsByProductId =
                     notification.type === 'leave_review' &&
                     typeof orderId === 'string'
-                      ? mobileUserReviewsByOrderId[orderId]
+                      ? userReviewsByOrderId[orderId]
                       : undefined;
                   const isLoadingOrderDetails =
                     notification.type === 'leave_review' &&
