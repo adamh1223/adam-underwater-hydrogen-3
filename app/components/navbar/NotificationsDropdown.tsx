@@ -87,7 +87,7 @@ function NotificationsDropdown() {
       <RadixHoverCard.Portal>
         <RadixHoverCard.Content
           sideOffset={6}
-          align="end"
+          align="center"
           className="hovercard-content rounded border-l border-r border-t border-b w-[340px]"
         >
           <div className="p-2">

@@ -230,7 +230,7 @@ button.reset:hover:not(:has(> *)) {
     grid-gap: 0.5rem;
     margin-left: auto;
     z-index: 100;
-    margin-right: 12px;
+    margin-right: 4px;
   }
 }
 @media (min-width: 501px) {
@@ -614,9 +614,19 @@ button.reset:hover:not(:has(> *)) {
   width: 30%;
 } */
 
-.logo {
-  height: 2.5rem;
-  border-radius: 0.375rem;
+@media (min-width: 539px) {
+
+  .logo {
+    height: 2.5rem;
+    border-radius: 0.375rem;
+  }
+}
+@media (max-width: 538px) {
+
+  .logo {
+    height: 2.1rem;
+    border-radius: 0.375rem;
+  }
 }
 @media (min-width: 601px) {
   .cart-header {
