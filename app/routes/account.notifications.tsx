@@ -2,6 +2,8 @@ import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Link, useFetcher, useLoaderData} from '@remix-run/react';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Money} from '@shopify/hydrogen';
+import * as AccordionPrimitive from '@radix-ui/react-accordion';
+import {ChevronUp} from 'lucide-react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {Button} from '~/components/ui/button';
 import {AddToCartButton} from '~/components/AddToCartButton';
@@ -103,13 +105,64 @@ function NotificationPreview({
   );
 }
 
+function MobileNotificationPreview({
+  notification,
+  isSelected,
+  isUnread,
+}: {
+  notification: Notification;
+  isSelected: boolean;
+  isUnread: boolean;
+}) {
+  return (
+    <div
+      className={`rounded border px-3 py-2 transition-colors ${
+        isSelected ? 'bg-accent' : 'bg-background hover:bg-accent/60'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium">{notification.title}</p>
+            {isUnread && (
+              <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+            )}
+          </div>
+          <p className="line-clamp-2 text-xs text-muted-foreground">
+            {notification.message}
+          </p>
+        </div>
+
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <p className="whitespace-nowrap text-[11px] text-muted-foreground">
+            {new Date(notification.createdAt).toLocaleDateString()}
+          </p>
+          <ChevronUp
+            aria-hidden="true"
+            size={18}
+            className={`rounded-md border border-input text-primary transition-transform duration-200 ${
+              isSelected ? 'rotate-180' : 'rotate-0'
+            }`}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RecommendationsGrid({
   products,
   category,
 }: {
-  products: RecommendedProduct[];
+  products?: RecommendedProduct[];
   category: 'Prints' | 'Video';
 }) {
+  if (!products) {
+    return (
+      <p className="text-sm text-muted-foreground">Loading recommendations…</p>
+    );
+  }
+
   if (!products.length) {
     return (
       <p className="text-sm text-muted-foreground">
@@ -176,7 +229,7 @@ function NotificationDetail({
   recommendedProducts,
 }: {
   notification: Notification;
-  recommendedProducts: RecommendedProduct[];
+  recommendedProducts?: RecommendedProduct[];
 }) {
   const category = notification.payload?.category;
 
@@ -233,8 +286,12 @@ function NotificationDetail({
 }
 
 export default function AccountNotifications() {
-  const {notifications, selectedId, selectedNotification, recommendedProducts} =
-    useLoaderData<typeof loader>();
+  const {
+    notifications,
+    selectedId,
+    selectedNotification,
+    recommendedProducts,
+  } = useLoaderData<typeof loader>();
 
   const [localNotifications, setLocalNotifications] =
     useState<Notification[]>(notifications);
@@ -243,16 +300,70 @@ export default function AccountNotifications() {
     setLocalNotifications(notifications);
   }, [notifications]);
 
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const [mobileSelectedId, setMobileSelectedId] = useState<string | null>(
+    selectedId ?? null,
+  );
+
+  useEffect(() => {
+    setMobileSelectedId(selectedId ?? null);
+  }, [selectedId]);
+
+  const [mobileRecommendedProductsByCategory, setMobileRecommendedProductsByCategory] =
+    useState<Partial<Record<'Prints' | 'Video', RecommendedProduct[]>>>(() => {
+      const initial: Partial<Record<'Prints' | 'Video', RecommendedProduct[]>> =
+        {};
+      const category = selectedNotification?.payload?.category;
+      if (
+        selectedNotification?.type === 'recommendations' &&
+        (category === 'Prints' || category === 'Video')
+      ) {
+        initial[category] = recommendedProducts;
+      }
+      return initial;
+    });
+
+  useEffect(() => {
+    const category = selectedNotification?.payload?.category;
+    if (
+      selectedNotification?.type === 'recommendations' &&
+      (category === 'Prints' || category === 'Video')
+    ) {
+      setMobileRecommendedProductsByCategory((prev) => ({
+        ...prev,
+        [category]: recommendedProducts,
+      }));
+    }
+  }, [recommendedProducts, selectedNotification]);
+
+  const activeSelectedId =
+    windowWidth != undefined && windowWidth <= 830 ? mobileSelectedId : selectedId;
+
   const selected = useMemo(() => {
-    if (!selectedId) return null;
+    if (!activeSelectedId) return null;
     return (
-      localNotifications.find((notification) => notification.id === selectedId) ??
-      null
+      localNotifications.find(
+        (notification) => notification.id === activeSelectedId,
+      ) ?? null
     );
-  }, [localNotifications, selectedId]);
+  }, [activeSelectedId, localNotifications]);
 
   const markReadFetcher = useFetcher();
   const lastMarkedRef = useRef<string | null>(null);
+  const recommendedProductsFetcher = useFetcher<
+    | {ok: true; category: 'Prints' | 'Video'; products: RecommendedProduct[]}
+    | {ok: false; error: string}
+  >();
+  const lastRequestedCategoryRef = useRef<'Prints' | 'Video' | null>(null);
 
   useEffect(() => {
     if (!selected) return;
@@ -272,15 +383,54 @@ export default function AccountNotifications() {
       ),
     );
   }, [markReadFetcher, selected]);
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+
   useEffect(() => {
-    function handleResize() {
-      setWindowWidth(window.innerWidth);
+    if (windowWidth == undefined || windowWidth > 830) return;
+    if (!selected) return;
+
+    if (selected.type !== 'recommendations') return;
+    const category = selected.payload?.category;
+    if (category !== 'Prints' && category !== 'Video') return;
+
+    if (mobileRecommendedProductsByCategory[category] !== undefined) return;
+    if (recommendedProductsFetcher.state !== 'idle') return;
+    if (lastRequestedCategoryRef.current === category) return;
+
+    lastRequestedCategoryRef.current = category;
+    recommendedProductsFetcher.load(
+      `/api/notification-recommended-products?category=${encodeURIComponent(
+        category,
+      )}`,
+    );
+  }, [
+    mobileRecommendedProductsByCategory,
+    recommendedProductsFetcher.state,
+    selected,
+    windowWidth,
+  ]);
+
+  useEffect(() => {
+    const data = recommendedProductsFetcher.data;
+    if (!data) return;
+
+    if (data.ok) {
+      setMobileRecommendedProductsByCategory((prev) => ({
+        ...prev,
+        [data.category]: data.products,
+      }));
+      lastRequestedCategoryRef.current = null;
+      return;
     }
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  });
+
+    const lastCategory = lastRequestedCategoryRef.current;
+    if (lastCategory) {
+      setMobileRecommendedProductsByCategory((prev) => ({
+        ...prev,
+        [lastCategory]: [],
+      }));
+    }
+    lastRequestedCategoryRef.current = null;
+  }, [recommendedProductsFetcher.data]);
 
   return (
     <>
@@ -332,41 +482,54 @@ export default function AccountNotifications() {
       <div className="notifs-layout mx-3 mt-3 grid gap-4">
         <div className="space-y-2">
           {localNotifications.length ? (
-            localNotifications.map((notification) => {
-              const isSelected = notification.id === selectedId;
-              const isUnread = !notification.readAt && !isSelected;
-              return (
-                <Link
-                  key={notification.id}
-                  to={`/account/notifications?selected=${encodeURIComponent(
-                    notification.id,
-                  )}`}
-                  className="block"
-                >
-                  <NotificationPreview
-                    notification={notification}
-                    isSelected={isSelected}
-                    isUnread={isUnread}
-                  />
-                </Link>
-              );
-            })
+            <AccordionPrimitive.Root
+              type="single"
+              collapsible
+              value={mobileSelectedId ?? ''}
+              onValueChange={(value) => setMobileSelectedId(value || null)}
+              className="space-y-2"
+            >
+              {localNotifications.map((notification) => {
+                const isSelected = notification.id === mobileSelectedId;
+                const isUnread = !notification.readAt && !isSelected;
+                const category = notification.payload?.category;
+                const accordionRecommendedProducts =
+                  notification.type === 'recommendations' &&
+                  (category === 'Prints' || category === 'Video')
+                    ? mobileRecommendedProductsByCategory[category]
+                    : undefined;
+
+                return (
+                  <AccordionPrimitive.Item
+                    key={notification.id}
+                    value={notification.id}
+                    className="border-0"
+                  >
+                    <AccordionPrimitive.Header className="flex">
+                      <AccordionPrimitive.Trigger className="w-full border-0 bg-transparent p-0 text-left outline-none">
+                        <MobileNotificationPreview
+                          notification={notification}
+                          isSelected={isSelected}
+                          isUnread={isUnread}
+                        />
+                      </AccordionPrimitive.Trigger>
+                    </AccordionPrimitive.Header>
+
+                    <AccordionPrimitive.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm">
+                      <div className="pt-2">
+                        <NotificationDetail
+                          notification={notification}
+                          recommendedProducts={accordionRecommendedProducts}
+                        />
+                      </div>
+                    </AccordionPrimitive.Content>
+                  </AccordionPrimitive.Item>
+                );
+              })}
+            </AccordionPrimitive.Root>
           ) : (
             <div className="rounded border p-4 text-sm text-muted-foreground">
               No notifications yet.
-            </div>
-          )}
-        </div>
-
-        <div>
-          {selected ? (
-            <NotificationDetail
-              notification={selected}
-              recommendedProducts={recommendedProducts}
-            />
-          ) : (
-            <div className="rounded border p-4 text-sm text-muted-foreground">
-              Select a notification to view it.
             </div>
           )}
         </div>
@@ -374,4 +537,3 @@ export default function AccountNotifications() {
     </>
   );
 }
-
