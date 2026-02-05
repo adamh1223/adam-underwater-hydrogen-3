@@ -276,7 +276,7 @@ export default function AccountNotifications() {
   return (
     <>
       <Sectiontitle text="Notifications" />
-      <div className="mx-3 mt-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="notifs-layout mx-3 mt-3 grid gap-4">
         <div className="space-y-2">
           {localNotifications.length ? (
             localNotifications.map((notification) => {

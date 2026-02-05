@@ -1795,3 +1795,13 @@ span {
 .account-icon {
   height: 1rem;
 }
+@media (min-width: 831px) {
+  .notifs-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 830px) {
+  .notifs-layout {
+    grid-template-columns: 1fr;
+  }
+}
