@@ -133,7 +133,7 @@ export function HeaderMenu({
         <>
           <nav role="navigation">
             <div className="main-navbar-small-top-row ">
-              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 ps-1 py-2 mt-4">
+              <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 py-2 mt-4">
                 <NavLink
                   end
                   onClick={close}
@@ -272,7 +272,7 @@ export function HeaderMenu({
           </nav>
         </>
       )}
-      {windowWidth != undefined && windowWidth < 730 && windowWidth >= 500 && (
+      {windowWidth != undefined && windowWidth < 757 && windowWidth >= 500 && (
         <>
           <nav role="navigation">
             <div className="main-navbar-small-top-row ">
@@ -419,7 +419,7 @@ export function HeaderMenu({
           </nav>
         </>
       )}
-      {windowWidth != undefined && windowWidth >= 730 && windowWidth < 930 && (
+      {windowWidth != undefined && windowWidth >= 757 && windowWidth < 930 && (
         <>
           <nav
             className={`${className} flex w-full flex-col gap-2`}
@@ -443,7 +443,7 @@ export function HeaderMenu({
               </div>
 
               {/* ⭐ SHIFTED LEFT 30px */}
-              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[9px] mt-[16px] gap-[2px] ">
+              <div className="flex-1 flex justify-center menu-first-half-container -translate-x-[-6px] mt-[16px] gap-[2px] ">
                 {menuFirstHalf.map((item) => {
                   if (!item.url) return null;
 
@@ -1087,7 +1087,7 @@ function CartBadge({count}: {count: number | null}) {
         <NavLink to="/cart">
           <div>
             <LuShoppingCart className="relative -right-[1.75px] top-[10px]" />
-            <span className="relative -top-6 -right-4 bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
+            <span className="relative -top-[28px] -right-[18px] bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
               {count}
             </span>
           </div>
