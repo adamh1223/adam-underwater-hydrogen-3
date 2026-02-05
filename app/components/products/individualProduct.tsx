@@ -147,40 +147,36 @@ function IndividualProduct({
           {orientation === 'Landscape' && (
             <div className="flex carousel-shortcuts-container-horizontal">
               {orientationImages.map((url, idx) => (
-                <>
-                  <div className="flex justify-center items-center">
-                    <img
-                      key={idx}
-                      src={url.url}
-                      className={`cursor-pointer border-2 shortcut-image h-[75px] w-[130px] object-contain ${
-                        idx === activeIndex
-                          ? 'border-[hsl(var(--primary))]'
-                          : ''
-                      }`}
-                      onClick={() => handleThumbnailClick(idx)}
-                    />
-                  </div>
-                </>
+                <div
+                  key={`${url.url}-${idx}`}
+                  className="flex justify-center items-center"
+                >
+                  <img
+                    src={url.url}
+                    className={`cursor-pointer border-2 shortcut-image h-[75px] w-[130px] object-contain ${
+                      idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
+                    }`}
+                    onClick={() => handleThumbnailClick(idx)}
+                  />
+                </div>
               ))}
             </div>
           )}
           {orientation === 'Vertical' && (
             <div className="flex carousel-shortcuts-container-vertical">
               {orientationImages.map((url, idx) => (
-                <>
-                  <div className="flex justify-center items-center">
-                    <img
-                      key={idx}
-                      src={url.url}
-                      className={`cursor-pointer border-2 shortcut-image h-[120px] w-[90px] object-contain ${
-                        idx === activeIndex
-                          ? 'border-[hsl(var(--primary))]'
-                          : ''
-                      }`}
-                      onClick={() => handleThumbnailClick(idx)}
-                    />
-                  </div>
-                </>
+                <div
+                  key={`${url.url}-${idx}`}
+                  className="flex justify-center items-center"
+                >
+                  <img
+                    src={url.url}
+                    className={`cursor-pointer border-2 shortcut-image h-[120px] w-[90px] object-contain ${
+                      idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
+                    }`}
+                    onClick={() => handleThumbnailClick(idx)}
+                  />
+                </div>
               ))}
             </div>
           )}

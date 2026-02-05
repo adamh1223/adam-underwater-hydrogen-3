@@ -13,6 +13,7 @@ interface FeaturedReviewsQuery {
     nodes: Array<{
       id: string;
       title: string;
+      handle: string;
       metafield?: {
         value?: string | null;
       } | null;
@@ -51,19 +52,26 @@ function FeaturedReviewsContent({
   response: FeaturedReviewsQuery;
   currentCustomerId?: string;
 }) {
+  const reviewsFromResponse = useMemo(
+    () =>
+      response.products.nodes.flatMap((node) =>
+        parseReviewsValue(node.metafield?.value).map((review) => ({
+          ...review,
+          productId: review.productId ?? node.id,
+          productName: review.productName ?? node.title,
+          productHandle: node.handle,
+        })),
+      ),
+    [response],
+  );
+
   const [allReviews, setAllReviews] = useState<FeaturedReview[]>(() =>
-    response.products.nodes.flatMap((node) =>
-      parseReviewsValue(node.metafield?.value),
-    ),
+    reviewsFromResponse,
   );
 
   useEffect(() => {
-    setAllReviews(
-      response.products.nodes.flatMap((node) =>
-        parseReviewsValue(node.metafield?.value),
-      ),
-    );
-  }, [response]);
+    setAllReviews(reviewsFromResponse);
+  }, [reviewsFromResponse]);
 
   const featuredReviews = useMemo(
     () => allReviews.filter((review) => review.isFeatured === true),
@@ -136,15 +144,8 @@ function FeaturedReviewsContent({
       isFeatured?: boolean;
     },
   ) => {
-    console.log(review.productId, '222productid');
-    console.log(review.createdAt, '222createdat');
-    console.log(currentCustomerId, '222currentcustomer');
-    console.log(isAdmin, '222admin');
-    
     if (!review?.productId || !review?.createdAt) return;
     if (!currentCustomerId && !isAdmin) return;
-
-  
 
     const form = new FormData();
     form.append('productId', review.productId);

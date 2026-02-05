@@ -133,7 +133,6 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
-  console.log(data, 'datadata');
 
   return (
     <div className="home">
@@ -157,14 +156,17 @@ export default function Homepage() {
         wishlistProducts={data.wishlistProducts}
         isLoggedIn={data.isLoggedIn}
       />
-      <div id="featured-reviews">
+      <div>
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>What our customers are saying</p>
         </div>
+        <div id='featured-reviews'>
+
         <FeaturedProductReviews
           reviews={data.featuredReviews}
           currentCustomerId={data.currentCustomerId}
         />
+        </div>
       </div>
     </div>
   );

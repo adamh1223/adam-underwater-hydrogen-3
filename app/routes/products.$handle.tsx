@@ -97,13 +97,14 @@ async function loadCriticalData({
   params,
   request,
 }: LoaderFunctionArgs) {
-  const {handle} = params;
+  const handleParam = params.handle;
   const {storefront, cart} = context;
 
-  if (!handle) {
+  if (!handleParam) {
     throw new Error('Expected product handle to be defined');
   }
 
+  const handle = handleParam.toLowerCase();
   const [{product}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
@@ -111,13 +112,12 @@ async function loadCriticalData({
     storefront.query(RECOMMENDED_PRODUCTS_QUERY),
     // Add other queries here, so that they are loaded in parallel
   ]);
-  const reviews = await context.storefront.query(GET_REVIEW_QUERY, {
-    variables: {productId: product.id},
-  });
-
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
+  const reviews = await context.storefront.query(GET_REVIEW_QUERY, {
+    variables: {productId: product.id},
+  });
   let customer = null;
   let wishlistProducts: string[] = [];
   let isLoggedIn = false;
@@ -185,7 +185,6 @@ export default function Product() {
     customer?.customer?.id === 'gid://shopify/Customer/7968375079049';
 
   const customerId = customer?.customer?.id ?? '';
-  console.log(customer, 'customer');
 
   const customerFirstName = customer?.customer?.firstName ?? '';
   const customerLastName = customer?.customer?.lastName ?? '';
@@ -698,7 +697,6 @@ export default function Product() {
   } else {
     isBlocked = false;
   }
-  console.log(customer, 'customer');
 
   const reviewsCount = reviewsList.length;
   const averageRating =

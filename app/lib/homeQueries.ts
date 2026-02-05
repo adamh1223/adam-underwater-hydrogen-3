@@ -69,6 +69,7 @@ export const FEATURED_REVIEWS_QUERY = `#graphql
       nodes {
         id
         title
+        handle
         metafield(namespace: "custom", key: "reviews") {
           value
         }

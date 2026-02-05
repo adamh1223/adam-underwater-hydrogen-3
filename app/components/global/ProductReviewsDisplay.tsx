@@ -19,6 +19,7 @@ export interface Review {
   customerId?: string;
   productId?: string;
   productName?: string;
+  productHandle?: string;
   stars?: number | string;
   title?: string;
   customerName?: string;
@@ -78,10 +79,17 @@ const ProductReviewsDisplay = ({
     customerId,
     productId,
     productName,
+    productHandle,
     customerImage,
     customerVideo,
   } = review;
-  console.log(productName, 'prodname');
+
+  const productLinkHandle = productHandle?.trim()
+    ? productHandle.trim()
+    : replaceSpacesWithDashes(productName)?.toLowerCase();
+  const productLinkPath = productLinkHandle
+    ? `/products/${productLinkHandle}`
+    : null;
   const urls = [
     {
       url: customerVideo,
@@ -461,13 +469,13 @@ const ProductReviewsDisplay = ({
                   </div>
                 </>
               )}
-              {showProductLink && productName && (
+              {showProductLink && productLinkPath && (
                 <div className="w-full flex justify-center pt-1">
-                  <Link to={`/products/${replaceSpacesWithDashes(productName)}`}>
-                    {/* <button className='cursor-pointer hover:text-primary hover:underline text-muted-foreground pb-2'>{productName}</button> */}
-                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:text-primary py-1 px-2 mb-2 mt-1">
-                      {productName}
-                    </button>
+                  <Link
+                    to={productLinkPath}
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:text-primary py-1 px-2 mb-2 mt-1"
+                  >
+                    {productName ?? 'View product'}
                   </Link>
                 </div>
               )}
