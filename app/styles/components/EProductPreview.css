@@ -47,15 +47,26 @@
   bottom: 0;
   overflow: hidden;
   cursor: pointer;
+  line-height: 0;
   /* optional: border-radius and overflow hidden if you want rounded corners */
   border-radius: 4px;
   vertical-align: middle;
 }
 
+.EProductVideoWrapper a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* The iframe fills its wrapper and does not capture pointer events */
 .EProductVideo {
-  width: 100.5%;
-  height: 100.5%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
   border: none;
   object-fit: cover;
   opacity: 0;
