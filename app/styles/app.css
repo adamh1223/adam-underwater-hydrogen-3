@@ -1034,9 +1034,7 @@ span {
   justify-content: center;
 }
 
-.bottom-part-card-list {
-  align-items: center;
-}
+
 
 .three-d-carousel {
   z-index: 7000;
@@ -1758,7 +1756,12 @@ span {
   width: 56px;
 }
 }
-
+/* Badge image on artist pick tag */
+.badge-img {
+  height: 24px;
+  margin-left: 4px
+}
+/* Artist pick label */
 .artist-pick {
   width: 140px;
   height: 30px;
@@ -1767,6 +1770,7 @@ span {
   z-index: 100 !important;
   font-weight: 700;
 }
+/* Duration label */
 .clip-icon {
   width: 70px;
   height: 25px;
@@ -1774,6 +1778,55 @@ span {
   padding-bottom: 4px;
   z-index: 100;
 }
+@media (max-width: 600px) {
+  .artist-pick-grid {
+    width: 140px;
+    height: 30px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 700;
+  }
+  .artist-pick-list {
+    width: 110px;
+    height: 35px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 600;
+  }
+  .badge-img-grid {
+    height: 24px;
+    margin-left: 4px
+  }
+  .badge-img-list {
+    height: 18px;
+    margin-left: 4px
+  }
+  .clip-icon-grid {
+
+  }
+  .clip-icon-list {
+    width: 60px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  .duration-icon-list {
+    width: 40px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  
+}
+@media (min-width: 601px) {
+  
+
+}
+
 .four-k {
 
 }
@@ -1787,10 +1840,7 @@ span {
 
 }
 
-.badge-img {
-  height: 24px;
-  margin-left: 4px
-}
+
 
 .account-icon {
   height: 1rem;

@@ -342,7 +342,7 @@ export const ProductCarousel = ({
     <article className="group relative h-full mb-[12px]">
       <Card className={cardClassName}>
         {layout === 'list' && (
-          <div className="cursor-pointer absolute top-[20px] right-[40px] z-50 p-1">
+          <div className="cursor-pointer absolute top-[9px] right-[21px] z-50 p-1">
             {/* <Button
               variant="outline"
               onClick={addToFavorites}
@@ -474,7 +474,7 @@ export const ProductCarousel = ({
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid'
                             ? 'pt-5 pb-[12px] ps-4 pe-4'
-                            : 'p-2 ms-3'
+                            : 'ms-3'
                         }`}
                       >
                         <img
