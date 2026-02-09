@@ -38,9 +38,7 @@
     display: grid;
     grid-template-columns: 3fr 1fr;
   }
-  .bottom-part-card-inside {
-    padding: 0px 8px;
-  }
+  
 }
 @media (min-width: 1250px) {
   .carousel-img-list-view {
@@ -100,6 +98,9 @@
   display: flex;
   align-items: center;
 }
+.bottom-part-card-inside {
+    padding: 8px 8px;
+  }
 
 /* .top-part-card-list {
   display: flex;
@@ -157,10 +158,10 @@
     margin: 0 6px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 40px;
+    margin: 0 0 0 15px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 40px 0 0;
+    margin: 0 15px 0 0;
   }
 }
 @media (min-width: 500px) and (max-width: 599px) {
@@ -189,7 +190,7 @@
     margin: 0 40px 0 0;
   }
 }
-@media (min-width: 600px) and (max-width: 699px) {
+@media (min-width: 600px) and (max-width: 700px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -215,7 +216,7 @@
     margin: 0 90px 0 0;
   }
 }
-@media (min-width: 700px) and (max-width: 768px) {
+@media (min-width: 701px) and (max-width: 768px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -235,10 +236,10 @@
     margin: 0 3px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 4px;
+    margin: 0 0 0 30px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 4px 0 0;
+    margin: 0 30px 0 0;
   }
 }
 @media (min-width: 769px) and (max-width: 849px) {
@@ -261,10 +262,10 @@
     margin: 0 3px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 8px;
+    margin: 0 0 0 40px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 8px 0 0;
+    margin: 0 40px 0 0;
   }
 }
 @media (min-width: 850px) and (max-width: 957px) {
@@ -287,10 +288,10 @@
     margin: 0 6px 0 0;
   }
   .left-arrow-carousel-grid-vertical {
-    margin: 0 0 0 22px;
+    margin: 0 0 0 50px;
   }
   .right-arrow-carousel-grid-vertical {
-    margin: 0 22px 0 0;
+    margin: 0 50px 0 0;
   }
 }
 @media (min-width: 958px) and (max-width: 1049px) {
@@ -422,6 +423,27 @@
   }
   .right-arrow-carousel-grid-vertical {
     margin: 0 140px 0 0;
+  }
+}
+
+/* Notifications page uses a 50/50 split layout at >=861px, which makes the
+ * recommended product cards narrower than other pages. Override the global
+ * arrow insets for vertical grid prints so the arrows don't sit over the image.
+ */
+@media (min-width: 861px) {
+  .notifs-layout .notifs-recommendations .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 8px;
+  }
+  .notifs-layout .notifs-recommendations .right-arrow-carousel-grid-vertical {
+    margin: 0 8px 0 0;
+  }
+}
+@media (max-width: 860px) {
+  .notifs-layout .notifs-recommendations .left-arrow-carousel-grid-vertical {
+    margin: 0 0 0 22px;
+  }
+  .notifs-layout .notifs-recommendations .right-arrow-carousel-grid-vertical {
+    margin: 0 22px 0 0;
   }
 }
 

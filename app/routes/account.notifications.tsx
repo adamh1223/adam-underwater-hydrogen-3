@@ -793,7 +793,7 @@ function NotificationDetail({
 
       {notification.type === 'recommendations' &&
         (category === 'Prints' || category === 'Video') && (
-          <div className="rounded border">
+          <div className="rounded border notifs-recommendations">
             <p className="p-4 pb-2 font-semibold">
               {category === 'Video'
                 ? 'You may also like these stock footage clips'

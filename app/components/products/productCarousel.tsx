@@ -109,7 +109,7 @@ export const ProductCarousel = ({
   const cardContentClassName =
     layout === 'grid'
       ? 'flex flex-col h-full'
-      : 'px-8 md:px-6 gap-y-4 grid list-view-large-row py-4';
+      : 'gap-y-4 grid list-view-large-row';
 
   const variantUrl = useVariantUrl(handle);
 
