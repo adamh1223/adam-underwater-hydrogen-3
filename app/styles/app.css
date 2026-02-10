@@ -3,6 +3,8 @@
   --cart-aside-summary-height-with-discount: 300px;
   --grid-item-width: 355px;
   --header-height: 64px;
+  /* Fallback; JS updates this to the actual header bottom offset */
+  --aside-top: 110px;
   --color-dark: #000;
 }
 
@@ -23,18 +25,25 @@
 */
 
 @media (min-width: 1024px) {
+  :root {
+    --aside-top: 70px;
+  }
+
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-    height: 100vh;
     max-width: var(--aside-width);
     min-width: var(--aside-width);
     position: fixed;
+    top: 0;
+    bottom: 0;
     right: calc(-1 * var(--aside-width));
     transition: transform 200ms ease-in-out;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: var(--aside-top);
     z-index: 200;
-    bottom: 0;
+    -webkit-overflow-scrolling: touch;
   }
 }
 @media (min-width: 601px) and (max-width: 1023px) {
@@ -44,14 +53,17 @@
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-    height: 100vh;
     width: var(--aside-width);
     position: fixed;
+    top: 0;
+    bottom: 0;
     right: calc(-1 * var(--aside-width));
     transition: transform 200ms ease-in-out;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: var(--aside-top);
     z-index: 200;
-    bottom: 0;
+    -webkit-overflow-scrolling: touch;
   }
 }
 @media (max-width: 600px) {
@@ -62,14 +74,17 @@
   aside {
     background: var(--color-background);
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
-    height: 100vh;
     width: var(--aside-width);
     position: fixed;
+    top: 0;
+    bottom: 0;
     right: calc(-1 * var(--aside-width));
     transition: transform 200ms ease-in-out;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: var(--aside-top);
     z-index: 200;
-    bottom: 0;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -122,7 +137,7 @@ aside li {
   pointer-events: none;
   position: fixed;
   right: 0;
-  top: 100;
+  top: 0;
   transition: opacity 400ms ease-in-out;
   transition: opacity 400ms;
   visibility: hidden;

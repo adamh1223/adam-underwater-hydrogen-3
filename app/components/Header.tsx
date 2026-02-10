@@ -1064,17 +1064,19 @@ function SearchToggle() {
 function CartBadge({count}: {count: number | null}) {
   const {open} = useAside();
   const {publish, shop, cart, prevCart} = useAnalytics();
-  const onCartHover = () => {
-    open('cart');
-  };
   return (
-    <div onMouseEnter={onCartHover}>
+    <div>
       <button
         // href="/cart"
         className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-2 py-2"
-        
+        onPointerEnter={(e) => {
+          // Prevent "random" cart opens on mobile where touch can trigger mouse
+          // hover events. Only open on true mouse hover.
+          if (e.pointerType === 'mouse') open('cart');
+        }}
         onClick={(e) => {
           e.preventDefault();
+          open('cart');
 
           publish('cart_viewed', {
             cart,

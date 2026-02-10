@@ -36,29 +36,17 @@ export function Aside({
 }) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
-  const determineActiveTypeImage = () => {
-    if (activeType === 'cart') {
-      return '/mycart.png';
-    }
-    if (activeType === 'search') {
-      return '/searchstore.png';
-    }
-  };
   const location = useLocation();
-  const imageSource = determineActiveTypeImage();
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const imageSource =
+    type === 'cart'
+      ? '/mycart.png'
+      : type === 'search'
+        ? '/searchstore.png'
+        : undefined;
   const asideRef = useRef<HTMLElement | null>(null);
   const isStockFormOpen = () =>
     Boolean(document.querySelector('[data-stockform]'));
 
-  useEffect(() => {
-    function handleResize() {
-      setWindowWidth(window.innerWidth);
-    }
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
   useEffect(() => {
     const abortController = new AbortController();
     if (location.pathname === '/cart') {
@@ -116,58 +104,104 @@ export function Aside({
       />
 
       <aside className="border-l" ref={asideRef}>
-        {windowWidth != null && windowWidth > 1023 && (
-          <div className="mt-[70px]">
-            <div className="flex justify-end pe-4">
-              <button
-                className="close reset cursor-pointer text-xl"
-                onClick={close}
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </div>
+        <div className="pb-6">
+          <div className="flex justify-end pe-4">
+            <button
+              className="close reset cursor-pointer text-xl"
+              onClick={close}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          </div>
+
+          {(imageSource || heading) && (
             <header>
               <div className="flex justify-center border-b">
-                <img
-                  src={imageSource}
-                  style={{height: '90px'}}
-                  className="pt-3"
-                ></img>
+                {imageSource ? (
+                  <img
+                    src={imageSource}
+                    alt={
+                      type === 'cart'
+                        ? 'Cart'
+                        : type === 'search'
+                          ? 'Search'
+                          : ''
+                    }
+                    className="pt-3 h-[70px] lg:h-[90px]"
+                  />
+                ) : (
+                  <h2 className="py-4 text-lg">{heading}</h2>
+                )}
               </div>
             </header>
-            <main>{children}</main>
-          </div>
-        )}
-        {windowWidth != null && windowWidth <= 1023 && (
-          <div className="mt-[110px]">
-            <div className="flex justify-end pe-4">
-              <button
-                className="close reset cursor-pointer text-xl"
-                onClick={close}
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </div>
-            <header>
-              <div className="flex justify-center border-b">
-                <img
-                  src={imageSource}
-                  style={{height: '70px'}}
-                  className="pt-3"
-                ></img>
-              </div>
-            </header>
-            <main>{children}</main>
-          </div>
-        )}
+          )}
+
+          <main>{children}</main>
+        </div>
       </aside>
     </div>
   );
 }
 
 const AsideContext = createContext<AsideContextValue | null>(null);
+
+function AsideTopOffsetSync() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const root = document.documentElement;
+    let headerEl: HTMLElement | null = null;
+    let ro: ResizeObserver | null = null;
+    let rafId: number | null = null;
+    let attempts = 0;
+
+    const update = () => {
+      if (!headerEl) return;
+      const headerBottom = Math.max(
+        0,
+        Math.round(headerEl.getBoundingClientRect().bottom),
+      );
+      root.style.setProperty('--aside-top', `${headerBottom}px`);
+    };
+
+    const init = () => {
+      headerEl = document.querySelector('header.header') as HTMLElement | null;
+      if (!headerEl) {
+        attempts += 1;
+        if (attempts < 60) {
+          rafId = window.requestAnimationFrame(init);
+        }
+        return;
+      }
+
+      update();
+
+      if ('ResizeObserver' in window) {
+        ro = new ResizeObserver(update);
+        ro.observe(headerEl);
+      }
+
+      window.addEventListener('resize', update, {passive: true});
+      window.addEventListener('scroll', update, {passive: true});
+      window.visualViewport?.addEventListener('resize', update);
+      window.visualViewport?.addEventListener('scroll', update);
+    };
+
+    init();
+
+    return () => {
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+      ro?.disconnect();
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update);
+      window.visualViewport?.removeEventListener('resize', update);
+      window.visualViewport?.removeEventListener('scroll', update);
+    };
+  }, []);
+
+  return null;
+}
 
 Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const [type, setType] = useState<AsideType>('closed');
@@ -180,6 +214,7 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
         close: () => setType('closed'),
       }}
     >
+      <AsideTopOffsetSync />
       {children}
     </AsideContext.Provider>
   );
