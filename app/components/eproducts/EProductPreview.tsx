@@ -1,81 +1,98 @@
 import {useState, useRef, useEffect} from 'react';
 import '../../styles/components/EProductPreview.css';
 import {ProductItemFragment} from 'storefrontapi.generated';
-import {redirect} from '@remix-run/server-runtime';
-import {Link, useLocation} from '@remix-run/react';
+import {useLocation} from '@remix-run/react';
 
-type shopifyImage = {url: string; altText: string};
+type ShopifyImage = {url: string; altText: string};
 
 function EProductPreview({
   EProduct,
   extraClassName,
-  layout
+  layout: _layout,
 }: {
-  EProduct: ProductItemFragment & {images: {nodes: shopifyImage[]}};
+  EProduct: ProductItemFragment & {images: {nodes: ShopifyImage[]}};
   extraClassName?: string;
   layout: string;
 }) {
-  console.log(layout, 'layout');
-  
   const [isHovered, setIsHovered] = useState(false);
   const [isAutoplayActive, setIsAutoplayActive] = useState(false);
-  const [isSmallViewport, setIsSmallViewport] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const autoplayTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(
-    null,
-  );
-  const videoRevealTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(
-    null,
-  );
-  const videoRef = useRef<HTMLIFrameElement>(null);
+  const autoplayTimeoutRef = useRef<number | null>(null);
+  const videoRevealTimeoutRef = useRef<number | null>(null);
+  const videoLoadFallbackTimeoutRef = useRef<number | null>(null);
   const location = useLocation();
 
-  const {featuredImage, id} = EProduct;
+  const {featuredImage} = EProduct;
   const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
-  
+
+  const clearVideoRevealTimeout = () => {
+    if (videoRevealTimeoutRef.current === null) return;
+    window.clearTimeout(videoRevealTimeoutRef.current);
+    videoRevealTimeoutRef.current = null;
+  };
+
+  const clearVideoLoadFallbackTimeout = () => {
+    if (videoLoadFallbackTimeoutRef.current === null) return;
+    window.clearTimeout(videoLoadFallbackTimeoutRef.current);
+    videoLoadFallbackTimeoutRef.current = null;
+  };
+
+  const scheduleVideoReveal = (delayMs: number) => {
+    clearVideoRevealTimeout();
+    videoRevealTimeoutRef.current = window.setTimeout(() => {
+      videoRevealTimeoutRef.current = null;
+      setIsVideoReady(true);
+    }, delayMs);
+  };
 
   const handleVideoLoad = () => {
-    if (videoRevealTimeoutRef.current !== null) {
-      clearTimeout(videoRevealTimeoutRef.current);
-      videoRevealTimeoutRef.current = null;
-    }
-
-    const revealDelayMs = enableViewportAutoplay ? 150 : 0;
-    if (revealDelayMs === 0) {
+    if (!enableViewportAutoplay) {
       setIsVideoReady(true);
       return;
     }
 
-    videoRevealTimeoutRef.current = window.setTimeout(() => {
-      videoRevealTimeoutRef.current = null;
-      setIsVideoReady(true);
-    }, revealDelayMs);
+    // iOS Safari can occasionally fail to fire `onLoad` reliably for cross-origin
+    // iframes. Ensure any mount-time fallback is cleared once we do load.
+    clearVideoLoadFallbackTimeout();
+
+    // Reveal shortly after load to avoid the 1-frame "shrink/grow" glitch that
+    // can occur on real iOS devices when the iframe first paints video.
+    scheduleVideoReveal(250);
   };
 
-  useEffect(() => {
-    function handleResize() {
-      setIsSmallViewport(window.innerWidth < 500);
-    }
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const isStockFootagePage = location.pathname.startsWith('/collections/stock');
-  const enableViewportAutoplay =
-    isStockFootagePage && isSmallViewport && layout === 'list';
+  const enableViewportAutoplay = isStockFootagePage;
   const isVideoActive = enableViewportAutoplay ? isAutoplayActive : isHovered;
 
   useEffect(() => {
+    if (!enableViewportAutoplay || !isVideoActive) return;
+
+    // Fallback: if the iframe never fires `onLoad` on iOS, don't leave the
+    // overlay permanently hidden.
+    clearVideoLoadFallbackTimeout();
+    videoLoadFallbackTimeoutRef.current = window.setTimeout(() => {
+      videoLoadFallbackTimeoutRef.current = null;
+      setIsVideoReady(true);
+    }, 1500);
+
+    return () => clearVideoLoadFallbackTimeout();
+  }, [enableViewportAutoplay, isVideoActive]);
+
+  useEffect(() => {
     if (isVideoActive) return;
-    if (videoRevealTimeoutRef.current !== null) {
-      clearTimeout(videoRevealTimeoutRef.current);
-      videoRevealTimeoutRef.current = null;
-    }
+    clearVideoRevealTimeout();
+    clearVideoLoadFallbackTimeout();
     setIsVideoReady(false);
   }, [isVideoActive]);
+
+  useEffect(() => {
+    return () => {
+      clearVideoRevealTimeout();
+      clearVideoLoadFallbackTimeout();
+    };
+  }, []);
 
   useEffect(() => {
     if (enableViewportAutoplay) {
@@ -91,9 +108,11 @@ function EProductPreview({
     const element = containerRef.current;
     if (!element) return;
 
+    const MIN_INTERSECTION_RATIO = 0.5;
+
     const clearAutoplayTimeout = () => {
       if (autoplayTimeoutRef.current === null) return;
-      clearTimeout(autoplayTimeoutRef.current);
+      window.clearTimeout(autoplayTimeoutRef.current);
       autoplayTimeoutRef.current = null;
     };
 
@@ -103,17 +122,19 @@ function EProductPreview({
     };
 
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        if (autoplayTimeoutRef.current !== null) return;
-        autoplayTimeoutRef.current = window.setTimeout(() => {
-          autoplayTimeoutRef.current = null;
-          setIsAutoplayActive(true);
-        }, 1000);
-        return;
-      }
+      const isInView =
+        entry.isIntersecting && entry.intersectionRatio >= MIN_INTERSECTION_RATIO;
+      if (isInView) {
+	        if (autoplayTimeoutRef.current !== null) return;
+	        autoplayTimeoutRef.current = window.setTimeout(() => {
+	          autoplayTimeoutRef.current = null;
+	          setIsAutoplayActive(true);
+	        }, 1);
+	        return;
+	      }
 
       stopAndReset();
-    });
+    }, {threshold: [MIN_INTERSECTION_RATIO]});
 
     observer.observe(element);
 
@@ -123,19 +144,10 @@ function EProductPreview({
     };
   }, [enableViewportAutoplay]);
 
-  useEffect(() => {
-    return () => {
-      if (videoRevealTimeoutRef.current !== null) {
-        clearTimeout(videoRevealTimeoutRef.current);
-        videoRevealTimeoutRef.current = null;
-      }
-    };
-  }, []);
-
   return (
     <div
       ref={containerRef}
-      className={`EProductPreviewContainer ${extraClassName || ''}`}
+      className={`EProductPreviewContainer ${enableViewportAutoplay ? 'EProductPreviewContainer-autoplay' : ''} ${extraClassName || ''}`}
       onMouseEnter={
         enableViewportAutoplay ? undefined : () => setIsHovered(true)
       }
@@ -149,28 +161,20 @@ function EProductPreview({
           src={featuredImage.url}
           alt={featuredImage.altText || 'Product image'}
           className="EProductImage"
-          onPointerDown={() => redirect(`/stock/${id}`)}
         />
       )}
 
       {/* Video overlay */}
       {isVideoActive && parsedWMLink && (
-        <div
-          className="EProductVideoWrapper"
-          onClick={() => redirect(`/products/${EProduct.handle}`)}
-        >
-          <Link to={`/products/${EProduct.handle}`}>
-            <iframe
-              ref={videoRef}
-              src={`https://player.vimeo.com/video/${parsedWMLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
-              allow="autoplay; loop;"
-              className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
-              title="Product video"
-              onLoad={handleVideoLoad}
-              onPointerDown={() => redirect(`/products/${EProduct.handle}`)}
-            ></iframe>
-          </Link>
-        </div>
+        <div className="EProductVideoWrapper">
+	          <iframe
+	            src={`https://player.vimeo.com/video/${parsedWMLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0&playsinline=1`}
+	            allow="autoplay; fullscreen; picture-in-picture"
+	            className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
+	            title="Product video"
+	            onLoad={handleVideoLoad}
+	          ></iframe>
+	        </div>
       )}
     </div>
   );

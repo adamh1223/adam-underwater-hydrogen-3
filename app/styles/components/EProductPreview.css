@@ -42,15 +42,12 @@
 .EProductVideoWrapper {
   position: absolute;
   top: 0px;
-  left: -2.5px;
+  left: 0px;
   right: 0;
   bottom: 0;
   overflow: hidden;
   cursor: pointer;
   line-height: 0;
-  /* optional: border-radius and overflow hidden if you want rounded corners */
-  border-radius: 4px;
-  vertical-align: middle;
 }
 
 .EProductVideoWrapper a {
@@ -74,6 +71,7 @@
   pointer-events: none; /* important: clicks pass through to wrapper */
   /* padding: 0 0 0 0px; */
   vertical-align: middle;
+  will-change: opacity;
 }
 
 /* When loaded, show video smoothly */
@@ -88,4 +86,16 @@
   width: 100%;
   overflow: hidden;
   border-radius: 4px;
+}
+
+.EProductPreviewContainer-autoplay .EProductVideo {
+  transition: none;
+  /* iOS: avoid a 1-frame scale/glitch when toggling iframe opacity */
+  opacity: 1;
+  visibility: hidden;
+  will-change: visibility;
+}
+
+.EProductPreviewContainer-autoplay .EProductVideo.visible {
+  visibility: visible;
 }
