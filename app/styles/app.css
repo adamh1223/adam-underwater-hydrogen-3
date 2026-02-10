@@ -1172,7 +1172,7 @@ span {
   box-sizing: border-box;
 }
 .view-product-btn {
-  padding: 8px 16px 8px 16px;
+  padding: 8px;
   width: 100%;
 }
 
@@ -1224,7 +1224,7 @@ span {
 }
 @media (max-width: 600px) {
   .eproducts-add-to-cart-btn-text-list {
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 

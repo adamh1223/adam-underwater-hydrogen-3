@@ -392,8 +392,8 @@ export const ProductCarousel = ({
           <div
             className={`relative w-full h-full rounded ${
               layout === 'grid'
-                ? 'top-part-card-grid'
-                : 'top-part-card-list flex items-center'
+                ? 'print-top-part-card-grid'
+                : 'print-top-part-card-list flex items-center'
             }`}
           >
             {layout === 'grid' && (
@@ -540,7 +540,7 @@ export const ProductCarousel = ({
 
           {/* Bottom card section */}
           <div
-            className={`bottom-part-card ${layout === 'grid' ? '' : 'ms-9 flex justify-start bottom-part-card-list'}`}
+            className={`bottom-part-card ${layout === 'grid' ? '' : 'ms-9 flex justify-start print-bottom-part-card-list'}`}
           >
             <Link
               className="product-item"
@@ -548,7 +548,7 @@ export const ProductCarousel = ({
               prefetch="intent"
               to={variantUrl}
             >
-              <div className="bottom-part-card-inside">
+              <div className="print-bottom-part-card-inside">
                 <div
                   className={layout === 'grid' ? 'text-center' : 'text-start'}
                 >

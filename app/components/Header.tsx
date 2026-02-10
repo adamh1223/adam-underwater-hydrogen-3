@@ -420,7 +420,7 @@ export function HeaderMenu({
           </nav>
         </>
       )}
-      {windowWidth != undefined && windowWidth >= 757 && windowWidth < 930 && (
+      {windowWidth != undefined && windowWidth >= 757 && windowWidth < 950 && (
         <>
           <nav
             className={`${className} flex w-full flex-col gap-2`}
@@ -566,7 +566,7 @@ export function HeaderMenu({
         </>
       )}
       {windowWidth != undefined &&
-        windowWidth >= 930 &&
+        windowWidth >= 950 &&
         windowWidth <= 1024 && (
           <nav className={`${className}`} role="navigation">
             <div className="nav-logo-container 1 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary underline-offset-4 hover:underline h-9 ps-2 pt-[15px] pb-4">

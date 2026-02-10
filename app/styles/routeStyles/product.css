@@ -26,14 +26,14 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 699px) {
+@media (min-width: 601px) and (max-width: 699px) {
   .list-view-large-row {
     display: grid;
     grid-template-columns: 2.5fr 1fr;
   
   }
 }
-@media (max-width: 599px) {
+@media (max-width: 600px) {
   .list-view-large-row {
     display: grid;
     grid-template-columns: 3fr 1fr;
@@ -78,7 +78,13 @@
     margin-top: 10px;
     max-width: 530px;
   }
-  .bottom-part-card-grid {
+  .eproduct-bottom-part-card-grid {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .print-bottom-part-card-grid {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,7 +93,13 @@
   
 }
 @media (min-width: 601px) {
-  .bottom-part-card-list {
+  .eproduct-bottom-part-card-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 0 0;
+  }
+  .print-bottom-part-card-list {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,56 +107,64 @@
   }
 }
 @media (max-width: 600px) {
-  .bottom-part-card-list {
+  .eproduct-bottom-part-card-list {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    padding: 0 0 0 0;
+  }
+  .print-bottom-part-card-list {
     display: flex;
     align-items: end;
     justify-content: center;
     padding: 0 0 0 0;
   }
 }
-.bottom-part-card-grid {
+.eproduct-bottom-part-card-grid {
   width: 100%;
 }
-.top-part-card-grid {
+.print-bottom-part-card-grid {
+  width: 100%;
+}
+.product-top-part-card-grid {
   display: flex;
   align-items: center;
 }
-.bottom-part-card-inside {
+.eproduct-bottom-part-card-inside {
+    padding: 8px 8px;
+  }
+.print-bottom-part-card-inside {
     padding: 8px 8px;
   }
 
-/* .top-part-card-list {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
+
 @media (max-width: 600px) {
-.top-part-card-list {
+.print-top-part-card-list {
   padding: 8px 0 8px 8px
 }
 }
 @media (max-width: 880px) and (min-width: 601px) {
-  .top-part-card-list {
+  .print-top-part-card-list {
     display: grid;
     grid-template-columns: 1fr;
   }
 }
 @media (min-width: 881px) and (max-width: 957px) {
-  .top-part-card-list {
+  .print-top-part-card-list {
     margin-bottom: 20px;
     display: flex;
     align-items: center;
   }
 }
 @media (min-width: 958px) and (max-width: 1124px) {
-  .top-part-card-list {
+  .print-top-part-card-list {
     margin-bottom: 20px;
     display: flex;
     align-items: center;
   }
 }
 @media (min-width: 1124px) and (max-width: 1300px) {
-  .top-part-card-list {
+  .print-top-part-card-list {
     display: flex;
     align-items: center;
   }
@@ -175,7 +195,7 @@
     margin: 0 15px 0 0;
   }
 }
-@media (min-width: 500px) and (max-width: 599px) {
+@media (min-width: 500px) and (max-width: 600px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -201,7 +221,7 @@
     margin: 0 40px 0 0;
   }
 }
-@media (min-width: 600px) and (max-width: 700px) {
+@media (min-width: 601px) and (max-width: 700px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -486,7 +506,7 @@
     font-size: 15px;
   }
   .product-add-to-cart-container {
-    padding: 0 0 0 0;
+    padding: 5px 0 0 0;
   }
 }
 @media (min-width: 601px) and (max-width: 699px) {
@@ -503,7 +523,7 @@
     font-size: 15px;
   }
   .product-add-to-cart-container {
-    padding: 10px 0 0 0;
+    padding: 0 0 0 0;
   }
 }
 .product-add-to-cart-container-list {
@@ -539,9 +559,6 @@
   justify-content: center;
 }
 
-.product-add-to-cart-container {
-  padding: 10px 0 0 0;
-}
 
 @media (min-width: 1024px) and (max-width: 1200px) {
   .carousel-shortcuts-container-horizontal {
@@ -782,7 +799,7 @@
     margin: 0 170px 20px 180px;
   }
 }
-@media (min-width: 600px) and (max-width: 719px) {
+@media (min-width: 601px) and (max-width: 719px) {
   .print-carousel-individual-horizontal {
     margin: 0 40px 20px 50px;
   }
@@ -790,7 +807,7 @@
     margin: 0 130px 20px 140px;
   }
 }
-@media (max-width: 599px) {
+@media (max-width: 600px) {
   .print-carousel-individual-horizontal {
     margin: 0 10px 20px 10px;
   }

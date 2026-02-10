@@ -419,7 +419,7 @@ function EProductsContainer({
               </div>
             )}
             <div
-              className={`relative evideo top-part-card-list`}
+              className={`relative evideo`}
             >
               {/* {thumbnail && (
                       <img
@@ -456,11 +456,11 @@ function EProductsContainer({
             {layout != 'grid' && windowWidth != undefined && windowWidth <= 600 && 
             <div
               className={
-                `bottom-part-card-list`
+                `eproduct-bottom-part-card-list`
               }
             >
               <div
-                className={`bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
@@ -581,11 +581,11 @@ function EProductsContainer({
             {layout === 'grid' && windowWidth != undefined && windowWidth <= 600 && 
             <div
               className={
-                `bottom-part-card-grid`
+                `eproduct-bottom-part-card-grid`
               }
             >
               <div
-                className={`bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
@@ -701,12 +701,12 @@ function EProductsContainer({
             <div
               className={
                 layout === 'grid'
-                  ? `bottom-part-card-grid`
-                  : `bottom-part-card-list`
+                  ? `eproduct-bottom-part-card-grid`
+                  : `eproduct-bottom-part-card-list`
               }
             >
               <div
-                className={`bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
@@ -911,12 +911,12 @@ function EProductsContainer({
             <div
               className={
                 layout === 'grid'
-                  ? `bottom-part-card-grid`
-                  : `bottom-part-card-list`
+                  ? `eproduct-bottom-part-card-grid`
+                  : `eproduct-bottom-part-card-list`
               }
             >
               <div
-                className={`bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
@@ -1065,7 +1065,7 @@ function EProductsContainer({
               </div> */}
 	            <div
 	              className={
-	                `bottom-part-card-list relative`
+	                `eproduct-bottom-part-card-list relative`
 	              }
 	            >
 		              <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
@@ -1093,7 +1093,7 @@ function EProductsContainer({
 		                </button>
 		              </div>
 		              <div
-		                className={`bottom-part-card-inside`}
+		                className={`eproduct-bottom-part-card-inside`}
 		              >
 		                
 		                {product?.priceRange?.minVariantPrice && (
