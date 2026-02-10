@@ -456,7 +456,7 @@ export const ProductCarousel = ({
             )}
             <Carousel
               setApi={setCarouselApi}
-              className={`w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'}`}
+              className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'}`}
             >
               <Link
                 className="product-item"
@@ -479,7 +479,7 @@ export const ProductCarousel = ({
                       >
                         <img
                           src={img?.url}
-                          className={`rounded ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
+                          className={`rounded max-w-full ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>
                     </CarouselItem>

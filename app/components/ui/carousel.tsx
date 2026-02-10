@@ -137,6 +137,7 @@ function CarouselContent({className, ...props}: React.ComponentProps<'div'>) {
     <div
       ref={carouselRef}
       className="overflow-hidden"
+      data-orientation={orientation}
       data-slot="carousel-content"
     >
       <div

@@ -1882,3 +1882,34 @@ span {
   padding: 8px 6px;
 }
 }
+
+/* Carousel viewport: clip only the scroll axis so hover-zoomed slides aren't cut off vertically. */
+@supports (clip-path: inset(1px)) {
+  [data-slot='carousel-content'][data-orientation='horizontal'] {
+    overflow: visible;
+    clip-path: inset(-9999px 0 -9999px 0);
+    -webkit-clip-path: inset(-9999px 0 -9999px 0);
+  }
+
+  [data-slot='carousel-content'][data-orientation='vertical'] {
+    overflow: visible;
+    clip-path: inset(0 -9999px 0 -9999px);
+    -webkit-clip-path: inset(0 -9999px 0 -9999px);
+  }
+}
+
+
+/* Hover-zoom carousels: add enough in-slide padding so scaled content never hits the viewport clip edges. */
+@media (hover: hover) and (pointer: fine) {
+  .carousel-hover-safe
+    [data-slot='carousel-content'][data-orientation='horizontal']
+    [data-slot='carousel-item'] {
+    padding-inline: max(10px, 2.5%);
+  }
+
+  .carousel-hover-safe
+    [data-slot='carousel-content'][data-orientation='vertical']
+    [data-slot='carousel-item'] {
+    padding-block: max(10px, 2.5%);
+  }
+}
