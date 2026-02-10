@@ -103,7 +103,7 @@ export const ProductCarousel = ({
 
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-5 pb-3'
+      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-1 pb-1'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-[12px]';
 
   const cardContentClassName =
@@ -473,7 +473,7 @@ export const ProductCarousel = ({
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid'
-                            ? 'pt-5 pb-[12px] ps-4 pe-4'
+                            ? 'pt-5'
                             : 'ms-3'
                         }`}
                       >
