@@ -6,6 +6,7 @@ import {
   Link,
   NavLink,
   useAsyncValue,
+  useNavigate,
   useLoaderData,
   useRouteLoaderData,
 } from '@remix-run/react';
@@ -1062,11 +1063,13 @@ function SearchToggle() {
 }
 
 function CartBadge({count}: {count: number | null}) {
-  const {open} = useAside();
+  const {open, close, type: activeType} = useAside();
+  const navigate = useNavigate();
   const {publish, shop, cart, prevCart} = useAnalytics();
   return (
     <div>
       <button
+        data-aside-toggle="cart"
         // href="/cart"
         className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-2 py-2"
         onPointerEnter={(e) => {
@@ -1076,24 +1079,30 @@ function CartBadge({count}: {count: number | null}) {
         }}
         onClick={(e) => {
           e.preventDefault();
-          open('cart');
-
           publish('cart_viewed', {
             cart,
             prevCart,
             shop,
             url: window.location.href || '',
           } as CartViewPayload);
+
+          // Mobile + desktop: first click opens cart aside. If already open,
+          // a second click navigates to the full cart page.
+          if (activeType === 'cart') {
+            close();
+            navigate('/cart');
+            return;
+          }
+
+          open('cart');
         }}
       >
-        <NavLink to="/cart">
-          <div>
-            <LuShoppingCart className="relative -right-[1.75px] top-[10px]" />
-            <span className="relative -top-[28px] -right-[18px] bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
-              {count}
-            </span>
-          </div>
-        </NavLink>
+        <div>
+          <LuShoppingCart className="relative -right-[1.75px] top-[10px]" />
+          <span className="relative -top-[28px] -right-[18px] bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
+            {count}
+          </span>
+        </div>
       </button>
     </div>
   );

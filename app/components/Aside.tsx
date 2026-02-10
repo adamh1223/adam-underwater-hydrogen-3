@@ -49,7 +49,7 @@ export function Aside({
 
   useEffect(() => {
     const abortController = new AbortController();
-    if (location.pathname === '/cart') {
+    if (location.pathname === '/cart' && activeType === 'cart') {
       close();
     }
     if (expanded) {
@@ -66,6 +66,9 @@ export function Aside({
           const element =
             target instanceof Element ? target : target.parentElement;
           if (element?.closest('[data-stockform]')) {
+            return;
+          }
+          if (element?.closest('[data-aside-toggle]')) {
             return;
           }
           if (asideRef.current?.contains(target)) {
@@ -86,7 +89,7 @@ export function Aside({
       );
     }
     return () => abortController.abort();
-  }, [close, expanded, location]);
+  }, [activeType, close, expanded, location]);
 
   return (
     <div
@@ -204,13 +207,17 @@ function AsideTopOffsetSync() {
 }
 
 Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
+  const location = useLocation();
   const [type, setType] = useState<AsideType>('closed');
 
   return (
     <AsideContext.Provider
       value={{
         type,
-        open: setType,
+        open: (mode) => {
+          if (location.pathname === '/cart' && mode === 'cart') return;
+          setType(mode);
+        },
         close: () => setType('closed'),
       }}
     >
