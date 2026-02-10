@@ -1873,3 +1873,12 @@ span {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 600px) {
+.print-carousel-grid {
+
+}
+.print-carousel-list {
+  padding: 8px 6px;
+}
+}

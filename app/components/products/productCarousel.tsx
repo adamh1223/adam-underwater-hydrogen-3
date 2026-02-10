@@ -456,7 +456,7 @@ export const ProductCarousel = ({
             )}
             <Carousel
               setApi={setCarouselApi}
-              className="w-full max-w-7xl transform-none pb-4"
+              className={`w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'}`}
             >
               <Link
                 className="product-item"
