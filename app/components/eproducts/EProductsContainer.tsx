@@ -875,7 +875,7 @@ function EProductsContainer({
               </div>
             
             <div
-              className={`relative evideo ${layout === 'grid' ? 'top-part-card-grid' : 'top-part-card-list'}`}
+              className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
             >
               {/* {thumbnail && (
                       <img
@@ -1032,7 +1032,7 @@ function EProductsContainer({
           {layout === 'list' && windowWidth != undefined && windowWidth <= 600 && <div className={cardContentClassName}>
             
             <div
-              className={`relative evideo top-part-card-list`}
+              className={`relative evideo eproduct-top-part-card-list`}
 	            >
 	              {/* {thumbnail && (
 	                      <img

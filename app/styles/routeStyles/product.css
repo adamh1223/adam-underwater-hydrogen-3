@@ -126,10 +126,15 @@
 .print-bottom-part-card-grid {
   width: 100%;
 }
-.product-top-part-card-grid {
+.eproduct-top-part-card-grid {
   display: flex;
   align-items: center;
 }
+.print-top-part-card-grid {
+  display: flex;
+  align-items: center;
+}
+
 .eproduct-bottom-part-card-inside {
     padding: 8px 8px;
   }
@@ -142,15 +147,27 @@
 .print-top-part-card-list {
   padding: 8px 0 8px 8px
 }
+.eproduct-top-part-card-list {
+  padding: 8px 0 8px 8px
+}
 }
 @media (max-width: 880px) and (min-width: 601px) {
   .print-top-part-card-list {
     display: grid;
     grid-template-columns: 1fr;
   }
+  .eproduct-top-part-card-list {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
 }
 @media (min-width: 881px) and (max-width: 957px) {
   .print-top-part-card-list {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  .eproduct-top-part-card-list {
     margin-bottom: 20px;
     display: flex;
     align-items: center;
@@ -162,9 +179,18 @@
     display: flex;
     align-items: center;
   }
+  .eproduct-top-part-card-list {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
 }
 @media (min-width: 1124px) and (max-width: 1300px) {
   .print-top-part-card-list {
+    display: flex;
+    align-items: center;
+  }
+  .eproduct-top-part-card-list {
     display: flex;
     align-items: center;
   }

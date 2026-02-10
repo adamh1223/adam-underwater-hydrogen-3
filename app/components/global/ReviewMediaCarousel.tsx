@@ -66,7 +66,7 @@ export const ReviewMediaCarousel = ({
     <article className="group relative">
       <div className={cardClassName}>
         <div className={cardContentClassName}>
-          <div className={`relative w-full rounded ${'top-part-card-grid'}`}>
+          <div className={`relative w-full rounded ${'print-top-part-card-grid'}`}>
             <Carousel
               setApi={setCarouselApi}
               className="w-full max-w-7xl transform-none mb-3 z-50"
