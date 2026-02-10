@@ -1063,7 +1063,7 @@ function SearchToggle() {
 }
 
 function CartBadge({count}: {count: number | null}) {
-  const {open, close, type: activeType} = useAside();
+  const {open, type: activeType} = useAside();
   const navigate = useNavigate();
   const {publish, shop, cart, prevCart} = useAnalytics();
   return (
@@ -1089,7 +1089,6 @@ function CartBadge({count}: {count: number | null}) {
           // Mobile + desktop: first click opens cart aside. If already open,
           // a second click navigates to the full cart page.
           if (activeType === 'cart') {
-            close();
             navigate('/cart');
             return;
           }
