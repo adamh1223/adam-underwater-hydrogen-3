@@ -2,6 +2,7 @@ import {useRef, useState} from 'react';
 import {Label} from '~/components/ui/label';
 import {Input} from '~/components/ui/input';
 import {Button} from '~/components/ui/button';
+import {validateContactSubmission} from '~/lib/contactAntiSpam';
 import './styles/Contact.css';
 
 export default function ContactForm() {
@@ -9,11 +10,13 @@ export default function ContactForm() {
     name: '',
     email: '',
     message: '',
+    website: '',
   });
 
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imageError, setImageError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const formStartMsRef = useRef<number>(Date.now());
   const [status, setStatus] = useState('');
 
   const handleChange = (
@@ -47,13 +50,30 @@ export default function ContactForm() {
       setStatus(imageError);
       return;
     }
+
+    const validation = validateContactSubmission({
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
+      website: formData.website,
+      formStartMs: String(formStartMsRef.current),
+      userAgentIsBot: false,
+    });
+
+    if (!validation.ok) {
+      setStatus(validation.error);
+      return;
+    }
+
     setStatus('Sending...');
 
     try {
       const formPayload = new FormData();
-      formPayload.append('name', formData.name);
-      formPayload.append('email', formData.email);
-      formPayload.append('message', formData.message);
+      formPayload.append('name', validation.value.name);
+      formPayload.append('email', validation.value.email);
+      formPayload.append('message', validation.value.message);
+      formPayload.append('website', formData.website);
+      formPayload.append('formStartMs', String(formStartMsRef.current));
 
       selectedImages.forEach((image) => {
         formPayload.append('contactImages', image);
@@ -64,7 +84,7 @@ export default function ContactForm() {
         body: formPayload,
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as {error?: string};
 
       if (response.ok) {
         setStatus('Message sent successfully!');
@@ -72,9 +92,11 @@ export default function ContactForm() {
           name: '',
           email: '',
           message: '',
+          website: '',
         });
         setSelectedImages([]);
         setImageError('');
+        formStartMsRef.current = Date.now();
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -93,6 +115,28 @@ export default function ContactForm() {
         onSubmit={handleSubmit}
         className="border-2 border-gray-600 dark:border-gray-700 p-8 rounded-md shadow-md space-y-8"
       >
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: '-10000px',
+            top: 'auto',
+            width: 1,
+            height: 1,
+            overflow: 'hidden',
+          }}
+        >
+          <label htmlFor="website">Website</label>
+          <input
+            id="website"
+            name="website"
+            type="text"
+            value={formData.website}
+            onChange={handleChange}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </div>
         <div className="space-y-2">
           <h2 className="text-3xl font-bold">Contact Me</h2>
           <p>
@@ -121,6 +165,7 @@ export default function ContactForm() {
             <Input
               id="email"
               name="email"
+              type="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email address"
