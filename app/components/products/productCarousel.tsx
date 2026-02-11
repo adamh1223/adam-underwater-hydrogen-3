@@ -573,7 +573,7 @@ export const ProductCarousel = ({
                 {layout !== 'grid' &&
                   (prod as any).descriptionHtml &&
                   windowWidth != undefined &&
-                  windowWidth > 787 && (
+                  windowWidth > 800 && (
                     <>
                       <div>
                         <Card className="description-html-card ">

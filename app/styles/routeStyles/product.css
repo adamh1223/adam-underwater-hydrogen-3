@@ -45,12 +45,12 @@
     max-height: 250px;
   }
 }
-@media (max-width: 786px) {
+@media (max-width: 800px) {
   .description-html-card {
     margin-top: 5px;
   }
 }
-@media (min-width: 787px) {
+@media (min-width: 801px) {
   .description-html-card {
     margin-top: 5px;
     max-width: 530px;
@@ -67,17 +67,15 @@
     font-size: 13px;
   }
 }
-@media (min-width: 787px) {
+@media (min-width: 801px) {
   .description-html-card-list {
-    margin-top: 10px;
+    margin-top: 4px;
+    margin-bottom: 4px;
     max-width: 530px;
   }
 }
-@media (max-width: 786px) {
-  .description-html-card-list {
-    margin-top: 10px;
-    max-width: 530px;
-  }
+@media (max-width: 800px) {
+
   .eproduct-bottom-part-card-grid {
     display: flex;
     align-items: center;
@@ -92,7 +90,21 @@
   }
   
 }
-@media (min-width: 601px) {
+@media (min-width: 700px) and (max-width: 800px) {
+  .eproduct-bottom-part-card-list {
+    display: flex;
+    align-items: end;
+    justify-content: start;
+    padding: 0 0 0 0;
+  }
+  .print-bottom-part-card-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 0 0;
+  }
+}
+@media (min-width: 601px) and (max-width: 699px) {
   .eproduct-bottom-part-card-list {
     display: flex;
     align-items: end;
@@ -136,7 +148,7 @@
 }
 
 .eproduct-bottom-part-card-inside {
-    padding: 8px 8px;
+    padding: 6px 6px;
   }
 .print-bottom-part-card-inside {
     padding: 0 8px;

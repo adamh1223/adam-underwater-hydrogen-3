@@ -518,7 +518,7 @@ function EProductsContainer({
                 {layout !== 'grid' &&
                   (product as any).descriptionHtml &&
                   windowWidth != undefined &&
-                  windowWidth > 786 && (
+                  windowWidth > 800 && (
                     <>
                       <div>
                         <Link
@@ -638,7 +638,7 @@ function EProductsContainer({
                 {layout !== 'grid' &&
                   (product as any).descriptionHtml &&
                   windowWidth != undefined &&
-                  windowWidth > 786 && (
+                  windowWidth > 800 && (
                     <>
                       <div>
                         <Link
@@ -759,7 +759,7 @@ function EProductsContainer({
                 {layout !== 'grid' &&
                   (product as any).descriptionHtml &&
                   windowWidth != undefined &&
-                  windowWidth > 786 && (
+                  windowWidth > 800 && (
                     <>
                       <div>
                         <Link
@@ -1046,7 +1046,7 @@ function EProductsContainer({
                 {layout !== 'grid' &&
                   (product as any).descriptionHtml &&
                   windowWidth != undefined &&
-                  windowWidth > 786 && (
+                  windowWidth > 800 && (
                     <>
                       <div>
                         <Link
@@ -1204,7 +1204,7 @@ function EProductsContainer({
                 {
                   (product as any).descriptionHtml &&
                   windowWidth != undefined &&
-                  windowWidth > 786 && (
+                  windowWidth > 800 && (
                     <>
                       <div>
                         <Link
