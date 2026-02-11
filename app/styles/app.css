@@ -1837,7 +1837,48 @@ span {
   }
   
 }
-@media (min-width: 601px) {
+@media (min-width: 601px) and (max-width: 700px) {
+  .artist-pick-grid {
+    width: 140px;
+    height: 30px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 700;
+  }
+  .artist-pick-list {
+    width: 110px;
+    height: 35px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 600;
+  }
+  .badge-img-grid {
+    height: 24px;
+    margin-left: 4px
+  }
+  .badge-img-list {
+    height: 18px;
+    margin-left: 4px
+  }
+  .clip-icon-grid {
+
+  }
+  .clip-icon-list {
+    width: 60px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  .duration-icon-list {
+    width: 40px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
   
 
 }

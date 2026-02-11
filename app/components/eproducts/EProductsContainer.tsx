@@ -873,6 +873,22 @@ function EProductsContainer({
                   </Tooltip>
                 </TooltipProvider>
               </div>
+              {isArtistPick && (
+              <div className='absolute left-[18px] bottom-[18px] flex flex-col'>
+
+              <button
+                disabled
+                className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+              >
+                Artist's Pick
+                <div className='flex justify-center items-end'>
+
+                <img src={'/badge1.png'} className='badge-img'/>
+                </div>
+                    
+              </button>
+              </div>
+            )}
             
             <div
               className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
@@ -915,6 +931,21 @@ function EProductsContainer({
                   : `eproduct-bottom-part-card-list`
               }
             >
+              
+            <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
+            {hasDurationTag && (
+              <button
+                disabled
+                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+              >
+                
+
+                {durationTag}
+                
+              </button>
+            )}
+            
+          </div>
               <div
                 className={`eproduct-bottom-part-card-inside`}
               >
@@ -941,7 +972,7 @@ function EProductsContainer({
                 </div>
                 {product?.priceRange?.minVariantPrice && (
                   <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
                   >
                     <Link
                       className="product-item"
