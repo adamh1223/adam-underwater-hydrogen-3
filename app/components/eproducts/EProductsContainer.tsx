@@ -873,8 +873,9 @@ function EProductsContainer({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              {isArtistPick && (
-              <div className='absolute left-[18px] bottom-[18px] flex flex-col'>
+              {isArtistPick && hasDurationTag && (
+                <>
+              <div className='absolute left-[18px] top-[6px] flex flex-col'>
 
               <button
                 disabled
@@ -888,7 +889,43 @@ function EProductsContainer({
                     
               </button>
               </div>
-            )}
+            
+            <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
+            
+              <button
+                disabled
+                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+              >
+                
+
+                {durationTag}
+                
+              </button>
+            
+            
+          </div>
+          </>
+          )}
+          {!isArtistPick && hasDurationTag && (
+                <>
+              
+            
+            <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
+            
+              <button
+                disabled
+                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+              >
+                
+
+                {durationTag}
+                
+              </button>
+            
+            
+          </div>
+          </>
+          )}
             
             <div
               className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
@@ -932,20 +969,7 @@ function EProductsContainer({
               }
             >
               
-            <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
-            {hasDurationTag && (
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
-
-                {durationTag}
-                
-              </button>
-            )}
             
-          </div>
               <div
                 className={`eproduct-bottom-part-card-inside`}
               >
