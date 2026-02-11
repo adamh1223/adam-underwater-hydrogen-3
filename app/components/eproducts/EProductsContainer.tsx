@@ -456,9 +456,10 @@ function EProductsContainer({
             {layout != 'grid' && windowWidth != undefined && windowWidth <= 600 && 
             <div
               className={
-                `eproduct-bottom-part-card-list`
+                `eproduct-bottom-part-card-grid`
               }
             >
+              
               <div
                 className={`eproduct-bottom-part-card-inside`}
               >
@@ -963,13 +964,35 @@ function EProductsContainer({
               </div> */}
             <div
               className={
-                layout === 'grid'
-                  ? `eproduct-bottom-part-card-grid`
-                  : `eproduct-bottom-part-card-list`
+                 `eproduct-bottom-part-card-list relative`
               }
             >
               
-            
+            <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
+              <button
+		                  disabled
+		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+		                >
+		                  4K
+		                </button>
+		                {isSlowmo && (
+		                  <button
+		                    disabled
+		                    className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+		                  >
+		                    Slow-mo
+		                  </button>
+		                )}
+		                {!isSlowmo && (
+		                  <button
+		                    disabled
+		                    className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+		                  >
+		                    24fps
+		                  </button>
+		                )}
+		                
+		              </div>
               <div
                 className={`eproduct-bottom-part-card-inside`}
               >
@@ -1124,6 +1147,12 @@ function EProductsContainer({
 	              }
 	            >
 		              <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
+                    <button
+		                  disabled
+		                  className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+		                >
+		                  4K
+		                </button>
 		                {isSlowmo && (
 		                  <button
 		                    disabled
@@ -1140,12 +1169,7 @@ function EProductsContainer({
 		                    24fps
 		                  </button>
 		                )}
-		                <button
-		                  disabled
-		                  className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-		                >
-		                  4K
-		                </button>
+		                
 		              </div>
 		              <div
 		                className={`eproduct-bottom-part-card-inside`}
