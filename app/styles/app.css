@@ -1844,7 +1844,7 @@ span {
   }
   
 }
-@media (min-width: 601px) and (max-width: 699px) {
+@media (min-width: 601px) and (max-width: 700px) {
   .artist-pick-grid {
     width: 140px;
     height: 30px;
@@ -1896,7 +1896,7 @@ span {
   
 
 }
-@media (min-width: 700px) and (max-width: 799px) {
+@media (min-width: 701px) and (max-width: 800px) {
   .artist-pick-grid {
     width: 140px;
     height: 30px;
@@ -1950,7 +1950,7 @@ span {
   
 
 }
-@media (min-width: 800px) and (max-width: 899px) {
+@media (min-width: 801px) and (max-width: 900px) {
   .artist-pick-grid {
     width: 140px;
     height: 30px;
@@ -1988,6 +1988,69 @@ span {
   .four-k {
     width: 30px;
   height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  .duration-icon-list {
+    width: 40px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+
+  .description-cart-buttons {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+  }
+
+}
+@media (min-width: 901px) and (max-width: 1000px) {
+  .artist-pick-grid {
+    width: 140px;
+    height: 30px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 700;
+  }
+  .artist-pick-list {
+    width: 120px;
+    height: 35px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 600;
+  }
+  .badge-img-grid {
+    height: 24px;
+    margin-left: 4px
+  }
+  .badge-img-list {
+    height: 18px;
+    margin-left: 4px
+  }
+  .clip-icon-grid {
+
+  }
+  .clip-icon-list {
+    width: 60px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  .four-k {
+    width: 40px;
+  height: 35px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  .slow-mo {
+    width: 70px;
+  height: 35px;
   padding-top: 4px;
   padding-bottom: 4px;
   z-index: 100;

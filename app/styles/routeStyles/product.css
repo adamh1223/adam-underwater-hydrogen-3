@@ -70,7 +70,6 @@
 @media (min-width: 801px) {
   .description-html-card-list {
     margin-top: 4px;
-    margin-bottom: 4px;
     max-width: 530px;
   }
 }
@@ -147,11 +146,20 @@
   align-items: center;
 }
 
+
+.print-bottom-part-card-inside {
+    padding: 0 8px;
+  }
+
+  @media (max-width: 800px) {
 .eproduct-bottom-part-card-inside {
     padding: 0 4px 6px 4px;
   }
-.print-bottom-part-card-inside {
-    padding: 0 8px;
+  }
+  @media (min-width: 801px) {
+.eproduct-bottom-part-card-inside {
+    padding: 0 6px 6px 6px;
+  }
   }
 
 
@@ -163,7 +171,7 @@
   padding: 8px 0 8px 8px
 }
 }
-@media (max-width: 880px) and (min-width: 601px) {
+@media (max-width: 1000px) and (min-width: 601px) {
   .print-top-part-card-list {
     display: grid;
     grid-template-columns: 1fr;
@@ -181,7 +189,6 @@
     align-items: center;
   }
   .eproduct-top-part-card-list {
-    margin-bottom: 20px;
     display: flex;
     align-items: center;
   }
