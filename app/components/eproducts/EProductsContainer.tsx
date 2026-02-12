@@ -821,7 +821,6 @@ function EProductsContainer({
             </div>}
           </div>}
           {layout === 'list' && windowWidth != undefined && windowWidth > 600 && <div className={cardContentClassName}>
-            
               <div className="cursor-pointer absolute fav-btn-container-list z-50">
                 <TooltipProvider>
                   <Tooltip>

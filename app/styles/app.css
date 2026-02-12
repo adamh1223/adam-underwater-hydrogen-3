@@ -1172,7 +1172,7 @@ span {
   box-sizing: border-box;
 }
 .view-product-btn {
-  padding: 6px 14px 6px 14px;
+  padding: 6px;
   width: 100%;
 }
 
@@ -1897,6 +1897,59 @@ span {
 
 }
 @media (min-width: 700px) and (max-width: 799px) {
+  .artist-pick-grid {
+    width: 140px;
+    height: 30px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 700;
+  }
+  .artist-pick-list {
+    width: 110px;
+    height: 35px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    z-index: 100 !important;
+    font-weight: 600;
+  }
+  .badge-img-grid {
+    height: 24px;
+    margin-left: 4px;
+  }
+  .badge-img-list {
+    height: 18px;
+    margin-left: 4px;
+  }
+  
+  .clip-icon-grid {
+
+  }
+  .clip-icon-list {
+    width: 60px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  .four-k {
+    width: 60px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  .duration-icon-list {
+    width: 40px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  z-index: 100;
+  }
+  
+
+}
+@media (min-width: 800px) and (max-width: 899px) {
   .artist-pick-grid {
     width: 140px;
     height: 30px;
