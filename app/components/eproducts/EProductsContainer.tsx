@@ -1178,9 +1178,10 @@ function EProductsContainer({
                 className={`eproduct-bottom-part-card-inside flex items-end`}
               >
                 <div className='w-full'>
+                  <div className='flex justify-center'>
 
                 <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-center'}`}
+                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                 >
                   <Link
                     className="product-item"
@@ -1189,7 +1190,7 @@ function EProductsContainer({
                     to={variantUrl}
                   >
                     <div
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-center'}`}
+                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
                     >
                       {product.title}
                     </div>
@@ -1200,6 +1201,7 @@ function EProductsContainer({
                     </p>
                   </Link>
                 </div>
+                  </div>
                 {product?.priceRange?.minVariantPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
