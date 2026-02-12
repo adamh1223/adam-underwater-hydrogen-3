@@ -1829,7 +1829,7 @@ span {
   z-index: 100;
   }
   .four-k {
-    width: 60px;
+    width: 30px;
   height: 25px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1921,10 +1921,11 @@ span {
     height: 18px;
     margin-left: 4px;
   }
-  
+
   .clip-icon-grid {
 
   }
+
   .clip-icon-list {
     width: 60px;
   height: 25px;
@@ -1933,7 +1934,7 @@ span {
   z-index: 100;
   }
   .four-k {
-    width: 60px;
+    width: 30px;
   height: 25px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1985,7 +1986,7 @@ span {
   z-index: 100;
   }
   .four-k {
-    width: 60px;
+    width: 30px;
   height: 25px;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1998,7 +1999,11 @@ span {
   padding-bottom: 4px;
   z-index: 100;
   }
-  
+
+  .description-cart-buttons {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+  }
 
 }
 

@@ -148,7 +148,7 @@
 }
 
 .eproduct-bottom-part-card-inside {
-    padding: 6px 6px;
+    padding: 0 4px 6px 4px;
   }
 .print-bottom-part-card-inside {
     padding: 0 8px;
@@ -593,9 +593,12 @@
     font-size: 17px;
   }
 }
-.product-title-font-list {
-  display: flex;
-  justify-content: center;
+@media (max-width: 600px) {
+
+  .product-title-font-list {
+    display: flex;
+    justify-content: center;
+  }
 }
 
 
