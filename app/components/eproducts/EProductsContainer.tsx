@@ -1443,7 +1443,7 @@ function EProductsContainer({
               </div> */}
             <div
               className={
-                 `eproduct-bottom-part-card-list relative flex items-center pt-[20px]`
+                 `eproduct-bottom-part-card-list relative flex items-center pt-[10px]`
               }
             >
               
@@ -1475,10 +1475,14 @@ function EProductsContainer({
               <div
                 className={`eproduct-bottom-part-card-inside w-full`}
               >
-                <div
+                <div>
+
+                <div className='flex justify-center w-full'>
+                  <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                 >
-                  <Link
+
+                <Link
                     className="product-item"
                     key={product.id}
                     prefetch="intent"
@@ -1495,6 +1499,13 @@ function EProductsContainer({
                       {formattedLocation}
                     </p>
                   </Link>
+                </div>
+                </div>
+
+                <div
+                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                >
+                  
                   {(product as any).descriptionHtml && <Link
                           className="product-item"
                           key={product.id}
@@ -1511,6 +1522,8 @@ function EProductsContainer({
                           </Card>
                         </Link>}
                 </div>
+                </div>
+                
                 
                 {
                   (product as any).descriptionHtml &&
