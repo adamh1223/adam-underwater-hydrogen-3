@@ -1175,10 +1175,12 @@ function EProductsContainer({
 		                
 		              </div>
               <div
-                className={`eproduct-bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside flex items-end`}
               >
+                <div className='w-full'>
+
                 <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-center'}`}
                 >
                   <Link
                     className="product-item"
@@ -1187,7 +1189,7 @@ function EProductsContainer({
                     to={variantUrl}
                   >
                     <div
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
+                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-center'}`}
                     >
                       {product.title}
                     </div>
@@ -1284,6 +1286,7 @@ function EProductsContainer({
                     </Link>
                   </div>
                 )}
+                </div>
                 
               </div>
             </div>
@@ -1995,7 +1998,7 @@ function EProductsContainer({
               </div> */}
             <div
               className={
-                 `eproduct-bottom-part-card-list relative flex items-center pt-[24px]`
+                 `eproduct-bottom-part-card-list relative flex items-end pb-[6px]`
               }
             >
               
