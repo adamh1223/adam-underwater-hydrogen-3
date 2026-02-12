@@ -14,7 +14,7 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['pharmacies-voip-indicated-label.tryhydrogen.dev'],
+    allowedHosts: ['finish-introduced-nec-documents.tryhydrogen.dev'],
   },
   plugins: [
     tailwindcss(),

@@ -158,7 +158,9 @@
   }
   @media (min-width: 801px) {
 .eproduct-bottom-part-card-inside {
-    padding: 0 6px 6px 6px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+    padding: 0 0 6px 6px;
   }
   }
 

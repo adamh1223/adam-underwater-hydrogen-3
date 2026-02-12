@@ -1167,12 +1167,12 @@ span {
 }
 
 .add-to-cart-btn {
-  padding: 6px 14px 6px 14px;
+  padding: 6px 4px;
   width: 100%;
   box-sizing: border-box;
 }
 .view-product-btn {
-  padding: 6px;
+  padding: 6px 2px;
   width: 100%;
 }
 
@@ -2068,11 +2068,6 @@ span {
   padding-top: 4px;
   padding-bottom: 4px;
   z-index: 100;
-  }
-
-  .description-cart-buttons {
-    display: grid;
-    grid-template-columns: 3fr 2fr;
   }
 
 }
