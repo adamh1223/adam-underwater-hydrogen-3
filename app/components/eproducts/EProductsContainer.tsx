@@ -1755,7 +1755,7 @@ function EProductsContainer({
 		                
 		              </div>
               <div
-                className={`eproduct-bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside w-full`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
