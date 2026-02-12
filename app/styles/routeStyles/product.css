@@ -53,7 +53,6 @@
 @media (min-width: 801px) {
   .description-html-card {
     margin-top: 5px;
-    max-width: 530px;
   }
 }
 
@@ -70,7 +69,6 @@
 @media (min-width: 801px) {
   .description-html-card-list {
     margin-top: 4px;
-    max-width: 530px;
   }
 }
 @media (max-width: 800px) {
@@ -173,7 +171,7 @@
   padding: 8px 0 8px 8px
 }
 }
-@media (max-width: 1000px) and (min-width: 601px) {
+@media (min-width: 601px) {
   .print-top-part-card-list {
     display: grid;
     grid-template-columns: 1fr;
@@ -578,10 +576,10 @@
 }
 @media (min-width: 700px) and (max-width: 1249px) {
   .product-title-font-list {
-    font-size: 18px;
+    font-size: 16px;
   }
   .product-location-font-list {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .product-price-font-list {
@@ -591,10 +589,10 @@
 
 @media (min-width: 1250px) {
   .product-title-font-list {
-    font-size: 20px;
+    font-size: 16px;
   }
   .product-location-font-list {
-    font-size: 18px;
+    font-size: 14px;
   }
 
   .product-price-font-list {

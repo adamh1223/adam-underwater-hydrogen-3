@@ -2006,7 +2006,7 @@ span {
   }
 
 }
-@media (min-width: 901px) and (max-width: 1000px) {
+@media (min-width: 901px) {
   .artist-pick-grid {
     width: 140px;
     height: 30px;
