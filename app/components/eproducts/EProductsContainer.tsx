@@ -253,6 +253,7 @@ function EProductsContainer({
           {/* BEGIN GRID ---------------------------------------*/}
 
           {/* GRID VIEW WHOLE THING */}
+          {/* STILL MISSING TAGS */}
           {layout === 'grid' && <div className={cardContentClassName}>
             {layout === 'grid' && (
               <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
