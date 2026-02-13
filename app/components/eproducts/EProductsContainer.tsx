@@ -45,7 +45,7 @@ function EProductsContainer({
   
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-5'
+      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-3'
       : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-[12px] h-full gap-y-3';
 
   const cardContentClassName =
@@ -198,7 +198,20 @@ function EProductsContainer({
         className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
       >
         <Card className={cardClassName}>
-          {/* <div className="absolute left-2 top-2 flex flex-col gap-1">
+         
+
+
+
+
+          {/* BEGIN GRID ---------------------------------------*/}
+
+          {/* GRID VIEW WHOLE THING */}
+          {/* STILL MISSING TAGS */}
+          {layout === 'grid' && <div className={cardContentClassName}>
+            {layout === 'grid' && (
+              <>
+              
+               <div className="absolute left-2 top-2 flex flex-col gap-1">
             {isArtistPick && (
               <button
                 disabled
@@ -223,6 +236,30 @@ function EProductsContainer({
                 
               </button>
             )}
+            {/* {isSlowmo && (
+              <button
+                disabled
+                className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              >
+                Slow-mo
+              </button>
+            )}
+            {!isSlowmo && (
+              <button
+                disabled
+                className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              >
+                24fps
+              </button>
+            )}
+            <button
+              disabled
+              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+            >
+              4K
+            </button> */}
+          </div>
+          <div className="absolute left-2 bottom-2 flex flex-col gap-1">
             {isSlowmo && (
               <button
                 disabled
@@ -245,17 +282,7 @@ function EProductsContainer({
             >
               4K
             </button>
-          </div> */}
-
-
-
-
-          {/* BEGIN GRID ---------------------------------------*/}
-
-          {/* GRID VIEW WHOLE THING */}
-          {/* STILL MISSING TAGS */}
-          {layout === 'grid' && <div className={cardContentClassName}>
-            {layout === 'grid' && (
+          </div>
               <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
                 <TooltipProvider>
                   <Tooltip>
@@ -314,6 +341,7 @@ function EProductsContainer({
                   </Tooltip>
                 </TooltipProvider>
               </div>
+              </>
             )}
             <div
               className={`relative evideo`}
@@ -358,7 +386,7 @@ function EProductsContainer({
             >
               
               <div
-                className={`eproduct-bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside-list`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
@@ -681,7 +709,7 @@ function EProductsContainer({
                   <div
                     className={`flex product-add-to-cart-container w-full mx-auto ${
                       layout === 'grid'
-                        ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                        ? 'p-a-t-c-container-grid justify-center gap-x-3 mt-[6px]'
                         : 'p-a-t-c-container-list justify-start'
                     }`}
                   >
@@ -903,7 +931,7 @@ function EProductsContainer({
 		                
 		              </div>
 		              <div
-		                className={`eproduct-bottom-part-card-inside`}
+		                className={`eproduct-bottom-part-card-inside-list`}
 		              >
 		                
 		                {product?.priceRange?.minVariantPrice && (
@@ -1175,7 +1203,7 @@ function EProductsContainer({
 		                
 		              </div>
               <div
-                className={`eproduct-bottom-part-card-inside flex items-end`}
+                className={`eproduct-bottom-part-card-inside-list flex items-end`}
               >
                 <div className='w-full'>
                   <div className='flex justify-center'>
@@ -1473,7 +1501,7 @@ function EProductsContainer({
 		                
 		              </div>
               <div
-                className={`eproduct-bottom-part-card-inside w-full`}
+                className={`eproduct-bottom-part-card-inside-list w-full`}
               >
                 <div>
 
@@ -1774,7 +1802,7 @@ function EProductsContainer({
 		                
 		              </div>
               <div
-                className={`eproduct-bottom-part-card-inside w-full`}
+                className={`eproduct-bottom-part-card-inside-list w-full`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start w-full'}`}
@@ -2063,7 +2091,7 @@ function EProductsContainer({
 		                
 		              </div>
               <div
-                className={`eproduct-bottom-part-card-inside w-full`}
+                className={`eproduct-bottom-part-card-inside-list w-full`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start w-full'}`}
