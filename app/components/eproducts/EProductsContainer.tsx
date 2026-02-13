@@ -610,13 +610,19 @@ function EProductsContainer({
               }
             >
               <div
-                className={`eproduct-bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside relative w-full`}
               >
                 
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                 >
-                  <div>
+                  <div className="pointer-events-none absolute left-0 top-0 z-10 flex flex-col gap-1">
+                    <button
+              disabled
+              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
+            >
+              4K
+            </button>
             {isSlowmo && (
               <button
                 disabled
@@ -633,13 +639,10 @@ function EProductsContainer({
                 24fps
               </button>
             )}
-            <button
-              disabled
-              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-            >
-              4K
-            </button>
+            
           </div>
+          <div>
+
                   <Link
                     className="product-item"
                     key={product.id}
@@ -744,6 +747,7 @@ function EProductsContainer({
                     </Link>
                   </div>
                 )}
+          </div>
                 
               </div>
             </div>}
