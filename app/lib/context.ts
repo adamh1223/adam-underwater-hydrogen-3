@@ -36,8 +36,17 @@ export async function createAppLoadContext(
   // sections (recommended products / featured reviews) can silently fail.
   // Using the public token for local development keeps local behavior aligned
   // with production (where the delegate token is often unset).
-  const envForHydrogen = isLocalHostname
-    ? {...env, PRIVATE_STOREFRONT_API_TOKEN: ''}
+  // NOTE: `env` can be a proxy/non-plain object in MiniOxygen. Spreading it can
+  // drop non-enumerable bindings (like server-only secrets), causing `context.env`
+  // to lose values such as `SHOPIFY_ADMIN_TOKEN` for local/ngrok requests.
+  // Override only the delegate token while preserving the original env object.
+  const envForHydrogen: Env = isLocalHostname
+    ? (new Proxy(env, {
+        get(target, prop, receiver) {
+          if (prop === 'PRIVATE_STOREFRONT_API_TOKEN') return '';
+          return Reflect.get(target, prop, receiver);
+        },
+      }) as Env)
     : env;
 
   const hydrogenContext = createHydrogenContext({

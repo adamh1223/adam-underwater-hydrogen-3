@@ -176,9 +176,12 @@ export async function action({request, context}: ActionFunctionArgs) {
       const storeDomain = context.env.PUBLIC_STORE_DOMAIN;
       const adminDomainEnv = context.env.SHOPIFY_ADMIN_DOMAIN;
 
-      if (!adminToken || !storeDomain) {
+      if (!adminToken) {
         actionError =
-          'Phone and SMS updates require an Admin API access token with write_customers scope.';
+          'SHOPIFY_ADMIN_TOKEN is not set. Phone and SMS updates require an Admin API access token with write_customers scope.';
+      } else if (!storeDomain) {
+        actionError =
+          'PUBLIC_STORE_DOMAIN is not set. Phone and SMS updates require an Admin API access token with write_customers scope.';
       } else {
         const sanitizedStoreDomain = storeDomain.replace(/^https?:\/\//, '');
         const adminDomain =
