@@ -137,16 +137,32 @@ export const ProductCarousel = ({
   useEffect(() => {
     if (!carouselApi) return;
 
+    let rafId = 0;
+
     const updateCarouselState = () => {
       setCurrentIndex(carouselApi.selectedScrollSnap());
       setTotalItems(carouselApi.scrollSnapList().length);
     };
 
-    updateCarouselState();
+    const updateOnNextFrame = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateCarouselState);
+    };
 
-    carouselApi.on('select', updateCarouselState);
+    updateOnNextFrame();
 
-    return () => void carouselApi.off('select', updateCarouselState);
+    carouselApi.on('select', updateOnNextFrame);
+    carouselApi.on('reInit', updateOnNextFrame);
+    carouselApi.on('resize', updateOnNextFrame);
+    carouselApi.on('slidesChanged', updateOnNextFrame);
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      carouselApi.off('select', updateOnNextFrame);
+      carouselApi.off('reInit', updateOnNextFrame);
+      carouselApi.off('resize', updateOnNextFrame);
+      carouselApi.off('slidesChanged', updateOnNextFrame);
+    };
   }, [carouselApi]);
 
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
@@ -205,13 +221,23 @@ export const ProductCarousel = ({
     .filter(Boolean)
     .join(', ');
 
-  let isHorOnly = prod.tags.includes('horOnly');
+  const isHorOnly = prod.tags.includes('horOnly');
+  const isHorPrimary = prod.tags.includes('horPrimary');
+  const isVertOnly = prod.tags.includes('vertOnly');
+  const isVertPrimary = prod.tags.includes('vertPrimary');
 
-  let isHorPrimary = prod.tags.includes('horPrimary');
-  let isVertOnly = prod.tags.includes('vertOnly');
-  let isVertPrimary = prod.tags.includes('vertPrimary');
-  let isHorizontal = isHorOnly || isHorPrimary;
-  let isVertical = isVertOnly || isVertPrimary;
+  const orientation = isVertPrimary
+    ? 'Vertical'
+    : isHorPrimary
+      ? 'Landscape'
+      : isVertOnly
+        ? 'Vertical'
+        : isHorOnly
+          ? 'Landscape'
+          : undefined;
+
+  const isHorizontal = orientation === 'Landscape';
+  const isVertical = orientation === 'Vertical';
   // const carouselHeight = isHorOnly || isHorPrimary ? 'w-88' : 'w-4';
   let carouselHeight = '';
   if (isHorOnly) {
@@ -506,7 +532,7 @@ export const ProductCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && layout === 'grid' && (
-              <div className="carousel-preview-dots absolute bottom-[-6px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-32 pt-[28px]">
+              <div className="carousel-preview-dots absolute bottom-[-15px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-32 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -521,8 +547,24 @@ export const ProductCarousel = ({
                 ))}
               </div>
             )}
-            {totalItems > 1 && layout === 'list' && (
-              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
+            {totalItems > 1 && layout === 'list' && isVertical && (
+              <div className="carousel-preview-dots absolute bottom-1 left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
+                {Array.from({length: totalItems}).map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      scrollToIndex(idx);
+                    }}
+                    className={`h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+            {totalItems > 1 && layout === 'list' && isHorizontal && (
+              <div className="carousel-preview-dots absolute bottom-[2px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -541,7 +583,7 @@ export const ProductCarousel = ({
 
           {/* Bottom card section */}
           <div
-            className={`bottom-part-card ${layout === 'grid' ? '' : 'ms-9 flex justify-start print-bottom-part-card-list'}`}
+            className={`bottom-part-card ${layout === 'grid' ? '' : 'flex justify-start print-bottom-part-card-list'}`}
           >
             <Link
               className="product-item"
@@ -549,7 +591,7 @@ export const ProductCarousel = ({
               prefetch="intent"
               to={variantUrl}
             >
-              <div className="print-bottom-part-card-inside">
+              <div className="print-bottom-part-card-inside mt-5">
                 <div
                   className={layout === 'grid' ? 'text-center' : 'text-start'}
                 >

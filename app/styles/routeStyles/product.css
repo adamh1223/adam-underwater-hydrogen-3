@@ -123,9 +123,9 @@
   }
   .print-bottom-part-card-list {
     display: flex;
-    align-items: end;
+    align-items: center;
     justify-content: center;
-    padding: 0 0 0 0;
+    padding: 0 0 8px 0;
   }
 }
 .eproduct-bottom-part-card-grid {
@@ -248,10 +248,10 @@
 }
 @media (min-width: 500px) and (max-width: 600px) {
   .left-arrow-carousel-list-horizontal {
-    margin: 0 -15px;
+    margin: 0 -2px;
   }
   .right-arrow-carousel-list-horizontal {
-    margin: 0 -27px;
+    margin: 0 -6px;
   }
   .left-arrow-carousel-list-vertical {
     margin: 0 15px;
