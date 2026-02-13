@@ -489,11 +489,38 @@ function EProductsContainer({
               }
             >
               <div
-                className={`eproduct-bottom-part-card-inside`}
+                className={`eproduct-bottom-part-card-inside relative w-full`}
               >
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                 >
+                  <div className="pointer-events-none absolute left-0 top-0 z-10">
+                    <button
+                      disabled
+                      className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
+                    >
+                      4K
+                    </button>
+                  </div>
+
+                  <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end">
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
                   <Link
                     className="product-item"
                     key={product.id}
@@ -616,31 +643,33 @@ function EProductsContainer({
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                 >
-                  <div className="pointer-events-none absolute left-0 top-0 z-10 flex flex-col gap-1">
+                  <div className="pointer-events-none absolute left-0 top-0 z-10">
                     <button
-              disabled
-              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
-            >
-              4K
-            </button>
-            {isSlowmo && (
-              <button
-                disabled
-                className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                Slow-mo
-              </button>
-            )}
-            {!isSlowmo && (
-              <button
-                disabled
-                className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                24fps
-              </button>
-            )}
-            
-          </div>
+                      disabled
+                      className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
+                    >
+                      4K
+                    </button>
+                  </div>
+
+                  <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end">
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
           <div>
 
                   <Link
