@@ -194,7 +194,7 @@ export default function Collection() {
   }, [collection?.handle]);
   useEffect(() => {
     if (searchText === '') {
-      setTotalProductCount(collection?.products?.nodes?.length);
+      setTotalProductCount(productState?.nodes?.length);
     }
   }, [searchText]);
   const [layout, setLayout] = useState('grid');
@@ -218,10 +218,13 @@ export default function Collection() {
     productState?.nodes?.length,
   );
   useEffect(() => {
-    let filteredCollection = collection?.products?.nodes;
+    const baseConnection = collection?.products;
+    if (!baseConnection) return;
+
+    let filteredCollection = baseConnection.nodes;
 
     if (collection?.handle === 'prints') {
-      filteredCollection = collection?.products?.nodes?.filter((p: any) => {
+      filteredCollection = baseConnection.nodes?.filter((p: any) => {
         if (filterState === 'All') {
           return (
             p.tags.includes('horOnly') ||
@@ -240,7 +243,7 @@ export default function Collection() {
     }
 
     if (collection?.handle === 'stock') {
-      filteredCollection = collection?.products?.nodes?.filter((p: any) => {
+      filteredCollection = baseConnection.nodes?.filter((p: any) => {
         if (stockFilterState === 'All Clips') {
           return p.tags.includes('Video') && !p.tags.includes('Bundle');
         }
@@ -251,17 +254,21 @@ export default function Collection() {
       });
     }
 
-    setProductState((state: any) => ({
-      ...state,
+    setProductState({
+      ...baseConnection,
       nodes: filteredCollection,
-    }));
+    });
     setTotalProductCount(filteredCollection?.length);
-  }, [collection?.handle, collection?.products?.nodes, filterState, stockFilterState]);
+  }, [
+    collection?.handle,
+    collection?.products,
+    filterState,
+    stockFilterState,
+  ]);
 
   useEffect(() => {
     
 
-    setTotalProductCount(collection?.products?.nodes?.length);
     setStockFilterState('All Clips')
   }, [collection?.handle]);
 
@@ -275,10 +282,6 @@ export default function Collection() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-
-  useEffect(() => {
-    setProductState(collection?.products);
-  }, [collection?.handle]);
 
   return (
     <div>
