@@ -1073,7 +1073,7 @@ const navigate = useNavigate();
                 </div>
               </a>
             )}
-            <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
+            <h4 className="text-xl individual-product-location">{`${formattedLocation}`}</h4>
             </div>
           </>
         )}
@@ -1212,7 +1212,7 @@ const navigate = useNavigate();
                     </div>
                   </a>
                 )}
-                <h4 className="text-xl mt-1 pb-4">{`${formattedLocation}`}</h4>
+                <h4 className="text-xl individual-product-location">{`${formattedLocation}`}</h4>
               </>
             )}
 

@@ -2155,3 +2155,17 @@ span {
     padding-block: max(10px, 2.5%);
   }
 }
+
+@media (min-width: 500px) {
+
+  .individual-product-location {
+    margin-top: 4px;
+    padding-bottom: 12px;
+  }
+}
+@media (max-width: 499px) {
+
+  .individual-product-location {
+    margin-top: 4px;
+  }
+}
