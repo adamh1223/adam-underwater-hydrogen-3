@@ -41,13 +41,12 @@
 /* The video wrapper fills the same box as the image */
 .EProductVideoWrapper {
   position: absolute;
-  top: 0px;
-  left: -2px;
-  right: 0;
-  bottom: 0px;
+  inset: 0;
   overflow: hidden;
   cursor: pointer;
   line-height: 0;
+  border-radius: inherit;
+  transform: translateZ(0);
 }
 
 .EProductVideoWrapper a {
@@ -59,19 +58,20 @@
 /* The iframe fills its wrapper and does not capture pointer events */
 .EProductVideo {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   display: block;
-  width: 105%;
-  height: 105%;
+  width: 100%;
+  height: 100%;
   border: none;
-  object-fit: cover;
   opacity: 0;
   transition: opacity 0.4s ease-in-out;
   pointer-events: none; /* important: clicks pass through to wrapper */
   /* padding: 0 0 0 0px; */
   vertical-align: middle;
   will-change: opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0) scale(1.02);
+  transform-origin: center;
 }
 
 /* When loaded, show video smoothly */
@@ -86,16 +86,16 @@
   width: 100%;
   overflow: hidden;
   border-radius: 4px;
+  background-color: hsl(var(--background));
 }
 
 .EProductPreviewContainer-autoplay .EProductVideo {
-  transition: none;
-  /* iOS: avoid a 1-frame scale/glitch when toggling iframe opacity */
-  opacity: 1;
-  visibility: hidden;
-  will-change: visibility;
+  /* Autoplay: fade in over the image so there's never a blank flash */
+  opacity: 0;
+  transition: opacity 200ms ease-in-out;
+  will-change: opacity, transform;
 }
 
 .EProductPreviewContainer-autoplay .EProductVideo.visible {
-  visibility: visible;
+  opacity: 1;
 }

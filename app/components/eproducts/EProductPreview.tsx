@@ -26,6 +26,10 @@ function EProductPreview({
   const {featuredImage} = EProduct;
   const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
+  const previewAspectRatio =
+    featuredImage?.width && featuredImage?.height
+      ? `${featuredImage.width} / ${featuredImage.height}`
+      : undefined;
 
   const clearVideoRevealTimeout = () => {
     if (videoRevealTimeoutRef.current === null) return;
@@ -43,7 +47,11 @@ function EProductPreview({
     clearVideoRevealTimeout();
     videoRevealTimeoutRef.current = window.setTimeout(() => {
       videoRevealTimeoutRef.current = null;
-      setIsVideoReady(true);
+      // Defer to the next paint(s) to reduce iOS WebKit's occasional
+      // first-frame sizing jitter for cross-origin iframes.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setIsVideoReady(true));
+      });
     }, delayMs);
   };
 
@@ -59,7 +67,11 @@ function EProductPreview({
 
     // Reveal shortly after load to avoid the 1-frame "shrink/grow" glitch that
     // can occur on real iOS devices when the iframe first paints video.
-    scheduleVideoReveal(250);
+    const isCoarsePointer =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    scheduleVideoReveal(isCoarsePointer ? 2000 : 200);
   };
 
   const isStockFootagePage = location.pathname.startsWith('/collections/stock');
@@ -148,6 +160,7 @@ function EProductPreview({
     <div
       ref={containerRef}
       className={`EProductPreviewContainer ${enableViewportAutoplay ? 'EProductPreviewContainer-autoplay' : ''} ${extraClassName || ''}`}
+      style={previewAspectRatio ? {aspectRatio: previewAspectRatio} : undefined}
       onMouseEnter={
         enableViewportAutoplay ? undefined : () => setIsHovered(true)
       }
@@ -161,6 +174,8 @@ function EProductPreview({
           src={featuredImage.url}
           alt={featuredImage.altText || 'Product image'}
           className="EProductImage"
+          width={featuredImage.width ?? undefined}
+          height={featuredImage.height ?? undefined}
         />
       )}
 
