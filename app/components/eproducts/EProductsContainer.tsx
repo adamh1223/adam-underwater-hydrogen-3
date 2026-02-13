@@ -259,30 +259,7 @@ function EProductsContainer({
               4K
             </button> */}
           </div>
-          <div className="absolute left-2 bottom-2 flex flex-col gap-1">
-            {isSlowmo && (
-              <button
-                disabled
-                className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                Slow-mo
-              </button>
-            )}
-            {!isSlowmo && (
-              <button
-                disabled
-                className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                24fps
-              </button>
-            )}
-            <button
-              disabled
-              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-            >
-              4K
-            </button>
-          </div>
+          
               <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
                 <TooltipProvider>
                   <Tooltip>
@@ -384,6 +361,7 @@ function EProductsContainer({
                 `eproduct-bottom-part-card-grid`
               }
             >
+            
               
               <div
                 className={`eproduct-bottom-part-card-inside-list`}
@@ -623,7 +601,7 @@ function EProductsContainer({
                 
               </div>
             </div>}
-            {windowWidth != undefined && windowWidth > 600 && 
+            {layout === 'grid' && windowWidth != undefined && windowWidth > 600 && 
             <div
               className={
                 layout === 'grid'
@@ -634,9 +612,34 @@ function EProductsContainer({
               <div
                 className={`eproduct-bottom-part-card-inside`}
               >
+                
                 <div
                   className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                 >
+                  <div>
+            {isSlowmo && (
+              <button
+                disabled
+                className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              >
+                Slow-mo
+              </button>
+            )}
+            {!isSlowmo && (
+              <button
+                disabled
+                className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+              >
+                24fps
+              </button>
+            )}
+            <button
+              disabled
+              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+            >
+              4K
+            </button>
+          </div>
                   <Link
                     className="product-item"
                     key={product.id}
