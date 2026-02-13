@@ -1738,7 +1738,14 @@ span {
 }
 
 .review-media-slide {
-  max-height: 350px;
+  --review-media-max-height: 350px;
+  max-height: var(--review-media-max-height);
+  overflow: hidden;
+}
+
+.review-media-slide img,
+.review-media-slide video {
+  max-height: var(--review-media-max-height);
 }
 
 .x-icon {

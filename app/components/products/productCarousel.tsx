@@ -477,6 +477,7 @@ export const ProductCarousel = ({
                             : 'ms-3'
                         }`}
                       >
+
                         <img
                           src={img?.url}
                           className={`rounded max-w-full ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
@@ -505,7 +506,7 @@ export const ProductCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && layout === 'grid' && (
-              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5">
+              <div className="carousel-preview-dots absolute bottom-[-6px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-32 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -521,7 +522,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && (
-              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-24 pt-5 ms-3">
+              <div className="carousel-preview-dots absolute bottom-2 left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
