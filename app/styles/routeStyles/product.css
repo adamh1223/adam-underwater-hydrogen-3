@@ -144,8 +144,11 @@
 }
 
 
-.print-bottom-part-card-inside {
-    padding: 0 8px;
+.print-bottom-part-card-inside-grid {
+    padding: 12px 4px 0 4px;
+  }
+.print-bottom-part-card-inside-list {
+    padding: 12px 8px;
   }
 
   @media (max-width: 800px) {
@@ -222,10 +225,10 @@
 }
 @media (max-width: 499px) {
   .left-arrow-carousel-list-horizontal {
-    margin: 0 -15px;
+    margin: 0;
   }
   .right-arrow-carousel-list-horizontal {
-    margin: 0 -27px;
+    margin: 0 -4px;
   }
   .left-arrow-carousel-list-vertical {
     margin: 0 15px;
@@ -274,10 +277,10 @@
 }
 @media (min-width: 601px) and (max-width: 700px) {
   .left-arrow-carousel-list-horizontal {
-    margin: 0 -15px;
+    margin: 0 -2px;
   }
   .right-arrow-carousel-list-horizontal {
-    margin: 0 -27px;
+    margin: 0 -6px;
   }
   .left-arrow-carousel-list-vertical {
     margin: 0 25px;

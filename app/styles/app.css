@@ -2123,12 +2123,28 @@ span {
   }
 }
 
-@media (max-width: 600px) {
-.print-carousel-grid {
+@media (max-width: 500px) {
 
-}
 .print-carousel-list {
   padding: 8px 6px;
+}
+}
+@media (min-width: 501px) and (max-width: 600px) {
+
+.print-carousel-list {
+  padding: 16px 6px;
+}
+}
+@media (min-width: 601px) and (max-width: 700px) {
+
+.print-carousel-list {
+  padding: 24px 6px;
+}
+}
+@media (min-width: 701px) and (max-width: 800px) {
+
+.print-carousel-list {
+  padding: 24px 6px;
 }
 }
 

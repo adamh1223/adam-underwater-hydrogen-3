@@ -368,7 +368,7 @@ export const ProductCarousel = ({
     <article className="group relative h-full mb-[12px]">
       <Card className={cardClassName}>
         {layout === 'list' && (
-          <div className="cursor-pointer absolute top-[9px] right-[21px] z-50 p-1">
+          <div className="cursor-pointer absolute top-[3px] right-[15px] z-50 p-1">
             {/* <Button
               variant="outline"
               onClick={addToFavorites}
@@ -423,7 +423,7 @@ export const ProductCarousel = ({
             }`}
           >
             {layout === 'grid' && (
-              <div className="cursor-pointer absolute top-2 right-2 z-50 p-1">
+              <div className="cursor-pointer absolute top-[2px] right-[2px] z-50 p-1">
                 {/* <Button
                   variant="outline"
                   onClick={addToFavorites}
@@ -499,7 +499,7 @@ export const ProductCarousel = ({
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid'
-                            ? 'pt-5'
+                            ? 'pt-2'
                             : 'ms-3'
                         }`}
                       >
@@ -532,7 +532,7 @@ export const ProductCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && layout === 'grid' && (
-              <div className="carousel-preview-dots absolute bottom-[-15px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-32 pt-[28px]">
+              <div className="carousel-preview-dots-grid absolute bottom-[-15px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-32 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -548,7 +548,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isVertical && (
-              <div className="carousel-preview-dots absolute bottom-1 left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
+              <div className="carousel-preview-dots-list absolute bottom-[6px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -564,7 +564,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isHorizontal && (
-              <div className="carousel-preview-dots absolute bottom-[2px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
+              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -591,7 +591,7 @@ export const ProductCarousel = ({
               prefetch="intent"
               to={variantUrl}
             >
-              <div className="print-bottom-part-card-inside mt-5">
+              <div className={`${layout === 'grid' ? 'print-bottom-part-card-inside-grid' : 'print-bottom-part-card-inside-list'} mt-2`}>
                 <div
                   className={layout === 'grid' ? 'text-center' : 'text-start'}
                 >
