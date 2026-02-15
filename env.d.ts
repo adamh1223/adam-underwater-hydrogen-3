@@ -24,6 +24,12 @@ declare global {
     SHOPIFY_ADMIN_DOMAIN: string;
     SUPABASE_KEY: string;
     SUPABASE_URL: string;
+    R2_ACCOUNT_ID: string;
+    R2_BUCKET: string;
+    R2_ACCESS_KEY_ID: string;
+    R2_SECRET_ACCESS_KEY: string;
+    R2_ENDPOINT: string;
+    R2_REGION: string;
   }
 }
 

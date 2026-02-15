@@ -4,23 +4,21 @@ import {
   Money,
   Image,
   flattenConnection,
-  getSelectedProductOptions,
 } from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
-import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
+import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {useEffect, useState} from 'react';
-import {generateCartDescription, includesTagName} from '~/lib/utils';
-import {PRODUCT_QUERY} from './products.$handle';
 import {variantQuery} from '~/lib/customerQueries';
 import Sectiontitle from '~/components/global/Sectiontitle';
+import {getR2ObjectKeyFromTags} from '~/lib/downloads';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
 };
 
-export async function loader({params, context, request}: LoaderFunctionArgs) {
+export async function loader({params, context}: LoaderFunctionArgs) {
   if (!params.id) {
     return redirect('/account/orders');
   }
@@ -40,7 +38,6 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
   const {order} = data;
 
   const lineItems = flattenConnection(order.lineItems);
-  const lineItemTitles = lineItems.map((lineItem: any) => lineItem.title);
   const discountApplications = flattenConnection(order.discountApplications);
 
   const fulfillmentStatus =
@@ -57,7 +54,13 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     firstDiscount?.percentage;
   
 
-  const variantIds = lineItems.map((li: any) => li?.variantId).filter(Boolean);
+  const variantIds = Array.from(
+    new Set(
+      lineItems
+        .map((lineItem: any) => lineItem?.variantId)
+        .filter((variantId): variantId is string => typeof variantId === 'string'),
+    ),
+  );
   const variantResponses = await Promise.all(
     variantIds.map((id) =>
       storefront.query(variantQuery, {
@@ -67,18 +70,31 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
       }),
     ),
   );
-  const productVariants = variantResponses.map((variant) => variant?.node);
-  const productPromises = productVariants.map((pv) => {
-    const handle = pv?.product?.handle;
-    const selectedOptions = pv?.selectedOptions;
-    return storefront.query(PRODUCT_QUERY, {
-      variables: {
-        handle,
-        selectedOptions,
-      },
-    });
-  });
-  const productResponses = await Promise.all(productPromises);
+  const tagsByVariantId = new Map<string, string[]>();
+  for (const response of variantResponses) {
+    const variant = response?.node as any;
+    if (typeof variant?.id !== 'string') continue;
+    const tags = Array.isArray(variant?.product?.tags) ? variant.product.tags : [];
+    tagsByVariantId.set(variant.id, tags);
+  }
+
+  const encodedOrderId = params.id;
+  const downloadLinksByLineItemId = lineItems.reduce<Record<string, string>>(
+    (acc, lineItem: any) => {
+      const lineItemId = typeof lineItem?.id === 'string' ? lineItem.id : '';
+      const variantId =
+        typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
+      if (!lineItemId || !variantId) return acc;
+
+      const objectKey = getR2ObjectKeyFromTags(tagsByVariantId.get(variantId) ?? []);
+      if (!objectKey) return acc;
+
+      acc[lineItemId] =
+        `/account/orders/${encodedOrderId}/download?lineItemId=${encodeURIComponent(lineItemId)}`;
+      return acc;
+    },
+    {},
+  );
 
   return {
     order,
@@ -86,7 +102,7 @@ export async function loader({params, context, request}: LoaderFunctionArgs) {
     discountValue,
     discountPercentage,
     fulfillmentStatus,
-    productResponses,
+    downloadLinksByLineItemId,
   };
 }
 
@@ -97,25 +113,8 @@ export default function OrderRoute() {
     discountValue,
     discountPercentage,
     fulfillmentStatus,
-    productResponses,
+    downloadLinksByLineItemId,
   } = useLoaderData<typeof loader>();
-
-  const tagDownloadLinks = productResponses
-    ?.map((p) => {
-      const productWithDownloadTag = p?.product?.tags?.filter((tag: any) =>
-        tag.includes('umclips'),
-      );
-      if (productWithDownloadTag?.length) {
-        return {
-          url: `https://storage.googleapis.com/${productWithDownloadTag[0]}`,
-          text: p.product.title,
-        };
-      }
-    })
-    .filter(Boolean);
-    console.log(tagDownloadLinks, 'tagdls');
-    
-
   
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
@@ -153,28 +152,31 @@ export default function OrderRoute() {
                           {/* <tbody> */}
                           {lineItems.length <= 1 &&
                             lineItems.map((lineItem, lineItemIndex) => (
-                              // eslint-disable-next-line react/no-array-index-key
-
                               <OrderLineRow
-                                key={lineItemIndex}
+                                key={`${lineItem.id ?? lineItemIndex}`}
                                 lineItem={
                                   lineItem as unknown as OrderLineItemFullFragment
                                 }
-                                downloadLinks={tagDownloadLinks}
+                                downloadLinksByLineItemId={
+                                  downloadLinksByLineItemId
+                                }
                               />
 
                               // ATTENTION: conditionally render the download button only on eproduct line items
                             ))}
                           {lineItems.length > 1 &&
                             lineItems.map((lineItem, lineItemIndex) => (
-                              // eslint-disable-next-line react/no-array-index-key
-                              <Card className="p-3 mb-5">
+                              <Card
+                                key={`${lineItem.id ?? lineItemIndex}`}
+                                className="p-3 mb-5"
+                              >
                                 <OrderLineRow
-                                  key={lineItemIndex}
                                   lineItem={
                                     lineItem as unknown as OrderLineItemFullFragment
                                   }
-                                  downloadLinks={tagDownloadLinks}
+                                  downloadLinksByLineItemId={
+                                    downloadLinksByLineItemId
+                                  }
                                 />
                               </Card>
                               // ATTENTION: conditionally render the download button only on eproduct line items
@@ -315,14 +317,17 @@ export default function OrderRoute() {
                       <div className="tbody">
                         {/* <tbody> */}
                         {lineItems.map((lineItem, lineItemIndex) => (
-                          // eslint-disable-next-line react/no-array-index-key
-                          <Card className="p-3 mb-5">
+                          <Card
+                            key={`${lineItem.id ?? lineItemIndex}`}
+                            className="p-3 mb-5"
+                          >
                             <OrderLineRow
-                              key={lineItemIndex}
                               lineItem={
                                 lineItem as unknown as OrderLineItemFullFragment
                               }
-                              downloadLinks={tagDownloadLinks}
+                              downloadLinksByLineItemId={
+                                downloadLinksByLineItemId
+                              }
                             />
                           </Card>
                         ))}
@@ -452,17 +457,15 @@ export default function OrderRoute() {
 
 function OrderLineRow({
   lineItem,
-  downloadLinks,
+  downloadLinksByLineItemId,
 }: {
   lineItem: OrderLineItemFullFragment;
-  downloadLinks: {text: string; url: string}[];
+  downloadLinksByLineItemId: Record<string, string>;
 }) {
   
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
-  const downloadLink = downloadLinks.filter((downloadLink) => {
-    return downloadLink.text === lineItem.title;
-  });
+  const downloadUrl = downloadLinksByLineItemId[lineItem.id];
   
   const itemSubtotal =
     lineItem.quantity * Number(lineItem.price?.amount) -
@@ -563,14 +566,14 @@ function OrderLineRow({
         </div>
         {windowWidth && windowWidth < 605 && (
           <>
-            {lineItem.variantTitle === null && (
+            {lineItem.variantTitle === null && downloadUrl && (
               <div className="td pt-3">
                 {/* <td> */}
                 <div className="flex justify-center align-center">
                   {/* <Button variant="outline">Download ↓</Button> */}
                   {/* <a href={downloadLink[0]?.url}>download</a> */}
-                  <Button variant="outline" className="mb-5">
-                    <Link to={downloadLink[0]?.url}>Download ↓</Link>
+                  <Button variant="outline" className="mb-5" asChild>
+                    <a href={downloadUrl}>Download ↓</a>
                   </Button>
                 </div>
               </div>
@@ -581,14 +584,14 @@ function OrderLineRow({
 
       {windowWidth && windowWidth >= 605 && (
         <>
-          {lineItem.variantTitle === null && (
+          {lineItem.variantTitle === null && downloadUrl && (
             <div className="td">
               {/* <td> */}
               <div className="flex justify-center align-center">
                 {/* <Button variant="outline">Download ↓</Button> */}
                 {/* <a href={downloadLink[0]?.url}>download</a> */}
-                <Button variant="outline" className="mb-5">
-                  <Link to={downloadLink[0]?.url}>Download ↓</Link>
+                <Button variant="outline" className="mb-5" asChild>
+                  <a href={downloadUrl}>Download ↓</a>
                 </Button>
               </div>
             </div>
