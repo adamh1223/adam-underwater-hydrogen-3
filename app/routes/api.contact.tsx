@@ -2,6 +2,7 @@ import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {isbot} from 'isbot';
 import {validateContactSubmission} from '~/lib/contactAntiSpam';
 import {uploadImage} from '~/lib/supabase.server';
+import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
 
 export async function action({request, context}: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -63,46 +64,34 @@ export async function action({request, context}: ActionFunctionArgs) {
     );
   }
 
-  const courierToken = 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08';
   try {
-    const response = await fetch('https://api.courier.com/send', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${courierToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: {
-          to: {
-            email: 'adam@hussmedia.io',
-          },
-          template: 'Q6HCEKAAFXM5CFH41HR0RSHRWH6R',
-          data: {
-            name: safeName,
-            email: safeEmail,
-            message: safeMessage,
-            contactImages: uploadedImages,
-          },
-          routing: {
-            method: 'single',
-            channels: ['email'],
-          },
-        },
-      }),
+    const imagesHtml = uploadedImages.length
+      ? `<p><strong>Images:</strong></p><ul>${uploadedImages
+          .map((url) => `<li><a href="${url}">${url}</a></li>`)
+          .join('')}</ul>`
+      : '<p><strong>Images:</strong> none</p>';
+
+    await sendDirectEmail({
+      env: context.env,
+      to: DIRECT_EMAIL_FROM,
+      subject: `New contact form message from ${safeName}`,
+      replyTo: safeEmail,
+      text: [
+        `Name: ${safeName}`,
+        `Email: ${safeEmail}`,
+        `Message: ${safeMessage}`,
+        `Images: ${uploadedImages.join(', ') || 'none'}`,
+      ].join('\n'),
+      html: `
+        <h2>New contact form message</h2>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Message:</strong></p>
+        <p>${safeMessage.replace(/\n/g, '<br />')}</p>
+        ${imagesHtml}
+      `,
     });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error('Courier request failed:', response.status, text);
-      return json(
-        {error: 'Failed to send message notification.'},
-        {status: 500},
-      );
-    }
-
-    const JSONResponse = await response.json();
-
-    return json({success: true, result: JSONResponse});
+    return json({success: true});
   } catch (error) {
     console.error(error);
     return json({error: 'request failed'}, {status: 500});

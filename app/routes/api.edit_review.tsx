@@ -2,6 +2,7 @@ import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 import {deleteImage, uploadImage} from '~/lib/supabase.server';
 import {createNotificationId} from '~/lib/notifications';
+import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
@@ -306,35 +307,30 @@ export async function action({request, context}: ActionFunctionArgs) {
       }
     }
 
-    const courierToken = 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08';
     try {
-      await fetch('https://api.courier.com/send', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${courierToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: {
-            to: {
-              email: 'adam@hussmedia.io',
-            },
-            template: 'M9ZCJYNC6R479FGVS73XTSBBRBWN',
-            data: {
-              customerName,
-              productName,
-              reviewTitle: title,
-              stars,
-              reviewText,
-              reviewImage: customerImage,
-              reviewVideo: customerVideo,
-            },
-            routing: {
-              method: 'single',
-              channels: ['email'],
-            },
-          },
-        }),
+      await sendDirectEmail({
+        env: context.env,
+        to: DIRECT_EMAIL_FROM,
+        subject: `Review updated: ${productName}`,
+        text: [
+          `Customer: ${customerName}`,
+          `Product: ${productName}`,
+          `Title: ${title}`,
+          `Stars: ${stars}`,
+          `Review: ${reviewText}`,
+          `Image: ${customerImage ?? 'none'}`,
+          `Video: ${customerVideo ?? 'none'}`,
+        ].join('\n'),
+        html: `
+          <h2>Review updated</h2>
+          <p><strong>Customer:</strong> ${customerName}</p>
+          <p><strong>Product:</strong> ${productName}</p>
+          <p><strong>Title:</strong> ${title}</p>
+          <p><strong>Stars:</strong> ${stars}</p>
+          <p><strong>Review:</strong><br />${reviewText}</p>
+          <p><strong>Image:</strong> ${customerImage ? `<a href="${customerImage}">${customerImage}</a>` : 'none'}</p>
+          <p><strong>Video:</strong> ${customerVideo ? `<a href="${customerVideo}">${customerVideo}</a>` : 'none'}</p>
+        `,
       });
     } catch (error) {
       console.error(error);

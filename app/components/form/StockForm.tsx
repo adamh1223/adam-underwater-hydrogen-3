@@ -13,12 +13,7 @@ import {Button} from '../ui/button';
 import {Label} from '../ui/label';
 import {Input} from '../ui/input';
 import './styles/StockForm.css';
-import {CourierClient} from '@trycourier/courier';
 import {ClipboardSignature} from 'lucide-react';
-
-const courier = new CourierClient({
-  authorizationToken: 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08',
-});
 function StockForm({
   updateCheck,
   clipNames,
@@ -78,7 +73,7 @@ function StockForm({
     setStatus('Sending...');
 
     try {
-      const response = await fetch('/api/courier', {
+      const response = await fetch('/api/stock-licensing', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(formData),

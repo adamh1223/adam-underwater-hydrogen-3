@@ -53,7 +53,6 @@ export default defineConfig({
        */
       include: [
         'react-image-zooom',
-        '@trycourier/courier',
         '@supabase/supabase-js',
         '@supabase/postgrest-js',
         '@supabase/gotrue-js',

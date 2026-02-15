@@ -22,6 +22,7 @@ declare global {
     // declare additional Env parameter use in the fetch handler and Remix loader context here
     SHOPIFY_ADMIN_TOKEN: string;
     SHOPIFY_ADMIN_DOMAIN: string;
+    SHOPIFY_WEBHOOK_SECRET: string;
     SUPABASE_KEY: string;
     SUPABASE_URL: string;
     R2_ACCOUNT_ID: string;
@@ -30,6 +31,10 @@ declare global {
     R2_SECRET_ACCESS_KEY: string;
     R2_ENDPOINT: string;
     R2_REGION: string;
+    RESEND_API_KEY: string;
+    DOWNLOAD_EMAIL_LINK_SECRET: string;
+    PUBLIC_SITE_URL: string;
+    PUBLIC_STOREFRONT_URL: string;
   }
 }
 

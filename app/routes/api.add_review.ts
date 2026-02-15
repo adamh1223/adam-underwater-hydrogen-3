@@ -1,6 +1,7 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 // import {createClient} from '@supabase/supabase-js';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
+import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
 import {uploadImage} from '~/lib/supabase.server';
 // const BUCKET = 'main-bucket';
 // function getSupabase(env: Env) {
@@ -228,35 +229,30 @@ export async function action({request, context}: ActionFunctionArgs) {
       console.error('Admin API errors:', errors);
       return json({error: errors}, {status: 500});
     }
-    const courierToken = 'dk_prod_YD7MPFEFARMTTYM3ASDX55T6ZD08';
     try {
-      await fetch('https://api.courier.com/send', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${courierToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: {
-            to: {
-              email: 'adam@hussmedia.io',
-            },
-            template: 'Q8S41DS49B4J9KPBJCBQEDEBSBH8',
-            data: {
-              customerName,
-              productName,
-              reviewTitle: title,
-              stars,
-              reviewText,
-              reviewImage: customerImage,
-              reviewVideo: customerVideo,
-            },
-            routing: {
-              method: 'single',
-              channels: ['email'],
-            },
-          },
-        }),
+      await sendDirectEmail({
+        env: context.env,
+        to: DIRECT_EMAIL_FROM,
+        subject: `New review submitted: ${productName}`,
+        text: [
+          `Customer: ${customerName}`,
+          `Product: ${productName}`,
+          `Title: ${title}`,
+          `Stars: ${stars}`,
+          `Review: ${reviewText}`,
+          `Image: ${customerImage ?? 'none'}`,
+          `Video: ${customerVideo ?? 'none'}`,
+        ].join('\n'),
+        html: `
+          <h2>New review submitted</h2>
+          <p><strong>Customer:</strong> ${customerName}</p>
+          <p><strong>Product:</strong> ${productName}</p>
+          <p><strong>Title:</strong> ${title}</p>
+          <p><strong>Stars:</strong> ${stars}</p>
+          <p><strong>Review:</strong><br />${reviewText}</p>
+          <p><strong>Image:</strong> ${customerImage ? `<a href="${customerImage}">${customerImage}</a>` : 'none'}</p>
+          <p><strong>Video:</strong> ${customerVideo ? `<a href="${customerVideo}">${customerVideo}</a>` : 'none'}</p>
+        `,
       });
     } catch (error) {
       console.error(error);

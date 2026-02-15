@@ -34,7 +34,6 @@ export default async function handleRequest(
       'https://wamcrxkfsfulpobimumc.supabase.co',
       // supabase buckets 1,2,3,4 ^
       'wss://patient-mite-notably.ngrok-free.app:3000',
-      'https://api.courier.com/send',
       'https://cdn.shopify.com',
     ],
     imgSrc: [
