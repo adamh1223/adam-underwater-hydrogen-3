@@ -1,5 +1,7 @@
 const RESEND_API_URL = 'https://api.resend.com/emails';
 const HARDCODED_FROM_EMAIL = 'hello@adamunderwater.com';
+const HARDCODED_FROM_NAME = 'Adam Underwater';
+const HARDCODED_FROM_HEADER = `${HARDCODED_FROM_NAME} <${HARDCODED_FROM_EMAIL}>`;
 const HARDCODED_ADMIN_NOTIFICATION_EMAIL = 'adamahussain1223@gmail.com';
 
 type SendEmailInput = {
@@ -41,7 +43,7 @@ export async function sendDirectEmail({
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: HARDCODED_FROM_EMAIL,
+      from: HARDCODED_FROM_HEADER,
       to: recipients,
       subject,
       html,
