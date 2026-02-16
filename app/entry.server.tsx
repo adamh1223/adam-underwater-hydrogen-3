@@ -4,6 +4,15 @@ import {isbot} from 'isbot';
 import {renderToReadableStream} from 'react-dom/server';
 import {createContentSecurityPolicy} from '@shopify/hydrogen';
 
+function toOrigin(value: string | undefined): string | null {
+  if (!value?.trim()) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
 export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
@@ -11,6 +20,12 @@ export default async function handleRequest(
   remixContext: EntryContext,
   context: AppLoadContext,
 ) {
+  const r2PublicOrigin =
+    toOrigin(context.env.R2_PUBLIC_BASE_URL) ??
+    'https://downloads.adamunderwater.com';
+
+  const additionalMediaOrigins = [r2PublicOrigin, 'https://i.vimeocdn.com'];
+
   const {nonce, header, NonceProvider} = createContentSecurityPolicy({
     shop: {
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
@@ -25,6 +40,7 @@ export default async function handleRequest(
       'https://uctqtajkpjsifdxtmjwo.supabase.co',
       'https://wamcrxkfsfulpobimumc.supabase.co',
       // supabase buckets 1,2,3,4 ^
+      ...additionalMediaOrigins,
     ],
     connectSrc: [
       "'self'",
@@ -35,6 +51,7 @@ export default async function handleRequest(
       // supabase buckets 1,2,3,4 ^
       'wss://patient-mite-notably.ngrok-free.app:3000',
       'https://cdn.shopify.com',
+      r2PublicOrigin,
     ],
     imgSrc: [
       "'self'",
@@ -46,6 +63,7 @@ export default async function handleRequest(
       'https://uctqtajkpjsifdxtmjwo.supabase.co',
       'https://wamcrxkfsfulpobimumc.supabase.co',
       // supabase buckets 1,2,3,4 ^
+      ...additionalMediaOrigins,
     ],
     fontSrc: [
       "'self'",

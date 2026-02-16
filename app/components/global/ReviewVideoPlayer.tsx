@@ -24,6 +24,15 @@ const ReviewVideoPlayer = ({
     const video = videoRef.current;
     if (!video || !src) return;
 
+    // Avoid canvas extraction for cross-origin media unless explicit CORS is configured.
+    // This keeps playback path simple for public R2-hosted videos.
+    try {
+      const sourceOrigin = new URL(src, window.location.href).origin;
+      if (sourceOrigin !== window.location.origin) return;
+    } catch {
+      return;
+    }
+
     let didCapture = false;
     const captureFrame = () => {
       if (didCapture || !video.videoWidth || !video.videoHeight) return;
@@ -32,11 +41,11 @@ const ReviewVideoPlayer = ({
       canvas.height = video.videoHeight;
       const context = canvas.getContext('2d');
       if (!context) return;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
       try {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
         setPoster(canvas.toDataURL('image/jpeg'));
         didCapture = true;
-      } catch (error) {
+      } catch {
         setPoster(undefined);
       }
     };
@@ -80,10 +89,15 @@ const ReviewVideoPlayer = ({
         controls={showControls}
         playsInline
         preload="metadata"
-        crossOrigin="anonymous"
         poster={poster}
       >
-        <source src={`${src}#t=0.001`} type="video/mp4" />
+        <source src={`${src}#t=0.001`} />
+        <track
+          kind="captions"
+          srcLang="en"
+          label="English captions"
+          src="data:text/vtt,WEBVTT"
+        />
       </video>
       {showPlayOverlay && (
         <button

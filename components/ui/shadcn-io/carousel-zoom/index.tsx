@@ -136,6 +136,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                               {media.type === 'image' && (
                                 <img
                                   src={media.url}
+                                  alt="Review media"
                                   className="max-h-[calc(100vh-12rem)] w-auto max-w-[90vw] rounded-lg object-contain"
                                 />
                               )}
@@ -146,9 +147,14 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                                   autoPlay={isOpen && autoPlayIndex === idx}
                                   playsInline
                                   preload="metadata"
-                                  crossOrigin="anonymous"
                                 >
-                                  <source src={`${media.url}#t=0.001`} type="video/mp4" />
+                                  <source src={`${media.url}#t=0.001`} />
+                                  <track
+                                    kind="captions"
+                                    srcLang="en"
+                                    label="English captions"
+                                    src="data:text/vtt,WEBVTT"
+                                  />
                                 </video>
                               )}
                             </div>
