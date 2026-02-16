@@ -11,6 +11,9 @@ type ShopifyOrderPaidWebhookPayload = {
   order_number?: number;
   email?: string;
   contact_email?: string;
+  customer?: {
+    email?: string | null;
+  } | null;
   financial_status?: string | null;
   created_at?: string;
   subtotal_price?: string;
@@ -275,7 +278,10 @@ export async function action({request, context}: ActionFunctionArgs) {
     }
 
     const customerEmail =
-      payload.email?.trim() || payload.contact_email?.trim() || null;
+      payload.email?.trim() ||
+      payload.contact_email?.trim() ||
+      payload.customer?.email?.trim() ||
+      null;
     if (!customerEmail) {
       return json({
         ok: true,
