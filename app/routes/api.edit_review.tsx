@@ -2,7 +2,10 @@ import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
 import {deleteImage, uploadImage} from '~/lib/supabase.server';
 import {createNotificationId} from '~/lib/notifications';
-import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
+import {
+  ADMIN_NOTIFICATION_EMAIL,
+  sendDirectEmail,
+} from '~/lib/email-provider.server';
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
@@ -310,7 +313,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     try {
       await sendDirectEmail({
         env: context.env,
-        to: DIRECT_EMAIL_FROM,
+        to: ADMIN_NOTIFICATION_EMAIL,
         subject: `Review updated: ${productName}`,
         text: [
           `Customer: ${customerName}`,

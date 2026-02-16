@@ -2,7 +2,10 @@ import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {isbot} from 'isbot';
 import {validateContactSubmission} from '~/lib/contactAntiSpam';
 import {uploadImage} from '~/lib/supabase.server';
-import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
+import {
+  ADMIN_NOTIFICATION_EMAIL,
+  sendDirectEmail,
+} from '~/lib/email-provider.server';
 
 export async function action({request, context}: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -73,7 +76,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     await sendDirectEmail({
       env: context.env,
-      to: DIRECT_EMAIL_FROM,
+      to: ADMIN_NOTIFICATION_EMAIL,
       subject: `New contact form message from ${safeName}`,
       replyTo: safeEmail,
       text: [

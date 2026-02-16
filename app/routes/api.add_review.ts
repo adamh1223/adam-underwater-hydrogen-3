@@ -1,7 +1,10 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 // import {createClient} from '@supabase/supabase-js';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
-import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
+import {
+  ADMIN_NOTIFICATION_EMAIL,
+  sendDirectEmail,
+} from '~/lib/email-provider.server';
 import {uploadImage} from '~/lib/supabase.server';
 // const BUCKET = 'main-bucket';
 // function getSupabase(env: Env) {
@@ -232,7 +235,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     try {
       await sendDirectEmail({
         env: context.env,
-        to: DIRECT_EMAIL_FROM,
+        to: ADMIN_NOTIFICATION_EMAIL,
         subject: `New review submitted: ${productName}`,
         text: [
           `Customer: ${customerName}`,

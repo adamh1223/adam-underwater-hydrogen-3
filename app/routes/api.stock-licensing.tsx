@@ -1,5 +1,8 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
-import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
+import {
+  ADMIN_NOTIFICATION_EMAIL,
+  sendDirectEmail,
+} from '~/lib/email-provider.server';
 
 function escapeHtml(value: string) {
   return value
@@ -27,7 +30,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     await sendDirectEmail({
       env: context.env,
-      to: DIRECT_EMAIL_FROM,
+      to: ADMIN_NOTIFICATION_EMAIL,
       subject: 'New stock footage licensing form submission',
       text: JSON.stringify(body, null, 2),
       html: `

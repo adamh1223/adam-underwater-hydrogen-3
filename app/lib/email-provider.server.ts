@@ -1,5 +1,6 @@
 const RESEND_API_URL = 'https://api.resend.com/emails';
 const HARDCODED_FROM_EMAIL = 'hello@adamunderwater.com';
+const HARDCODED_ADMIN_NOTIFICATION_EMAIL = 'adamahussain1223@gmail.com';
 
 type SendEmailInput = {
   env: Env;
@@ -56,3 +57,4 @@ export async function sendDirectEmail({
 }
 
 export const DIRECT_EMAIL_FROM = HARDCODED_FROM_EMAIL;
+export const ADMIN_NOTIFICATION_EMAIL = HARDCODED_ADMIN_NOTIFICATION_EMAIL;
