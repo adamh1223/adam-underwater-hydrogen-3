@@ -387,6 +387,33 @@ button.reset:hover:not(:has(> *)) {
   justify-content: start;
 }
 
+.cart-option-grid {
+  display: grid;
+  grid-template-columns: minmax(9.5rem, max-content) minmax(11rem, 1fr);
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+  width: 100%;
+}
+
+.cart-option-row {
+  display: contents;
+}
+
+.cart-option-name {
+  text-align: start;
+  white-space: nowrap;
+}
+
+.cart-option-value {
+  min-width: 0;
+}
+
+.cart-option-select {
+  width: 100%;
+  max-width: 100%;
+}
+
 .cart-discount {
   align-items: center;
   display: flex;
@@ -681,6 +708,11 @@ button.reset:hover:not(:has(> *)) {
     font-size: 14px;
     font-weight: 400;
     align-items: center;
+  }
+
+  .cart-option-grid {
+    grid-template-columns: minmax(8.25rem, max-content) minmax(7.5rem, 1fr);
+    column-gap: 0.4rem;
   }
 }
 @media (min-width: 601px) {

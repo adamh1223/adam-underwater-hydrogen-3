@@ -47,6 +47,16 @@ export const CART_QUERY_FRAGMENT = `#graphql
           id
           tags
           vendor
+          variants(first: 250) {
+            nodes {
+              id
+              availableForSale
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
         }
         selectedOptions {
           name
@@ -96,7 +106,18 @@ export const CART_QUERY_FRAGMENT = `#graphql
           handle
           title
           id
+          tags
           vendor
+          variants(first: 250) {
+            nodes {
+              id
+              availableForSale
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
         }
         selectedOptions {
           name

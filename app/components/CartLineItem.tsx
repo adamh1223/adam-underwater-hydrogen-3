@@ -2,7 +2,7 @@ import type {CartLineUpdateInput} from '@shopify/hydrogen/storefront-api-types';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Image, type OptimisticCartLine} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
-import {Link} from '@remix-run/react';
+import {Link, useFetcher} from '@remix-run/react';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
@@ -12,6 +12,15 @@ import {generateCartDescription, includesTagName} from '~/lib/utils';
 import {useEffect, useState} from 'react';
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
+type ProductVariantOption = {
+  name: string;
+  value: string;
+};
+type ProductVariantForSelection = {
+  id: string;
+  availableForSale?: boolean;
+  selectedOptions: ProductVariantOption[];
+};
 
 /**
  * A single line item in the cart. It displays the product image, title, price.
@@ -127,17 +136,7 @@ export function CartLineItem({
                     {cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
-                    <ul>
-                      {selectedOptions.map((option) => (
-                        <li key={option.name}>
-                          <div className="flex justify-start items-center">
-                            <p className="cart-subheader">
-                              {option.name}: {option.value}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                    <CartLineOptionSelectors line={line} />
                   </div>
                 )}
               </>
@@ -184,19 +183,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div>
-                    <ul className="pt-3">
-                      {selectedOptions.map((option) => (
-                        <>
-                          <li key={option.name}>
-                            <div className="flex justify-start items-center">
-                              <p className="cart-subheader">
-                                {option.name}: {option.value}
-                              </p>
-                            </div>
-                          </li>
-                        </>
-                      ))}
-                    </ul>
+                    <CartLineOptionSelectors line={line} className="pt-3" />
                   </div>
                 )}
               </>
@@ -240,17 +227,7 @@ export function CartLineItem({
               </div>
               {!hasOnlyDefaultTitle && (
                 <div>
-                  <ul className="pt-3">
-                    {selectedOptions.map((option) => (
-                      <li key={option.name}>
-                        <div className="flex justify-start items-center">
-                          <p className="cart-subheader">
-                            {option.name}: {option.value}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  <CartLineOptionSelectors line={line} className="pt-3" />
                 </div>
               )}
             </>
@@ -295,17 +272,7 @@ export function CartLineItem({
 
               {!hasOnlyDefaultTitle && (
                 <div>
-                  <ul className="pt-3">
-                    {selectedOptions.map((option) => (
-                      <li key={option.name}>
-                        <div className="flex justify-start items-center">
-                          <p className="cart-subheader">
-                            {option.name}: {option.value}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                  <CartLineOptionSelectors line={line} className="pt-3" />
                 </div>
               )}
             </>
@@ -350,17 +317,7 @@ export function CartLineItem({
                     {cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
-                    <ul>
-                      {selectedOptions.map((option) => (
-                        <li key={option.name}>
-                          <div className="flex justify-start items-center">
-                            <p className="cart-subheader">
-                              {option.name}: {option.value}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                    <CartLineOptionSelectors line={line} />
                   </div>
                 )}
               </>
@@ -408,17 +365,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div>
-                    <ul className="pt-3">
-                      {selectedOptions.map((option) => (
-                        <li key={option.name}>
-                          <div className="flex justify-start items-center">
-                            <p className="cart-subheader">
-                              {option.name}: {option.value}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                    <CartLineOptionSelectors line={line} className="pt-3" />
                   </div>
                 )}
               </>
@@ -465,17 +412,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div>
-                    <ul className="pt-3">
-                      {selectedOptions.map((option) => (
-                        <li key={option.name}>
-                          <div className="flex justify-start items-center">
-                            <p className="cart-subheader">
-                              {option.name}: {option.value}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                    <CartLineOptionSelectors line={line} className="pt-3" />
                   </div>
                 )}
               </>
@@ -523,6 +460,188 @@ export function CartLineItem({
       </CardContent>
     </Card>
   );
+}
+
+function CartLineOptionSelectors({
+  line,
+  className,
+}: {
+  line: CartLine;
+  className?: string;
+}) {
+  const fetcher = useFetcher();
+  const {id: lineId, quantity, isOptimistic, merchandise} = line;
+  const selectedOptions = (merchandise.selectedOptions ?? []) as {
+    name: string;
+    value: string;
+  }[];
+  const productWithVariants = merchandise.product as typeof merchandise.product & {
+    variants?: {nodes?: ProductVariantForSelection[]};
+  };
+  const variants = productWithVariants.variants?.nodes ?? [];
+
+  if (!selectedOptions.length) return null;
+
+  const isUpdatingLine = fetcher.state !== 'idle' || !!isOptimistic;
+  const wrapperClassName = ['cart-option-grid', className]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div className={wrapperClassName}>
+      {selectedOptions.map((selectedOption) => {
+        const optionValues = getSelectableOptionValues({
+          variants,
+          selectedOptions,
+          optionName: selectedOption.name,
+        });
+        const currentValue = selectedOption.value;
+        const dropdownValues = optionValues.includes(currentValue)
+          ? optionValues
+          : [currentValue, ...optionValues];
+        const inputId = toOptionInputId(`${lineId}-${selectedOption.name}`);
+
+        return (
+          <div key={`${lineId}-${selectedOption.name}`} className="cart-option-row">
+            <label
+              htmlFor={inputId}
+              className="cart-subheader cart-option-name text-start"
+            >
+              {selectedOption.name}:
+            </label>
+            <div className="cart-option-value">
+              <select
+                id={inputId}
+                value={currentValue}
+                disabled={isUpdatingLine}
+                className="cart-option-select rounded-md border border-[#2a8fd6] bg-[#031437] px-2 py-1 text-white text-sm text-start focus:outline-none focus:ring-2 focus:ring-[#29abe2]"
+                onChange={(event) => {
+                  const nextValue = event.currentTarget.value;
+
+                  if (nextValue === currentValue || isUpdatingLine) return;
+
+                  const nextSelectedOptions = selectedOptions.map((option) =>
+                    option.name === selectedOption.name
+                      ? {...option, value: nextValue}
+                      : option,
+                  );
+
+                  const nextVariant = findVariantForSelectedOptions({
+                    variants,
+                    selectedOptions: nextSelectedOptions,
+                  });
+
+                  if (!nextVariant?.id) return;
+
+                  fetcher.submit(
+                    {
+                      [CartForm.INPUT_NAME]: JSON.stringify({
+                        action: CartForm.ACTIONS.LinesUpdate,
+                        inputs: {
+                          lines: [
+                            {
+                              id: lineId,
+                              quantity: quantity ?? 1,
+                              merchandiseId: nextVariant.id,
+                            },
+                          ],
+                        },
+                      }),
+                    },
+                    {method: 'post', action: '/cart'},
+                  );
+                }}
+              >
+                {dropdownValues.map((value) => (
+                  <option key={`${inputId}-${value}`} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function getSelectableOptionValues({
+  variants,
+  selectedOptions,
+  optionName,
+}: {
+  variants: ProductVariantForSelection[];
+  selectedOptions: ProductVariantOption[];
+  optionName: string;
+}) {
+  const values = new Set<string>();
+
+  for (const variant of variants) {
+    if (variant.availableForSale === false) continue;
+
+    const optionValue = getVariantOptionValue(variant, optionName);
+    if (!optionValue) continue;
+
+    const matchesOtherOptions = selectedOptions.every(
+      (selectedOption) =>
+        selectedOption.name === optionName ||
+        getVariantOptionValue(variant, selectedOption.name) ===
+          selectedOption.value,
+    );
+
+    if (!matchesOtherOptions) continue;
+    values.add(optionValue);
+  }
+
+  if (!values.size) {
+    for (const variant of variants) {
+      const optionValue = getVariantOptionValue(variant, optionName);
+      if (optionValue) values.add(optionValue);
+    }
+  }
+
+  return Array.from(values);
+}
+
+function findVariantForSelectedOptions({
+  variants,
+  selectedOptions,
+}: {
+  variants: ProductVariantForSelection[];
+  selectedOptions: ProductVariantOption[];
+}) {
+  const exactMatch = variants.find(
+    (variant) =>
+      variant.availableForSale !== false &&
+      selectedOptions.every(
+        (selectedOption) =>
+          getVariantOptionValue(variant, selectedOption.name) ===
+          selectedOption.value,
+      ),
+  );
+
+  if (exactMatch) return exactMatch;
+
+  return variants.find((variant) =>
+    selectedOptions.every(
+      (selectedOption) =>
+        getVariantOptionValue(variant, selectedOption.name) ===
+        selectedOption.value,
+    ),
+  );
+}
+
+function getVariantOptionValue(
+  variant: ProductVariantForSelection,
+  optionName: string,
+) {
+  return variant.selectedOptions.find((option) => option.name === optionName)
+    ?.value;
+}
+
+function toOptionInputId(value: string) {
+  return value.replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
 /**
