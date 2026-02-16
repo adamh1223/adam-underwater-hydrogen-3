@@ -31,6 +31,9 @@ declare global {
     R2_SECRET_ACCESS_KEY: string;
     R2_ENDPOINT: string;
     R2_REGION: string;
+    R2_PUBLIC_BASE_URL?: string;
+    R2_REVIEWS_PREFIX?: string;
+    R2_CONTACT_SUBMISSIONS_PREFIX?: string;
     RESEND_API_KEY: string;
     DOWNLOAD_EMAIL_LINK_SECRET: string;
     PUBLIC_SITE_URL: string;

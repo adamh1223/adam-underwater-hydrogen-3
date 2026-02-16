@@ -5,7 +5,7 @@ import {
   ADMIN_NOTIFICATION_EMAIL,
   sendDirectEmail,
 } from '~/lib/email-provider.server';
-import {uploadImage} from '~/lib/supabase.server';
+import {uploadReviewMedia} from '~/lib/review-media.server';
 // const BUCKET = 'main-bucket';
 // function getSupabase(env: Env) {
 //   const url = env.SUPABASE_URL;
@@ -143,7 +143,8 @@ export async function action({request, context}: ActionFunctionArgs) {
     const mf = existingJson?.data?.product?.metafield;
     if (mf?.value) {
       try {
-        existingReviews = JSON.parse(mf.value);
+        const parsedReviews = JSON.parse(mf.value);
+        existingReviews = Array.isArray(parsedReviews) ? parsedReviews : [];
       } catch {
         existingReviews = [];
       }
@@ -158,11 +159,11 @@ export async function action({request, context}: ActionFunctionArgs) {
     // }
     let customerImage;
     if (imageFile) {
-      customerImage = await uploadImage(context.env, imageFile);
+      customerImage = await uploadReviewMedia(context.env, imageFile);
     }
     let customerVideo;
     if (videoFile) {
-      customerVideo = await uploadImage(context.env, videoFile);
+      customerVideo = await uploadReviewMedia(context.env, videoFile);
     }
 
     // Append new review

@@ -1,7 +1,7 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {isbot} from 'isbot';
 import {validateContactSubmission} from '~/lib/contactAntiSpam';
-import {uploadImage} from '~/lib/supabase.server';
+import {uploadContactSubmissionMedia} from '~/lib/review-media.server';
 import {
   ADMIN_NOTIFICATION_EMAIL,
   sendDirectEmail,
@@ -56,7 +56,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
   try {
     for (const image of imageFiles) {
-      const url = await uploadImage(context.env, image);
+      const url = await uploadContactSubmissionMedia(context.env, image);
       uploadedImages.push(url);
     }
   } catch (error) {

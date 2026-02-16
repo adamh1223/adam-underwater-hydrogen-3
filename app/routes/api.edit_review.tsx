@@ -1,6 +1,6 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {ADMIN_METAFIELD_SET} from '~/lib/homeQueries';
-import {deleteImage, uploadImage} from '~/lib/supabase.server';
+import {deleteReviewMedia, uploadReviewMedia} from '~/lib/review-media.server';
 import {createNotificationId} from '~/lib/notifications';
 import {
   ADMIN_NOTIFICATION_EMAIL,
@@ -68,27 +68,19 @@ export async function action({request, context}: ActionFunctionArgs) {
       },
     );
 
-    const existingJson = await existingResponse.json();
+    const existingJson: any = await existingResponse.json();
     const mf = existingJson?.data?.product?.metafield;
-
-    let customerImage;
-    if (imageFile) {
-      customerImage = await uploadImage(context.env, imageFile);
-    }
-    let customerVideo;
-    if (videoFile) {
-      customerVideo = await uploadImage(context.env, videoFile);
-    }
 
     let existingReviews: any[] = [];
     if (mf?.value) {
       try {
-        existingReviews = JSON.parse(mf.value);
+        const parsedReviews = JSON.parse(mf.value);
+        existingReviews = Array.isArray(parsedReviews) ? parsedReviews : [];
       } catch {
         existingReviews = [];
       }
     }
-    console.log(existingReviews, '000existing');
+    console.warn(existingReviews, '000existing');
 
     const targetIndex = existingReviews.findIndex(
       (review) => review?.createdAt === createdAt,
@@ -100,7 +92,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     const targetReview = existingReviews[targetIndex] ?? {};
     customerName = isAdminCustomer ? targetReview.customerName : customerName;
-    console.log(targetReview, '000target');
+    console.warn(targetReview, '000target');
 
     if (
       customerId &&
@@ -114,10 +106,10 @@ export async function action({request, context}: ActionFunctionArgs) {
     let newCustomerImage = targetReview?.customerImage;
     if (imageFile && typeof imageFile !== 'string') {
       try {
-        const uploadedUrl = await uploadImage(context.env, imageFile as File);
+        const uploadedUrl = await uploadReviewMedia(context.env, imageFile as File);
         if (targetReview?.customerImage) {
           try {
-            await deleteImage(context.env, targetReview.customerImage);
+            await deleteReviewMedia(context.env, targetReview.customerImage);
           } catch (error) {
             console.error('Failed to delete previous review image', error);
           }
@@ -131,10 +123,10 @@ export async function action({request, context}: ActionFunctionArgs) {
     let newCustomerVideo = targetReview?.customerVideo;
     if (videoFile && typeof videoFile !== 'string') {
       try {
-        const uploadedUrl = await uploadImage(context.env, videoFile as File);
+        const uploadedUrl = await uploadReviewMedia(context.env, videoFile as File);
         if (targetReview?.customerVideo) {
           try {
-            await deleteImage(context.env, targetReview.customerVideo);
+            await deleteReviewMedia(context.env, targetReview.customerVideo);
           } catch (error) {
             console.error('Failed to delete previous review video', error);
           }
@@ -243,7 +235,7 @@ export async function action({request, context}: ActionFunctionArgs) {
           },
         );
 
-        const existingCustomerNotificationsJson =
+        const existingCustomerNotificationsJson: any =
           await existingCustomerNotificationsResponse.json();
         const existingValue =
           existingCustomerNotificationsJson?.data?.customer?.metafield?.value;
@@ -321,8 +313,8 @@ export async function action({request, context}: ActionFunctionArgs) {
           `Title: ${title}`,
           `Stars: ${stars}`,
           `Review: ${reviewText}`,
-          `Image: ${customerImage ?? 'none'}`,
-          `Video: ${customerVideo ?? 'none'}`,
+          `Image: ${newCustomerImage ?? 'none'}`,
+          `Video: ${newCustomerVideo ?? 'none'}`,
         ].join('\n'),
         html: `
           <h2>Review updated</h2>
@@ -331,8 +323,8 @@ export async function action({request, context}: ActionFunctionArgs) {
           <p><strong>Title:</strong> ${title}</p>
           <p><strong>Stars:</strong> ${stars}</p>
           <p><strong>Review:</strong><br />${reviewText}</p>
-          <p><strong>Image:</strong> ${customerImage ? `<a href="${customerImage}">${customerImage}</a>` : 'none'}</p>
-          <p><strong>Video:</strong> ${customerVideo ? `<a href="${customerVideo}">${customerVideo}</a>` : 'none'}</p>
+          <p><strong>Image:</strong> ${newCustomerImage ? `<a href="${newCustomerImage}">${newCustomerImage}</a>` : 'none'}</p>
+          <p><strong>Video:</strong> ${newCustomerVideo ? `<a href="${newCustomerVideo}">${newCustomerVideo}</a>` : 'none'}</p>
         `,
       });
     } catch (error) {
