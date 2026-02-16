@@ -59,6 +59,23 @@ export const productQuery = `#graphql
           name
           optionValues {
             name
+            firstSelectableVariant {
+              id
+              title
+              availableForSale
+              image {
+                url
+                altText
+              }
+              compareAtPrice {
+                amount
+                currencyCode
+              }
+              price {
+                amount
+                currencyCode
+              }
+            }
             swatch {
               color
               image {

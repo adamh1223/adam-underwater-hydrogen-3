@@ -36,6 +36,7 @@ import {
   productQuery,
   variantQuery,
 } from '~/lib/customerQueries';
+import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
 import ProductCarousel from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {useEffect} from 'react';
@@ -79,9 +80,11 @@ export async function loader(args: LoaderFunctionArgs) {
     ),
   );
 
-  const products = productNodes?.map(({node}) => {
-    return {...node};
-  });
+  const products = applyHighestResolutionVariantToProducts(
+    productNodes?.map(({node}) => {
+      return {...node};
+    }),
+  );
 
   const wishlist = {};
 

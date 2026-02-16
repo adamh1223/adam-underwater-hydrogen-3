@@ -15,6 +15,7 @@ import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
 import {useEffect, useState} from 'react';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
 
 export const meta: MetaFunction = () => {
   return [{title: `Adam Underwater | Search`}];
@@ -184,6 +185,30 @@ fragment MoneyProductItem on MoneyV2 {
         currencyCode
       }
     }
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          id
+          availableForSale
+          image {
+            url
+            altText
+            width
+            height
+          }
+          price {
+            amount
+            currencyCode
+          }
+          compareAtPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
   }
 ` as const;
 
@@ -302,13 +327,24 @@ async function regularSearch({
     throw new Error('No search data returned from Shopify API');
   }
 
-  const total = Object.values(items).reduce(
-    (acc, {nodes}) => acc + nodes.length,
-    0,
-  );
+  if (Array.isArray(items?.products?.nodes)) {
+    items.products.nodes = applyHighestResolutionVariantToProducts(
+      items.products.nodes as any[],
+    );
+  }
 
-  const error = errors
-    ? errors.map(({message}) => message).join(', ')
+  const total = Object.values(
+    items as Record<string, {nodes?: unknown[]}>,
+  ).reduce((acc, item) => {
+    const nodesLength = Array.isArray(item?.nodes) ? item.nodes.length : 0;
+    return acc + nodesLength;
+  }, 0);
+
+  const error = Array.isArray(errors)
+    ? (errors as Array<{message?: string}>)
+        .map((errorItem) => errorItem.message ?? '')
+        .filter(Boolean)
+        .join(', ') || undefined
     : undefined;
 
   return {type: 'regular', term, error, result: {total, items}};
@@ -411,6 +447,30 @@ fragment MoneyProductItem on MoneyV2 {
         currencyCode
       }
     }
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          id
+          availableForSale
+          image {
+            url
+            altText
+            width
+            height
+          }
+          price {
+            amount
+            currencyCode
+          }
+          compareAtPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
   }
 ` as const;
 
@@ -502,6 +562,12 @@ async function predictiveSearch({
 
   if (!items) {
     throw new Error('No predictive search data returned from Shopify API');
+  }
+
+  if (Array.isArray(items?.products)) {
+    items.products = applyHighestResolutionVariantToProducts(
+      items.products as any[],
+    );
   }
 
   const total = Object.values(items).reduce(

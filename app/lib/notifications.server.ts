@@ -7,6 +7,7 @@ import {
   parseNotifications,
   type Notification,
 } from '~/lib/notifications';
+import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
 
 type NotificationsState = {
   orderStatusSnapshot?: Record<
@@ -96,6 +97,30 @@ const CUSTOMER_NOTIFICATIONS_SYNC_QUERY = `#graphql
 	      price {
 	        amount
 	        currencyCode
+	      }
+	    }
+	    options {
+	      name
+	      optionValues {
+	        name
+	        firstSelectableVariant {
+	          id
+	          availableForSale
+	          image {
+	            url
+	            altText
+	            width
+	            height
+	          }
+	          price {
+	            amount
+	            currencyCode
+	          }
+	          compareAtPrice {
+	            amount
+	            currencyCode
+	          }
+	        }
 	      }
 	    }
 	  }
@@ -637,7 +662,10 @@ export async function getNotificationRecommendedProducts(
       NOTIFICATION_RECOMMENDED_PRODUCTS_QUERY,
       {variables: {first: 6, query}},
     );
-    return response?.products?.nodes ?? [];
+    const nodes = Array.isArray(response?.products?.nodes)
+      ? response.products.nodes
+      : [];
+    return applyHighestResolutionVariantToProducts(nodes as any[]);
   } catch (error) {
     console.error('Unable to load recommended products', error);
     return [];

@@ -23,23 +23,26 @@ import {
 } from '../ui/tooltip';
 import {toast} from 'sonner';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
+import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
 
 type shopifyImage = {url: string; altText: string};
 
 function getResolutionBadgeStyle(
   resolutionLabel: string,
-): React.CSSProperties | undefined {
+): React.CSSProperties {
   const normalized = resolutionLabel.trim().toUpperCase();
+  const baseStyle: React.CSSProperties = {borderColor: 'currentColor'};
+
   if (normalized === '5K') {
-    return {color: '#cd7f32', borderColor: '#cd7f32'};
+    return {color: '#cd7f32', ...baseStyle};
   }
   if (normalized === '6K') {
-    return {color: '#c0c0c0', borderColor: '#c0c0c0'};
+    return {color: '#c0c0c0', ...baseStyle};
   }
   if (normalized === '8K') {
-    return {color: '#d4af37', borderColor: '#d4af37'};
+    return {color: '#d4af37', ...baseStyle};
   }
-  return undefined;
+  return baseStyle;
 }
 
 function EProductsContainer({
@@ -73,8 +76,19 @@ function EProductsContainer({
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();
   const isBundle = product.tags.includes('Bundle');
+  const highestResolutionVariant = getHighestResolutionVariantFromProduct(product);
+  const selectedVariantForCard = (highestResolutionVariant ??
+    (product as any)?.selectedOrFirstAvailableVariant ??
+    null) as
+    | {id: string; price?: any; compareAtPrice?: any}
+    | null;
+  const selectedVariantId =
+    selectedVariantForCard?.id ?? product?.selectedOrFirstAvailableVariant?.id;
+  const displayCardPrice =
+    selectedVariantForCard?.price ?? product?.priceRange?.minVariantPrice;
+  const displayCardCompareAtPrice = selectedVariantForCard?.compareAtPrice ?? null;
   const disableButton = useIsVideoInCart(
-    product?.selectedOrFirstAvailableVariant?.id,
+    selectedVariantId,
     cart,
   );
 
@@ -408,7 +422,7 @@ function EProductsContainer({
                   </Link>
                 </div>
                 
-                {product?.priceRange?.minVariantPrice && (
+                {displayCardPrice && (
                   <>
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
@@ -425,11 +439,8 @@ function EProductsContainer({
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -462,7 +473,7 @@ function EProductsContainer({
                       </div>
                     </>
                   )}
-                {product?.selectedOrFirstAvailableVariant?.id && (
+                {selectedVariantId && (
                   <div
                     className={`flex product-add-to-cart-container w-full mx-auto ${
                       layout === 'grid'
@@ -474,7 +485,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}
@@ -560,7 +571,7 @@ function EProductsContainer({
                     </p>
                   </Link>
                 </div>
-                {product?.priceRange?.minVariantPrice && (
+                {displayCardPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
                   >
@@ -574,11 +585,8 @@ function EProductsContainer({
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -610,7 +618,7 @@ function EProductsContainer({
                       </div>
                     </>
                   )}
-                {product?.selectedOrFirstAvailableVariant?.id && (
+                {selectedVariantId && (
                   <div
                     className={`flex product-add-to-cart-container w-full mx-auto ${
                       layout === 'grid'
@@ -622,7 +630,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}
@@ -712,7 +720,7 @@ function EProductsContainer({
                     </p>
                   </Link>
                 </div>
-                {product?.priceRange?.minVariantPrice && (
+                {displayCardPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
                   >
@@ -726,11 +734,8 @@ function EProductsContainer({
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -762,7 +767,7 @@ function EProductsContainer({
                       </div>
                     </>
                   )}
-                {product?.selectedOrFirstAvailableVariant?.id && (
+                {selectedVariantId && (
                   <div
                     className={`flex product-add-to-cart-container w-full mx-auto ${
                       layout === 'grid'
@@ -774,7 +779,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}
@@ -993,7 +998,7 @@ function EProductsContainer({
 		                className={`eproduct-bottom-part-card-inside-list`}
 		              >
 		                
-		                {product?.priceRange?.minVariantPrice && (
+		                {displayCardPrice && (
 		                  <div
 		                    className={`flex justify-center`}
 	                  >
@@ -1007,11 +1012,8 @@ function EProductsContainer({
                         className={` product-price-font-list flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -1043,7 +1045,7 @@ function EProductsContainer({
                       </div>
                     </>
                   )}
-                {product?.selectedOrFirstAvailableVariant?.id && (
+                {selectedVariantId && (
                   <div
                     className={`flex product-add-to-cart-container w-full mx-auto
                       p-a-t-c-container-list justify-start
@@ -1053,7 +1055,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}
@@ -1290,7 +1292,7 @@ function EProductsContainer({
                   </Link>
                 </div>
                   </div>
-                {product?.priceRange?.minVariantPrice && (
+                {displayCardPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
                   >
@@ -1304,11 +1306,8 @@ function EProductsContainer({
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -1340,7 +1339,7 @@ function EProductsContainer({
                       </div>
                     </>
                   )}
-                {product?.selectedOrFirstAvailableVariant?.id && (
+                {selectedVariantId && (
                   <div
                     className={`flex product-add-to-cart-container w-full mx-auto ${
                       layout === 'grid'
@@ -1352,7 +1351,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}
@@ -1624,7 +1623,7 @@ function EProductsContainer({
                         <div className='flex justify-center items-end'>
                           <div className='w-full'>
 
-                        {product?.priceRange?.minVariantPrice && (
+                        {displayCardPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
                   >
@@ -1638,11 +1637,8 @@ function EProductsContainer({
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -1650,7 +1646,7 @@ function EProductsContainer({
                     </Link>
                   </div>
                 )}
-                        {product?.selectedOrFirstAvailableVariant?.id && (
+                        {selectedVariantId && (
                   <div
                     className={` product-add-to-cart-container w-full mx-auto p-a-t-c-container-list'
                     `}
@@ -1661,7 +1657,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}
@@ -1915,7 +1911,7 @@ function EProductsContainer({
                         <div className='flex justify-center items-end'>
                           <div className='w-full'>
 
-                        {product?.priceRange?.minVariantPrice && (
+                        {displayCardPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
                   >
@@ -1929,11 +1925,8 @@ function EProductsContainer({
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -1941,7 +1934,7 @@ function EProductsContainer({
                     </Link>
                   </div>
                 )}
-                        {product?.selectedOrFirstAvailableVariant?.id && (
+                        {selectedVariantId && (
                   <div
                     className={` product-add-to-cart-container w-full mx-auto p-a-t-c-container-list'
                     `}
@@ -1952,7 +1945,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}
@@ -2203,7 +2196,7 @@ function EProductsContainer({
                         <div className='flex justify-center items-end'>
                           <div className='w-full'>
 
-                        {product?.priceRange?.minVariantPrice && (
+                        {displayCardPrice && (
                   <div
                     className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
                   >
@@ -2217,11 +2210,8 @@ function EProductsContainer({
                         className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
                       >
                         <ProductPrice
-                          price={product?.priceRange?.minVariantPrice}
-                          compareAtPrice={
-                            product?.selectedOrFirstAvailableVariant
-                              ?.compareAtPrice
-                          }
+                          price={displayCardPrice}
+                          compareAtPrice={displayCardCompareAtPrice}
                         />
 
                         {/* We need to get the compareat price in here */}
@@ -2229,7 +2219,7 @@ function EProductsContainer({
                     </Link>
                   </div>
                 )}
-                        {product?.selectedOrFirstAvailableVariant?.id && (
+                        {selectedVariantId && (
                   <div
                     className={` product-add-to-cart-container w-full mx-auto p-a-t-c-container-list'
                     `}
@@ -2240,7 +2230,7 @@ function EProductsContainer({
                       lines={[
                         {
                           merchandiseId:
-                            product?.selectedOrFirstAvailableVariant?.id,
+                            selectedVariantId,
                           quantity: 1,
                         },
                       ]}

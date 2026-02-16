@@ -46,6 +46,7 @@ import {
 } from '~/components/ui/tooltip';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
+import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`}];
@@ -138,6 +139,12 @@ async function loadCriticalData({
     throw new Response(`Collection ${handle} not found`, {
       status: 404,
     });
+  }
+
+  if (Array.isArray(collection?.products?.nodes)) {
+    collection.products.nodes = applyHighestResolutionVariantToProducts(
+      collection.products.nodes as any[],
+    );
   }
 
   return {
@@ -737,6 +744,30 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       amount
       currencyCode
     }
+    }
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          id
+          availableForSale
+          image {
+            url
+            altText
+            width
+            height
+          }
+          price {
+            amount
+            currencyCode
+          }
+          compareAtPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
     }
     images(first: 20) {
       nodes {
