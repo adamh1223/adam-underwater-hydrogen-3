@@ -210,23 +210,6 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const location = useLocation();
   const [type, setType] = useState<AsideType>('closed');
 
-  useEffect(() => {
-    if (location.pathname === '/cart') return;
-
-    const params = new URLSearchParams(location.search);
-    const open = params.get('open');
-    if (open !== 'cart') return;
-
-    setType('cart');
-    params.delete('open');
-
-    const nextSearch = params.toString();
-    const nextUrl = `${location.pathname}${
-      nextSearch ? `?${nextSearch}` : ''
-    }${location.hash}`;
-    window.history.replaceState(window.history.state, '', nextUrl);
-  }, [location.hash, location.pathname, location.search]);
-
   return (
     <AsideContext.Provider
       value={{
