@@ -10,6 +10,7 @@ type ShopifyOrderPaidWebhookPayload = {
   name?: string;
   order_number?: number;
   email?: string;
+  financial_status?: string | null;
   created_at?: string;
   subtotal_price?: string;
   total_tax?: string;
@@ -25,6 +26,9 @@ type ShopifyOrderPaidWebhookPayload = {
     country_code?: string | null;
   } | null;
 };
+
+const ACCEPTED_TOPICS = new Set(['orders/paid', 'orders/create']);
+const PAID_STATUSES = new Set(['paid', 'partially_paid']);
 
 const ORDER_DOWNLOADS_QUERY = `#graphql
   query OrderDownloads($id: ID!) {
@@ -140,7 +144,7 @@ function resolveOrderGid(payload: ShopifyOrderPaidWebhookPayload): string | null
 
 export async function action({request, context}: ActionFunctionArgs) {
   const topic = request.headers.get('X-Shopify-Topic')?.trim();
-  if (topic && topic !== 'orders/paid') {
+  if (topic && !ACCEPTED_TOPICS.has(topic)) {
     return json({ok: true, skipped: `Ignored topic ${topic}`});
   }
 
@@ -170,6 +174,16 @@ export async function action({request, context}: ActionFunctionArgs) {
     payload = JSON.parse(rawBody) as ShopifyOrderPaidWebhookPayload;
   } catch {
     return json({ok: false, error: 'Invalid webhook payload'}, {status: 400});
+  }
+
+  if (topic === 'orders/create') {
+    const financialStatus = payload.financial_status?.trim().toLowerCase() ?? '';
+    if (financialStatus && !PAID_STATUSES.has(financialStatus)) {
+      return json({
+        ok: true,
+        skipped: `Order not paid yet (financial_status=${financialStatus})`,
+      });
+    }
   }
 
   const orderGid = resolveOrderGid(payload);
