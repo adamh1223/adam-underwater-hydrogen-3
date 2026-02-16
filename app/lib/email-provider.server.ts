@@ -1,5 +1,5 @@
 const RESEND_API_URL = 'https://api.resend.com/emails';
-const HARDCODED_FROM_EMAIL = 'adam@hussmedia.io';
+const HARDCODED_FROM_EMAIL = 'hello@adamunderwater.com';
 
 type SendEmailInput = {
   env: Env;
