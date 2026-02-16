@@ -4,7 +4,10 @@ import {
   getDownloadFilenameFromObjectKey,
   getR2ObjectKeyFromTagsForVariant,
 } from '~/lib/downloads';
-import {createR2SignedDownloadUrl} from '~/lib/r2.server';
+import {
+  createR2SignedDownloadUrl,
+  R2ObjectNotFoundError,
+} from '~/lib/r2.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 
 const EMAIL_DOWNLOAD_ORDER_QUERY = `#graphql
@@ -87,11 +90,21 @@ export async function loader({context, params}: LoaderFunctionArgs) {
   });
   if (!objectKey) return notFound('No downloadable asset configured.');
 
-  const signedUrl = await createR2SignedDownloadUrl(context.env, {
-    objectKey,
-    downloadFilename: getDownloadFilenameFromObjectKey(objectKey),
-    expiresInSeconds: 60 * 60,
-  });
+  let signedUrl = '';
+  try {
+    signedUrl = await createR2SignedDownloadUrl(context.env, {
+      objectKey,
+      downloadFilename: getDownloadFilenameFromObjectKey(objectKey),
+      expiresInSeconds: 60 * 60,
+    });
+  } catch (error) {
+    if (error instanceof R2ObjectNotFoundError) {
+      return notFound(
+        'The downloadable file is configured but not found in R2. Check product tag filename/casing.',
+      );
+    }
+    throw error;
+  }
 
   return redirect(signedUrl, {
     headers: {'Cache-Control': 'no-store, private'},

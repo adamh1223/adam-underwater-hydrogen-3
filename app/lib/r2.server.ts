@@ -9,6 +9,16 @@ type CreateR2SignedDownloadUrlInput = {
   expiresInSeconds?: number;
 };
 
+export class R2ObjectNotFoundError extends Error {
+  attemptedKeys: string[];
+
+  constructor(attemptedKeys: string[]) {
+    super('R2 object not found for the provided key.');
+    this.name = 'R2ObjectNotFoundError';
+    this.attemptedKeys = attemptedKeys;
+  }
+}
+
 function requireEnvValue(value: string | undefined, name: string) {
   if (!value || !value.trim()) {
     throw new Error(`${name} environment variable is required`);
@@ -58,6 +68,43 @@ function buildObjectUrl(env: Env, objectKey: string): URL {
   return endpoint;
 }
 
+function buildObjectKeyCandidates(objectKey: string): string[] {
+  const normalized = objectKey.trim();
+  if (!normalized) return [];
+
+  const candidates = [normalized];
+  const extensionMatch = normalized.match(/^(.*?)(\.[^./]+)$/);
+  if (!extensionMatch) return candidates;
+
+  const base = extensionMatch[1] ?? normalized;
+  const extension = extensionMatch[2] ?? '';
+  const lowerExtension = extension.toLowerCase();
+  const upperExtension = extension.toUpperCase();
+
+  if (lowerExtension && lowerExtension !== extension) {
+    candidates.push(`${base}${lowerExtension}`);
+  }
+  if (upperExtension && upperExtension !== extension) {
+    candidates.push(`${base}${upperExtension}`);
+  }
+
+  return Array.from(new Set(candidates));
+}
+
+async function objectExistsInR2(
+  env: Env,
+  awsClient: AwsClient,
+  objectKey: string,
+): Promise<boolean> {
+  const url = buildObjectUrl(env, objectKey);
+  const signedRequest = await awsClient.sign(url.toString(), {
+    method: 'HEAD',
+    aws: {signQuery: true},
+  });
+  const response = await fetch(signedRequest.url, {method: 'HEAD'});
+  return response.ok;
+}
+
 export async function createR2SignedDownloadUrl(
   env: Env,
   {objectKey, downloadFilename, expiresInSeconds = 60 * 60}: CreateR2SignedDownloadUrlInput,
@@ -72,20 +119,33 @@ export async function createR2SignedDownloadUrl(
     'R2_SECRET_ACCESS_KEY',
   );
   const region = env.R2_REGION?.trim() || DEFAULT_R2_REGION;
-  const url = buildObjectUrl(env, objectKey);
-
-  url.searchParams.set(
-    'response-content-disposition',
-    `attachment; filename="${sanitizeDownloadFilename(downloadFilename ?? 'download')}"`,
-  );
-  url.searchParams.set('X-Amz-Expires', String(expiresInSeconds));
-
   const awsClient = new AwsClient({
     accessKeyId,
     secretAccessKey,
     service: 's3',
     region,
   });
+
+  const objectKeyCandidates = buildObjectKeyCandidates(objectKey);
+  let resolvedObjectKey: string | null = null;
+  for (const candidate of objectKeyCandidates) {
+    if (await objectExistsInR2(env, awsClient, candidate)) {
+      resolvedObjectKey = candidate;
+      break;
+    }
+  }
+
+  if (!resolvedObjectKey) {
+    throw new R2ObjectNotFoundError(objectKeyCandidates);
+  }
+
+  const url = buildObjectUrl(env, resolvedObjectKey);
+  url.searchParams.set(
+    'response-content-disposition',
+    `attachment; filename="${sanitizeDownloadFilename(downloadFilename ?? 'download')}"`,
+  );
+  url.searchParams.set('X-Amz-Expires', String(expiresInSeconds));
+
   const signedRequest = await awsClient.sign(url.toString(), {
     method: 'GET',
     aws: {signQuery: true},

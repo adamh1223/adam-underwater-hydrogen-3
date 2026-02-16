@@ -6,7 +6,10 @@ import {
   getDownloadFilenameFromObjectKey,
   getR2ObjectKeyFromTagsForVariant,
 } from '~/lib/downloads';
-import {createR2SignedDownloadUrl} from '~/lib/r2.server';
+import {
+  createR2SignedDownloadUrl,
+  R2ObjectNotFoundError,
+} from '~/lib/r2.server';
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
@@ -90,11 +93,21 @@ export async function loader({context, params, request}: LoaderFunctionArgs) {
     return notFound('No downloadable file is configured for this item.');
   }
 
-  const signedUrl = await createR2SignedDownloadUrl(context.env, {
-    objectKey,
-    downloadFilename: getDownloadFilenameFromObjectKey(objectKey),
-    expiresInSeconds: SIGNED_URL_TTL_SECONDS,
-  });
+  let signedUrl = '';
+  try {
+    signedUrl = await createR2SignedDownloadUrl(context.env, {
+      objectKey,
+      downloadFilename: getDownloadFilenameFromObjectKey(objectKey),
+      expiresInSeconds: SIGNED_URL_TTL_SECONDS,
+    });
+  } catch (error) {
+    if (error instanceof R2ObjectNotFoundError) {
+      return notFound(
+        'The downloadable file is configured but not found in R2. Check product tag filename/casing.',
+      );
+    }
+    throw error;
+  }
 
   return redirect(signedUrl, {
     headers: {'Cache-Control': 'no-store, private'},
