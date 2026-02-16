@@ -4,7 +4,7 @@ import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuer
 import {variantQuery} from '~/lib/customerQueries';
 import {
   getDownloadFilenameFromObjectKey,
-  getR2ObjectKeyFromTags,
+  getR2ObjectKeyFromTagsForVariant,
 } from '~/lib/downloads';
 import {createR2SignedDownloadUrl} from '~/lib/r2.server';
 
@@ -77,7 +77,14 @@ export async function loader({context, params, request}: LoaderFunctionArgs) {
   const tags = Array.isArray(variantResponse?.node?.product?.tags)
     ? variantResponse.node.product.tags
     : [];
-  const objectKey = getR2ObjectKeyFromTags(tags);
+  const selectedOptions = Array.isArray(variantResponse?.node?.selectedOptions)
+    ? variantResponse.node.selectedOptions
+    : [];
+  const objectKey = getR2ObjectKeyFromTagsForVariant({
+    tags,
+    selectedOptions,
+    variantTitle: matchingLineItem?.variantTitle,
+  });
 
   if (!objectKey) {
     return notFound('No downloadable file is configured for this item.');

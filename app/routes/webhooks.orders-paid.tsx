@@ -1,6 +1,6 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {createEmailDownloadToken} from '~/lib/email-download-token.server';
-import {getR2ObjectKeyFromTags} from '~/lib/downloads';
+import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {sendPurchaseDownloadEmail} from '~/lib/purchase-email.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 
@@ -50,6 +50,11 @@ const ORDER_DOWNLOADS_QUERY = `#graphql
           quantity
           variant {
             id
+            title
+            selectedOptions {
+              name
+              value
+            }
             image {
               url
             }
@@ -212,6 +217,11 @@ export async function action({request, context}: ActionFunctionArgs) {
               quantity?: number | null;
               variant?: {
                 id?: string | null;
+                title?: string | null;
+                selectedOptions?: Array<{
+                  name?: string | null;
+                  value?: string | null;
+                }> | null;
                 image?: {url?: string | null} | null;
                 product?: {
                   title?: string | null;
@@ -244,7 +254,11 @@ export async function action({request, context}: ActionFunctionArgs) {
         if (!lineItemId) return null;
 
         const tags = lineItem.variant?.product?.tags ?? [];
-        const objectKey = getR2ObjectKeyFromTags(tags);
+        const objectKey = getR2ObjectKeyFromTagsForVariant({
+          tags,
+          selectedOptions: lineItem.variant?.selectedOptions ?? [],
+          variantTitle: lineItem.variant?.title ?? lineItem.title,
+        });
         if (!objectKey) return null;
 
         const token = await createEmailDownloadToken({

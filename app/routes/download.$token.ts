@@ -2,7 +2,7 @@ import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {verifyEmailDownloadToken} from '~/lib/email-download-token.server';
 import {
   getDownloadFilenameFromObjectKey,
-  getR2ObjectKeyFromTags,
+  getR2ObjectKeyFromTagsForVariant,
 } from '~/lib/downloads';
 import {createR2SignedDownloadUrl} from '~/lib/r2.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
@@ -17,6 +17,11 @@ const EMAIL_DOWNLOAD_ORDER_QUERY = `#graphql
           title
           variant {
             id
+            title
+            selectedOptions {
+              name
+              value
+            }
             product {
               tags
             }
@@ -48,6 +53,11 @@ export async function loader({context, params}: LoaderFunctionArgs) {
             title: string;
             variant?: {
               id?: string | null;
+              title?: string | null;
+              selectedOptions?: Array<{
+                name?: string | null;
+                value?: string | null;
+              }> | null;
               product?: {tags?: string[] | null} | null;
             } | null;
           }>;
@@ -70,7 +80,11 @@ export async function loader({context, params}: LoaderFunctionArgs) {
   if (!lineItem) return notFound('Line item not found.');
 
   const productTags = lineItem.variant?.product?.tags ?? [];
-  const objectKey = getR2ObjectKeyFromTags(productTags);
+  const objectKey = getR2ObjectKeyFromTagsForVariant({
+    tags: productTags,
+    selectedOptions: lineItem.variant?.selectedOptions ?? [],
+    variantTitle: lineItem.variant?.title ?? lineItem.title,
+  });
   if (!objectKey) return notFound('No downloadable asset configured.');
 
   const signedUrl = await createR2SignedDownloadUrl(context.env, {

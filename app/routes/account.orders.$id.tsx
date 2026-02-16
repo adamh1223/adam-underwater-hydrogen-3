@@ -12,7 +12,7 @@ import {Button} from '~/components/ui/button';
 import {useEffect, useState} from 'react';
 import {variantQuery} from '~/lib/customerQueries';
 import Sectiontitle from '~/components/global/Sectiontitle';
-import {getR2ObjectKeyFromTags} from '~/lib/downloads';
+import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
@@ -70,12 +70,18 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       }),
     ),
   );
-  const tagsByVariantId = new Map<string, string[]>();
+  const downloadMetadataByVariantId = new Map<
+    string,
+    {tags: string[]; selectedOptions: Array<{name?: string; value?: string}>}
+  >();
   for (const response of variantResponses) {
     const variant = response?.node as any;
     if (typeof variant?.id !== 'string') continue;
     const tags = Array.isArray(variant?.product?.tags) ? variant.product.tags : [];
-    tagsByVariantId.set(variant.id, tags);
+    const selectedOptions = Array.isArray(variant?.selectedOptions)
+      ? variant.selectedOptions
+      : [];
+    downloadMetadataByVariantId.set(variant.id, {tags, selectedOptions});
   }
 
   const encodedOrderId = params.id;
@@ -86,7 +92,13 @@ export async function loader({params, context}: LoaderFunctionArgs) {
         typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
       if (!lineItemId || !variantId) return acc;
 
-      const objectKey = getR2ObjectKeyFromTags(tagsByVariantId.get(variantId) ?? []);
+      const variantMetadata = downloadMetadataByVariantId.get(variantId);
+      if (!variantMetadata) return acc;
+      const objectKey = getR2ObjectKeyFromTagsForVariant({
+        tags: variantMetadata.tags,
+        selectedOptions: variantMetadata.selectedOptions,
+        variantTitle: lineItem?.variantTitle,
+      });
       if (!objectKey) return acc;
 
       acc[lineItemId] =
@@ -566,7 +578,7 @@ function OrderLineRow({
         </div>
         {windowWidth && windowWidth < 605 && (
           <>
-            {lineItem.variantTitle === null && downloadUrl && (
+            {downloadUrl && (
               <div className="td pt-3">
                 {/* <td> */}
                 <div className="flex justify-center align-center">
@@ -584,7 +596,7 @@ function OrderLineRow({
 
       {windowWidth && windowWidth >= 605 && (
         <>
-          {lineItem.variantTitle === null && downloadUrl && (
+          {downloadUrl && (
             <div className="td">
               {/* <td> */}
               <div className="flex justify-center align-center">

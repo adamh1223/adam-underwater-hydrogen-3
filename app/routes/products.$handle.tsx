@@ -78,6 +78,61 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   ];
 };
 
+function parseResolutionValue(value: unknown): number | null {
+  if (typeof value !== 'string') return null;
+  const match = value.match(/(\d+)\s*k/i);
+  if (!match) return null;
+  const parsed = Number.parseInt(match[1] ?? '', 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+function hasSelectedResolutionOption(
+  selectedOptions: Array<{name: string; value: string}>,
+) {
+  return selectedOptions.some(
+    (option) => option?.name?.trim().toLowerCase() === 'resolution',
+  );
+}
+
+function getHighestResolutionVariant(
+  product: any,
+): Record<string, unknown> | null {
+  const options = Array.isArray(product?.options) ? product.options : [];
+  const resolutionOption = options.find(
+    (option: any) =>
+      typeof option?.name === 'string' &&
+      option.name.trim().toLowerCase() === 'resolution',
+  );
+  if (!resolutionOption) return null;
+
+  const optionValues = Array.isArray(resolutionOption.optionValues)
+    ? resolutionOption.optionValues
+    : [];
+
+  let highestResolution = -1;
+  let highestResolutionVariant: Record<string, unknown> | null = null;
+
+  for (const optionValue of optionValues) {
+    const resolution = parseResolutionValue(optionValue?.name);
+    if (resolution === null) continue;
+
+    const candidateVariant =
+      optionValue?.firstSelectableVariant &&
+      typeof optionValue.firstSelectableVariant === 'object'
+        ? (optionValue.firstSelectableVariant as Record<string, unknown>)
+        : null;
+    if (!candidateVariant) continue;
+
+    if (resolution > highestResolution) {
+      highestResolution = resolution;
+      highestResolutionVariant = candidateVariant;
+    }
+  }
+
+  return highestResolutionVariant;
+}
+
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
@@ -105,9 +160,10 @@ async function loadCriticalData({
   }
 
   const handle = handleParam.toLowerCase();
+  const selectedOptions = getSelectedProductOptions(request);
   const [{product}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
-      variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+      variables: {handle, selectedOptions},
     }),
     storefront.query(RECOMMENDED_PRODUCTS_QUERY),
     // Add other queries here, so that they are loaded in parallel
@@ -115,6 +171,14 @@ async function loadCriticalData({
   if (!product?.id) {
     throw new Response(null, {status: 404});
   }
+
+  if (!hasSelectedResolutionOption(selectedOptions)) {
+    const highestResolutionVariant = getHighestResolutionVariant(product);
+    if (highestResolutionVariant?.id) {
+      product.selectedOrFirstAvailableVariant = highestResolutionVariant;
+    }
+  }
+
   const reviews = await context.storefront.query(GET_REVIEW_QUERY, {
     variables: {productId: product.id},
   });

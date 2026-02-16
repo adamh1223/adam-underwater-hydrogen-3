@@ -22,8 +22,26 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import {toast} from 'sonner';
+import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 
 type shopifyImage = {url: string; altText: string};
+
+function getResolutionBadgeStyle(
+  resolutionLabel: string,
+): React.CSSProperties | undefined {
+  const normalized = resolutionLabel.trim().toUpperCase();
+  if (normalized === '5K') {
+    return {color: '#cd7f32', borderColor: '#cd7f32'};
+  }
+  if (normalized === '6K') {
+    return {color: '#c0c0c0', borderColor: '#c0c0c0'};
+  }
+  if (normalized === '8K') {
+    return {color: '#d4af37', borderColor: '#d4af37'};
+  }
+  return undefined;
+}
+
 function EProductsContainer({
   product,
   loading,
@@ -82,6 +100,8 @@ function EProductsContainer({
   const isSlowmo = product.tags.includes('slowmo');
   const isArtistPick = product.tags.includes('artist-pick');
   const hasDurationTag = Boolean(durationTag);
+  const resolutionBadgeLabel = getHighestResolutionLabelFromTags(product.tags) ?? '4K';
+  const resolutionBadgeStyle = getResolutionBadgeStyle(resolutionBadgeLabel);
   
 
   const titleCase = (w: string) =>
@@ -498,8 +518,9 @@ function EProductsContainer({
                     <button
                       disabled
                       className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
+                      style={resolutionBadgeStyle}
                     >
-                      4K
+                      {resolutionBadgeLabel}
                     </button>
                   </div>
 
@@ -647,8 +668,9 @@ function EProductsContainer({
                     <button
                       disabled
                       className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
+                      style={resolutionBadgeStyle}
                     >
-                      4K
+                      {resolutionBadgeLabel}
                     </button>
                   </div>
 
@@ -942,11 +964,12 @@ function EProductsContainer({
 	              }
 	            >
 		              <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
-                    <button
+	                  <button
 		                  disabled
 		                  className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
 		                >
-		                  4K
+		                  {resolutionBadgeLabel}
 		                </button>
 		                {isSlowmo && (
 		                  <button
@@ -1217,8 +1240,9 @@ function EProductsContainer({
               <button
 		                  disabled
 		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
 		                >
-		                  4K
+		                  {resolutionBadgeLabel}
 		                </button>
 		                {isSlowmo && (
 		                  <button
@@ -1515,8 +1539,9 @@ function EProductsContainer({
               <button
 		                  disabled
 		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
 		                >
-		                  4K
+		                  {resolutionBadgeLabel}
 		                </button>
 		                {isSlowmo && (
 		                  <button
@@ -1816,8 +1841,9 @@ function EProductsContainer({
               <button
 		                  disabled
 		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
 		                >
-		                  4K
+		                  {resolutionBadgeLabel}
 		                </button>
 		                {isSlowmo && (
 		                  <button
@@ -2105,8 +2131,9 @@ function EProductsContainer({
               <button
 		                  disabled
 		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
 		                >
-		                  4K
+		                  {resolutionBadgeLabel}
 		                </button>
 		                {isSlowmo && (
 		                  <button
