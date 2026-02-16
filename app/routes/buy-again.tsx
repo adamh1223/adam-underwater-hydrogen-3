@@ -18,56 +18,76 @@ function normalizeVariantId(rawVariantId: string | null): string | null {
   return null;
 }
 
-function parseLines(linesValue: string | null): CartLineInput[] {
-  if (!linesValue) return [];
+function parseLineToken(rawToken: string): CartLineInput | null {
+  const token = rawToken.trim();
+  if (!token) return null;
 
-  return linesValue
-    .split(',')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [rawVariantId, rawQuantity] = line.split(':');
-      const merchandiseId = normalizeVariantId(rawVariantId ?? null);
-      if (!merchandiseId) return null;
+  let rawVariantId = token;
+  let quantity = 1;
+  const lastColonIndex = token.lastIndexOf(':');
 
-      const parsedQuantity = Number.parseInt(rawQuantity ?? '1', 10);
-      const quantity = Number.isFinite(parsedQuantity)
-        ? Math.max(1, parsedQuantity)
-        : 1;
+  // Parse quantity from the trailing :<int> only.
+  // This keeps support for IDs that can contain ':' (for example gid://...).
+  if (lastColonIndex > 0) {
+    const maybeQuantity = token.slice(lastColonIndex + 1);
+    if (/^\d+$/.test(maybeQuantity)) {
+      rawVariantId = token.slice(0, lastColonIndex);
+      quantity = Math.max(1, Number.parseInt(maybeQuantity, 10));
+    }
+  }
 
-      return {merchandiseId, quantity};
-    })
+  const merchandiseId = normalizeVariantId(rawVariantId);
+  if (!merchandiseId) return null;
+
+  return {merchandiseId, quantity};
+}
+
+function parseLines(lineInputs: Array<string | null>): CartLineInput[] {
+  const parsedLines = lineInputs
+    .flatMap((value) => (value ?? '').split(','))
+    .map(parseLineToken)
     .filter((line): line is CartLineInput => Boolean(line));
+
+  if (!parsedLines.length) return [];
+
+  // Merge duplicate variants so cart.create receives normalized line items.
+  const byMerchandiseId = new Map<string, number>();
+  for (const line of parsedLines) {
+    byMerchandiseId.set(
+      line.merchandiseId,
+      (byMerchandiseId.get(line.merchandiseId) ?? 0) + line.quantity,
+    );
+  }
+
+  return Array.from(byMerchandiseId.entries()).map(
+    ([merchandiseId, quantity]) => ({
+      merchandiseId,
+      quantity,
+    }),
+  );
 }
 
 export async function loader({request, context}: LoaderFunctionArgs) {
   const {cart} = context;
   const url = new URL(request.url);
-  const encodedLines = url.searchParams.get('lines');
+  const encodedLineInputs = [
+    ...url.searchParams.getAll('lines'),
+    ...url.searchParams.getAll('line'),
+  ];
 
-  let lines = parseLines(encodedLines);
+  let lines = parseLines(encodedLineInputs);
   if (!lines.length) {
-    const variantId =
-      normalizeVariantId(
-        url.searchParams.get('variant') ?? url.searchParams.get('variantId'),
-      ) ?? '';
-    if (variantId) {
-      lines = [{merchandiseId: variantId, quantity: 1}];
-    }
+    const variantInput =
+      url.searchParams.get('variant') ?? url.searchParams.get('variantId');
+    lines = parseLines([variantInput]);
   }
 
   if (!lines.length) {
     return redirect(HOME_WITH_CART_OPEN);
   }
 
-  let result: any;
-
-  const existingCart = await cart.get();
-  if (existingCart?.id) {
-    result = await cart.addLines(lines);
-  } else {
-    result = await cart.create({lines});
-  }
+  // Rebuild a clean cart that matches the "buy again" selection exactly.
+  const result = await cart.create({lines});
 
   const cartId = result?.cart?.id;
   const headers = cartId ? cart.setCartId(cartId) : new Headers();
