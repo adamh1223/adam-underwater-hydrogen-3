@@ -30,7 +30,7 @@ import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
 import IndividualVideoBundle from '~/components/eproducts/IndividualVideoBundle';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {RootLoader} from '~/root';
 import {useIsLoggedIn, useIsVideoInCart} from '~/lib/hooks';
 import {
@@ -94,6 +94,8 @@ function hasSelectedResolutionOption(
     (option) => option?.name?.trim().toLowerCase() === 'resolution',
   );
 }
+
+const FIVE_STAR_KEYS = ['one', 'two', 'three', 'four', 'five'] as const;
 
 function getHighestResolutionVariant(
   product: any,
@@ -923,20 +925,20 @@ const navigate = useNavigate();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const getYOffset = () => {
+  const getYOffset = useCallback(() => {
     if (windowWidth == null) return -180;
     if (windowWidth < 1024) return -165;
     if (windowWidth >= 1024) return -130;
-  };
+  }, [windowWidth]);
 
-  const scrollToSection = (sectionId: string) => {
+  const scrollToSection = useCallback((sectionId: string) => {
     const section = document.getElementById(sectionId);
     if (!section) return false;
     const y =
       section.getBoundingClientRect().top + window.scrollY + getYOffset();
     window.scrollTo({top: y, behavior: 'smooth'});
     return true;
-  };
+  }, [getYOffset]);
 
   const handleScroll = (
     sectionId: string,
@@ -974,13 +976,17 @@ const navigate = useNavigate();
       if (ok) {
         try {
           sessionStorage.removeItem('about-scroll-target');
-        } catch {}
+        } catch {
+          // Ignore sessionStorage removal errors in restricted contexts.
+        }
         return;
       }
       if (attempts >= maxAttempts) {
         try {
           sessionStorage.removeItem('about-scroll-target');
-        } catch {}
+        } catch {
+          // Ignore sessionStorage removal errors in restricted contexts.
+        }
         return;
       }
       retryTimerRef.current = window.setTimeout(tryScroll, delayMs);
@@ -994,7 +1000,7 @@ const navigate = useNavigate();
         retryTimerRef.current = null;
       }
     };
-  }, [location, windowWidth]);
+  }, [location, scrollToSection]);
   return (
     <>
       <section className="product pt-[20px]">
@@ -1107,8 +1113,11 @@ const navigate = useNavigate();
                         className="text-muted-foreground"
                         aria-label={`Maximum rating of 5 stars`}
                       >
-                        {Array.from({length: 5}).map((_, index) => (
-                          <RatingButton key={index} className="h-5 w-5 p-0.5" />
+                        {FIVE_STAR_KEYS.map((starKey) => (
+                          <RatingButton
+                            key={`mobile-max-${starKey}`}
+                            className="h-5 w-5 p-0.5"
+                          />
                         ))}
                       </Rating>
                       <div
@@ -1116,9 +1125,9 @@ const navigate = useNavigate();
                         style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                       >
                         <Rating readOnly value={5} className="stars">
-                          {Array.from({length: 5}).map((_, index) => (
+                          {FIVE_STAR_KEYS.map((starKey) => (
                             <RatingButton
-                              key={index}
+                              key={`mobile-fill-${starKey}`}
                               className="h-5 w-5 p-0.5"
                               aria-label={`Average rating ${formattedAverageRating} out of 5`}
                             />
@@ -1243,9 +1252,9 @@ const navigate = useNavigate();
                             className="text-muted-foreground"
                             aria-label={`Maximum rating of 5 stars`}
                           >
-                            {Array.from({length: 5}).map((_, index) => (
+                            {FIVE_STAR_KEYS.map((starKey) => (
                               <RatingButton
-                                key={index}
+                                key={`desktop-max-${starKey}`}
                                 className="h-5 w-5 p-0.5"
                               />
                             ))}
@@ -1255,9 +1264,9 @@ const navigate = useNavigate();
                             style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                           >
                             <Rating readOnly value={5} className="stars">
-                              {Array.from({length: 5}).map((_, index) => (
+                              {FIVE_STAR_KEYS.map((starKey) => (
                                 <RatingButton
-                                  key={index}
+                                  key={`desktop-fill-${starKey}`}
                                   className="h-5 w-5 p-0.5"
                                   aria-label={`Average rating ${formattedAverageRating} out of 5`}
                                 />
@@ -1297,7 +1306,7 @@ const navigate = useNavigate();
             <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
-                  <img src={'/usaflag3.png'} style={{height: '2.2rem'}} />
+                  <img src={'/usaflag3.png'} alt="" style={{height: '2.2rem'}} />
                 </div>
                 <div className="flex justify-center mt-3">
                   <p>Made in USA</p>
@@ -1305,7 +1314,7 @@ const navigate = useNavigate();
               </div>
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
-                  <img src={'/diamond.png'} style={{height: '2.4rem'}} />
+                  <img src={'/diamond.png'} alt="" style={{height: '2.4rem'}} />
                 </div>
                 <div className="flex justify-center mt-2">
                   <p>Premium Quality</p>
@@ -1313,7 +1322,7 @@ const navigate = useNavigate();
               </div>
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
-                  <img src={'/returnarrow2.png'} style={{height: '2.7rem'}} />
+                  <img src={'/returnarrow2.png'} alt="" style={{height: '2.7rem'}} />
                 </div>
                 <div className="flex justify-center">
                   <p>14-day returns</p>
@@ -1337,6 +1346,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/printingprocess.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1359,6 +1369,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/antiglare.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1383,6 +1394,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/paperquality2.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1405,6 +1417,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/durable.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1436,6 +1449,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/handcrafted.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1458,6 +1472,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/lightweight.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1482,6 +1497,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/phonetap.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1504,6 +1520,7 @@ const navigate = useNavigate();
                             <div className="flex justify-center">
                               <img
                                 src={'/readytohang.png'}
+                                alt=""
                                 style={{height: '2.7rem'}}
                               />
                             </div>
@@ -1541,7 +1558,7 @@ const navigate = useNavigate();
                     <div className="flex items-center justify-center w-full">
                       <div className="flex-1 h-px bg-muted" />
                       <span className="px-4">
-                        <div>How it's Made</div>
+                        <div>How it&apos;s Made</div>
                       </span>
                       <div className="flex-1 h-px bg-muted" />
                     </div>
@@ -1580,6 +1597,7 @@ const navigate = useNavigate();
                           <div className="flex justify-center items-center">
                             <img
                               src={'/usaflag3.png'}
+                              alt=""
                               style={{height: '2.2rem'}}
                             />
                           </div>
@@ -1591,6 +1609,7 @@ const navigate = useNavigate();
                           <div className="flex justify-center items-center">
                             <img
                               src={'/diamond.png'}
+                              alt=""
                               style={{height: '2.4rem'}}
                             />
                           </div>
@@ -1602,6 +1621,7 @@ const navigate = useNavigate();
                           <div className="flex justify-center items-center">
                             <img
                               src={'/returnarrow2.png'}
+                              alt=""
                               style={{height: '2.7rem'}}
                             />
                           </div>
@@ -1628,6 +1648,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/printingprocess.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1651,6 +1672,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/antiglare.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1676,6 +1698,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/paperquality2.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1699,6 +1722,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/durable.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1732,6 +1756,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/handcrafted.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1755,6 +1780,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/lightweight.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1780,6 +1806,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/phonetap.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1802,6 +1829,7 @@ const navigate = useNavigate();
                                     <div className="flex justify-center">
                                       <img
                                         src={'/readytohang.png'}
+                                        alt=""
                                         style={{height: '2.7rem'}}
                                       />
                                     </div>
@@ -1878,8 +1906,11 @@ const navigate = useNavigate();
                         className="text-muted-foreground"
                         aria-label={`Maximum rating of 5 stars`}
                       >
-                        {Array.from({length: 5}).map((_, index) => (
-                          <RatingButton key={index} className="h-5 w-5 p-0.5" />
+                        {FIVE_STAR_KEYS.map((starKey) => (
+                          <RatingButton
+                            key={`reviews-max-${starKey}`}
+                            className="h-5 w-5 p-0.5"
+                          />
                         ))}
                       </Rating>
                       <div
@@ -1887,9 +1918,9 @@ const navigate = useNavigate();
                         style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                       >
                         <Rating readOnly value={5} className="stars">
-                          {Array.from({length: 5}).map((_, index) => (
+                          {FIVE_STAR_KEYS.map((starKey) => (
                             <RatingButton
-                              key={index}
+                              key={`reviews-fill-${starKey}`}
                               className="h-5 w-5 p-0.5"
                               aria-label={`Average rating ${formattedAverageRating} out of 5`}
                             />
