@@ -42,17 +42,22 @@
 }
 @media (min-width: 801px) and (max-width: 957px) {
   .carousel-img-list-view {
-    max-height: clamp(200px, 24vw, 245px);
+    max-height: clamp(165px, 19.5vw, 212px);
   }
 }
 @media (min-width: 958px) and (max-width: 1249px) {
   .carousel-img-list-view {
-    max-height: 250px;
+    max-height: clamp(180px, 18vw, 225px);
   }
 }
 @media (min-width: 1250px) {
   .carousel-img-list-view {
-    max-height: 250px;
+    max-height: 235px;
+  }
+}
+@media (min-width: 801px) {
+  .print-carousel-list {
+    padding: 12px 10px 40px 10px;
   }
 }
 @media (max-width: 800px) {
@@ -518,6 +523,28 @@
   }
   .right-arrow-carousel-grid-vertical {
     margin: 0 140px 0 0;
+  }
+}
+
+@media (min-width: 801px) and (max-width: 1249px) {
+  .left-arrow-carousel-list-horizontal {
+    margin: 0;
+    margin-left: 10px;
+  }
+  .right-arrow-carousel-list-horizontal {
+    margin: 0;
+    margin-right: 10px;
+  }
+}
+
+@media (min-width: 801px) {
+  .list-horizontal-arrow-shell {
+    padding-left: clamp(12px, 2.2vw, 30px);
+    padding-right: clamp(12px, 2.2vw, 30px);
+  }
+  .list-horizontal-arrow-shell .left-arrow-carousel-list-horizontal,
+  .list-horizontal-arrow-shell .right-arrow-carousel-list-horizontal {
+    margin: 0;
   }
 }
 

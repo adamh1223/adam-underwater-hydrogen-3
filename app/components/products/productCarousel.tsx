@@ -514,7 +514,9 @@ export const ProductCarousel = ({
                 </CarouselContent>
               </Link>
 
-              <div className="absolute inset-0 z-40 flex items-center justify-between pointer-events-none">
+              <div
+                className={`absolute inset-0 z-40 flex items-center justify-between pointer-events-none ${layout === 'list' && isHorizontal ? 'list-horizontal-arrow-shell' : ''}`}
+              >
                 <Button
                   onClick={decreaseIndex}
                   className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer ${layout === 'list' && isHorizontal && 'left-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'left-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'left-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'left-arrow-carousel-grid-vertical'}`}

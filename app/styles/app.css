@@ -2169,22 +2169,22 @@ span {
 
 @media (max-width: 500px) {
   .print-carousel-list {
-    padding: 8px 6px;
+    padding: 8px 6px 32px 6px;
   }
 }
 @media (min-width: 501px) and (max-width: 600px) {
   .print-carousel-list {
-    padding: 16px 6px;
+    padding: 16px 6px 34px 6px;
   }
 }
 @media (min-width: 601px) and (max-width: 700px) {
   .print-carousel-list {
-    padding: 24px 6px;
+    padding: 24px 6px 38px 6px;
   }
 }
 @media (min-width: 701px) and (max-width: 800px) {
   .print-carousel-list {
-    padding: 24px 6px;
+    padding: 24px 6px 40px 6px;
   }
 }
 
