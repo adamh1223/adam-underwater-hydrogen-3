@@ -40,6 +40,16 @@
   }
   
 }
+@media (min-width: 801px) and (max-width: 957px) {
+  .carousel-img-list-view {
+    max-height: clamp(200px, 24vw, 245px);
+  }
+}
+@media (min-width: 958px) and (max-width: 1249px) {
+  .carousel-img-list-view {
+    max-height: 250px;
+  }
+}
 @media (min-width: 1250px) {
   .carousel-img-list-view {
     max-height: 250px;
