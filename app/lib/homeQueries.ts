@@ -78,8 +78,8 @@ export const FEATURED_REVIEWS_QUERY = `#graphql
   }
 ` as const;
 
-export const POST_REVIEW_MUTATION = `#graphql 
-  mutation MetafieldsSet($metafields: MetafieldsSetInput!) {
+export const POST_REVIEW_MUTATION = `
+  mutation PostReviewMetafieldsSet($metafields: MetafieldsSetInput!) {
   metafieldsSet(metafields: $metafields) {
         metafields {
             id
@@ -99,8 +99,8 @@ export const GET_REVIEW_QUERY = `#graphql
   }
 `;
 
-export const ADMIN_METAFIELD_SET = `#graphql
-  mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
+export const ADMIN_METAFIELD_SET = `
+  mutation AdminMetafieldsSetBulk($metafields: [MetafieldsSetInput!]!) {
     metafieldsSet(metafields: $metafields) {
       metafields {
         id

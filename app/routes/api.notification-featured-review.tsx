@@ -38,7 +38,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
     );
   }
 
-  const customerIdQuery = `#graphql
+  const customerIdQuery = `
     query NotificationCustomerId {
       customer {
         id
@@ -113,4 +113,3 @@ export async function loader({context, request}: LoaderFunctionArgs) {
 export async function action() {
   return new Response(null, {status: 405});
 }
-

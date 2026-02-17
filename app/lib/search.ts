@@ -56,7 +56,6 @@ interface UrlWithTrackingParams {
  * const params = { foo: 'bar' };
  * const term = 'search term';
  * const url = urlWithTrackingParams({ baseUrl, trackingParams, params, term });
- * console.log(url);
  * // Output: 'https://www.example.com?foo=bar&q=search%20term&utm_source=shopify&utm_medium=shopify_app&utm_campaign=storefront'
  * ```
  */

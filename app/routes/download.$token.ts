@@ -10,7 +10,7 @@ import {
 } from '~/lib/r2.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 
-const EMAIL_DOWNLOAD_ORDER_QUERY = `#graphql
+const EMAIL_DOWNLOAD_ORDER_QUERY = `
   query EmailDownloadOrder($id: ID!) {
     order(id: $id) {
       id

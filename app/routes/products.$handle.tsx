@@ -2095,7 +2095,7 @@ const PRODUCT_FRAGMENT = `#graphql
 ` as const;
 
 export const PRODUCT_QUERY = `#graphql
-  query Product(
+  query ProductByHandleForProductRoute(
     $country: CountryCode
     $handle: String!
     $language: LanguageCode

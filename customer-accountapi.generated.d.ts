@@ -71,10 +71,16 @@ export type CustomerFragment = Pick<
   'id' | 'firstName' | 'lastName' | 'tags'
 > & {
   emailAddress?: CustomerAccountAPI.Maybe<
-    Pick<CustomerAccountAPI.CustomerEmailAddress, 'emailAddress' | 'marketingState'>
+    Pick<
+      CustomerAccountAPI.CustomerEmailAddress,
+      'emailAddress' | 'marketingState'
+    >
   >;
   phoneNumber?: CustomerAccountAPI.Maybe<
-    Pick<CustomerAccountAPI.CustomerPhoneNumber, 'phoneNumber' | 'marketingState'>
+    Pick<
+      CustomerAccountAPI.CustomerPhoneNumber,
+      'phoneNumber' | 'marketingState'
+    >
   >;
   defaultAddress?: CustomerAccountAPI.Maybe<
     Pick<
@@ -143,10 +149,16 @@ export type CustomerDetailsQuery = {
     'id' | 'firstName' | 'lastName' | 'tags'
   > & {
     emailAddress?: CustomerAccountAPI.Maybe<
-      Pick<CustomerAccountAPI.CustomerEmailAddress, 'emailAddress' | 'marketingState'>
+      Pick<
+        CustomerAccountAPI.CustomerEmailAddress,
+        'emailAddress' | 'marketingState'
+      >
     >;
     phoneNumber?: CustomerAccountAPI.Maybe<
-      Pick<CustomerAccountAPI.CustomerPhoneNumber, 'phoneNumber' | 'marketingState'>
+      Pick<
+        CustomerAccountAPI.CustomerPhoneNumber,
+        'phoneNumber' | 'marketingState'
+      >
     >;
     defaultAddress?: CustomerAccountAPI.Maybe<
       Pick<
@@ -209,7 +221,7 @@ export type DiscountApplicationFragment = {
 
 export type OrderLineItemFullFragment = Pick<
   CustomerAccountAPI.LineItem,
-  'id' | 'title' | 'quantity' | 'variantTitle'
+  'id' | 'title' | 'quantity' | 'variantId' | 'variantTitle'
 > & {
   price?: CustomerAccountAPI.Maybe<
     Pick<CustomerAccountAPI.MoneyV2, 'amount' | 'currencyCode'>
@@ -244,6 +256,9 @@ export type OrderFragment = Pick<
   CustomerAccountAPI.Order,
   'id' | 'name' | 'statusPageUrl' | 'processedAt'
 > & {
+  metafield?: CustomerAccountAPI.Maybe<
+    Pick<CustomerAccountAPI.Metafield, 'value' | 'type' | 'id' | 'jsonValue'>
+  >;
   fulfillments: {nodes: Array<Pick<CustomerAccountAPI.Fulfillment, 'status'>>};
   totalTax?: CustomerAccountAPI.Maybe<
     Pick<CustomerAccountAPI.MoneyV2, 'amount' | 'currencyCode'>
@@ -275,7 +290,7 @@ export type OrderFragment = Pick<
     nodes: Array<
       Pick<
         CustomerAccountAPI.LineItem,
-        'id' | 'title' | 'quantity' | 'variantTitle'
+        'id' | 'title' | 'quantity' | 'variantId' | 'variantTitle'
       > & {
         price?: CustomerAccountAPI.Maybe<
           Pick<CustomerAccountAPI.MoneyV2, 'amount' | 'currencyCode'>
@@ -322,6 +337,12 @@ export type OrderQuery = {
       CustomerAccountAPI.Order,
       'id' | 'name' | 'statusPageUrl' | 'processedAt'
     > & {
+      metafield?: CustomerAccountAPI.Maybe<
+        Pick<
+          CustomerAccountAPI.Metafield,
+          'value' | 'type' | 'id' | 'jsonValue'
+        >
+      >;
       fulfillments: {
         nodes: Array<Pick<CustomerAccountAPI.Fulfillment, 'status'>>;
       };
@@ -355,7 +376,7 @@ export type OrderQuery = {
         nodes: Array<
           Pick<
             CustomerAccountAPI.LineItem,
-            'id' | 'title' | 'quantity' | 'variantTitle'
+            'id' | 'title' | 'quantity' | 'variantId' | 'variantTitle'
           > & {
             price?: CustomerAccountAPI.Maybe<
               Pick<CustomerAccountAPI.MoneyV2, 'amount' | 'currencyCode'>
@@ -487,16 +508,56 @@ export type CustomerUpdateMutation = {
   }>;
 };
 
+export type CustomerEmailMarketingSubscribeMutationVariables =
+  CustomerAccountAPI.Exact<{[key: string]: never}>;
+
+export type CustomerEmailMarketingSubscribeMutation = {
+  customerEmailMarketingSubscribe?: CustomerAccountAPI.Maybe<{
+    emailAddress?: CustomerAccountAPI.Maybe<
+      Pick<
+        CustomerAccountAPI.CustomerEmailAddress,
+        'emailAddress' | 'marketingState'
+      >
+    >;
+    userErrors: Array<
+      Pick<
+        CustomerAccountAPI.UserErrorsCustomerEmailMarketingUserErrors,
+        'field' | 'message' | 'code'
+      >
+    >;
+  }>;
+};
+
+export type CustomerEmailMarketingUnsubscribeMutationVariables =
+  CustomerAccountAPI.Exact<{[key: string]: never}>;
+
+export type CustomerEmailMarketingUnsubscribeMutation = {
+  customerEmailMarketingUnsubscribe?: CustomerAccountAPI.Maybe<{
+    emailAddress?: CustomerAccountAPI.Maybe<
+      Pick<
+        CustomerAccountAPI.CustomerEmailAddress,
+        'emailAddress' | 'marketingState'
+      >
+    >;
+    userErrors: Array<
+      Pick<
+        CustomerAccountAPI.UserErrorsCustomerEmailMarketingUserErrors,
+        'field' | 'message' | 'code'
+      >
+    >;
+  }>;
+};
+
 interface GeneratedQueryTypes {
-  '#graphql\n  query CustomerDetails {\n    customer {\n      ...Customer\n    }\n  }\n  #graphql\n  fragment Customer on Customer {\n    id\n    firstName\n    lastName\n    emailAddress {\n      emailAddress\n      marketingState\n    }\n    phoneNumber {\n      phoneNumber\n      marketingState\n    }\n    defaultAddress {\n      ...Address\n    }\n    addresses(first: 6) {\n      nodes {\n        ...Address\n      }\n    }\n    birthday: metafield(namespace: \"custom\", key: \"birthday\") {\n      value\n    }\n    tags\n  }\n  fragment Address on CustomerAddress {\n    id\n    formatted\n    firstName\n    lastName\n    company\n    address1\n    address2\n    territoryCode\n    zoneCode\n    city\n    zip\n    phoneNumber\n  }\n\n': {
+  '#graphql\n  query CustomerDetails {\n    customer {\n      ...Customer\n    }\n  }\n  #graphql\n  fragment Customer on Customer {\n    id\n    firstName\n    lastName\n    emailAddress {\n      emailAddress\n      marketingState\n    }\n    phoneNumber {\n      phoneNumber\n      marketingState\n    }\n    defaultAddress {\n      ...Address\n    }\n    addresses(first: 6) {\n      nodes {\n        ...Address\n      }\n    }\n    birthday: metafield(namespace: "custom", key: "birthday") {\n      value\n    }\n    tags\n  }\n  fragment Address on CustomerAddress {\n    id\n    formatted\n    firstName\n    lastName\n    company\n    address1\n    address2\n    territoryCode\n    zoneCode\n    city\n    zip\n    phoneNumber\n  }\n\n': {
     return: CustomerDetailsQuery;
     variables: CustomerDetailsQueryVariables;
   };
-  '#graphql\n  fragment OrderMoney on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment DiscountApplication on DiscountApplication {\n    value {\n      __typename\n      ... on MoneyV2 {\n        ...OrderMoney\n      }\n      ... on PricingPercentageValue {\n        percentage\n      }\n    }\n  }\n  fragment OrderLineItemFull on LineItem {\n    id\n    title\n    quantity\n    price {\n      ...OrderMoney\n    }\n    discountAllocations {\n      allocatedAmount {\n        ...OrderMoney\n      }\n      discountApplication {\n        ...DiscountApplication\n      }\n    }\n    totalDiscount {\n      ...OrderMoney\n    }\n    image {\n      altText\n      height\n      url\n      id\n      width\n    }\n    variantTitle\n  }\n  fragment Order on Order {\n    id\n    name\n    statusPageUrl\n    processedAt\n    fulfillments(first: 1) {\n      nodes {\n        status\n      }\n    }\n    totalTax {\n      ...OrderMoney\n    }\n    totalPrice {\n      ...OrderMoney\n    }\n    subtotal {\n      ...OrderMoney\n    }\n    shippingAddress {\n      name\n      formatted(withName: true)\n      formattedArea\n    }\n    discountApplications(first: 100) {\n      nodes {\n        ...DiscountApplication\n      }\n    }\n    lineItems(first: 100) {\n      nodes {\n        ...OrderLineItemFull\n      }\n    }\n  }\n  query Order($orderId: ID!) {\n    order(id: $orderId) {\n      ... on Order {\n        ...Order\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment OrderMoney on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment DiscountApplication on DiscountApplication {\n    value {\n      __typename\n      ... on MoneyV2 {\n        ...OrderMoney\n      }\n      ... on PricingPercentageValue {\n        percentage\n      }\n    }\n  }\n  fragment OrderLineItemFull on LineItem {\n    id\n    title\n    quantity\n    price {\n      ...OrderMoney\n    }\n    variantId\n    \n    discountAllocations {\n      allocatedAmount {\n        ...OrderMoney\n      }\n      discountApplication {\n        ...DiscountApplication\n      }\n    }\n    totalDiscount {\n      ...OrderMoney\n    }\n    image {\n      altText\n      height\n      url\n      id\n      width\n    }\n    variantTitle\n  }\n  fragment Order on Order {\n    id\n    name\n    statusPageUrl\n    processedAt\n    metafield (key: "test_links", namespace: "custom") {\n      value\n      type\n      id\n      jsonValue\n    }\n    fulfillments(first: 1) {\n      nodes {\n        status\n      }\n    }\n    totalTax {\n      ...OrderMoney\n    }\n    totalPrice {\n      ...OrderMoney\n    }\n    subtotal {\n      ...OrderMoney\n    }\n    shippingAddress {\n      name\n      formatted(withName: true)\n      formattedArea\n    }\n    discountApplications(first: 100) {\n      nodes {\n        ...DiscountApplication\n      }\n    }\n    lineItems(first: 100) {\n      nodes {\n        ...OrderLineItemFull\n      }\n    }\n  }\n  query Order($orderId: ID!) {\n    order(id: $orderId) {\n      ... on Order {\n        ...Order\n      }\n    }\n  }\n': {
     return: OrderQuery;
     variables: OrderQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment CustomerOrders on Customer {\n    orders(\n      sortKey: PROCESSED_AT,\n      reverse: true,\n      first: $first,\n      last: $last,\n      before: $startCursor,\n      after: $endCursor\n    ) {\n      nodes {\n        ...OrderItem\n      }\n      pageInfo {\n        hasPreviousPage\n        hasNextPage\n        endCursor\n        startCursor\n      }\n    }\n  }\n  #graphql\n  fragment OrderItem on Order {\n    totalPrice {\n      amount\n      currencyCode\n    }\n    financialStatus\n    fulfillments(first: 1) {\n      nodes {\n        status\n      }\n    }\n    id\n    number\n    processedAt\n  }\n\n\n  query CustomerOrders(\n    $endCursor: String\n    $first: Int\n    $last: Int\n    $startCursor: String\n  ) {\n    customer {\n      ...CustomerOrders\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment CustomerOrders on Customer {\n    orders(\n      sortKey: PROCESSED_AT,\n      reverse: true,\n      first: $first,\n      last: $last,\n      before: $startCursor,\n      after: $endCursor\n    ) {\n      nodes {\n        ...OrderItem\n      }\n      pageInfo {\n        hasPreviousPage\n        hasNextPage\n        endCursor\n        startCursor\n      }\n    }\n  }\n  #graphql\n  fragment OrderItem on Order {\n    totalPrice {\n      amount\n      currencyCode\n    }\n    financialStatus\n    fulfillments(first: 1) {\n      nodes {\n        status\n        \n      }\n    }\n    id\n    number\n    processedAt\n  }\n\n\n  query CustomerOrders(\n    $endCursor: String\n    $first: Int\n    $last: Int\n    $startCursor: String\n  ) {\n    customer {\n      ...CustomerOrders\n    }\n  }\n': {
     return: CustomerOrdersQuery;
     variables: CustomerOrdersQueryVariables;
   };
@@ -518,6 +579,14 @@ interface GeneratedMutationTypes {
   '#graphql\n  # https://shopify.dev/docs/api/customer/latest/mutations/customerUpdate\n  mutation customerUpdate(\n    $customer: CustomerUpdateInput!\n  ){\n    customerUpdate(input: $customer) {\n      customer {\n        id\n        firstName\n        lastName\n        emailAddress {\n          emailAddress\n        }\n        phoneNumber {\n          phoneNumber\n        }\n      }\n      userErrors {\n        code\n        field\n        message\n      }\n    }\n  }\n': {
     return: CustomerUpdateMutation;
     variables: CustomerUpdateMutationVariables;
+  };
+  '#graphql\n  mutation CustomerEmailMarketingSubscribe {\n    customerEmailMarketingSubscribe {\n      emailAddress {\n        emailAddress\n        marketingState\n      }\n      userErrors {\n        field\n        message\n        code\n      }\n    }\n  }\n': {
+    return: CustomerEmailMarketingSubscribeMutation;
+    variables: CustomerEmailMarketingSubscribeMutationVariables;
+  };
+  '#graphql\n  mutation CustomerEmailMarketingUnsubscribe {\n    customerEmailMarketingUnsubscribe {\n      emailAddress {\n        emailAddress\n        marketingState\n      }\n      userErrors {\n        field\n        message\n        code\n      }\n    }\n  }\n': {
+    return: CustomerEmailMarketingUnsubscribeMutation;
+    variables: CustomerEmailMarketingUnsubscribeMutationVariables;
   };
 }
 

@@ -34,7 +34,7 @@ type ShopifyOrderPaidWebhookPayload = {
 const ACCEPTED_TOPICS = new Set(['orders/paid', 'orders/create']);
 const PAID_STATUSES = new Set(['paid', 'partially_paid']);
 
-const ORDER_DOWNLOADS_QUERY = `#graphql
+const ORDER_DOWNLOADS_QUERY = `
   query OrderDownloads($id: ID!) {
     order(id: $id) {
       id
@@ -69,7 +69,7 @@ const ORDER_DOWNLOADS_QUERY = `#graphql
   }
 ` as const;
 
-const SET_ORDER_EMAIL_SENT_METAFIELD_MUTATION = `#graphql
+const SET_ORDER_EMAIL_SENT_METAFIELD_MUTATION = `
   mutation SetOrderDownloadEmailSent($metafields: [MetafieldsSetInput!]!) {
     metafieldsSet(metafields: $metafields) {
       userErrors {

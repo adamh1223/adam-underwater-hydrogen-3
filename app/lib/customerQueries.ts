@@ -34,7 +34,7 @@ export const variantQuery = `#graphql
   `;
 
 export const productQuery = `#graphql
-  query Product($id: ID!) {
+  query ProductByIdForCustomerQueries($id: ID!) {
     node(id: $id) {
       ... on Product {
         id

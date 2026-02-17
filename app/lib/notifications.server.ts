@@ -23,7 +23,7 @@ const NOTIFICATIONS_METAFIELD_NAMESPACE = 'custom';
 const NOTIFICATIONS_METAFIELD_KEY = 'notifications';
 const NOTIFICATIONS_STATE_METAFIELD_KEY = 'notifications_state';
 
-const CUSTOMER_NOTIFICATIONS_SYNC_QUERY = `#graphql
+const CUSTOMER_NOTIFICATIONS_SYNC_QUERY = `
   query CustomerNotificationsSync {
     customer {
       id
@@ -581,7 +581,7 @@ export async function markCustomerNotificationRead(
     };
   }
 
-  const customerQuery = `#graphql
+  const customerQuery = `
     query CustomerNotificationsRead {
       customer {
         id

@@ -221,7 +221,7 @@ export async function action({request, context}: ActionFunctionArgs) {
               'User-Agent': 'Hydrogen-Review-App',
             },
             body: JSON.stringify({
-              query: `#graphql
+              query: `
                 query CustomerNotifications($id: ID!) {
                   customer(id: $id) {
                     metafield(namespace: "custom", key: "notifications") {

@@ -37,7 +37,7 @@ export type ActionResponse = {
   marketingSms?: boolean;
 };
 
-const CUSTOMER_SMS_MARKETING_UPDATE = `#graphql
+const CUSTOMER_SMS_MARKETING_UPDATE = `
   mutation CustomerSmsMarketingConsentUpdate(
    $input: CustomerSmsMarketingConsentUpdateInput!
   ) {
@@ -55,7 +55,7 @@ const CUSTOMER_SMS_MARKETING_UPDATE = `#graphql
   }
 ` as const;
 
-const CUSTOMER_PHONE_UPDATE = `#graphql
+const CUSTOMER_PHONE_UPDATE = `
   mutation CustomerPhoneUpdate($input: CustomerInput!) {
     customerUpdate(input: $input) {
       customer {

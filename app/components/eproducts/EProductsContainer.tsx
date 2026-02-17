@@ -167,7 +167,6 @@ function EProductsContainer({
   const navigate = useNavigate();
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
-  product, '333product');
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
   const addToFavorites = async () => {
     try {

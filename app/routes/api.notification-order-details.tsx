@@ -20,7 +20,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
     return json({ok: false, error: 'Order not found.'}, {status: 404});
   }
 
-  const customerIdQuery = `#graphql
+  const customerIdQuery = `
     query NotificationCustomerId {
       customer {
         id

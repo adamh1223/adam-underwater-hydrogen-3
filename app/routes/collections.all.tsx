@@ -99,11 +99,11 @@ function ProductItem({
 }
 
 const PRODUCT_ITEM_FRAGMENT = `#graphql
-  fragment MoneyProductItem on MoneyV2 {
+  fragment MoneyProductItemAllCollection on MoneyV2 {
     amount
     currencyCode
   }
-  fragment ProductItem on Product {
+  fragment ProductItemAllCollection on Product {
     id
     handle
     title
@@ -123,10 +123,10 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
     }
     priceRange {
       minVariantPrice {
-        ...MoneyProductItem
+        ...MoneyProductItemAllCollection
       }
       maxVariantPrice {
-        ...MoneyProductItem
+        ...MoneyProductItemAllCollection
       }
     }
   }
@@ -141,10 +141,10 @@ const CATALOG_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
-  ) @inContext(country: $country, language: $language) {
+      ) @inContext(country: $country, language: $language) {
     products(first: $first, last: $last, before: $startCursor, after: $endCursor) {
       nodes {
-        ...ProductItem
+        ...ProductItemAllCollection
       }
       pageInfo {
         hasPreviousPage
