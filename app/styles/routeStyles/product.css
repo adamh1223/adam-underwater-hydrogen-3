@@ -13,32 +13,23 @@
   .floating-zoom-window {
   }
 }
-@media (min-width: 958px) {
+.list-view-large-row {
+  display: grid;
+  --list-carousel-center-shift: 12px;
+  /* Fallback fluid ratio (JS sets exact 60->45 from 430px to 1000px, then continues at reduced rate). */
+  grid-template-columns:
+    minmax(0, clamp(45%, calc(71.316% - 2.632vw), 60%))
+    minmax(0, 1fr);
+}
+@media (min-width: 1000px) {
   .list-view-large-row {
-    display: grid;
-    grid-template-columns: 2fr 3fr;
+    grid-template-columns: 45% 55%;
   }
 }
-@media (min-width: 700px) and (max-width: 957px) {
-  .list-view-large-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+@media (max-width: 800px) {
+  .carousel-img-list-view {
+    max-height: clamp(168px, 22vw, 188px);
   }
-}
-
-@media (min-width: 601px) and (max-width: 699px) {
-  .list-view-large-row {
-    display: grid;
-    grid-template-columns: 2.5fr 1fr;
-  
-  }
-}
-@media (max-width: 600px) {
-  .list-view-large-row {
-    display: grid;
-    grid-template-columns: 3fr 1fr;
-  }
-  
 }
 @media (min-width: 801px) and (max-width: 957px) {
   .carousel-img-list-view {
@@ -55,9 +46,14 @@
     max-height: 235px;
   }
 }
-@media (min-width: 801px) {
+@media (min-width: 801px) and (max-width: 1124px) {
   .print-carousel-list {
-    padding: 12px 10px 40px 10px;
+    padding: 6px 10px 30px 10px;
+  }
+}
+@media (min-width: 1125px) {
+  .print-carousel-list {
+    padding: 12px 10px 36px 10px;
   }
 }
 @media (max-width: 800px) {
@@ -87,7 +83,6 @@
   }
 }
 @media (max-width: 800px) {
-
   .eproduct-bottom-part-card-grid {
     display: flex;
     align-items: center;
@@ -100,7 +95,6 @@
     justify-content: center;
     width: 100%;
   }
-  
 }
 @media (min-width: 700px) and (max-width: 800px) {
   .eproduct-bottom-part-card-list {
@@ -158,42 +152,40 @@
   align-items: center;
 }
 
-
 .print-bottom-part-card-inside-grid {
-    padding: 12px 4px 0 4px;
-  }
+  padding: 12px 4px 0 4px;
+}
 .print-bottom-part-card-inside-list {
-    padding: 12px 8px;
-  }
+  padding: 12px 8px;
+}
 
-  @media (max-width: 800px) {
-.eproduct-bottom-part-card-inside-list {
+@media (max-width: 800px) {
+  .eproduct-bottom-part-card-inside-list {
     padding: 0 4px 6px 4px;
   }
-  }
-  @media (min-width: 801px) and (max-width: 1300px) {
-.eproduct-bottom-part-card-inside-list {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
+}
+@media (min-width: 801px) and (max-width: 1300px) {
+  .eproduct-bottom-part-card-inside-list {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
     padding: 0 0 6px 6px;
   }
-  }
-  @media (min-width: 1301px) {
-.eproduct-bottom-part-card-inside-list {
-  display: grid;
-  grid-template-columns: 4fr 1fr;
+}
+@media (min-width: 1301px) {
+  .eproduct-bottom-part-card-inside-list {
+    display: grid;
+    grid-template-columns: 4fr 1fr;
     padding: 0 0 0 6px;
   }
-  }
-
+}
 
 @media (max-width: 600px) {
-.print-top-part-card-list {
-  padding: 8px 0 8px 8px
-}
-.eproduct-top-part-card-list {
-  padding: 8px 0 8px 8px
-}
+  .print-top-part-card-list {
+    padding: 8px 0 8px 8px;
+  }
+  .eproduct-top-part-card-list {
+    padding: 8px 0 8px 8px;
+  }
 }
 @media (min-width: 601px) {
   .print-top-part-card-list {
@@ -203,7 +195,7 @@
   .eproduct-top-part-card-list {
     display: grid;
     grid-template-columns: 1fr;
-    padding: 8px 0 8px 8px
+    padding: 8px 0 8px 8px;
   }
 }
 @media (min-width: 881px) and (max-width: 957px) {
@@ -526,25 +518,117 @@
   }
 }
 
-@media (min-width: 801px) and (max-width: 1249px) {
-  .left-arrow-carousel-list-horizontal {
-    margin: 0;
-    margin-left: 10px;
+/* List-view arrows: center to the media area (not the full tile),
+ * and keep edge offsets fluid rather than breakpoint-jumpy.
+ */
+.list-arrow-shell {
+  top: clamp(8px, 2.2vw, 24px);
+  bottom: clamp(32px, 4vw, 40px);
+  left: 0;
+  right: 0;
+  --list-media-inline-pad: 12px;
+}
+
+.list-carousel-track {
+  transform: translateY(var(--list-carousel-center-shift));
+}
+
+/* Horizontal list media fills most of the carousel width.
+ * Keep arrows near media edges with fluid insets.
+ */
+.list-horizontal-arrow-shell {
+  left: 50%;
+  right: auto;
+  width: min(calc(100% - (2 * var(--list-media-inline-pad))), 760px);
+  transform: translateX(-50%);
+  --list-arrow-outset: 4px;
+}
+
+/* Vertical list media uses a 65% width wrapper in ProductCarousel.
+ * Anchor arrows to that media lane and place them just outside edges.
+ */
+.list-vertical-arrow-shell {
+  left: calc((100% - 65%) / 2 + var(--list-media-inline-pad));
+  right: calc((100% - 65%) / 2 + var(--list-media-inline-pad));
+  --list-arrow-outset: clamp(8px, 1vw, 12px);
+  --list-vertical-arrow-lift: clamp(0px, 1.4vw, 0px);
+}
+
+/* Neutralize legacy breakpoint margins for list arrows. */
+.list-horizontal-arrow-shell .left-arrow-carousel-list-horizontal,
+.list-horizontal-arrow-shell .right-arrow-carousel-list-horizontal,
+.list-vertical-arrow-shell .left-arrow-carousel-list-vertical,
+.list-vertical-arrow-shell .right-arrow-carousel-list-vertical {
+  margin: 0 !important;
+}
+
+/* Horizontal arrows overlap slightly on narrow screens,
+ * then move just outside media edges from 550px+.
+ */
+.list-horizontal-arrow-shell .left-arrow-carousel-list-horizontal {
+  transform: translateX(calc(-1 * var(--list-arrow-outset)));
+}
+.list-horizontal-arrow-shell .right-arrow-carousel-list-horizontal {
+  transform: translateX(var(--list-arrow-outset));
+}
+@media (min-width: 550px) {
+  .list-horizontal-arrow-shell {
+    --list-arrow-outset: clamp(8px, 1vw, 12px);
   }
-  .right-arrow-carousel-list-horizontal {
-    margin: 0;
-    margin-right: 10px;
+  .list-horizontal-arrow-shell .left-arrow-carousel-list-horizontal {
+    transform: translateX(calc(-1 * var(--list-arrow-outset)));
+  }
+  .list-horizontal-arrow-shell .right-arrow-carousel-list-horizontal {
+    transform: translateX(var(--list-arrow-outset));
   }
 }
 
-@media (min-width: 801px) {
+/* Vertical list arrows should always sit just outside media edges. */
+.list-vertical-arrow-shell .left-arrow-carousel-list-vertical {
+  transform: translateX(calc(-1 * var(--list-arrow-outset)))
+    translateY(calc(-1 * var(--list-vertical-arrow-lift)));
+}
+.list-vertical-arrow-shell .right-arrow-carousel-list-vertical {
+  transform: translateX(var(--list-arrow-outset))
+    translateY(calc(-1 * var(--list-vertical-arrow-lift)));
+}
+
+/* Small screens: push list-view arrows a bit farther out so they cover less image area. */
+@media (max-width: 600px) {
   .list-horizontal-arrow-shell {
-    padding-left: clamp(12px, 2.2vw, 30px);
-    padding-right: clamp(12px, 2.2vw, 30px);
+    --list-arrow-outset: clamp(10px, 2.6vw, 14px);
   }
-  .list-horizontal-arrow-shell .left-arrow-carousel-list-horizontal,
-  .list-horizontal-arrow-shell .right-arrow-carousel-list-horizontal {
-    margin: 0;
+  .list-vertical-arrow-shell {
+    left: calc((100% - 65%) / 2 + 2px);
+    right: calc((100% - 65%) / 2 + 2px);
+    --list-arrow-outset: clamp(14px, 3.4vw, 20px);
+  }
+}
+
+/* Keep carousel media vertically centered independent of dot row placement. */
+@media (max-width: 500px) {
+  .list-view-large-row {
+    --list-carousel-center-shift: 12px;
+  }
+}
+@media (min-width: 501px) and (max-width: 600px) {
+  .list-view-large-row {
+    --list-carousel-center-shift: 9px;
+  }
+}
+@media (min-width: 601px) and (max-width: 700px) {
+  .list-view-large-row {
+    --list-carousel-center-shift: 7px;
+  }
+}
+@media (min-width: 701px) and (max-width: 800px) {
+  .list-view-large-row {
+    --list-carousel-center-shift: 8px;
+  }
+}
+@media (min-width: 801px) {
+  .list-view-large-row {
+    --list-carousel-center-shift: 12px;
   }
 }
 
@@ -582,7 +666,6 @@
 .product-price-font-grid {
   font-size: 15px;
 }
-
 
 @media (max-width: 600px) {
   .product-title-font-list {
@@ -645,13 +728,11 @@
   }
 }
 @media (max-width: 600px) {
-
   .product-title-font-list {
     display: flex;
     justify-content: center;
   }
 }
-
 
 @media (min-width: 1024px) and (max-width: 1200px) {
   .carousel-shortcuts-container-horizontal {
@@ -912,7 +993,6 @@
 .fav-btn-container-list {
   top: 7.5px;
   right: 19px;
-
 }
 .fav-btn-list {
   height: 35px;
@@ -922,7 +1002,6 @@
 .fav-btn-container-grid {
   top: 3.5px;
   right: 3px;
-
 }
 .fav-btn-grid {
   height: 35px;

@@ -125,6 +125,32 @@ export const ProductCarousel = ({
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
 
+  const listLayoutColumns = (() => {
+    if (layout !== 'list' || windowWidth === undefined) return undefined;
+
+    // Interpolate from 60/40 at 430px to 45/55 by 1000px,
+    // then continue in the same direction at 40% of that rate above 1000px.
+    const minViewport = 430;
+    const maxViewport = 1000;
+    const fullRateSlope = -15 / (maxViewport - minViewport); // -0.02632% per px
+
+    let leftPercent = 60;
+    if (windowWidth <= minViewport) {
+      leftPercent = 60;
+    } else if (windowWidth <= maxViewport) {
+      leftPercent = 60 + (windowWidth - minViewport) * fullRateSlope;
+    } else {
+      const reducedRateSlope = fullRateSlope * 0.4;
+      leftPercent = 45 + (windowWidth - maxViewport) * reducedRateSlope;
+    }
+
+    const rightPercent = 100 - leftPercent;
+
+    return {
+      gridTemplateColumns: `${leftPercent.toFixed(3)}% ${rightPercent.toFixed(3)}%`,
+    };
+  })();
+
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -414,7 +440,7 @@ export const ProductCarousel = ({
             </TooltipProvider>
           </div>
         )}
-        <div className={cardContentClassName}>
+        <div className={cardContentClassName} style={listLayoutColumns}>
           <div
             className={`relative w-full h-full rounded ${
               layout === 'grid'
@@ -482,7 +508,7 @@ export const ProductCarousel = ({
             )}
             <Carousel
               setApi={setCarouselApi}
-              className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'}`}
+              className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list list-carousel-track'}`}
             >
               <Link
                 className="product-item"
@@ -500,7 +526,7 @@ export const ProductCarousel = ({
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid'
                             ? 'pt-2'
-                            : 'ms-3'
+                            : 'px-3'
                         }`}
                       >
 
@@ -515,7 +541,19 @@ export const ProductCarousel = ({
               </Link>
 
               <div
-                className={`absolute inset-0 z-40 flex items-center justify-between pointer-events-none ${layout === 'list' && isHorizontal ? 'list-horizontal-arrow-shell' : ''}`}
+                className={`absolute z-40 flex items-center justify-between pointer-events-none ${
+                  layout === 'grid' ? 'inset-0' : ''
+                } ${
+                  layout === 'list' ? 'list-arrow-shell' : ''
+                } ${
+                  layout === 'list' && isHorizontal
+                    ? 'list-horizontal-arrow-shell'
+                    : ''
+                } ${
+                  layout === 'list' && isVertical
+                    ? 'list-vertical-arrow-shell'
+                    : ''
+                }`}
               >
                 <Button
                   onClick={decreaseIndex}
@@ -550,7 +588,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isVertical && (
-              <div className="carousel-preview-dots-list absolute bottom-[6px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
+              <div className="carousel-preview-dots-list absolute bottom-[6px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -566,7 +604,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isHorizontal && (
-              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px] ms-3">
+              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
