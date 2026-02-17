@@ -1533,7 +1533,7 @@ const navigate = useNavigate();
         )}
         {!isVideo && (
           <>
-            <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 extra-info">
+            <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-12 extra-info">
               <div className="grid grid-cols-1">
                 <div className="how-its-made">
                   {/* section title */}
@@ -1570,7 +1570,7 @@ const navigate = useNavigate();
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1">
+              <div className="grid grid-cols-1 self-start content-start">
                 <div className="pt-[10px]">
                   {windowWidth && windowWidth >= 1024 && !isVideo && (
                     <>
