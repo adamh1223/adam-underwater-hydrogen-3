@@ -71,7 +71,7 @@ function EProductsContainer({
 
   const cardContentClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full'
+      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full eproduct-grid-card-content'
       : 'list-view-large-row';
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();

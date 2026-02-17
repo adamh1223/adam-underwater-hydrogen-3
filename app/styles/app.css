@@ -608,6 +608,34 @@ button.reset:hover:not(:has(> *)) {
   font-family: inherit;
 }
 
+/*
+* --------------------------------------------------
+* account.favorites.tsx (mixed print + eproduct rows)
+* --------------------------------------------------
+*/
+.favorites-product-grid .eproduct-grid-card-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.favorites-product-grid
+  .eproduct-grid-card-content
+  > .eproduct-bottom-part-card-grid {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.favorites-product-grid
+  .eproduct-grid-card-content
+  > .eproduct-bottom-part-card-grid
+  > .eproduct-bottom-part-card-inside {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .product-option-label-swatch {
   width: 5.5rem;
   margin: 0.25rem 0;
