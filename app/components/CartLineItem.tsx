@@ -45,9 +45,7 @@ export function CartLineItem({
   // @ts-expect-error fixed when restart
   const hasPrintTag = includesTagName(product.tags, 'Prints');
   const cartDescription = generateCartDescription(hasVideoTag || hasPrintTag);
-  
 
- 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -57,7 +55,7 @@ export function CartLineItem({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  
+
   const isHorizontalProduct =
     image?.url?.includes('horPrimary') || image?.url.includes('horOnly');
   const isStockClip =
@@ -80,7 +78,6 @@ export function CartLineItem({
     currencyCode: line?.cost?.compareAtAmountPerQuantity?.currencyCode || 'USD',
     amount: compareAtPerQuantity?.toString(),
   };
-  
 
   return (
     <Card className="mb-4">
@@ -117,7 +114,7 @@ export function CartLineItem({
                           className="cart-line-horizontal-product-img"
                         />
                       )}
-                      <div className="ps-3">
+                      <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
                         {line?.cost?.compareAtAmountPerQuantity &&
                           line?.quantity && (
@@ -165,7 +162,7 @@ export function CartLineItem({
                           className="cart-line-horizontal-product-img"
                         />
                       )}
-                      <div className="ps-3">
+                      <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
                         {cartDescription && (
                           <div className="cart-description">
@@ -210,7 +207,7 @@ export function CartLineItem({
                         className="cart-line-stock-product-img"
                       />
                     )}
-                    <div className="ps-3">
+                    <div className="ps-3 cart-line-text">
                       <strong>{product.title}</strong>
                       <ProductPrice
                         price={line?.cost?.totalAmount}
@@ -254,7 +251,7 @@ export function CartLineItem({
                         className="cart-line-stock-product-img"
                       />
                     )}
-                    <div className="ps-3">
+                    <div className="ps-3 cart-line-text">
                       <strong>{product.title}</strong>
                       {cartDescription && (
                         <div className="cart-description">
@@ -301,7 +298,7 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img"
                         />
                       )}
-                      <div className="ps-3">
+                      <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
                         <ProductPrice
                           price={line?.cost?.totalAmount}
@@ -347,7 +344,7 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img"
                         />
                       )}
-                      <div className="ps-3">
+                      <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
                         {cartDescription && (
                           <div className="cart-description">
@@ -394,7 +391,7 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img"
                         />
                       )}
-                      <div className="ps-3">
+                      <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
                         {cartDescription && (
                           <div className="cart-description">
@@ -475,9 +472,10 @@ function CartLineOptionSelectors({
     name: string;
     value: string;
   }[];
-  const productWithVariants = merchandise.product as typeof merchandise.product & {
-    variants?: {nodes?: ProductVariantForSelection[]};
-  };
+  const productWithVariants =
+    merchandise.product as typeof merchandise.product & {
+      variants?: {nodes?: ProductVariantForSelection[]};
+    };
   const variants = productWithVariants.variants?.nodes ?? [];
 
   if (!selectedOptions.length) return null;
@@ -502,7 +500,10 @@ function CartLineOptionSelectors({
         const inputId = toOptionInputId(`${lineId}-${selectedOption.name}`);
 
         return (
-          <div key={`${lineId}-${selectedOption.name}`} className="cart-option-row">
+          <div
+            key={`${lineId}-${selectedOption.name}`}
+            className="cart-option-row"
+          >
             <label
               htmlFor={inputId}
               className="cart-subheader cart-option-name text-start"
@@ -514,7 +515,7 @@ function CartLineOptionSelectors({
                 id={inputId}
                 value={currentValue}
                 disabled={isUpdatingLine}
-                className="cart-option-select rounded-md border border-[#2a8fd6] bg-[#031437] px-2 py-1 text-white text-sm text-start focus:outline-none focus:ring-2 focus:ring-[#29abe2]"
+                className="cart-option-select cursor-pointer rounded-md border border-[#2a8fd6] bg-secondary px-2 py-1 text-white text-sm text-start focus:outline-none focus:ring-2 focus:ring-[#29abe2]"
                 onChange={(event) => {
                   const nextValue = event.currentTarget.value;
 
