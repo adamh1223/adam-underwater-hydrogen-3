@@ -1,5 +1,3 @@
-'use client';
-
 import React, {useState, useRef, useEffect} from 'react';
 import {Dialog, DialogContent, DialogTrigger} from '../ui/dialog';
 import {Button} from '../ui/button';
