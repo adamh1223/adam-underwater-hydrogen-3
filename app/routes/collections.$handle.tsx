@@ -90,7 +90,7 @@ export async function loader(args: LoaderFunctionArgs) {
   } else {
     wishlistProducts = [];
   }
-  console.log(wishlistProducts, '444wishlist');
+  
   
   
 
@@ -653,15 +653,14 @@ export default function Collection() {
               };
               index: number;
             }) => {
-              console.log(wishlistProducts, '777wp');
-              console.log(product, '777p');
+              
               
               const isInWishlist = wishlistProducts?.includes(
                 product?.id,
                 
                 
               ) as boolean;
-              console.log(isInWishlist, '77iw');
+              
               return (
                 <>
                   {collection?.handle === 'prints' && (

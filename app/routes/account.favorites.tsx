@@ -67,7 +67,7 @@ export async function loader(args: LoaderFunctionArgs) {
       wishlistProducts = [];
     }
   }
-  console.log(wishlistProducts, 'wishlistprods');
+  
   
 
   const productNodes = await Promise.all(

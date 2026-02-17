@@ -81,7 +81,7 @@ export default function AccountReviewsRoute() {
   const outletContext = useOutletContext<{customer: CustomerFragment}>();
 
   const resolvedCustomer = customer ?? outletContext.customer;
-  console.log(resolvedCustomer, 'resolved');
+  
 
   const customerId = resolvedCustomer?.id;
   const customerName = [
