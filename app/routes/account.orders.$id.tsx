@@ -84,6 +84,22 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     downloadMetadataByVariantId.set(variant.id, {tags, selectedOptions});
   }
 
+  const lineItemTagsByLineItemId = lineItems.reduce<Record<string, string[]>>(
+    (acc, lineItem: any) => {
+      const lineItemId = typeof lineItem?.id === 'string' ? lineItem.id : '';
+      const variantId =
+        typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
+      if (!lineItemId || !variantId) return acc;
+
+      const variantMetadata = downloadMetadataByVariantId.get(variantId);
+      if (!variantMetadata) return acc;
+
+      acc[lineItemId] = variantMetadata.tags;
+      return acc;
+    },
+    {},
+  );
+
   const encodedOrderId = params.id;
   const downloadLinksByLineItemId = lineItems.reduce<Record<string, string>>(
     (acc, lineItem: any) => {
@@ -115,6 +131,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     discountPercentage,
     fulfillmentStatus,
     downloadLinksByLineItemId,
+    lineItemTagsByLineItemId,
   };
 }
 
@@ -126,6 +143,7 @@ export default function OrderRoute() {
     discountPercentage,
     fulfillmentStatus,
     downloadLinksByLineItemId,
+    lineItemTagsByLineItemId,
   } = useLoaderData<typeof loader>();
   
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
@@ -172,6 +190,7 @@ export default function OrderRoute() {
                                 downloadLinksByLineItemId={
                                   downloadLinksByLineItemId
                                 }
+                                lineItemTagsByLineItemId={lineItemTagsByLineItemId}
                               />
 
                               // ATTENTION: conditionally render the download button only on eproduct line items
@@ -188,6 +207,9 @@ export default function OrderRoute() {
                                   }
                                   downloadLinksByLineItemId={
                                     downloadLinksByLineItemId
+                                  }
+                                  lineItemTagsByLineItemId={
+                                    lineItemTagsByLineItemId
                                   }
                                 />
                               </Card>
@@ -470,9 +492,11 @@ export default function OrderRoute() {
 function OrderLineRow({
   lineItem,
   downloadLinksByLineItemId,
+  lineItemTagsByLineItemId,
 }: {
   lineItem: OrderLineItemFullFragment;
   downloadLinksByLineItemId: Record<string, string>;
+  lineItemTagsByLineItemId: Record<string, string[]>;
 }) {
   
 
@@ -492,23 +516,33 @@ function OrderLineRow({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  const isHorizontalProduct =
-    lineItem?.image?.url?.includes('horPrimary') ||
-    lineItem?.image?.url.includes('horOnly');
-  const isStockClip =
-    !lineItem?.image?.url.includes('horOnly') &&
-    !lineItem?.image?.url.includes('horPrimary') &&
-    !lineItem?.image?.url.includes('vertPrimary') &&
-    !lineItem?.image?.url.includes('vertOnly');
-  const isVerticalProduct =
-    lineItem?.image?.url?.includes('vertOnly') ||
-    lineItem?.image?.url.includes('vertPrimary');
 
-  const isPrint =
-    lineItem?.image?.url.includes('horOnly') ||
-    lineItem?.image?.url.includes('horPrimary') ||
-    lineItem?.image?.url.includes('vertPrimary') ||
-    lineItem?.image?.url.includes('vertOnly');
+  const lineItemTags = lineItemTagsByLineItemId[lineItem.id] ?? [];
+  const isStockClipFromTags = lineItemTags.includes('Video');
+  const isPrintFromTags =
+    lineItemTags.includes('Prints') && !isStockClipFromTags;
+
+  const imageUrl = lineItem?.image?.url ?? '';
+  const isHorizontalProductFromImage =
+    imageUrl.includes('horPrimary') || imageUrl.includes('horOnly');
+  const isVerticalProductFromImage =
+    imageUrl.includes('vertOnly') || imageUrl.includes('vertPrimary');
+  const isPrintFromImage =
+    isHorizontalProductFromImage || isVerticalProductFromImage;
+
+  const hasTypeFromTags = isStockClipFromTags || isPrintFromTags;
+  const isHorizontalProduct =
+    hasTypeFromTags
+      ? isPrintFromTags && isHorizontalProductFromImage
+      : isHorizontalProductFromImage;
+  const isStockClip =
+    hasTypeFromTags ? isStockClipFromTags : !isPrintFromImage;
+  const isVerticalProduct =
+    hasTypeFromTags
+      ? isPrintFromTags && isVerticalProductFromImage
+      : isVerticalProductFromImage;
+
+  const isPrint = hasTypeFromTags ? isPrintFromTags : isPrintFromImage;
 
   
   return (

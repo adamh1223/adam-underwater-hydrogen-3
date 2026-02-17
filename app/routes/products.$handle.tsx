@@ -858,7 +858,7 @@ export default function Product() {
       console.error('Error editing review', error);
     }
   };
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
 
@@ -931,14 +931,17 @@ const navigate = useNavigate();
     if (windowWidth >= 1024) return -130;
   }, [windowWidth]);
 
-  const scrollToSection = useCallback((sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (!section) return false;
-    const y =
-      section.getBoundingClientRect().top + window.scrollY + getYOffset();
-    window.scrollTo({top: y, behavior: 'smooth'});
-    return true;
-  }, [getYOffset]);
+  const scrollToSection = useCallback(
+    (sectionId: string) => {
+      const section = document.getElementById(sectionId);
+      if (!section) return false;
+      const y =
+        section.getBoundingClientRect().top + window.scrollY + getYOffset();
+      window.scrollTo({top: y, behavior: 'smooth'});
+      return true;
+    },
+    [getYOffset],
+  );
 
   const handleScroll = (
     sectionId: string,
@@ -1040,113 +1043,112 @@ const navigate = useNavigate();
         {windowWidth && windowWidth < 1024 && (
           <>
             <br />
-            <div className='individual-product-header-container px-[35px]'>
-
-            <div className="title-button-wrapper">
-              <span className="capitalize text-3xl font-bold">{title}</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={
-                        wishlistItem ? removeFromFavorites : addToFavorites
-                      }
-                      className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                    >
-                      {pendingWishlistChange ? (
-                        <ReloadIcon className="animate-spin" />
-                      ) : (
-                        <>
-                          {wishlistItem ? (
-                            <FaHeart />
-                          ) : (
-                            <>
-                              {isLoggedIn ? (
-                                <FaRegHeart />
-                              ) : (
-                                <Link to="/account/login">
+            <div className="individual-product-header-container px-[35px]">
+              <div className="title-button-wrapper">
+                <span className="capitalize text-3xl font-bold">{title}</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={
+                          wishlistItem ? removeFromFavorites : addToFavorites
+                        }
+                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                      >
+                        {pendingWishlistChange ? (
+                          <ReloadIcon className="animate-spin" />
+                        ) : (
+                          <>
+                            {wishlistItem ? (
+                              <FaHeart />
+                            ) : (
+                              <>
+                                {isLoggedIn ? (
                                   <FaRegHeart />
-                                </Link>
-                              )}
-                            </>
-                          )}
-                        </>
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-sm z-1000">
-                    {wishlistItem
-                      ? 'Remove from Favorites'
-                      : 'Save to Favorites'}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+                                ) : (
+                                  <Link to="/account/login">
+                                    <FaRegHeart />
+                                  </Link>
+                                )}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-sm z-1000">
+                      {wishlistItem
+                        ? 'Remove from Favorites'
+                        : 'Save to Favorites'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
 
-            {!isVideo && (
-              <p className="text-muted-foreground">Framed Canvas Print</p>
-            )}
-            {isVideo && (
-              <p className="text-muted-foreground">
-                {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
-              </p>
-            )}
-            <ProductPrice
-              price={selectedVariant?.price}
-              compareAtPrice={selectedVariant?.compareAtPrice}
-            />
-            {!isVideo && reviewsCount >= 1 && (
-              <a
-                href="#reviews"
-                onClick={(evt) => handleScroll('reviews', evt)}
-                className="no-underline text-inherit"
-              >
-                <div className="average-product-rating">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="relative flex items-center"
-                      aria-hidden="true"
-                    >
-                      <Rating
-                        readOnly
-                        value={5}
-                        className="text-muted-foreground"
-                        aria-label={`Maximum rating of 5 stars`}
-                      >
-                        {FIVE_STAR_KEYS.map((starKey) => (
-                          <RatingButton
-                            key={`mobile-max-${starKey}`}
-                            className="h-5 w-5 p-0.5"
-                          />
-                        ))}
-                      </Rating>
+              {!isVideo && (
+                <p className="text-muted-foreground">Framed Canvas Print</p>
+              )}
+              {isVideo && (
+                <p className="text-muted-foreground">
+                  {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
+                </p>
+              )}
+              <ProductPrice
+                price={selectedVariant?.price}
+                compareAtPrice={selectedVariant?.compareAtPrice}
+              />
+              {!isVideo && reviewsCount >= 1 && (
+                <a
+                  href="#reviews"
+                  onClick={(evt) => handleScroll('reviews', evt)}
+                  className="no-underline text-inherit"
+                >
+                  <div className="average-product-rating">
+                    <div className="flex items-center gap-2">
                       <div
-                        className="absolute inset-0 overflow-hidden text-yellow-400"
-                        style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                        className="relative flex items-center"
+                        aria-hidden="true"
                       >
-                        <Rating readOnly value={5} className="stars">
+                        <Rating
+                          readOnly
+                          value={5}
+                          className="text-muted-foreground"
+                          aria-label={`Maximum rating of 5 stars`}
+                        >
                           {FIVE_STAR_KEYS.map((starKey) => (
                             <RatingButton
-                              key={`mobile-fill-${starKey}`}
+                              key={`mobile-max-${starKey}`}
                               className="h-5 w-5 p-0.5"
-                              aria-label={`Average rating ${formattedAverageRating} out of 5`}
                             />
                           ))}
                         </Rating>
+                        <div
+                          className="absolute inset-0 overflow-hidden text-yellow-400"
+                          style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                        >
+                          <Rating readOnly value={5} className="stars">
+                            {FIVE_STAR_KEYS.map((starKey) => (
+                              <RatingButton
+                                key={`mobile-fill-${starKey}`}
+                                className="h-5 w-5 p-0.5"
+                                aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                              />
+                            ))}
+                          </Rating>
+                        </div>
                       </div>
+                      <span className="text-sm text-muted-foreground">
+                        {formattedAverageRating} (
+                        {reviewsCount === 1
+                          ? '1 review'
+                          : `${reviewsCount} reviews`}
+                        )
+                      </span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {formattedAverageRating} (
-                      {reviewsCount === 1
-                        ? '1 review'
-                        : `${reviewsCount} reviews`}
-                      )
-                    </span>
                   </div>
-                </div>
-              </a>
-            )}
-            <h4 className="text-xl individual-product-location">{`${formattedLocation}`}</h4>
+                </a>
+              )}
+              <h4 className="text-xl individual-product-location">{`${formattedLocation}`}</h4>
             </div>
           </>
         )}
@@ -1289,7 +1291,9 @@ const navigate = useNavigate();
               </>
             )}
 
-            {!isBundle && <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />}
+            {!isBundle && (
+              <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+            )}
             <br />
 
             <ProductForm
@@ -1306,7 +1310,11 @@ const navigate = useNavigate();
             <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
-                  <img src={'/usaflag3.png'} alt="" style={{height: '2.2rem'}} />
+                  <img
+                    src={'/usaflag3.png'}
+                    alt=""
+                    style={{height: '2.2rem'}}
+                  />
                 </div>
                 <div className="flex justify-center mt-3">
                   <p>Made in USA</p>
@@ -1322,7 +1330,11 @@ const navigate = useNavigate();
               </div>
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
-                  <img src={'/returnarrow2.png'} alt="" style={{height: '2.7rem'}} />
+                  <img
+                    src={'/returnarrow2.png'}
+                    alt=""
+                    style={{height: '2.7rem'}}
+                  />
                 </div>
                 <div className="flex justify-center">
                   <p>14-day returns</p>
@@ -1337,7 +1349,9 @@ const navigate = useNavigate();
               <Card className="py-2 px-4 mx-[20px] mb-2 w-full">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1">
-                    <AccordionTrigger>Print Specs</AccordionTrigger>
+                    <AccordionTrigger className="cursor-pointer">
+                      Print Specs
+                    </AccordionTrigger>
                     <AccordionContent>
                       <div className="print-specs">
                         {/* section body */}
@@ -1440,7 +1454,9 @@ const navigate = useNavigate();
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-2">
-                    <AccordionTrigger>Frame Specs</AccordionTrigger>
+                    <AccordionTrigger className="cursor-pointer">
+                      Frame Specs
+                    </AccordionTrigger>
                     <AccordionContent>
                       <div className="frame-specs">
                         {/* section body */}
@@ -1575,7 +1591,7 @@ const navigate = useNavigate();
                     </div>
                     <div className="flex justify-center ">
                       <div className="how-its-made-description-container justify-start xl:mt-2">
-                        <Card className='mx-4'>
+                        <Card className="mx-4">
                           <CardContent>
                             Quality matters - In this video, I break down how I
                             make each framed canvas print by hand, using premium
@@ -1635,11 +1651,13 @@ const navigate = useNavigate();
                 </div>
                 {windowWidth && windowWidth >= 1024 && !isVideo && (
                   <div className="items-top ">
-                    <div className="flex justify-end card-accordion-container">
+                    <div className="flex justify-end card-accordion-container me-3">
                       <Card className="py-2 px-4 w-full">
                         <Accordion type="single" collapsible className="w-full">
                           <AccordionItem value="item-1">
-                            <AccordionTrigger>Print Specs</AccordionTrigger>
+                            <AccordionTrigger className="cursor-pointer">
+                              Print Specs
+                            </AccordionTrigger>
                             <AccordionContent>
                               <div className="print-specs">
                                 {/* section body */}
@@ -1747,7 +1765,9 @@ const navigate = useNavigate();
                             </AccordionContent>
                           </AccordionItem>
                           <AccordionItem value="item-2">
-                            <AccordionTrigger>Frame Specs</AccordionTrigger>
+                            <AccordionTrigger className="cursor-pointer">
+                              Frame Specs
+                            </AccordionTrigger>
                             <AccordionContent>
                               <div className="frame-specs">
                                 {/* section body */}
@@ -1892,51 +1912,50 @@ const navigate = useNavigate();
                 <div className="flex-1 h-px bg-muted" />
               </div>
             </div>
-            <div className='flex justify-center pt-2'>
-
-            <div className="average-product-rating">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="relative flex items-center"
-                      aria-hidden="true"
+            <div className="flex justify-center pt-2">
+              <div className="average-product-rating">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="relative flex items-center"
+                    aria-hidden="true"
+                  >
+                    <Rating
+                      readOnly
+                      value={5}
+                      className="text-muted-foreground"
+                      aria-label={`Maximum rating of 5 stars`}
                     >
-                      <Rating
-                        readOnly
-                        value={5}
-                        className="text-muted-foreground"
-                        aria-label={`Maximum rating of 5 stars`}
-                      >
+                      {FIVE_STAR_KEYS.map((starKey) => (
+                        <RatingButton
+                          key={`reviews-max-${starKey}`}
+                          className="h-5 w-5 p-0.5"
+                        />
+                      ))}
+                    </Rating>
+                    <div
+                      className="absolute inset-0 overflow-hidden text-yellow-400"
+                      style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                    >
+                      <Rating readOnly value={5} className="stars">
                         {FIVE_STAR_KEYS.map((starKey) => (
                           <RatingButton
-                            key={`reviews-max-${starKey}`}
+                            key={`reviews-fill-${starKey}`}
                             className="h-5 w-5 p-0.5"
+                            aria-label={`Average rating ${formattedAverageRating} out of 5`}
                           />
                         ))}
                       </Rating>
-                      <div
-                        className="absolute inset-0 overflow-hidden text-yellow-400"
-                        style={{width: `${(averageRating / 5) * 100 + 2}%`}}
-                      >
-                        <Rating readOnly value={5} className="stars">
-                          {FIVE_STAR_KEYS.map((starKey) => (
-                            <RatingButton
-                              key={`reviews-fill-${starKey}`}
-                              className="h-5 w-5 p-0.5"
-                              aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                            />
-                          ))}
-                        </Rating>
-                      </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      {formattedAverageRating} (
-                      {reviewsCount === 1
-                        ? '1 review'
-                        : `${reviewsCount} reviews`}
-                      )
-                    </span>
                   </div>
+                  <span className="text-sm text-muted-foreground">
+                    {formattedAverageRating} (
+                    {reviewsCount === 1
+                      ? '1 review'
+                      : `${reviewsCount} reviews`}
+                    )
+                  </span>
                 </div>
+              </div>
             </div>
             <div className="my-5" id="reviews">
               <ProductReviewsCarousel
