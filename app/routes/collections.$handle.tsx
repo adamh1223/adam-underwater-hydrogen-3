@@ -49,7 +49,9 @@ import RecommendedProducts from '~/components/products/recommendedProducts';
 import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`}];
+  return [
+    {title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`},
+  ];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -62,7 +64,6 @@ export async function loader(args: LoaderFunctionArgs) {
   let customer = null;
   try {
     customer = await args.context.customerAccount.query(CUSTOMER_WISHLIST);
-    
   } catch (error) {
     console.warn('Not logged in');
     customer = null;
@@ -75,7 +76,6 @@ export async function loader(args: LoaderFunctionArgs) {
       isLoggedIn: undefined,
     };
   }
-  
 
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
 
@@ -90,9 +90,6 @@ export async function loader(args: LoaderFunctionArgs) {
   } else {
     wishlistProducts = [];
   }
-  
-  
-  
 
   return {...deferredData, ...criticalData, wishlistProducts, isLoggedIn};
 }
@@ -108,7 +105,6 @@ async function loadCriticalData({
 }: LoaderFunctionArgs) {
   const {handle} = params;
   const {storefront, cart} = context;
-  
 
   const url = new URL(request.url);
   const searchTerm = url.searchParams.get('q')?.trim() || '';
@@ -166,7 +162,6 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Collection() {
   const {collection, searchTerm, cart, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
-  
 
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
@@ -190,7 +185,6 @@ export default function Collection() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
     if (searchText && searchText?.length > 4) {
-      
     }
   };
 
@@ -213,8 +207,14 @@ export default function Collection() {
     }
   };
 
+  const isPrintsListLayout =
+    collection?.handle === 'prints' && layout === 'list';
   const layoutClassName =
-    layout === 'grid' ? 'prods-grid gap-x-5' : 'mt-[12px] grid';
+    layout === 'grid'
+      ? 'prods-grid gap-x-2'
+      : isPrintsListLayout
+        ? 'mt-[10px] mx-[10px] grid print-list-grid gap-2'
+        : 'mt-[12px] grid';
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
@@ -266,20 +266,12 @@ export default function Collection() {
       nodes: filteredCollection,
     });
     setTotalProductCount(filteredCollection?.length);
-  }, [
-    collection?.handle,
-    collection?.products,
-    filterState,
-    stockFilterState,
-  ]);
+  }, [collection?.handle, collection?.products, filterState, stockFilterState]);
 
   useEffect(() => {
-    
-
-    setStockFilterState('All Clips')
+    setStockFilterState('All Clips');
   }, [collection?.handle]);
 
-  
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -547,7 +539,6 @@ export default function Collection() {
           // <SearchResultsPredictive>
           //   {({items, total, term, state, closeSearch}) => {
           //     const {articles, collections, pages, products, queries} = items;
-          
 
           //     if (state === 'loading' && term.current) {
           //       return <div>Loading...</div>;
@@ -573,7 +564,6 @@ export default function Collection() {
           <SearchResultsPredictive>
             {({items, total, term, state, closeSearch}) => {
               const {articles, collections, pages, products, queries} = items;
-              
 
               const extraTags: string[] = [];
               const collectionName = capitalizeFirstLetter(collection?.title);
@@ -653,19 +643,15 @@ export default function Collection() {
               };
               index: number;
             }) => {
-              
-              
               const isInWishlist = wishlistProducts?.includes(
                 product?.id,
-                
-                
               ) as boolean;
-              
+
               return (
                 <>
                   {collection?.handle === 'prints' && (
                     <ProductCarousel
-                     key={product.id}
+                      key={product.id}
                       product={product}
                       layout={layout}
                       isInWishlist={isInWishlist}
@@ -674,7 +660,7 @@ export default function Collection() {
                   )}
                   {collection?.handle === 'stock' && (
                     <EProductsContainer
-                    key={product.id}
+                      key={product.id}
                       product={product}
                       layout={layout}
                       cart={cart}

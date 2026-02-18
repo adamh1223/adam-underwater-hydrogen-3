@@ -15,22 +15,25 @@
 }
 .list-view-large-row {
   display: grid;
-  /* Fallback fluid ratio (JS sets exact 60->35 from 430px to 1000px, then continues at reduced rate). */
-  grid-template-columns:
-    minmax(0, clamp(35%, calc(78.860% - 4.386vw), 60%))
-    minmax(0, 1fr);
+  grid-template-columns: 60% 40%;
 }
-@media (min-width: 1000px) {
-  .list-view-large-row {
-    grid-template-columns: 35% 65%;
-  }
+
+/* Prints list-view scales columns in fixed 367.5px intervals:
+ * 1 col @ 367.5, 2 cols @ 735, 3 cols @ 1102.5, etc.
+ * Between thresholds, cards stretch to fill available width.
+ */
+.print-list-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 367.5px), 1fr));
+  align-items: stretch;
 }
 .carousel-img-list-view {
   /* One continuous rule prevents step-changes at 521px and 1000px. */
   max-height: clamp(182px, calc(206px - 1.1vw), 202px);
 }
-.print-carousel-list {
-  padding: clamp(10px, 1.1vw, 14px) 2px 12px 2px;
+@media (max-width: 734px) {
+  .print-carousel-list {
+    padding: clamp(10px, 1.1vw, 14px) 2px 12px 2px;
+  }
 }
 @media (max-width: 800px) {
   .description-html-card {

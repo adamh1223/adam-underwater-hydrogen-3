@@ -103,18 +103,18 @@ export const ProductCarousel = ({
 
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-1 pb-1'
-      : 'transform group-hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-[12px]';
+      ? 'relative group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-1 pb-1'
+      : 'relative h-full transform group-hover:shadow-xl transition-shadow duration-500 cursor-pointer';
 
   const cardContentClassName =
     layout === 'grid'
       ? 'flex flex-col h-full'
-      : 'gap-y-4 grid list-view-large-row';
+      : 'h-full gap-y-4 grid list-view-large-row';
 
   const articleClassName =
     layout === 'grid'
       ? 'group relative h-full mb-[12px]'
-      : 'group relative mb-[12px]';
+      : 'group relative h-full mb-[12px]';
 
   const variantUrl = useVariantUrl(handle);
 
@@ -130,31 +130,8 @@ export const ProductCarousel = ({
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
 
-  const listLayoutColumns = (() => {
-    if (layout !== 'list' || windowWidth === undefined) return undefined;
-
-    // Interpolate from 60/40 at 430px to 35/65 by 1000px,
-    // then continue in the same direction at 35% of that rate above 1000px.
-    const minViewport = 430;
-    const maxViewport = 1000;
-    const fullRateSlope = -25 / (maxViewport - minViewport); // -0.04386% per px
-
-    let leftPercent = 60;
-    if (windowWidth <= minViewport) {
-      leftPercent = 60;
-    } else if (windowWidth <= maxViewport) {
-      leftPercent = 60 + (windowWidth - minViewport) * fullRateSlope;
-    } else {
-      const reducedRateSlope = fullRateSlope * 0.35;
-      leftPercent = 35 + (windowWidth - maxViewport) * reducedRateSlope;
-    }
-
-    const rightPercent = 100 - leftPercent;
-
-    return {
-      gridTemplateColumns: `${leftPercent.toFixed(3)}% ${rightPercent.toFixed(3)}%`,
-    };
-  })();
+  const listLayoutColumns =
+    layout === 'list' ? {gridTemplateColumns: '60% 40%'} : undefined;
 
   useEffect(() => {
     function handleResize() {
@@ -399,7 +376,7 @@ export const ProductCarousel = ({
     <article className={articleClassName}>
       <Card className={cardClassName}>
         {layout === 'list' && (
-          <div className="cursor-pointer absolute top-[3px] right-[15px] z-50 p-1">
+          <div className="cursor-pointer absolute top-[2px] right-[2px] z-50 p-1">
             {/* <Button
               variant="outline"
               onClick={addToFavorites}
@@ -516,7 +493,7 @@ export const ProductCarousel = ({
               className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'}`}
             >
               <Link
-                className="product-item"
+                className={`product-item ${layout === 'list' && 'flex items-center'}`}
                 key={id}
                 prefetch="intent"
                 to={variantUrl}
@@ -529,8 +506,8 @@ export const ProductCarousel = ({
                     >
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
-                          layout === 'grid' ? 'pt-2' : 'px-3 py-2'
-                        }`}
+                          layout === 'grid' && 'pt-2'
+                        } ${layout === 'list' && 'px-3 py-2'}`}
                       >
                         <img
                           src={img?.url}
@@ -626,7 +603,7 @@ export const ProductCarousel = ({
             className={`bottom-part-card ${layout === 'grid' ? '' : 'flex justify-start print-bottom-part-card-list'}`}
           >
             <Link
-              className="product-item"
+              className={`product-item ${layout === 'list' && 'flex items-center'}`}
               key={id}
               prefetch="intent"
               to={variantUrl}
@@ -665,23 +642,14 @@ export const ProductCarousel = ({
                   </div>
                 )}
 
-                {layout !== 'grid' &&
+                {/*
+                  Prints list-view description intentionally hidden.
+                  Previous logic (kept for easy restore):
+                  layout !== 'grid' &&
                   (prod as any).descriptionHtml &&
                   windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      <div>
-                        <Card className="description-html-card description-html-card-list">
-                          <div
-                            className="text-sm p-3"
-                            dangerouslySetInnerHTML={{
-                              __html: (prod as any).descriptionHtml,
-                            }}
-                          />
-                        </Card>
-                      </div>
-                    </>
-                  )}
+                  windowWidth > 800
+                */}
 
                 <div
                   className={`flex ${layout === 'grid' ? 'justify-center my-2' : 'justify-start mt-2'}`}
