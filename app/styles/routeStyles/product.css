@@ -15,22 +15,22 @@
 }
 .list-view-large-row {
   display: grid;
-  /* Fallback fluid ratio (JS sets exact 60->40 from 430px to 1000px, then continues at reduced rate). */
+  /* Fallback fluid ratio (JS sets exact 60->35 from 430px to 1000px, then continues at reduced rate). */
   grid-template-columns:
-    minmax(0, clamp(40%, calc(75.09% - 3.509vw), 60%))
+    minmax(0, clamp(35%, calc(78.860% - 4.386vw), 60%))
     minmax(0, 1fr);
 }
 @media (min-width: 1000px) {
   .list-view-large-row {
-    grid-template-columns: 40% 60%;
+    grid-template-columns: 35% 65%;
   }
 }
 .carousel-img-list-view {
   /* One continuous rule prevents step-changes at 521px and 1000px. */
-  max-height: clamp(156px, calc(172px - 0.8vw), 170px);
+  max-height: clamp(182px, calc(206px - 1.1vw), 202px);
 }
 .print-carousel-list {
-  padding: clamp(8px, 0.9vw, 12px) 2px 10px 2px;
+  padding: clamp(10px, 1.1vw, 14px) 2px 12px 2px;
 }
 @media (max-width: 800px) {
   .description-html-card {

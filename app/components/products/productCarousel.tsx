@@ -111,6 +111,11 @@ export const ProductCarousel = ({
       ? 'flex flex-col h-full'
       : 'gap-y-4 grid list-view-large-row';
 
+  const articleClassName =
+    layout === 'grid'
+      ? 'group relative h-full mb-[12px]'
+      : 'group relative mb-[12px]';
+
   const variantUrl = useVariantUrl(handle);
 
   const standardImages = images?.nodes?.filter((item) =>
@@ -128,11 +133,11 @@ export const ProductCarousel = ({
   const listLayoutColumns = (() => {
     if (layout !== 'list' || windowWidth === undefined) return undefined;
 
-    // Interpolate from 60/40 at 430px to 40/60 by 1000px,
-    // then continue in the same direction at 50% of that rate above 1000px.
+    // Interpolate from 60/40 at 430px to 35/65 by 1000px,
+    // then continue in the same direction at 35% of that rate above 1000px.
     const minViewport = 430;
     const maxViewport = 1000;
-    const fullRateSlope = -20 / (maxViewport - minViewport); // -0.03509% per px
+    const fullRateSlope = -25 / (maxViewport - minViewport); // -0.04386% per px
 
     let leftPercent = 60;
     if (windowWidth <= minViewport) {
@@ -140,8 +145,8 @@ export const ProductCarousel = ({
     } else if (windowWidth <= maxViewport) {
       leftPercent = 60 + (windowWidth - minViewport) * fullRateSlope;
     } else {
-      const reducedRateSlope = fullRateSlope * 0.5;
-      leftPercent = 40 + (windowWidth - maxViewport) * reducedRateSlope;
+      const reducedRateSlope = fullRateSlope * 0.35;
+      leftPercent = 35 + (windowWidth - maxViewport) * reducedRateSlope;
     }
 
     const rightPercent = 100 - leftPercent;
@@ -391,7 +396,7 @@ export const ProductCarousel = ({
   const loginValue = useIsLoggedIn(isLoggedIn);
 
   return (
-    <article className="group relative h-full mb-[12px]">
+    <article className={articleClassName}>
       <Card className={cardClassName}>
         {layout === 'list' && (
           <div className="cursor-pointer absolute top-[3px] right-[15px] z-50 p-1">
