@@ -62,16 +62,17 @@ function EProductsContainer({
   isLoggedIn: Promise<boolean> | undefined;
   isInWishlist: boolean;
 }) {
-  
-  
+  const hoverCardEffects =
+    'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+
   const cardClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full p-3'
-      : 'transform group-hover:shadow-xl transition-shadow duration-500 mx-[12px] h-full gap-y-3';
+      ? `h-full p-3 ${hoverCardEffects}`
+      : `transform mx-[12px] h-full gap-y-3 ${hoverCardEffects}`;
 
   const cardContentClassName =
     layout === 'grid'
-      ? 'group-hover:shadow-xl transition-shadow duration-500 h-full eproduct-grid-card-content'
+      ? 'h-full eproduct-grid-card-content'
       : 'list-view-large-row';
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();

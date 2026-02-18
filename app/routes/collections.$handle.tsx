@@ -27,7 +27,7 @@ import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
 import {useEffect, useId, useState} from 'react';
 import {Button} from '~/components/ui/button';
-import {LuLayoutGrid, LuList} from 'react-icons/lu';
+import {LuZoomIn, LuZoomOut} from 'react-icons/lu';
 import {Input} from '~/components/ui/input';
 import {SearchFormPredictive} from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
@@ -198,14 +198,35 @@ export default function Collection() {
       setTotalProductCount(productState?.nodes?.length);
     }
   }, [searchText]);
+  const LAYOUT_STORAGE_KEY = 'collection-layout-mode';
   const [layout, setLayout] = useState('grid');
-  const handleLayoutChange = () => {
-    if (layout === 'grid') {
-      setLayout('list');
-    } else {
-      setLayout('grid');
+  const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
+  const setGridLayout = () => setLayout('grid');
+  const setListLayout = () => setLayout('list');
+  const gridViewTooltip = '= key for shorctut';
+  const listViewTooltip = '- key for shortcut';
+
+  useEffect(() => {
+    try {
+      const savedLayout = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
+      if (savedLayout === 'grid' || savedLayout === 'list') {
+        setLayout(savedLayout);
+      }
+    } catch {
+      // Ignore storage access errors (private mode, etc.)
+    } finally {
+      setHasInitializedLayout(true);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!hasInitializedLayout) return;
+    try {
+      window.localStorage.setItem(LAYOUT_STORAGE_KEY, layout);
+    } catch {
+      // Ignore storage access errors (private mode, etc.)
+    }
+  }, [hasInitializedLayout, layout]);
 
   const isPrintsListLayout =
     collection?.handle === 'prints' && layout === 'list';
@@ -281,6 +302,40 @@ export default function Collection() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
+
+  useEffect(() => {
+    const isSupportedCollection =
+      collection?.handle === 'prints' || collection?.handle === 'stock';
+    if (!isSupportedCollection) return;
+
+    const handleViewShortcut = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.isContentEditable ||
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT'
+      ) {
+        return;
+      }
+
+      if (event.key === '-' || event.key === '_' || event.code === 'NumpadSubtract') {
+        event.preventDefault();
+        setListLayout();
+        return;
+      }
+
+      if (event.key === '=' || event.key === '+' || event.code === 'NumpadAdd') {
+        event.preventDefault();
+        setGridLayout();
+      }
+    };
+
+    window.addEventListener('keydown', handleViewShortcut);
+    return () => window.removeEventListener('keydown', handleViewShortcut);
+  }, [collection?.handle]);
 
   return (
     <div>
@@ -381,21 +436,21 @@ export default function Collection() {
                 <TooltipTrigger asChild>
                   <button
                     className={
-                      layout === 'grid'
+                      layout === 'list'
                         ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
                         : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
                     }
                     onClick={() => {
-                      if (layout !== 'grid') {
-                        handleLayoutChange();
+                      if (layout !== 'list') {
+                        setListLayout();
                       }
                     }}
                   >
-                    <LuLayoutGrid />
+                    <LuZoomOut />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-sm z-1000">
-                  Grid View
+                  {listViewTooltip}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -405,21 +460,21 @@ export default function Collection() {
                 <TooltipTrigger asChild>
                   <button
                     className={
-                      layout === 'list'
-                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md ms-1'
-                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer ms-1'
+                      layout === 'grid'
+                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
                     }
                     onClick={() => {
-                      if (layout !== 'list') {
-                        handleLayoutChange();
+                      if (layout !== 'grid') {
+                        setGridLayout();
                       }
                     }}
                   >
-                    <LuList />
+                    <LuZoomIn />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-sm z-1000">
-                  List View
+                  {gridViewTooltip}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -484,21 +539,21 @@ export default function Collection() {
                       <TooltipTrigger asChild>
                         <button
                           className={
-                            layout === 'grid'
+                            layout === 'list'
                               ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
                               : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
                           }
                           onClick={() => {
-                            if (layout !== 'grid') {
-                              handleLayoutChange();
+                            if (layout !== 'list') {
+                              setListLayout();
                             }
                           }}
                         >
-                          <LuLayoutGrid />
+                          <LuZoomOut />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-sm z-1000">
-                        Grid View
+                        {listViewTooltip}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -508,21 +563,21 @@ export default function Collection() {
                       <TooltipTrigger asChild>
                         <button
                           className={
-                            layout === 'list'
-                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md ms-1'
-                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer ms-1'
+                            layout === 'grid'
+                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
                           }
                           onClick={() => {
-                            if (layout !== 'list') {
-                              handleLayoutChange();
+                            if (layout !== 'grid') {
+                              setGridLayout();
                             }
                           }}
                         >
-                          <LuList />
+                          <LuZoomIn />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-sm">
-                        List View
+                        {gridViewTooltip}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

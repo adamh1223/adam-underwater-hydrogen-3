@@ -101,10 +101,13 @@ export const ProductCarousel = ({
   const {title, images, priceRange, handle, id, tags} =
     prod as collectionProduct;
 
+  const hoverCardEffects =
+    'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+
   const cardClassName =
     layout === 'grid'
-      ? 'relative group-hover:shadow-xl h-full transition-shadow duration-500 cursor-pointer mb-1 pb-1'
-      : 'relative h-full transform group-hover:shadow-xl transition-shadow duration-500 cursor-pointer';
+      ? `relative h-full cursor-pointer mb-1 pb-1 ${hoverCardEffects}`
+      : `relative h-full transform cursor-pointer ${hoverCardEffects}`;
 
   const cardContentClassName =
     layout === 'grid'
