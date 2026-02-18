@@ -128,11 +128,11 @@ export const ProductCarousel = ({
   const listLayoutColumns = (() => {
     if (layout !== 'list' || windowWidth === undefined) return undefined;
 
-    // Interpolate from 60/40 at 430px to 45/55 by 1000px,
-    // then continue in the same direction at 40% of that rate above 1000px.
+    // Interpolate from 60/40 at 430px to 40/60 by 1000px,
+    // then continue in the same direction at 50% of that rate above 1000px.
     const minViewport = 430;
     const maxViewport = 1000;
-    const fullRateSlope = -15 / (maxViewport - minViewport); // -0.02632% per px
+    const fullRateSlope = -20 / (maxViewport - minViewport); // -0.03509% per px
 
     let leftPercent = 60;
     if (windowWidth <= minViewport) {
@@ -140,8 +140,8 @@ export const ProductCarousel = ({
     } else if (windowWidth <= maxViewport) {
       leftPercent = 60 + (windowWidth - minViewport) * fullRateSlope;
     } else {
-      const reducedRateSlope = fullRateSlope * 0.4;
-      leftPercent = 45 + (windowWidth - maxViewport) * reducedRateSlope;
+      const reducedRateSlope = fullRateSlope * 0.5;
+      leftPercent = 40 + (windowWidth - maxViewport) * reducedRateSlope;
     }
 
     const rightPercent = 100 - leftPercent;
@@ -442,10 +442,10 @@ export const ProductCarousel = ({
         )}
         <div className={cardContentClassName} style={listLayoutColumns}>
           <div
-            className={`relative w-full h-full rounded ${
+            className={`relative w-full rounded ${
               layout === 'grid'
-                ? 'print-top-part-card-grid'
-                : 'print-top-part-card-list flex items-center'
+                ? 'h-full print-top-part-card-grid'
+                : 'h-full print-top-part-card-list'
             }`}
           >
             {layout === 'grid' && (
@@ -508,7 +508,7 @@ export const ProductCarousel = ({
             )}
             <Carousel
               setApi={setCarouselApi}
-              className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list list-carousel-track'}`}
+              className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'}`}
             >
               <Link
                 className="product-item"
@@ -524,12 +524,9 @@ export const ProductCarousel = ({
                     >
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
-                          layout === 'grid'
-                            ? 'pt-2'
-                            : 'px-3'
+                          layout === 'grid' ? 'pt-2' : 'px-3 py-2'
                         }`}
                       >
-
                         <img
                           src={img?.url}
                           className={`rounded max-w-full ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
@@ -543,9 +540,7 @@ export const ProductCarousel = ({
               <div
                 className={`absolute z-40 flex items-center justify-between pointer-events-none ${
                   layout === 'grid' ? 'inset-0' : ''
-                } ${
-                  layout === 'list' ? 'list-arrow-shell' : ''
-                } ${
+                } ${layout === 'list' ? 'list-arrow-shell' : ''} ${
                   layout === 'list' && isHorizontal
                     ? 'list-horizontal-arrow-shell'
                     : ''
@@ -588,7 +583,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isVertical && (
-              <div className="carousel-preview-dots-list absolute bottom-[6px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px]">
+              <div className="carousel-preview-dots-list absolute bottom-[6px] left-0 right-0 flex items-end justify-center gap-3 h-28 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -604,7 +599,7 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isHorizontal && (
-              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-28 pt-[28px]">
+              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 flex items-end justify-center gap-3 h-28 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
@@ -631,16 +626,28 @@ export const ProductCarousel = ({
               prefetch="intent"
               to={variantUrl}
             >
-              <div className={`${layout === 'grid' ? 'print-bottom-part-card-inside-grid' : 'print-bottom-part-card-inside-list'} mt-2`}>
+              <div
+                className={`${layout === 'grid' ? 'print-bottom-part-card-inside-grid' : 'print-bottom-part-card-inside-list'}`}
+              >
                 <div
                   className={layout === 'grid' ? 'text-center' : 'text-start'}
                 >
                   <h5
-                    className={`text-lg font-bold ${layout === 'list' && 'max-w-[85%]'}`}
+                    className={`font-bold ${
+                      layout === 'list'
+                        ? 'max-w-[85%] product-title-font-list'
+                        : 'text-lg'
+                    }`}
                   >
                     {title}
                   </h5>
-                  <p className="text-muted-foreground">{formattedLocation}</p>
+                  <p
+                    className={`text-muted-foreground ${
+                      layout === 'list' ? 'product-location-font-list' : ''
+                    }`}
+                  >
+                    {formattedLocation}
+                  </p>
                 </div>
 
                 {priceRange?.minVariantPrice && (
@@ -659,7 +666,7 @@ export const ProductCarousel = ({
                   windowWidth > 800 && (
                     <>
                       <div>
-                        <Card className="description-html-card ">
+                        <Card className="description-html-card description-html-card-list">
                           <div
                             className="text-sm p-3"
                             dangerouslySetInnerHTML={{
