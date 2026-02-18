@@ -75,7 +75,9 @@ function EProductPreview({
   };
 
   const isStockFootagePage = location.pathname.startsWith('/collections/stock');
-  const enableViewportAutoplay = isStockFootagePage;
+  const isAccountFavoritesPage =
+    location.pathname.startsWith('/account/favorites');
+  const enableViewportAutoplay = isStockFootagePage || isAccountFavoritesPage;
   const isVideoActive = enableViewportAutoplay ? isAutoplayActive : isHovered;
 
   useEffect(() => {

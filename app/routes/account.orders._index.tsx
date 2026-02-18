@@ -1,4 +1,9 @@
-import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  type MetaFunction,
+} from '@remix-run/react';
 import {
   Money,
   getPaginationVariables,
@@ -89,15 +94,32 @@ function EmptyOrders() {
 }
 
 function OrderItem({order}: {order: OrderItemFragment}) {
+  const navigate = useNavigate();
   const fulfillmentStatus = flattenConnection(order.fulfillments)[0]?.status;
-  
+  const orderPath = `/account/orders/${btoa(order.id)}`;
 
   return (
     <>
       <fieldset>
-        <Card className="mx-5">
+        <Card
+          className="mx-5 cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]"
+          role="link"
+          tabIndex={0}
+          onClick={() => navigate(orderPath)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              navigate(orderPath);
+            }
+          }}
+        >
           <CardHeader>
-            <Link to={`/account/orders/${btoa(order.id)}`}>
+            <Link
+              to={orderPath}
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
               <strong>Order#: {order.number}</strong>
             </Link>
             <p>{new Date(order.processedAt).toDateString()}</p>
@@ -109,8 +131,14 @@ function OrderItem({order}: {order: OrderItemFragment}) {
             <Money data={order.totalPrice} />
           </CardContent>
           <CardAction className="m-5">
-            <Button variant="default">
-              <Link to={`/account/orders/${btoa(order.id)}`}>View Order →</Link>
+            <Button
+              variant="default"
+              onClick={(event) => {
+                event.stopPropagation();
+                navigate(orderPath);
+              }}
+            >
+              View Order →
             </Button>
           </CardAction>
         </Card>
