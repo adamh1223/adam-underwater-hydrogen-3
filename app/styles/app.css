@@ -26,6 +26,13 @@ body {
   cursor: pointer;
 }
 
+/* Ensure all carousel preview dots use pointer cursor consistently */
+.carousel-preview-dots-grid button,
+.carousel-preview-dots-list button,
+button[aria-label^='Go to slide'] {
+  cursor: pointer;
+}
+
 /*
 * --------------------------------------------------
 * components/Aside
