@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import {useIsLoggedIn} from '~/lib/hooks';
+import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 import {toast} from 'sonner';
 
 type shopifyImage = {url: string; altText: string};
@@ -103,11 +104,17 @@ export const ProductCarousel = ({
 
   const hoverCardEffects =
     'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const touchCardEffects =
+    'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const touchCardId = `print-card:${String(id ?? handle)}`;
+  const {isTouchHighlighted, touchHighlightHandlers} = useTouchCardHighlight(
+    touchCardId,
+  );
 
   const cardClassName =
     layout === 'grid'
-      ? `relative h-full cursor-pointer mb-1 pb-1 ${hoverCardEffects}`
-      : `relative h-full transform cursor-pointer ${hoverCardEffects}`;
+      ? `relative h-full cursor-pointer mb-1 pb-1 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`
+      : `relative h-full transform cursor-pointer ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`;
 
   const cardContentClassName =
     layout === 'grid'
@@ -377,7 +384,11 @@ export const ProductCarousel = ({
 
   return (
     <article className={articleClassName}>
-      <Card className={cardClassName}>
+      <Card
+        className={cardClassName}
+        data-touch-highlight-card-id={touchCardId}
+        {...touchHighlightHandlers}
+      >
         {layout === 'list' && (
           <div className="cursor-pointer absolute top-[2px] right-[2px] z-50 p-1">
             {/* <Button

@@ -24,6 +24,7 @@ import {
 import {toast} from 'sonner';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
+import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 
 type shopifyImage = {url: string; altText: string};
 
@@ -64,11 +65,17 @@ function EProductsContainer({
 }) {
   const hoverCardEffects =
     'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const touchCardEffects =
+    'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const touchCardId = `eproduct-card:${String(product.id ?? product.handle)}`;
+  const {isTouchHighlighted, touchHighlightHandlers} = useTouchCardHighlight(
+    touchCardId,
+  );
 
   const cardClassName =
     layout === 'grid'
-      ? `h-full p-3 ${hoverCardEffects}`
-      : `transform mx-[12px] h-full gap-y-3 ${hoverCardEffects}`;
+      ? `h-full p-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`
+      : `transform mx-[12px] h-full gap-y-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`;
 
   const cardContentClassName =
     layout === 'grid'
@@ -231,7 +238,11 @@ function EProductsContainer({
       <article
         className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
       >
-        <Card className={cardClassName}>
+        <Card
+          className={cardClassName}
+          data-touch-highlight-card-id={touchCardId}
+          {...touchHighlightHandlers}
+        >
          
 
 
