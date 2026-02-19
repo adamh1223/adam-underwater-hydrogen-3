@@ -30,10 +30,8 @@
   /* One continuous rule prevents step-changes at 521px and 1000px. */
   max-height: clamp(182px, calc(206px - 1.1vw), 202px);
 }
-@media (max-width: 734px) {
-  .print-carousel-list {
-    padding: clamp(10px, 1.1vw, 14px) 2px 12px 2px;
-  }
+.print-carousel-list {
+  padding: clamp(10px, 1.1vw, 14px) 2px 12px 2px;
 }
 @media (max-width: 800px) {
   .description-html-card {
