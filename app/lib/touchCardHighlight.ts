@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import type {
   PointerEvent as ReactPointerEvent,
   TouchEvent as ReactTouchEvent,
@@ -44,6 +44,7 @@ let touchFollowUpTimeoutIds: number[] = [];
 let scrollStopTimeoutId: number | null = null;
 
 let lastTouchPoint: TouchPoint | null = null;
+let isScrollActive = false;
 let activeTouchIdentifier: number | null = null;
 let activePointerIdentifier: number | null = null;
 
@@ -98,6 +99,11 @@ function setLastTouchPoint(clientX: number, clientY: number) {
   };
 }
 
+function isAnyAsideOverlayExpanded(): boolean {
+  if (typeof document === 'undefined') return false;
+  return Boolean(document.querySelector('.overlay.expanded'));
+}
+
 function resolveCardIdAtPoint(
   clientX: number,
   clientY: number,
@@ -138,6 +144,8 @@ function dispatchTouchHighlightAtPoint(
   clientX: number,
   clientY: number,
 ): string | undefined {
+  if (isAnyAsideOverlayExpanded()) return undefined;
+
   const cardId = resolveCardIdAtPoint(clientX, clientY);
   if (!cardId) return undefined;
 
@@ -186,38 +194,15 @@ function scheduleTouchFollowUps(clientX: number, clientY: number) {
   });
 }
 
-function highlightAfterScrollSettles() {
-  if (typeof window === 'undefined') return;
-
-  const now = Date.now();
-  const recentTouchPoint =
-    lastTouchPoint && now - lastTouchPoint.timestamp <= 1400
-      ? lastTouchPoint
-      : null;
-
-  const focusX = recentTouchPoint?.clientX ?? window.innerWidth / 2;
-  const focusY = recentTouchPoint?.clientY ?? window.innerHeight / 2;
-
-  const highlightSucceeded = Boolean(
-    dispatchTouchHighlightAtPoint(focusX, focusY),
-  );
-
-  if (!highlightSucceeded && recentTouchPoint) {
-    dispatchTouchHighlightAtPoint(
-      window.innerWidth / 2,
-      window.innerHeight / 2,
-    );
-  }
-}
-
 function scheduleScrollStopHighlight() {
   if (typeof window === 'undefined') return;
 
+  isScrollActive = true;
   clearScrollStopTimeout();
 
   scrollStopTimeoutId = window.setTimeout(() => {
     scrollStopTimeoutId = null;
-    highlightAfterScrollSettles();
+    isScrollActive = false;
   }, 90);
 }
 
@@ -246,12 +231,15 @@ function installGlobalTouchStartListener() {
   if (globalTouchStartListener) return;
 
   globalTouchStartListener = (event: TouchEvent) => {
+    if (isAnyAsideOverlayExpanded()) return;
+
     const touch =
       getTouchByIdentifier(event.changedTouches, activeTouchIdentifier) ??
       event.changedTouches[0] ??
       event.touches[0];
 
     if (!touch) return;
+    if (isScrollActive) return;
 
     activeTouchIdentifier = touch.identifier;
     setLastTouchPoint(touch.clientX, touch.clientY);
@@ -261,6 +249,8 @@ function installGlobalTouchStartListener() {
   };
 
   globalTouchMoveListener = (event: TouchEvent) => {
+    if (isAnyAsideOverlayExpanded()) return;
+
     const touch =
       getTouchByIdentifier(event.touches, activeTouchIdentifier) ??
       event.touches[0] ??
@@ -268,12 +258,28 @@ function installGlobalTouchStartListener() {
       event.changedTouches[0];
 
     if (!touch) return;
+    if (isScrollActive) return;
 
     setLastTouchPoint(touch.clientX, touch.clientY);
     scheduleTouchMoveHighlight(touch.clientX, touch.clientY);
   };
 
   globalTouchEndListener = (event: TouchEvent) => {
+    if (isAnyAsideOverlayExpanded()) {
+      activeTouchIdentifier = null;
+      return;
+    }
+
+    if (isScrollActive) {
+      if (event.touches.length === 0) {
+        activeTouchIdentifier = null;
+      } else {
+        const remainingTouch = event.touches[0];
+        activeTouchIdentifier = remainingTouch?.identifier ?? null;
+      }
+      return;
+    }
+
     const endedTouch =
       getTouchByIdentifier(event.changedTouches, activeTouchIdentifier) ??
       event.changedTouches[0] ??
@@ -295,6 +301,18 @@ function installGlobalTouchStartListener() {
   };
 
   globalTouchCancelListener = (event: TouchEvent) => {
+    if (isAnyAsideOverlayExpanded()) {
+      activeTouchIdentifier = null;
+      return;
+    }
+
+    if (isScrollActive) {
+      if (event.touches.length === 0) {
+        activeTouchIdentifier = null;
+      }
+      return;
+    }
+
     const canceledTouch =
       getTouchByIdentifier(event.changedTouches, activeTouchIdentifier) ??
       event.changedTouches[0] ??
@@ -316,6 +334,8 @@ function installGlobalTouchStartListener() {
 
   globalPointerDownListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
+    if (isAnyAsideOverlayExpanded()) return;
+    if (isScrollActive) return;
 
     activePointerIdentifier = event.pointerId;
     setLastTouchPoint(event.clientX, event.clientY);
@@ -326,6 +346,8 @@ function installGlobalTouchStartListener() {
 
   globalPointerMoveListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
+    if (isAnyAsideOverlayExpanded()) return;
+    if (isScrollActive) return;
     if (
       activePointerIdentifier !== null &&
       event.pointerId !== activePointerIdentifier
@@ -339,6 +361,24 @@ function installGlobalTouchStartListener() {
 
   globalPointerUpListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
+    if (isAnyAsideOverlayExpanded()) {
+      if (
+        activePointerIdentifier !== null &&
+        event.pointerId === activePointerIdentifier
+      ) {
+        activePointerIdentifier = null;
+      }
+      return;
+    }
+    if (isScrollActive) {
+      if (
+        activePointerIdentifier !== null &&
+        event.pointerId === activePointerIdentifier
+      ) {
+        activePointerIdentifier = null;
+      }
+      return;
+    }
 
     setLastTouchPoint(event.clientX, event.clientY);
     dispatchTouchHighlightAtPoint(event.clientX, event.clientY);
@@ -354,6 +394,24 @@ function installGlobalTouchStartListener() {
 
   globalPointerCancelListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
+    if (isAnyAsideOverlayExpanded()) {
+      if (
+        activePointerIdentifier !== null &&
+        event.pointerId === activePointerIdentifier
+      ) {
+        activePointerIdentifier = null;
+      }
+      return;
+    }
+    if (isScrollActive) {
+      if (
+        activePointerIdentifier !== null &&
+        event.pointerId === activePointerIdentifier
+      ) {
+        activePointerIdentifier = null;
+      }
+      return;
+    }
 
     setLastTouchPoint(event.clientX, event.clientY);
     dispatchTouchHighlightAtPoint(event.clientX, event.clientY);
@@ -489,33 +547,23 @@ function uninstallGlobalTouchStartListener() {
   clearTouchMoveRaf();
 
   lastTouchPoint = null;
+  isScrollActive = false;
   activeTouchIdentifier = null;
   activePointerIdentifier = null;
 }
 
 export function useTouchCardHighlight(
   cardId: string,
-  durationMs = 420,
+  _durationMs = 420,
 ): {
   isTouchHighlighted: boolean;
   touchHighlightHandlers: TouchCardHighlightHandlers;
 } {
   const [isTouchHighlighted, setIsTouchHighlighted] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerTouchHighlight = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
     setIsTouchHighlighted(true);
-
-    timeoutRef.current = setTimeout(() => {
-      setIsTouchHighlighted(false);
-      timeoutRef.current = null;
-    }, durationMs);
-  }, [durationMs]);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !cardId) return;
@@ -530,10 +578,6 @@ export function useTouchCardHighlight(
         return;
       }
 
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
       setIsTouchHighlighted(false);
     };
 
@@ -565,23 +609,19 @@ export function useTouchCardHighlight(
     };
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
   const touchHighlightHandlers: TouchCardHighlightHandlers = {
     onPointerDownCapture: (event) => {
       if (event.pointerType === 'mouse') return;
       if (!cardId) return;
+      if (isAnyAsideOverlayExpanded()) return;
+      if (isScrollActive) return;
       dispatchTouchCardHighlight(cardId);
       triggerTouchHighlight();
     },
     onTouchStartCapture: (event) => {
       if (!cardId) return;
+      if (isAnyAsideOverlayExpanded()) return;
+      if (isScrollActive) return;
 
       const touch = event.touches?.[0] ?? event.changedTouches?.[0];
       if (touch) {
