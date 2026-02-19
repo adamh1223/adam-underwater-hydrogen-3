@@ -20,10 +20,11 @@
 
 /* Prints list-view scales columns in fixed 367.5px intervals:
  * 1 col @ 367.5, 2 cols @ 735, 3 cols @ 1102.5, etc.
- * Between thresholds, cards stretch to fill available width.
+ * Use auto-fill (not auto-fit) so empty columns stay reserved when
+ * filtered/search results are sparse, preventing cards from over-stretching.
  */
 .print-list-grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 367.5px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 367.5px), 1fr));
   align-items: stretch;
 }
 .carousel-img-list-view {
