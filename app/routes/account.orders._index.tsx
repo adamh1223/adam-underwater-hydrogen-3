@@ -110,6 +110,7 @@ function OrderItem({order}: {order: OrderItemFragment}) {
       <fieldset>
         <Card
           className={`mx-5 cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] ${isTouchHighlighted ? touchCardEffects : ''}`}
+          style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           {...touchHighlightHandlers}
           role="link"

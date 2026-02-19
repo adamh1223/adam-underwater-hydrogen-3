@@ -386,6 +386,7 @@ export const ProductCarousel = ({
     <article className={articleClassName}>
       <Card
         className={cardClassName}
+        style={{touchAction: 'pan-y'}}
         data-touch-highlight-card-id={touchCardId}
         {...touchHighlightHandlers}
       >
