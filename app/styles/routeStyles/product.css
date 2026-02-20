@@ -1016,3 +1016,26 @@
   height: 35px;
   width: 35px;
 }
+
+.most-popular-list,
+.most-popular-grid {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  white-space: nowrap;
+  line-height: 1;
+  z-index: 100 !important;
+}
+
+.most-popular-list {
+  width: 110px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.most-popular-grid {
+  width: 110px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: 700;
+}

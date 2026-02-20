@@ -185,6 +185,18 @@ export const ProductCarousel = ({
 
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
 
+  const handleDotSelect = (
+    event:
+      | React.MouseEvent<HTMLButtonElement>
+      | React.PointerEvent<HTMLButtonElement>,
+    index: number,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!carouselApi) return;
+    carouselApi.scrollTo(index);
+  };
+
   const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.stopPropagation();
     scrollToIndex(currentIndex + 1);
@@ -243,6 +255,9 @@ export const ProductCarousel = ({
   const isHorPrimary = prod.tags.includes('horPrimary');
   const isVertOnly = prod.tags.includes('vertOnly');
   const isVertPrimary = prod.tags.includes('vertPrimary');
+  const isMostPopular = Array.isArray(prod.tags)
+    ? prod.tags.includes('most-popular')
+    : false;
 
   const orientation = isVertPrimary
     ? 'Vertical'
@@ -390,6 +405,20 @@ export const ProductCarousel = ({
         data-touch-highlight-card-id={touchCardId}
         {...touchHighlightHandlers}
       >
+        {isMostPopular && (
+          <div className="absolute left-[6px] top-[6px] z-50 flex flex-col">
+            <button
+              disabled
+              className={`${layout === 'list' ? 'most-popular-list' : 'most-popular-grid'} rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 disabled:cursor-default disabled:opacity-100`}
+            >
+              Most Popular
+              <div className="flex justify-center items-end">
+                <img src="/badge1.png" className="badge-img" alt="" />
+              </div>
+            </button>
+          </div>
+        )}
+
         {layout === 'list' && (
           <div className="cursor-pointer absolute top-[2px] right-[2px] z-50 p-1">
             {/* <Button
@@ -564,48 +593,42 @@ export const ProductCarousel = ({
               </div>
             </Carousel>
             {totalItems > 1 && layout === 'grid' && (
-              <div className="carousel-preview-dots-grid absolute bottom-[-15px] left-0 right-0 z-40 flex items-end justify-center gap-3 h-32 pt-[28px]">
+              <div className="carousel-preview-dots-grid absolute bottom-[-15px] left-0 right-0 z-40 pointer-events-none flex items-end justify-center gap-3 h-32 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      scrollToIndex(idx);
-                    }}
-                    className={`h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
+                    onClick={(event) => handleDotSelect(event, idx)}
+                    onPointerDown={(event) => handleDotSelect(event, idx)}
+                    className={`h-2 w-2 pointer-events-auto rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
                 ))}
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isVertical && (
-              <div className="carousel-preview-dots-list absolute bottom-[6px] left-0 right-0 flex items-end justify-center gap-3 h-28 pt-[28px]">
+              <div className="carousel-preview-dots-list absolute bottom-[6px] left-0 right-0 z-50 pointer-events-none flex items-end justify-center gap-3 h-28 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      scrollToIndex(idx);
-                    }}
-                    className={`h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
+                    onClick={(event) => handleDotSelect(event, idx)}
+                    onPointerDown={(event) => handleDotSelect(event, idx)}
+                    className={`h-2 w-2 pointer-events-auto rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
                 ))}
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isHorizontal && (
-              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 flex items-end justify-center gap-3 h-28 pt-[28px]">
+              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 z-50 pointer-events-none flex items-end justify-center gap-3 h-28 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      scrollToIndex(idx);
-                    }}
-                    className={`h-2 w-2 rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
+                    onClick={(event) => handleDotSelect(event, idx)}
+                    onPointerDown={(event) => handleDotSelect(event, idx)}
+                    className={`h-2 w-2 pointer-events-auto rounded-full border border-white/60 ${idx === currentIndex ? 'bg-white' : 'bg-white/30'}`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
                 ))}
