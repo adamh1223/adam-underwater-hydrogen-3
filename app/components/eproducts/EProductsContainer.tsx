@@ -172,7 +172,7 @@ function EProductsContainer({
     layout !== 'grid' &&
     windowWidth != undefined &&
     (windowWidth <= 600 ||
-      (windowWidth > 912 && windowWidth <= 1119) ||
+      (windowWidth > 912 && windowWidth <= 1170) ||
       (windowWidth > 1355 && windowWidth <= 1563) ||
       (windowWidth > 1798 && windowWidth <= 2006) ||
       (windowWidth > 2241 && windowWidth < 2448) ||
@@ -181,7 +181,7 @@ function EProductsContainer({
     layout === 'list' &&
     windowWidth != undefined &&
     (windowWidth <= 600 ||
-      (windowWidth > 912 && windowWidth <= 1119) ||
+      (windowWidth > 912 && windowWidth <= 1170) ||
       (windowWidth > 1355 && windowWidth <= 1563) ||
       (windowWidth > 1798 && windowWidth <= 2006) ||
       (windowWidth > 2241 && windowWidth <= 2448) ||
@@ -190,7 +190,7 @@ function EProductsContainer({
     layout === 'list' &&
     windowWidth != undefined &&
     ((windowWidth > 600 && windowWidth <= 912) ||
-      (windowWidth > 1119 && windowWidth <= 1355) ||
+      (windowWidth > 1170 && windowWidth <= 1355) ||
       (windowWidth > 1563 && windowWidth <= 1798) ||
       (windowWidth > 2006 && windowWidth <= 2241) ||
       (windowWidth > 2448 && windowWidth <= 2684) ||
@@ -676,22 +676,22 @@ function EProductsContainer({
 
           {/* Title/Location + Artist Pick + Duration tag + Favorite button for LIST <=600px > */}
           {shouldRenderListCompactRange && (
-              <>
-                {isArtistPick && (
-                  <div className="absolute left-2 top-2 flex flex-col">
-                    <button
-                      disabled
-                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+            <>
+              {isArtistPick && (
+                <div className="absolute left-2 top-2 flex flex-col">
+                  <button
+                    disabled
+                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
                   >
                     Artist's Pick
                     <div className="flex justify-center items-end">
                       <img src={'/badge1.png'} className="badge-img" />
                     </div>
-                    </button>
-                  </div>
-                )}
-                <div className="product-title-container border-b py-1 text-center flex items-center justify-center">
-                  <Link
+                  </button>
+                </div>
+              )}
+              <div className="product-title-container border-b py-1 text-center flex items-center justify-center">
+                <Link
                   className="product-item flex w-full flex-col items-center justify-center text-center"
                   key={product.id}
                   prefetch="intent"
@@ -703,13 +703,13 @@ function EProductsContainer({
                   <p className="text-muted-foreground product-location-font-list">
                     {formattedLocation}
                   </p>
-                  </Link>
-                </div>
+                </Link>
+              </div>
 
-                <div className="cursor-pointer absolute right-2 top-2 z-50">
-                  {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
+              <div className="cursor-pointer absolute right-2 top-2 z-50">
+                {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
 
-                  <TooltipProvider>
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
