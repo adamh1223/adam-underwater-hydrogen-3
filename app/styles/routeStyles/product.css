@@ -158,9 +158,9 @@
 }
 @media (min-width: 801px) and (max-width: 1300px) {
   .eproduct-bottom-part-card-inside-list {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    padding: 0 0 6px 6px;
+    padding: 0 4px 6px 4px;
+    display: flex;
+    align-items: end;
   }
 }
 @media (min-width: 1301px) {
