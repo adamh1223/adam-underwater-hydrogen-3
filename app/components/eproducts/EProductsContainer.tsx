@@ -171,30 +171,16 @@ function EProductsContainer({
   const shouldRenderListBottomCard =
     layout !== 'grid' &&
     windowWidth != undefined &&
-    (windowWidth <= 600 ||
-      (windowWidth > 912 && windowWidth <= 1170) ||
-      (windowWidth > 1355 && windowWidth <= 1563) ||
-      (windowWidth > 1798 && windowWidth <= 2006) ||
-      (windowWidth > 2241 && windowWidth < 2448) ||
-      (windowWidth > 2684 && windowWidth <= 2890));
+    (windowWidth <= 600 || windowWidth >= 913);
   const shouldRenderListCompactRange =
     layout === 'list' &&
     windowWidth != undefined &&
-    (windowWidth <= 600 ||
-      (windowWidth > 912 && windowWidth <= 1170) ||
-      (windowWidth > 1355 && windowWidth <= 1563) ||
-      (windowWidth > 1798 && windowWidth <= 2006) ||
-      (windowWidth > 2241 && windowWidth <= 2448) ||
-      (windowWidth > 2684 && windowWidth <= 2890));
+    (windowWidth <= 600 || windowWidth >= 913);
   const shouldRenderListExpandedRange =
     layout === 'list' &&
     windowWidth != undefined &&
-    ((windowWidth > 600 && windowWidth <= 912) ||
-      (windowWidth > 1170 && windowWidth <= 1355) ||
-      (windowWidth > 1563 && windowWidth <= 1798) ||
-      (windowWidth > 2006 && windowWidth <= 2241) ||
-      (windowWidth > 2448 && windowWidth <= 2684) ||
-      (windowWidth > 2890 && windowWidth <= 3113));
+    windowWidth > 600 &&
+    windowWidth <= 912;
   const isGridCompact = windowWidth != undefined && windowWidth <= 600;
   const listRangeCardClassName =
     layout === 'list'
@@ -418,7 +404,9 @@ function EProductsContainer({
               {/* LIST VIEW / SMALL VW / BOTTOM-PART-CARD */}
               {shouldRenderListBottomCard && (
                 <div className={`eproduct-bottom-part-card-grid`}>
-                  <div className={`eproduct-bottom-part-card-inside-list`}>
+                  <div
+                    className={`eproduct-bottom-part-card-inside-listw-full`}
+                  >
                     <div
                       className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                     >
@@ -802,7 +790,7 @@ function EProductsContainer({
                 />
               </div> */}
               <div className={`eproduct-bottom-part-card-list relative`}>
-                <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
+                <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-1 gap-x-1">
                   <button
                     disabled
                     className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
@@ -827,7 +815,7 @@ function EProductsContainer({
                     </button>
                   )}
                 </div>
-                <div className={`eproduct-bottom-part-card-inside-list`}>
+                <div className={`eproduct-bottom-part-card-inside-list w-full`}>
                   {displayCardPrice && (
                     <div className={`flex justify-center`}>
                       <Link
@@ -1050,7 +1038,7 @@ function EProductsContainer({
                   )}
                 </div>
                 <div
-                  className={`eproduct-bottom-part-card-inside-list flex items-end`}
+                  className={`eproduct-bottom-part-card-inside-list flex items-end w-full`}
                 >
                   <div className="w-full">
                     <div className="flex justify-center">
