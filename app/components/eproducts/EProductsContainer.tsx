@@ -264,7 +264,7 @@ function EProductsContainer({
           {/* BEGIN GRID ---------------------------------------*/}
 
           {/* GRID VIEW WHOLE THING */}
-          {/* STILL MISSING TAGS */}
+         
           {layout === 'grid' && (
             <div className={cardContentClassName}>
               {layout === 'grid' && (
@@ -751,7 +751,7 @@ function EProductsContainer({
             <div className={cardContentClassName}>
               <div className={`relative evideo eproduct-top-part-card-list`}>
                 {hasDurationTag && (
-                  <div className="absolute left-2 top-2 z-50 flex flex-col gap-1">
+                  <div className="absolute left-[6px] top-[6px] z-50 flex flex-col gap-1">
                     <button
                       disabled
                       className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
@@ -972,7 +972,9 @@ function EProductsContainer({
                 className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
               >
                 {hasDurationTag && (
-                  <div className="absolute left-2 top-2 z-50 flex flex-col gap-1">
+                  <div
+                    className={`absolute left-[6px] ${isArtistPick ? 'top-[44px]' : 'top-[6px]'} z-50 flex flex-col gap-1`}
+                  >
                     <button
                       disabled
                       className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
