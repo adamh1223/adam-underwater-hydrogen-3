@@ -25,6 +25,7 @@ import {toast} from 'sonner';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import {useMouseCardHighlight} from '~/lib/mouseCardHighlight';
 
 type shopifyImage = {url: string; altText: string};
 
@@ -68,11 +69,22 @@ function EProductsContainer({
   const touchCardId = `eproduct-card:${String(product.id ?? product.handle)}`;
   const {isTouchHighlighted, touchHighlightHandlers} =
     useTouchCardHighlight(touchCardId);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const isListHoverPreviewMode =
+    layout === 'list' &&
+    windowWidth != undefined &&
+    windowWidth >= 913;
+  const {isMouseHighlighted} = useMouseCardHighlight(
+    touchCardId,
+    isListHoverPreviewMode,
+  );
 
   const cardClassName =
     layout === 'grid'
       ? `h-full p-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`
-      : `transform h-full gap-y-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`;
+      : `transform h-full gap-y-3 ${hoverCardEffects} ${
+          isTouchHighlighted || isMouseHighlighted ? touchCardEffects : ''
+        }`;
 
   const cardContentClassName =
     layout === 'grid'
@@ -93,8 +105,6 @@ function EProductsContainer({
   const displayCardCompareAtPrice =
     selectedVariantForCard?.compareAtPrice ?? null;
   const disableButton = useIsVideoInCart(selectedVariantId, cart);
-
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     function handleResize() {

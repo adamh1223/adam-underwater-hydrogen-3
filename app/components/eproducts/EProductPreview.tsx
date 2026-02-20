@@ -2,13 +2,17 @@ import {useState, useRef, useEffect} from 'react';
 import '../../styles/components/EProductPreview.css';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {useLocation} from '@remix-run/react';
+import {
+  activateMouseCardHighlight,
+  useMouseCardHighlight,
+} from '~/lib/mouseCardHighlight';
 
 type ShopifyImage = {url: string; altText: string};
 
 function EProductPreview({
   EProduct,
   extraClassName,
-  layout: _layout,
+  layout,
 }: {
   EProduct: ProductItemFragment & {images: {nodes: ShopifyImage[]}};
   extraClassName?: string;
@@ -22,10 +26,14 @@ function EProductPreview({
   const videoRevealTimeoutRef = useRef<number | null>(null);
   const videoLoadFallbackTimeoutRef = useRef<number | null>(null);
   const location = useLocation();
+  const [viewportWidth, setViewportWidth] = useState<number | undefined>(
+    undefined,
+  );
 
   const {featuredImage} = EProduct;
   const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
+  const mouseHighlightCardId = `eproduct-card:${String(EProduct.id ?? EProduct.handle)}`;
   const previewAspectRatio =
     featuredImage?.width && featuredImage?.height
       ? `${featuredImage.width} / ${featuredImage.height}`
@@ -77,8 +85,30 @@ function EProductPreview({
   const isStockFootagePage = location.pathname.startsWith('/collections/stock');
   const isAccountFavoritesPage =
     location.pathname.startsWith('/account/favorites');
-  const enableViewportAutoplay = isStockFootagePage || isAccountFavoritesPage;
-  const isVideoActive = enableViewportAutoplay ? isAutoplayActive : isHovered;
+  const isStockListLargeViewport =
+    isStockFootagePage &&
+    layout === 'list' &&
+    viewportWidth != undefined &&
+    viewportWidth >= 913;
+  const enableViewportAutoplay =
+    (isStockFootagePage || isAccountFavoritesPage) &&
+    !isStockListLargeViewport;
+  const {isMouseHighlighted} = useMouseCardHighlight(
+    mouseHighlightCardId,
+    !enableViewportAutoplay,
+  );
+  const isVideoActive = enableViewportAutoplay
+    ? isAutoplayActive
+    : isHovered || isMouseHighlighted;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const updateViewportWidth = () => setViewportWidth(window.innerWidth);
+    updateViewportWidth();
+    window.addEventListener('resize', updateViewportWidth);
+    return () => window.removeEventListener('resize', updateViewportWidth);
+  }, []);
 
   useEffect(() => {
     if (!enableViewportAutoplay || !isVideoActive) return;
@@ -164,7 +194,12 @@ function EProductPreview({
       className={`EProductPreviewContainer ${enableViewportAutoplay ? 'EProductPreviewContainer-autoplay' : ''} ${extraClassName || ''}`}
       style={previewAspectRatio ? {aspectRatio: previewAspectRatio} : undefined}
       onMouseEnter={
-        enableViewportAutoplay ? undefined : () => setIsHovered(true)
+        enableViewportAutoplay
+          ? undefined
+          : () => {
+              setIsHovered(true);
+              activateMouseCardHighlight(mouseHighlightCardId);
+            }
       }
       onMouseLeave={
         enableViewportAutoplay ? undefined : () => setIsHovered(false)
