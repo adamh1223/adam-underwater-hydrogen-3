@@ -84,7 +84,7 @@ function EProductPreview({
     isStockFootagePage &&
     layout === 'list' &&
     viewportWidth != undefined &&
-    viewportWidth >= 913;
+    viewportWidth >= 2242;
   const enableViewportAutoplay =
     (isStockFootagePage || isAccountFavoritesPage) &&
     !isStockListLargeViewport;
