@@ -176,7 +176,7 @@ function EProductsContainer({
       (windowWidth > 1355 && windowWidth <= 1563) ||
       (windowWidth > 1798 && windowWidth <= 2006) ||
       (windowWidth > 2241 && windowWidth < 2448) ||
-      (windowWidth > 2685 && windowWidth <= 2890));
+      (windowWidth > 2684 && windowWidth <= 2890));
   const shouldRenderListCompactRange =
     layout === 'list' &&
     windowWidth != undefined &&
@@ -185,7 +185,7 @@ function EProductsContainer({
       (windowWidth > 1355 && windowWidth <= 1563) ||
       (windowWidth > 1798 && windowWidth <= 2006) ||
       (windowWidth > 2241 && windowWidth <= 2448) ||
-      (windowWidth > 2685 && windowWidth <= 2890));
+      (windowWidth > 2684 && windowWidth <= 2890));
   const shouldRenderListExpandedRange =
     layout === 'list' &&
     windowWidth != undefined &&
@@ -193,9 +193,17 @@ function EProductsContainer({
       (windowWidth > 1119 && windowWidth <= 1355) ||
       (windowWidth > 1563 && windowWidth <= 1798) ||
       (windowWidth > 2006 && windowWidth <= 2241) ||
-      (windowWidth > 2448 && windowWidth <= 2685) ||
+      (windowWidth > 2448 && windowWidth <= 2684) ||
       (windowWidth > 2890 && windowWidth <= 3113));
   const isGridCompact = windowWidth != undefined && windowWidth <= 600;
+  const listRangeCardClassName =
+    layout === 'list'
+      ? shouldRenderListCompactRange
+        ? 'eproduct-list-range-compact'
+        : shouldRenderListExpandedRange
+          ? 'eproduct-list-range-expanded'
+          : ''
+      : '';
 
   const navigate = useNavigate();
   const loginValue = useIsLoggedIn(isLoggedIn);
@@ -262,7 +270,7 @@ function EProductsContainer({
           return ( */}
       <article className={`group relative h-full`}>
         <Card
-          className={cardClassName}
+          className={`${cardClassName} ${listRangeCardClassName}`.trim()}
           style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           {...touchHighlightHandlers}
@@ -668,35 +676,23 @@ function EProductsContainer({
 
           {/* Title/Location + Artist Pick + Duration tag + Favorite button for LIST <=600px > */}
           {shouldRenderListCompactRange && (
-            <>
-              {isArtistPick && (
-                <div className="absolute left-5 top-[7px] flex flex-col">
-                  <button
-                    disabled
-                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+              <>
+                {isArtistPick && (
+                  <div className="absolute left-2 top-2 flex flex-col">
+                    <button
+                      disabled
+                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
                   >
                     Artist's Pick
                     <div className="flex justify-center items-end">
                       <img src={'/badge1.png'} className="badge-img" />
                     </div>
-                  </button>
-                </div>
-              )}
-              <div className="absolute left-5 top-[55px] flex flex-col gap-1">
-                {hasDurationTag && (
-                  <button
-                    disabled
-                    className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-                  >
-                    {durationTag}
-                  </button>
+                    </button>
+                  </div>
                 )}
-              </div>
-              <div
-                className={`product-title-container  text-start border-b py-1`}
-              >
-                <Link
-                  className="product-item"
+                <div className="product-title-container border-b py-1 text-center flex items-center justify-center">
+                  <Link
+                  className="product-item flex w-full flex-col items-center justify-center text-center"
                   key={product.id}
                   prefetch="intent"
                   to={variantUrl}
@@ -704,18 +700,16 @@ function EProductsContainer({
                   <h2 className={` product-title-font-list`}>
                     {product.title}
                   </h2>
-                  <p
-                    className={`text-muted-foreground $ product-location-font-list`}
-                  >
+                  <p className="text-muted-foreground product-location-font-list">
                     {formattedLocation}
                   </p>
-                </Link>
-              </div>
+                  </Link>
+                </div>
 
-              <div className="fav-btn-container-list cursor-pointer absolute  z-50">
-                {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
+                <div className="cursor-pointer absolute right-2 top-2 z-50">
+                  {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
 
-                <TooltipProvider>
+                  <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
@@ -768,9 +762,19 @@ function EProductsContainer({
           {shouldRenderListCompactRange && (
             <div className={cardContentClassName}>
               <div className={`relative evideo eproduct-top-part-card-list`}>
+                {hasDurationTag && (
+                  <div className="absolute left-2 top-2 z-50 flex flex-col gap-1">
+                    <button
+                      disabled
+                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
+                    >
+                      {durationTag}
+                    </button>
+                  </div>
+                )}
                 {/* {thumbnail && (
-	                      <img
-	                        src={thumbnail}
+		                      <img
+		                        src={thumbnail}
 	                        alt="hi"
 	                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
 	                      />
@@ -914,7 +918,7 @@ function EProductsContainer({
           {/* Whole thing LIST 600px - 800px */}
           {shouldRenderListExpandedRange && (
             <div className={cardContentClassName}>
-              <div className="cursor-pointer absolute fav-btn-container-list z-50">
+              <div className="cursor-pointer absolute right-2 top-2 z-50">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -962,46 +966,33 @@ function EProductsContainer({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              {isArtistPick && hasDurationTag && (
-                <>
-                  <div className="absolute left-[18px] top-[6px] flex flex-col">
-                    <button
-                      disabled
-                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
-                    >
-                      Artist's Pick
-                      <div className="flex justify-center items-end">
-                        <img src={'/badge1.png'} className="badge-img" />
-                      </div>
-                    </button>
-                  </div>
-
-                  <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
-                    <button
-                      disabled
-                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-                    >
-                      {durationTag}
-                    </button>
-                  </div>
-                </>
-              )}
-              {!isArtistPick && hasDurationTag && (
-                <>
-                  <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
-                    <button
-                      disabled
-                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-                    >
-                      {durationTag}
-                    </button>
-                  </div>
-                </>
+              {isArtistPick && (
+                <div className="absolute left-2 top-2 flex flex-col">
+                  <button
+                    disabled
+                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                  >
+                    Artist's Pick
+                    <div className="flex justify-center items-end">
+                      <img src={'/badge1.png'} className="badge-img" />
+                    </div>
+                  </button>
+                </div>
               )}
 
               <div
                 className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
               >
+                {hasDurationTag && (
+                  <div className="absolute left-2 top-2 z-50 flex flex-col gap-1">
+                    <button
+                      disabled
+                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
+                    >
+                      {durationTag}
+                    </button>
+                  </div>
+                )}
                 {/* {thumbnail && (
                       <img
                         src={thumbnail}

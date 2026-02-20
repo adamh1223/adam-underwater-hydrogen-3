@@ -646,6 +646,103 @@
   }
 }
 
+/* Keep repeated eproduct list ranges visually locked to the first cycle:
+ * compact -> <=600 styling, expanded -> 601-800 styling.
+ */
+.eproduct-list-range-compact .eproduct-top-part-card-list {
+  display: block;
+  padding: 8px 0 8px 8px;
+}
+.eproduct-list-range-compact .eproduct-bottom-part-card-list {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.eproduct-list-range-compact .eproduct-bottom-part-card-inside-list {
+  display: block;
+  padding: 0 4px 6px 4px;
+}
+.eproduct-list-range-compact .product-title-font-list {
+  display: flex;
+  justify-content: center;
+  font-size: 14px;
+}
+.eproduct-list-range-compact .product-location-font-list {
+  display: flex;
+  justify-content: center;
+  font-size: 12px;
+}
+.eproduct-list-range-compact .product-price-font-list {
+  font-size: 15px;
+}
+
+.eproduct-list-range-expanded .eproduct-top-part-card-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  padding: 8px 0 8px 8px;
+}
+.eproduct-list-range-expanded .eproduct-bottom-part-card-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  padding: 0;
+}
+.eproduct-list-range-expanded .eproduct-bottom-part-card-inside-list {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 4px 6px 4px;
+}
+.eproduct-list-range-expanded .product-title-font-list {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 16px;
+}
+.eproduct-list-range-expanded .product-location-font-list {
+  font-size: 14px;
+}
+.eproduct-list-range-expanded .product-price-font-list {
+  font-size: 15px;
+}
+
+.eproduct-list-range-compact .artist-pick-list,
+.eproduct-list-range-expanded .artist-pick-list {
+  width: 110px;
+  height: 35px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-weight: 600;
+}
+.eproduct-list-range-compact .clip-icon-list,
+.eproduct-list-range-expanded .clip-icon-list {
+  width: 60px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.eproduct-list-range-compact .four-k,
+.eproduct-list-range-expanded .four-k {
+  width: 30px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.eproduct-list-range-compact .slow-mo,
+.eproduct-list-range-expanded .slow-mo,
+.eproduct-list-range-compact .fps,
+.eproduct-list-range-expanded .fps {
+  width: 60px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.eproduct-list-range-compact .duration-icon-list,
+.eproduct-list-range-expanded .duration-icon-list {
+  width: 40px;
+  height: 25px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
 @media (min-width: 1024px) and (max-width: 1200px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
