@@ -28,9 +28,7 @@ import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 
 type shopifyImage = {url: string; altText: string};
 
-function getResolutionBadgeStyle(
-  resolutionLabel: string,
-): React.CSSProperties {
+function getResolutionBadgeStyle(resolutionLabel: string): React.CSSProperties {
   const normalized = resolutionLabel.trim().toUpperCase();
   const baseStyle: React.CSSProperties = {borderColor: 'currentColor'};
 
@@ -68,14 +66,13 @@ function EProductsContainer({
   const touchCardEffects =
     'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
   const touchCardId = `eproduct-card:${String(product.id ?? product.handle)}`;
-  const {isTouchHighlighted, touchHighlightHandlers} = useTouchCardHighlight(
-    touchCardId,
-  );
+  const {isTouchHighlighted, touchHighlightHandlers} =
+    useTouchCardHighlight(touchCardId);
 
   const cardClassName =
     layout === 'grid'
       ? `h-full p-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`
-      : `transform mx-[12px] h-full gap-y-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`;
+      : `transform h-full gap-y-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`;
 
   const cardContentClassName =
     layout === 'grid'
@@ -84,21 +81,18 @@ function EProductsContainer({
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();
   const isBundle = product.tags.includes('Bundle');
-  const highestResolutionVariant = getHighestResolutionVariantFromProduct(product);
+  const highestResolutionVariant =
+    getHighestResolutionVariantFromProduct(product);
   const selectedVariantForCard = (highestResolutionVariant ??
     (product as any)?.selectedOrFirstAvailableVariant ??
-    null) as
-    | {id: string; price?: any; compareAtPrice?: any}
-    | null;
+    null) as {id: string; price?: any; compareAtPrice?: any} | null;
   const selectedVariantId =
     selectedVariantForCard?.id ?? product?.selectedOrFirstAvailableVariant?.id;
   const displayCardPrice =
     selectedVariantForCard?.price ?? product?.priceRange?.minVariantPrice;
-  const displayCardCompareAtPrice = selectedVariantForCard?.compareAtPrice ?? null;
-  const disableButton = useIsVideoInCart(
-    selectedVariantId,
-    cart,
-  );
+  const displayCardCompareAtPrice =
+    selectedVariantForCard?.compareAtPrice ?? null;
+  const disableButton = useIsVideoInCart(selectedVariantId, cart);
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
@@ -122,9 +116,9 @@ function EProductsContainer({
   const isSlowmo = product.tags.includes('slowmo');
   const isArtistPick = product.tags.includes('artist-pick');
   const hasDurationTag = Boolean(durationTag);
-  const resolutionBadgeLabel = getHighestResolutionLabelFromTags(product.tags) ?? '4K';
+  const resolutionBadgeLabel =
+    getHighestResolutionLabelFromTags(product.tags) ?? '4K';
   const resolutionBadgeStyle = getResolutionBadgeStyle(resolutionBadgeLabel);
-  
 
   const titleCase = (w: string) =>
     w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
@@ -171,6 +165,9 @@ function EProductsContainer({
   const formattedLocation = [locationName, locationState, locationCountry]
     .filter(Boolean)
     .join(', ');
+  // Disabled by request; keep original condition documented.
+  // const shouldRenderListDescription = layout === 'list' && Boolean((product as any).descriptionHtml);
+  const shouldRenderListDescription = false;
 
   const navigate = useNavigate();
   const loginValue = useIsLoggedIn(isLoggedIn);
@@ -235,54 +232,42 @@ function EProductsContainer({
           const productId = product.id;
           const dollarsAmount = formatCurrency(price);
           return ( */}
-      <article
-        className={`group relative h-full ${layout === 'list' && 'pb-[12px]'}`}
-      >
+      <article className={`group relative h-full`}>
         <Card
           className={cardClassName}
           style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           {...touchHighlightHandlers}
         >
-         
-
-
-
-
           {/* BEGIN GRID ---------------------------------------*/}
 
           {/* GRID VIEW WHOLE THING */}
           {/* STILL MISSING TAGS */}
-          {layout === 'grid' && <div className={cardContentClassName}>
-            {layout === 'grid' && (
-              <>
-              
-               <div className="absolute left-2 top-2 flex flex-col gap-1">
-            {isArtistPick && (
-              <button
-                disabled
-                className="artist-pick rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-md hover:bg-background disabled:cursor-default disabled:opacity-100"
-              >
-                Artist's Pick
-                <div className='flex justify-center items-end'>
-
-                <img src={'/badge1.png'} className='badge-img'/>
-                </div>
-                    
-              </button>
-            )}
-            {hasDurationTag && (
-              <button
-                disabled
-                className="clip-icon duration-tag flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                
-
-                {durationTag}
-                
-              </button>
-            )}
-            {/* {isSlowmo && (
+          {layout === 'grid' && (
+            <div className={cardContentClassName}>
+              {layout === 'grid' && (
+                <>
+                  <div className="absolute left-2 top-2 flex flex-col gap-1">
+                    {isArtistPick && (
+                      <button
+                        disabled
+                        className="artist-pick rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-md hover:bg-background disabled:cursor-default disabled:opacity-100"
+                      >
+                        Artist's Pick
+                        <div className="flex justify-center items-end">
+                          <img src={'/badge1.png'} className="badge-img" />
+                        </div>
+                      </button>
+                    )}
+                    {hasDurationTag && (
+                      <button
+                        disabled
+                        className="clip-icon duration-tag flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        {durationTag}
+                      </button>
+                    )}
+                    {/* {isSlowmo && (
               <button
                 disabled
                 className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
@@ -304,94 +289,88 @@ function EProductsContainer({
             >
               4K
             </button> */}
-          </div>
-          
-              <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={
-                          wishlistItem ? removeFromFavorites : addToFavorites
-                        }
-                        disabled={!loginValue}
-                        className="fav-btn-grid cursor-pointer  rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                      >
-                        {pendingWishlistChange ? (
-                          <>
-                          <div className='flex justify-center items-center'>
+                  </div>
 
-                          <ReloadIcon className="animate-spin" />
-                          </div>
-                          </>
-                        ) : (
-                          <>
-                            {wishlistItem ? (
+                  <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={
+                              wishlistItem
+                                ? removeFromFavorites
+                                : addToFavorites
+                            }
+                            disabled={!loginValue}
+                            className="fav-btn-grid cursor-pointer  rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                          >
+                            {pendingWishlistChange ? (
                               <>
-                              <div className='flex justify-center items-center'>
-
-                              <FaHeart />
-                              </div>
+                                <div className="flex justify-center items-center">
+                                  <ReloadIcon className="animate-spin" />
+                                </div>
                               </>
                             ) : (
                               <>
-                                {loginValue ? (
+                                {wishlistItem ? (
                                   <>
-                                  <div className='flex justify-center items-center'>
-
-                                  <FaRegHeart />
-                                  </div>
+                                    <div className="flex justify-center items-center">
+                                      <FaHeart />
+                                    </div>
                                   </>
                                 ) : (
-                                  <Link to="/account/login">
-                                    <div className='flex justify-center items-center'>
-
-                                    <FaRegHeart />
-                                    </div>
-                                  </Link>
+                                  <>
+                                    {loginValue ? (
+                                      <>
+                                        <div className="flex justify-center items-center">
+                                          <FaRegHeart />
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <Link to="/account/login">
+                                        <div className="flex justify-center items-center">
+                                          <FaRegHeart />
+                                        </div>
+                                      </Link>
+                                    )}
+                                  </>
                                 )}
                               </>
                             )}
-                          </>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm z-1000">
-                      {wishlistItem
-                        ? 'Remove from Favorites'
-                        : 'Save to Favorites'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              </>
-            )}
-            <div
-              className={`relative evideo`}
-            >
-              {/* {thumbnail && (
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm z-1000">
+                          {wishlistItem
+                            ? 'Remove from Favorites'
+                            : 'Save to Favorites'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </>
+              )}
+              <div className={`relative evideo`}>
+                {/* {thumbnail && (
                       <img
                         src={thumbnail}
                         alt="hi"
                         className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                     )} */}
-             {isBundle ? (
-                <EProductBundlePreview product={product} />
-              ) : (
-                <Link
-                  className="product-item"
-                  key={product.id}
-                  prefetch="intent"
-                  to={variantUrl}
-                >
-                  <EProductPreview EProduct={product} layout={layout}/>
-                </Link>
-              )}
-              
-              
-            </div>
-            {/* <div className="mt-4 text-center">
+                {isBundle ? (
+                  <EProductBundlePreview product={product} />
+                ) : (
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
+                  >
+                    <EProductPreview EProduct={product} layout={layout} />
+                  </Link>
+                )}
+              </div>
+              {/* <div className="mt-4 text-center">
                 <h2 className="text-lg capitalize">{name}</h2>
                 <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
                 <AddToCartButton
@@ -401,468 +380,683 @@ function EProductsContainer({
                 />
               </div> */}
               {/* LIST VIEW / SMALL VW / BOTTOM-PART-CARD */}
-            {layout != 'grid' && windowWidth != undefined && windowWidth <= 600 && 
-            <div
-              className={
-                `eproduct-bottom-part-card-grid`
-              }
-            >
-            
-              
-              <div
-                className={`eproduct-bottom-part-card-inside-list`}
-              >
-                <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
-                >
-                  <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <h2
-                      className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
-                    >
-                      {product.title}
-                    </h2>
-                    <p
-                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
-                    >
-                      {formattedLocation}
-                    </p>
-                  </Link>
-                </div>
-                
-                {displayCardPrice && (
-                  <>
-                  <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
-                  >
-                    
-                    <Link
-                      className="product-item"
-                      key={product.id}
-                      prefetch="intent"
-                      to={variantUrl}
-                    >
-                      
-                      <span
-                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+              {layout != 'grid' &&
+                windowWidth != undefined &&
+                windowWidth <= 600 && (
+                  <div className={`eproduct-bottom-part-card-grid`}>
+                    <div className={`eproduct-bottom-part-card-inside-list`}>
+                      <div
+                        className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                       >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
-                    </Link>
-                  </div>
-                  </>
-                )}
-                {layout === 'list' &&
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      <div>
                         <Link
                           className="product-item"
                           key={product.id}
                           prefetch="intent"
                           to={variantUrl}
                         >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="p-3"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
-                            />
-                          </Card>
+                          <h2
+                            className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
+                          >
+                            {product.title}
+                          </h2>
+                          <p
+                            className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                          >
+                            {formattedLocation}
+                          </p>
                         </Link>
                       </div>
-                    </>
-                  )}
-                {selectedVariantId && (
-                  <div
-                    className={`flex product-add-to-cart-container w-full mx-auto ${
-                      layout === 'grid'
-                        ? 'p-a-t-c-container-grid justify-center gap-x-3'
-                        : 'p-a-t-c-container-list justify-start'
-                    }`}
-                  >
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
-                    >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+
+                      {displayCardPrice && (
+                        <>
+                          <div
+                            className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                          >
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <span
+                                className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                              >
+                                <ProductPrice
+                                  price={displayCardPrice}
+                                  compareAtPrice={displayCardCompareAtPrice}
+                                />
+
+                                {/* We need to get the compareat price in here */}
+                              </span>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                      {layout === 'list' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div>
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="p-3"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
                         <div
-                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
                         >
-                          View Product
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
                         </div>
-                      </button>
-                    </Link>
+                      )}
+                    </div>
                   </div>
                 )}
-                
-              </div>
-            </div>}
-            {/* GRID VIEW / SMALL VW / BOTTOM-PART-CARD */}
-            {layout === 'grid' && windowWidth != undefined && windowWidth <= 600 && 
-            <div
-              className={
-                `eproduct-bottom-part-card-grid`
-              }
-            >
-              <div
-                className={`eproduct-bottom-part-card-inside relative w-full`}
-              >
-                <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
-                >
-                  <div className="pointer-events-none absolute left-0 top-0 z-10">
-                    <button
-                      disabled
-                      className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
-                      style={resolutionBadgeStyle}
-                    >
-                      {resolutionBadgeLabel}
-                    </button>
-                  </div>
-
-                  <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end">
-                    {isSlowmo && (
-                      <button
-                        disabled
-                        className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+              {layout != 'grid' &&
+                windowWidth != undefined &&
+                windowWidth > 912 &&
+                windowWidth <= 1064 && (
+                  <div className={`eproduct-bottom-part-card-grid`}>
+                    <div className={`eproduct-bottom-part-card-inside-list`}>
+                      <div
+                        className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                       >
-                        Slow-mo
-                      </button>
-                    )}
-                    {!isSlowmo && (
-                      <button
-                        disabled
-                        className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
-                      >
-                        24fps
-                      </button>
-                    )}
-                  </div>
-                  <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <h2
-                      className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
-                    >
-                      {product.title}
-                    </h2>
-                    <p
-                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
-                    >
-                      {formattedLocation}
-                    </p>
-                  </Link>
-                </div>
-                {displayCardPrice && (
-                  <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
-                  >
-                    <Link
-                      className="product-item"
-                      key={product.id}
-                      prefetch="intent"
-                      to={variantUrl}
-                    >
-                      <span
-                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
-                      >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
-                    </Link>
-                  </div>
-                )}
-                {layout !== 'grid' &&
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      <div>
                         <Link
                           className="product-item"
                           key={product.id}
                           prefetch="intent"
                           to={variantUrl}
                         >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="p-3"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
-                            />
-                          </Card>
+                          <h2
+                            className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
+                          >
+                            {product.title}
+                          </h2>
+                          <p
+                            className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                          >
+                            {formattedLocation}
+                          </p>
                         </Link>
                       </div>
-                    </>
-                  )}
-                {selectedVariantId && (
-                  <div
-                    className={`flex product-add-to-cart-container w-full mx-auto ${
-                      layout === 'grid'
-                        ? 'p-a-t-c-container-grid justify-center gap-x-3'
-                        : 'p-a-t-c-container-list justify-start'
-                    }`}
-                  >
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
-                    >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+
+                      {displayCardPrice && (
+                        <>
+                          <div
+                            className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                          >
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <span
+                                className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                              >
+                                <ProductPrice
+                                  price={displayCardPrice}
+                                  compareAtPrice={displayCardCompareAtPrice}
+                                />
+
+                                {/* We need to get the compareat price in here */}
+                              </span>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                      {layout === 'list' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div>
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="p-3"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
                         <div
-                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
                         >
-                          View Product
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
                         </div>
-                      </button>
-                    </Link>
+                      )}
+                    </div>
                   </div>
                 )}
-                
-              </div>
-            </div>}
-            {layout === 'grid' && windowWidth != undefined && windowWidth > 600 && 
-            <div
-              className={
-                layout === 'grid'
-                  ? `eproduct-bottom-part-card-grid`
-                  : `eproduct-bottom-part-card-list`
-              }
-            >
-              <div
-                className={`eproduct-bottom-part-card-inside relative w-full`}
-              >
-                
-                <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
-                >
-                  <div className="pointer-events-none absolute left-0 top-0 z-10">
-                    <button
-                      disabled
-                      className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
-                      style={resolutionBadgeStyle}
-                    >
-                      {resolutionBadgeLabel}
-                    </button>
-                  </div>
-
-                  <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end">
-                    {isSlowmo && (
-                      <button
-                        disabled
-                        className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+              {layout != 'grid' &&
+                windowWidth != undefined &&
+                windowWidth > 1341 &&
+                windowWidth <= 1472 && (
+                  <div className={`eproduct-bottom-part-card-grid`}>
+                    <div className={`eproduct-bottom-part-card-inside-list`}>
+                      <div
+                        className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                       >
-                        Slow-mo
-                      </button>
-                    )}
-                    {!isSlowmo && (
-                      <button
-                        disabled
-                        className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
-                      >
-                        24fps
-                      </button>
-                    )}
-                  </div>
-          <div>
-
-                  <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <h2
-                      className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
-                    >
-                      {product.title}
-                    </h2>
-                    <p
-                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
-                    >
-                      {formattedLocation}
-                    </p>
-                  </Link>
-                </div>
-                {displayCardPrice && (
-                  <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
-                  >
-                    <Link
-                      className="product-item"
-                      key={product.id}
-                      prefetch="intent"
-                      to={variantUrl}
-                    >
-                      <span
-                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
-                      >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
-                    </Link>
-                  </div>
-                )}
-                {layout !== 'grid' &&
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      <div>
                         <Link
                           className="product-item"
                           key={product.id}
                           prefetch="intent"
                           to={variantUrl}
                         >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="p-3"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
-                            />
-                          </Card>
+                          <h2
+                            className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
+                          >
+                            {product.title}
+                          </h2>
+                          <p
+                            className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                          >
+                            {formattedLocation}
+                          </p>
                         </Link>
                       </div>
-                    </>
-                  )}
-                {selectedVariantId && (
-                  <div
-                    className={`flex product-add-to-cart-container w-full mx-auto ${
-                      layout === 'grid'
-                        ? 'p-a-t-c-container-grid justify-center gap-x-3 mt-[6px]'
-                        : 'p-a-t-c-container-list justify-start'
-                    }`}
-                  >
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
-                    >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+
+                      {displayCardPrice && (
+                        <>
+                          <div
+                            className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                          >
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <span
+                                className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                              >
+                                <ProductPrice
+                                  price={displayCardPrice}
+                                  compareAtPrice={displayCardCompareAtPrice}
+                                />
+
+                                {/* We need to get the compareat price in here */}
+                              </span>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                      {layout === 'list' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div>
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="p-3"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
                         <div
-                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
                         >
-                          View Product
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
                         </div>
-                      </button>
-                    </Link>
+                      )}
+                    </div>
                   </div>
                 )}
-          </div>
-                
-              </div>
-            </div>}
-          </div>}
+              {/* GRID VIEW / SMALL VW / BOTTOM-PART-CARD */}
+              {layout === 'grid' &&
+                windowWidth != undefined &&
+                windowWidth <= 600 && (
+                  <div className={`eproduct-bottom-part-card-grid`}>
+                    <div
+                      className={`eproduct-bottom-part-card-inside relative w-full`}
+                    >
+                      <div
+                        className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                      >
+                        <div className="pointer-events-none absolute left-0 top-0 z-10">
+                          <button
+                            disabled
+                            className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
+                            style={resolutionBadgeStyle}
+                          >
+                            {resolutionBadgeLabel}
+                          </button>
+                        </div>
+
+                        <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end">
+                          {isSlowmo && (
+                            <button
+                              disabled
+                              className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                            >
+                              Slow-mo
+                            </button>
+                          )}
+                          {!isSlowmo && (
+                            <button
+                              disabled
+                              className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                            >
+                              24fps
+                            </button>
+                          )}
+                        </div>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <h2
+                            className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
+                          >
+                            {product.title}
+                          </h2>
+                          <p
+                            className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                          >
+                            {formattedLocation}
+                          </p>
+                        </Link>
+                      </div>
+                      {displayCardPrice && (
+                        <div
+                          className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <span
+                              className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                            >
+                              <ProductPrice
+                                price={displayCardPrice}
+                                compareAtPrice={displayCardCompareAtPrice}
+                              />
+
+                              {/* We need to get the compareat price in here */}
+                            </span>
+                          </Link>
+                        </div>
+                      )}
+                      {layout !== 'grid' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div>
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="p-3"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
+                        <div
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
+                        >
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              {layout === 'grid' &&
+                windowWidth != undefined &&
+                windowWidth > 600 && (
+                  <div
+                    className={
+                      layout === 'grid'
+                        ? `eproduct-bottom-part-card-grid`
+                        : `eproduct-bottom-part-card-list`
+                    }
+                  >
+                    <div
+                      className={`eproduct-bottom-part-card-inside relative w-full`}
+                    >
+                      <div
+                        className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                      >
+                        <div className="pointer-events-none absolute left-0 top-0 z-10">
+                          <button
+                            disabled
+                            className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
+                            style={resolutionBadgeStyle}
+                          >
+                            {resolutionBadgeLabel}
+                          </button>
+                        </div>
+
+                        <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end">
+                          {isSlowmo && (
+                            <button
+                              disabled
+                              className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                            >
+                              Slow-mo
+                            </button>
+                          )}
+                          {!isSlowmo && (
+                            <button
+                              disabled
+                              className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                            >
+                              24fps
+                            </button>
+                          )}
+                        </div>
+                        <div>
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <h2
+                              className={`${!isBundle ? 'product-title-font-grid' : 'product-title-font-grid-bundle'}`}
+                            >
+                              {product.title}
+                            </h2>
+                            <p
+                              className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                            >
+                              {formattedLocation}
+                            </p>
+                          </Link>
+                        </div>
+                        {displayCardPrice && (
+                          <div
+                            className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-start'}`}
+                          >
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <span
+                                className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                              >
+                                <ProductPrice
+                                  price={displayCardPrice}
+                                  compareAtPrice={displayCardCompareAtPrice}
+                                />
+
+                                {/* We need to get the compareat price in here */}
+                              </span>
+                            </Link>
+                          </div>
+                        )}
+                        {layout !== 'grid' &&
+                          shouldRenderListDescription &&
+                          (product as any).descriptionHtml &&
+                          windowWidth != undefined &&
+                          windowWidth > 800 && (
+                            <>
+                              <div>
+                                <Link
+                                  className="product-item"
+                                  key={product.id}
+                                  prefetch="intent"
+                                  to={variantUrl}
+                                >
+                                  <Card className="description-html-card-list ">
+                                    <div
+                                      className="p-3"
+                                      dangerouslySetInnerHTML={{
+                                        __html: (product as any)
+                                          .descriptionHtml,
+                                      }}
+                                    />
+                                  </Card>
+                                </Link>
+                              </div>
+                            </>
+                          )}
+                        {selectedVariantId && (
+                          <div
+                            className={`flex product-add-to-cart-container w-full mx-auto ${
+                              layout === 'grid'
+                                ? 'p-a-t-c-container-grid justify-center gap-x-3 mt-[6px]'
+                                : 'p-a-t-c-container-list justify-start'
+                            }`}
+                          >
+                            <AddToCartButton
+                              lines={[
+                                {
+                                  merchandiseId: selectedVariantId,
+                                  quantity: 1,
+                                },
+                              ]}
+                              disabled={disableButton}
+                              onClick={() => {
+                                open('cart');
+                              }}
+                            >
+                              <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                                Add To Cart
+                              </div>
+                            </AddToCartButton>
+                            <Link to={`/products/${product.handle}`}>
+                              <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                                <div
+                                  className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                                >
+                                  View Product
+                                </div>
+                              </button>
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
 
           {/* END GRID -----------------------------------------*/}
-
-
-
-
 
           {/* BEGIN <= 600px LIST ------------------------------*/}
 
           {/* Title/Location + Artist Pick + Duration tag + Favorite button for LIST <=600px > */}
-          {layout === 'list' && windowWidth != undefined && windowWidth <= 600 && (
-            <>
-            {isArtistPick && (
-              <div className='absolute left-5 top-[7px] flex flex-col'>
-
-              <button
-                disabled
-                className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
-              >
-                Artist's Pick
-                <div className='flex justify-center items-end'>
-
-                <img src={'/badge1.png'} className='badge-img'/>
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth <= 600 && (
+              <>
+                {isArtistPick && (
+                  <div className="absolute left-5 top-[7px] flex flex-col">
+                    <button
+                      disabled
+                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                    >
+                      Artist's Pick
+                      <div className="flex justify-center items-end">
+                        <img src={'/badge1.png'} className="badge-img" />
+                      </div>
+                    </button>
+                  </div>
+                )}
+                <div className="absolute left-5 top-[55px] flex flex-col gap-1">
+                  {hasDurationTag && (
+                    <button
+                      disabled
+                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                    >
+                      {durationTag}
+                    </button>
+                  )}
                 </div>
-                    
-              </button>
-              </div>
-            )}
-            <div className="absolute left-5 top-[55px] flex flex-col gap-1">
-            {hasDurationTag && (
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
-
-                {durationTag}
-                
-              </button>
-            )}
-            
-          </div>
-            <div
+                <div
                   className={`product-title-container  text-start border-b py-1`}
                 >
                   <Link
@@ -871,9 +1065,7 @@ function EProductsContainer({
                     prefetch="intent"
                     to={variantUrl}
                   >
-                    <h2
-                      className={` product-title-font-list`}
-                    >
+                    <h2 className={` product-title-font-list`}>
                       {product.title}
                     </h2>
                     <p
@@ -883,90 +1075,486 @@ function EProductsContainer({
                     </p>
                   </Link>
                 </div>
-                
-            <div className="fav-btn-container-list cursor-pointer absolute  z-50">
-              {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={
-                        wishlistItem ? removeFromFavorites : addToFavorites
-                      }
-                      disabled={!loginValue}
-                      className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                    >
-                      {pendingWishlistChange ? (
-                        <div className='flex justify-center items-center'>
+                <div className="fav-btn-container-list cursor-pointer absolute  z-50">
+                  {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
 
-                          <ReloadIcon className="animate-spin" />
-                        </div>
-                      ) : (
-                        <>
-                          {wishlistItem ? (
-                            <div className='flex justify-center items-center'>
-
-                              <FaHeart />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
                             </div>
                           ) : (
                             <>
-                              {loginValue ? (
-                                <div className='flex justify-center items-center'>
-
-                                  <FaRegHeart />
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
                                 </div>
                               ) : (
-                                
-                                <Link to="/account/login">
-                                  <div className='flex justify-center items-center'>
-                                  <FaRegHeart />
-                                </div>
-                                </Link>
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
                               )}
                             </>
                           )}
-                        </>
-                      )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 912 &&
+            windowWidth <= 1064 && (
+              <>
+                {isArtistPick && (
+                  <div className="absolute left-5 top-[7px] flex flex-col">
+                    <button
+                      disabled
+                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                    >
+                      Artist's Pick
+                      <div className="flex justify-center items-end">
+                        <img src={'/badge1.png'} className="badge-img" />
+                      </div>
                     </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-sm z-1000">
-                    {wishlistItem
-                      ? 'Remove from Favorites'
-                      : 'Save to Favorites'}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            </>
-          )}
+                  </div>
+                )}
+                <div className="absolute left-5 top-[55px] flex flex-col gap-1">
+                  {hasDurationTag && (
+                    <button
+                      disabled
+                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                    >
+                      {durationTag}
+                    </button>
+                  )}
+                </div>
+                <div
+                  className={`product-title-container  text-start border-b py-1`}
+                >
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
+                  >
+                    <h2 className={` product-title-font-list`}>
+                      {product.title}
+                    </h2>
+                    <p
+                      className={`text-muted-foreground $ product-location-font-list`}
+                    >
+                      {formattedLocation}
+                    </p>
+                  </Link>
+                </div>
+
+                <div className="fav-btn-container-list cursor-pointer absolute  z-50">
+                  {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 1356 &&
+            windowWidth <= 1472 && (
+              <>
+                {isArtistPick && (
+                  <div className="absolute left-5 top-[7px] flex flex-col">
+                    <button
+                      disabled
+                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                    >
+                      Artist's Pick
+                      <div className="flex justify-center items-end">
+                        <img src={'/badge1.png'} className="badge-img" />
+                      </div>
+                    </button>
+                  </div>
+                )}
+                <div className="absolute left-5 top-[55px] flex flex-col gap-1">
+                  {hasDurationTag && (
+                    <button
+                      disabled
+                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                    >
+                      {durationTag}
+                    </button>
+                  )}
+                </div>
+                <div
+                  className={`product-title-container  text-start border-b py-1`}
+                >
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
+                  >
+                    <h2 className={` product-title-font-list`}>
+                      {product.title}
+                    </h2>
+                    <p
+                      className={`text-muted-foreground $ product-location-font-list`}
+                    >
+                      {formattedLocation}
+                    </p>
+                  </Link>
+                </div>
+
+                <div className="fav-btn-container-list cursor-pointer absolute  z-50">
+                  {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 1784 &&
+            windowWidth <= 1915 && (
+              <>
+                {isArtistPick && (
+                  <div className="absolute left-5 top-[7px] flex flex-col">
+                    <button
+                      disabled
+                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                    >
+                      Artist's Pick
+                      <div className="flex justify-center items-end">
+                        <img src={'/badge1.png'} className="badge-img" />
+                      </div>
+                    </button>
+                  </div>
+                )}
+                <div className="absolute left-5 top-[55px] flex flex-col gap-1">
+                  {hasDurationTag && (
+                    <button
+                      disabled
+                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                    >
+                      {durationTag}
+                    </button>
+                  )}
+                </div>
+                <div
+                  className={`product-title-container  text-start border-b py-1`}
+                >
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
+                  >
+                    <h2 className={` product-title-font-list`}>
+                      {product.title}
+                    </h2>
+                    <p
+                      className={`text-muted-foreground $ product-location-font-list`}
+                    >
+                      {formattedLocation}
+                    </p>
+                  </Link>
+                </div>
+
+                <div className="fav-btn-container-list cursor-pointer absolute  z-50">
+                  {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 2227 &&
+            windowWidth <= 2357 && (
+              <>
+                {isArtistPick && (
+                  <div className="absolute left-5 top-[7px] flex flex-col">
+                    <button
+                      disabled
+                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                    >
+                      Artist's Pick
+                      <div className="flex justify-center items-end">
+                        <img src={'/badge1.png'} className="badge-img" />
+                      </div>
+                    </button>
+                  </div>
+                )}
+                <div className="absolute left-5 top-[55px] flex flex-col gap-1">
+                  {hasDurationTag && (
+                    <button
+                      disabled
+                      className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                    >
+                      {durationTag}
+                    </button>
+                  )}
+                </div>
+                <div
+                  className={`product-title-container  text-start border-b py-1`}
+                >
+                  <Link
+                    className="product-item"
+                    key={product.id}
+                    prefetch="intent"
+                    to={variantUrl}
+                  >
+                    <h2 className={` product-title-font-list`}>
+                      {product.title}
+                    </h2>
+                    <p
+                      className={`text-muted-foreground $ product-location-font-list`}
+                    >
+                      {formattedLocation}
+                    </p>
+                  </Link>
+                </div>
+
+                <div className="fav-btn-container-list cursor-pointer absolute  z-50">
+                  {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </>
+            )}
           {/* 4K + slowmo + eproductpreview + price + description + add to cart + view product for LIST <= 600px */}
-          {layout === 'list' && windowWidth != undefined && windowWidth <= 600 && <div className={cardContentClassName}>
-            
-            <div
-              className={`relative evideo eproduct-top-part-card-list`}
-	            >
-	              {/* {thumbnail && (
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth <= 600 && (
+              <div className={cardContentClassName}>
+                <div className={`relative evideo eproduct-top-part-card-list`}>
+                  {/* {thumbnail && (
 	                      <img
 	                        src={thumbnail}
 	                        alt="hi"
 	                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
 	                      />
 	                    )} */}
-	              {isBundle ? (
-	                <EProductBundlePreview product={product} />
-	              ) : (
-	                <Link
-	                  className="product-item"
-	                  key={product.id}
-	                  prefetch="intent"
-	                  to={variantUrl}
-	                >
-	                  <EProductPreview EProduct={product} layout={layout} />
-	                </Link>
-	              )}
-	            </div>
-            {/* <div className="mt-4 text-center">
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
                 <h2 className="text-lg capitalize">{name}</h2>
                 <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
                 <AddToCartButton
@@ -975,245 +1563,791 @@ function EProductsContainer({
                   RedirectTo={`/stock`}
                 />
               </div> */}
-	            <div
-	              className={
-	                `eproduct-bottom-part-card-list relative`
-	              }
-	            >
-		              <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
-	                  <button
-		                  disabled
-		                  className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
+                    <button
+                      disabled
+                      className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
                       style={resolutionBadgeStyle}
-		                >
-		                  {resolutionBadgeLabel}
-		                </button>
-		                {isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    Slow-mo
-		                  </button>
-		                )}
-		                {!isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    24fps
-		                  </button>
-		                )}
-		                
-		              </div>
-		              <div
-		                className={`eproduct-bottom-part-card-inside-list`}
-		              >
-		                
-		                {displayCardPrice && (
-		                  <div
-		                    className={`flex justify-center`}
-	                  >
-                    <Link
-                      className="product-item"
-                      key={product.id}
-                      prefetch="intent"
-                      to={variantUrl}
                     >
-                      <span
-                        className={` product-price-font-list flex flex-row gap-2`}
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
                       >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
-                    </Link>
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
                   </div>
-                )}
-                {
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      <div>
+                  <div className={`eproduct-bottom-part-card-inside-list`}>
+                    {displayCardPrice && (
+                      <div className={`flex justify-center`}>
                         <Link
                           className="product-item"
                           key={product.id}
                           prefetch="intent"
                           to={variantUrl}
                         >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="p-3"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
+                          <span
+                            className={` product-price-font-list flex flex-row gap-2`}
+                          >
+                            <ProductPrice
+                              price={displayCardPrice}
+                              compareAtPrice={displayCardCompareAtPrice}
                             />
-                          </Card>
+
+                            {/* We need to get the compareat price in here */}
+                          </span>
                         </Link>
                       </div>
-                    </>
-                  )}
-                {selectedVariantId && (
-                  <div
-                    className={`flex product-add-to-cart-container w-full mx-auto
+                    )}
+                    {shouldRenderListDescription &&
+                      (product as any).descriptionHtml &&
+                      windowWidth != undefined &&
+                      windowWidth > 800 && (
+                        <>
+                          <div>
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <Card className="description-html-card-list ">
+                                <div
+                                  className="p-3"
+                                  dangerouslySetInnerHTML={{
+                                    __html: (product as any).descriptionHtml,
+                                  }}
+                                />
+                              </Card>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    {selectedVariantId && (
+                      <div
+                        className={`flex product-add-to-cart-container w-full mx-auto
                       p-a-t-c-container-list justify-start
                     `}
-                  >
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
-                    >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
-                        <div
-                          className={`eproducts-add-to-cart-btn-text-list w-full text-center`}
+                      >
+                        <AddToCartButton
+                          lines={[
+                            {
+                              merchandiseId: selectedVariantId,
+                              quantity: 1,
+                            },
+                          ]}
+                          disabled={disableButton}
+                          onClick={() => {
+                            open('cart');
+                          }}
                         >
-                          View Product
-                        </div>
-                      </button>
-                    </Link>
+                          <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                            Add To Cart
+                          </div>
+                        </AddToCartButton>
+                        <Link to={`/products/${product.handle}`}>
+                          <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                            <div
+                              className={`eproducts-add-to-cart-btn-text-list w-full text-center`}
+                            >
+                              View Product
+                            </div>
+                          </button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
-                )}
-                
+                </div>
               </div>
-            </div>
-          </div>}
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 912 &&
+            windowWidth <= 1064 && (
+              <div className={cardContentClassName}>
+                <div className={`relative evideo eproduct-top-part-card-list`}>
+                  {/* {thumbnail && (
+	                      <img
+	                        src={thumbnail}
+	                        alt="hi"
+	                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+	                      />
+	                    )} */}
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
+                    <button
+                      disabled
+                      className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div className={`eproduct-bottom-part-card-inside-list`}>
+                    {displayCardPrice && (
+                      <div className={`flex justify-center`}>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <span
+                            className={` product-price-font-list flex flex-row gap-2`}
+                          >
+                            <ProductPrice
+                              price={displayCardPrice}
+                              compareAtPrice={displayCardCompareAtPrice}
+                            />
+
+                            {/* We need to get the compareat price in here */}
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                    {shouldRenderListDescription &&
+                      (product as any).descriptionHtml &&
+                      windowWidth != undefined &&
+                      windowWidth > 800 && (
+                        <>
+                          <div>
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <Card className="description-html-card-list ">
+                                <div
+                                  className="p-3"
+                                  dangerouslySetInnerHTML={{
+                                    __html: (product as any).descriptionHtml,
+                                  }}
+                                />
+                              </Card>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    {selectedVariantId && (
+                      <div
+                        className={`flex product-add-to-cart-container w-full mx-auto
+                      p-a-t-c-container-list justify-start
+                    `}
+                      >
+                        <AddToCartButton
+                          lines={[
+                            {
+                              merchandiseId: selectedVariantId,
+                              quantity: 1,
+                            },
+                          ]}
+                          disabled={disableButton}
+                          onClick={() => {
+                            open('cart');
+                          }}
+                        >
+                          <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                            Add To Cart
+                          </div>
+                        </AddToCartButton>
+                        <Link to={`/products/${product.handle}`}>
+                          <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                            <div
+                              className={`eproducts-add-to-cart-btn-text-list w-full text-center`}
+                            >
+                              View Product
+                            </div>
+                          </button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 1356 &&
+            windowWidth <= 1472 && (
+              <div className={cardContentClassName}>
+                <div className={`relative evideo eproduct-top-part-card-list`}>
+                  {/* {thumbnail && (
+	                      <img
+	                        src={thumbnail}
+	                        alt="hi"
+	                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+	                      />
+	                    )} */}
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
+                    <button
+                      disabled
+                      className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div className={`eproduct-bottom-part-card-inside-list`}>
+                    {displayCardPrice && (
+                      <div className={`flex justify-center`}>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <span
+                            className={` product-price-font-list flex flex-row gap-2`}
+                          >
+                            <ProductPrice
+                              price={displayCardPrice}
+                              compareAtPrice={displayCardCompareAtPrice}
+                            />
+
+                            {/* We need to get the compareat price in here */}
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                    {shouldRenderListDescription &&
+                      (product as any).descriptionHtml &&
+                      windowWidth != undefined &&
+                      windowWidth > 800 && (
+                        <>
+                          <div>
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <Card className="description-html-card-list ">
+                                <div
+                                  className="p-3"
+                                  dangerouslySetInnerHTML={{
+                                    __html: (product as any).descriptionHtml,
+                                  }}
+                                />
+                              </Card>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    {selectedVariantId && (
+                      <div
+                        className={`flex product-add-to-cart-container w-full mx-auto
+                      p-a-t-c-container-list justify-start
+                    `}
+                      >
+                        <AddToCartButton
+                          lines={[
+                            {
+                              merchandiseId: selectedVariantId,
+                              quantity: 1,
+                            },
+                          ]}
+                          disabled={disableButton}
+                          onClick={() => {
+                            open('cart');
+                          }}
+                        >
+                          <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                            Add To Cart
+                          </div>
+                        </AddToCartButton>
+                        <Link to={`/products/${product.handle}`}>
+                          <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                            <div
+                              className={`eproducts-add-to-cart-btn-text-list w-full text-center`}
+                            >
+                              View Product
+                            </div>
+                          </button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 1784 &&
+            windowWidth <= 1915 && (
+              <div className={cardContentClassName}>
+                <div className={`relative evideo eproduct-top-part-card-list`}>
+                  {/* {thumbnail && (
+	                      <img
+	                        src={thumbnail}
+	                        alt="hi"
+	                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+	                      />
+	                    )} */}
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
+                    <button
+                      disabled
+                      className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div className={`eproduct-bottom-part-card-inside-list`}>
+                    {displayCardPrice && (
+                      <div className={`flex justify-center`}>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <span
+                            className={` product-price-font-list flex flex-row gap-2`}
+                          >
+                            <ProductPrice
+                              price={displayCardPrice}
+                              compareAtPrice={displayCardCompareAtPrice}
+                            />
+
+                            {/* We need to get the compareat price in here */}
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                    {shouldRenderListDescription &&
+                      (product as any).descriptionHtml &&
+                      windowWidth != undefined &&
+                      windowWidth > 800 && (
+                        <>
+                          <div>
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <Card className="description-html-card-list ">
+                                <div
+                                  className="p-3"
+                                  dangerouslySetInnerHTML={{
+                                    __html: (product as any).descriptionHtml,
+                                  }}
+                                />
+                              </Card>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    {selectedVariantId && (
+                      <div
+                        className={`flex product-add-to-cart-container w-full mx-auto
+                      p-a-t-c-container-list justify-start
+                    `}
+                      >
+                        <AddToCartButton
+                          lines={[
+                            {
+                              merchandiseId: selectedVariantId,
+                              quantity: 1,
+                            },
+                          ]}
+                          disabled={disableButton}
+                          onClick={() => {
+                            open('cart');
+                          }}
+                        >
+                          <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                            Add To Cart
+                          </div>
+                        </AddToCartButton>
+                        <Link to={`/products/${product.handle}`}>
+                          <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                            <div
+                              className={`eproducts-add-to-cart-btn-text-list w-full text-center`}
+                            >
+                              View Product
+                            </div>
+                          </button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 2227 &&
+            windowWidth <= 2357 && (
+              <div className={cardContentClassName}>
+                <div className={`relative evideo eproduct-top-part-card-list`}>
+                  {/* {thumbnail && (
+	                      <img
+	                        src={thumbnail}
+	                        alt="hi"
+	                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+	                      />
+	                    )} */}
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-center gap-x-1">
+                    <button
+                      disabled
+                      className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div className={`eproduct-bottom-part-card-inside-list`}>
+                    {displayCardPrice && (
+                      <div className={`flex justify-center`}>
+                        <Link
+                          className="product-item"
+                          key={product.id}
+                          prefetch="intent"
+                          to={variantUrl}
+                        >
+                          <span
+                            className={` product-price-font-list flex flex-row gap-2`}
+                          >
+                            <ProductPrice
+                              price={displayCardPrice}
+                              compareAtPrice={displayCardCompareAtPrice}
+                            />
+
+                            {/* We need to get the compareat price in here */}
+                          </span>
+                        </Link>
+                      </div>
+                    )}
+                    {shouldRenderListDescription &&
+                      (product as any).descriptionHtml &&
+                      windowWidth != undefined &&
+                      windowWidth > 800 && (
+                        <>
+                          <div>
+                            <Link
+                              className="product-item"
+                              key={product.id}
+                              prefetch="intent"
+                              to={variantUrl}
+                            >
+                              <Card className="description-html-card-list ">
+                                <div
+                                  className="p-3"
+                                  dangerouslySetInnerHTML={{
+                                    __html: (product as any).descriptionHtml,
+                                  }}
+                                />
+                              </Card>
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    {selectedVariantId && (
+                      <div
+                        className={`flex product-add-to-cart-container w-full mx-auto
+                      p-a-t-c-container-list justify-start
+                    `}
+                      >
+                        <AddToCartButton
+                          lines={[
+                            {
+                              merchandiseId: selectedVariantId,
+                              quantity: 1,
+                            },
+                          ]}
+                          disabled={disableButton}
+                          onClick={() => {
+                            open('cart');
+                          }}
+                        >
+                          <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                            Add To Cart
+                          </div>
+                        </AddToCartButton>
+                        <Link to={`/products/${product.handle}`}>
+                          <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                            <div
+                              className={`eproducts-add-to-cart-btn-text-list w-full text-center`}
+                            >
+                              View Product
+                            </div>
+                          </button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
           {/* END <= 600px LIST ---------------------------------*/}
-
-
 
           {/* BEGIN 600px-800px LIST --------------------------------*/}
 
           {/* Whole thing LIST 600px - 800px */}
-          {layout === 'list' && windowWidth != undefined && windowWidth > 600 && windowWidth <= 800 && <div className={cardContentClassName}>
-              <div className="cursor-pointer absolute fav-btn-container-list z-50">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={
-                          wishlistItem ? removeFromFavorites : addToFavorites
-                        }
-                        disabled={!loginValue}
-                        className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                      >
-                        {pendingWishlistChange ? (
-                          <div className='flex justify-center items-center'>
-
-                            <ReloadIcon className="animate-spin" />
-                          </div>
-                        ) : (
-                          <>
-                            {wishlistItem ? (
-                              <div className='flex justify-center items-center'>
-
-                                <FaHeart />
-                              </div>
-                            ) : (
-                              <>
-                                {loginValue ? (
-                                  <div className='flex justify-center items-center'>
-
-                                    <FaRegHeart />
-                                  </div>
-                                ) : (
-                                  
-                                  <Link to="/account/login">
-                                    <div className='flex justify-center items-center'>
-                                    <FaRegHeart />
-                                  </div>
-                                  </Link>
-                                )}
-                              </>
-                            )}
-                          </>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm z-1000">
-                      {wishlistItem
-                        ? 'Remove from Favorites'
-                        : 'Save to Favorites'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              {isArtistPick && hasDurationTag && (
-                <>
-              <div className='absolute left-[18px] top-[6px] flex flex-col'>
-
-              <button
-                disabled
-                className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
-              >
-                Artist's Pick
-                <div className='flex justify-center items-end'>
-
-                <img src={'/badge1.png'} className='badge-img'/>
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 600 &&
+            windowWidth <= 912 && (
+              <div className={cardContentClassName}>
+                <div className="cursor-pointer absolute fav-btn-container-list z-50">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-                    
-              </button>
-              </div>
-            
-            <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
-            
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
+                {isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col">
+                      <button
+                        disabled
+                        className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                      >
+                        Artist's Pick
+                        <div className="flex justify-center items-end">
+                          <img src={'/badge1.png'} className="badge-img" />
+                        </div>
+                      </button>
+                    </div>
 
-                {durationTag}
-                
-              </button>
-            
-            
-          </div>
-          </>
-          )}
-          {!isArtistPick && hasDurationTag && (
-                <>
-              
-            
-            <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
-            
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
+                    <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {!isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
 
-                {durationTag}
-                
-              </button>
-            
-            
-          </div>
-          </>
-          )}
-            
-            <div
-              className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
-            >
-              {/* {thumbnail && (
+                <div
+                  className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
+                >
+                  {/* {thumbnail && (
                       <img
                         src={thumbnail}
                         alt="hi"
@@ -1221,21 +2355,20 @@ function EProductsContainer({
                       />
                     )} */}
 
-              {isBundle ? (
-                <EProductBundlePreview product={product} />
-              ) : (
-                <Link
-                  className="product-item"
-                  key={product.id}
-                  prefetch="intent"
-                  to={variantUrl}
-                >
-                  <EProductPreview EProduct={product} layout={layout}/>
-                </Link>
-              )}
-              
-            </div>
-            {/* <div className="mt-4 text-center">
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
                 <h2 className="text-lg capitalize">{name}</h2>
                 <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
                 <AddToCartButton
@@ -1244,1045 +2377,1205 @@ function EProductsContainer({
                   RedirectTo={`/stock`}
                 />
               </div> */}
-            <div
-              className={
-                 `eproduct-bottom-part-card-list relative`
-              }
-            >
-              
-            <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
-              <button
-		                  disabled
-		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
+                    <button
+                      disabled
+                      className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
                       style={resolutionBadgeStyle}
-		                >
-		                  {resolutionBadgeLabel}
-		                </button>
-		                {isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    Slow-mo
-		                  </button>
-		                )}
-		                {!isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    24fps
-		                  </button>
-		                )}
-		                
-		              </div>
-              <div
-                className={`eproduct-bottom-part-card-inside-list flex items-end`}
-              >
-                <div className='w-full'>
-                  <div className='flex justify-center'>
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    className={`eproduct-bottom-part-card-inside-list flex items-end`}
+                  >
+                    <div className="w-full">
+                      <div className="flex justify-center">
+                        <div
+                          className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <div
+                              className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
+                            >
+                              {product.title}
+                            </div>
+                            <p
+                              className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                            >
+                              {formattedLocation}
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+                      {displayCardPrice && (
+                        <div
+                          className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <span
+                              className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                            >
+                              <ProductPrice
+                                price={displayCardPrice}
+                                compareAtPrice={displayCardCompareAtPrice}
+                              />
+
+                              {/* We need to get the compareat price in here */}
+                            </span>
+                          </Link>
+                        </div>
+                      )}
+                      {layout !== 'grid' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div className="w-[50%]">
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="px-3 py-1"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
+                        <div
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
+                        >
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 1064 &&
+            windowWidth <= 1356 && (
+              <div className={cardContentClassName}>
+                <div className="cursor-pointer absolute fav-btn-container-list z-50">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                {isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col">
+                      <button
+                        disabled
+                        className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                      >
+                        Artist's Pick
+                        <div className="flex justify-center items-end">
+                          <img src={'/badge1.png'} className="badge-img" />
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {!isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
 
                 <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                  className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
                 >
-                  <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <div
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
-                    >
-                      {product.title}
-                    </div>
-                    <p
-                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
-                    >
-                      {formattedLocation}
-                    </p>
-                  </Link>
-                </div>
-                  </div>
-                {displayCardPrice && (
-                  <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
-                  >
+                  {/* {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt="hi"
+                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )} */}
+
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
                     <Link
                       className="product-item"
                       key={product.id}
                       prefetch="intent"
                       to={variantUrl}
                     >
-                      <span
-                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
-                      >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
+                      <EProductPreview EProduct={product} layout={layout} />
                     </Link>
-                  </div>
-                )}
-                {layout !== 'grid' &&
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      <div className='w-[50%]'>
-                        <Link
-                          className="product-item"
-                          key={product.id}
-                          prefetch="intent"
-                          to={variantUrl}
-                        >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="px-3 py-1"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
-                            />
-                          </Card>
-                        </Link>
-                      </div>
-                    </>
                   )}
-                {selectedVariantId && (
-                  <div
-                    className={`flex product-add-to-cart-container w-full mx-auto ${
-                      layout === 'grid'
-                        ? 'p-a-t-c-container-grid justify-center gap-x-3'
-                        : 'p-a-t-c-container-list justify-start'
-                    }`}
-                  >
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
+                </div>
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
+                    <button
+                      disabled
+                      className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
                     >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    className={`eproduct-bottom-part-card-inside-list flex items-end`}
+                  >
+                    <div className="w-full">
+                      <div className="flex justify-center">
                         <div
-                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                          className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                         >
-                          View Product
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <div
+                              className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
+                            >
+                              {product.title}
+                            </div>
+                            <p
+                              className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                            >
+                              {formattedLocation}
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+                      {displayCardPrice && (
+                        <div
+                          className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <span
+                              className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                            >
+                              <ProductPrice
+                                price={displayCardPrice}
+                                compareAtPrice={displayCardCompareAtPrice}
+                              />
+
+                              {/* We need to get the compareat price in here */}
+                            </span>
+                          </Link>
+                        </div>
+                      )}
+                      {layout !== 'grid' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div className="w-[50%]">
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="px-3 py-1"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
+                        <div
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
+                        >
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 1472 &&
+            windowWidth <= 1784 && (
+              <div className={cardContentClassName}>
+                <div className="cursor-pointer absolute fav-btn-container-list z-50">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                {isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col">
+                      <button
+                        disabled
+                        className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                      >
+                        Artist's Pick
+                        <div className="flex justify-center items-end">
+                          <img src={'/badge1.png'} className="badge-img" />
                         </div>
                       </button>
-                    </Link>
-                  </div>
+                    </div>
+
+                    <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
                 )}
+                {!isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                <div
+                  className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
+                >
+                  {/* {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt="hi"
+                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )} */}
+
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
                 </div>
-                
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
+                    <button
+                      disabled
+                      className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    className={`eproduct-bottom-part-card-inside-list flex items-end`}
+                  >
+                    <div className="w-full">
+                      <div className="flex justify-center">
+                        <div
+                          className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <div
+                              className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
+                            >
+                              {product.title}
+                            </div>
+                            <p
+                              className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                            >
+                              {formattedLocation}
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+                      {displayCardPrice && (
+                        <div
+                          className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <span
+                              className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                            >
+                              <ProductPrice
+                                price={displayCardPrice}
+                                compareAtPrice={displayCardCompareAtPrice}
+                              />
+
+                              {/* We need to get the compareat price in here */}
+                            </span>
+                          </Link>
+                        </div>
+                      )}
+                      {layout !== 'grid' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div className="w-[50%]">
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="px-3 py-1"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
+                        <div
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
+                        >
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>}
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 1915 &&
+            windowWidth <= 2227 && (
+              <div className={cardContentClassName}>
+                <div className="cursor-pointer absolute fav-btn-container-list z-50">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                {isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col">
+                      <button
+                        disabled
+                        className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                      >
+                        Artist's Pick
+                        <div className="flex justify-center items-end">
+                          <img src={'/badge1.png'} className="badge-img" />
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {!isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                <div
+                  className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
+                >
+                  {/* {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt="hi"
+                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )} */}
+
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
+                    <button
+                      disabled
+                      className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    className={`eproduct-bottom-part-card-inside-list flex items-end`}
+                  >
+                    <div className="w-full">
+                      <div className="flex justify-center">
+                        <div
+                          className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <div
+                              className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
+                            >
+                              {product.title}
+                            </div>
+                            <p
+                              className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                            >
+                              {formattedLocation}
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+                      {displayCardPrice && (
+                        <div
+                          className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <span
+                              className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                            >
+                              <ProductPrice
+                                price={displayCardPrice}
+                                compareAtPrice={displayCardCompareAtPrice}
+                              />
+
+                              {/* We need to get the compareat price in here */}
+                            </span>
+                          </Link>
+                        </div>
+                      )}
+                      {layout !== 'grid' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div className="w-[50%]">
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="px-3 py-1"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
+                        <div
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
+                        >
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          {layout === 'list' &&
+            windowWidth != undefined &&
+            windowWidth > 2357 &&
+            windowWidth <= 2669 && (
+              <div className={cardContentClassName}>
+                <div className="cursor-pointer absolute fav-btn-container-list z-50">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
+                                    <div className="flex justify-center items-center">
+                                      <FaRegHeart />
+                                    </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                {isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col">
+                      <button
+                        disabled
+                        className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                      >
+                        Artist's Pick
+                        <div className="flex justify-center items-end">
+                          <img src={'/badge1.png'} className="badge-img" />
+                        </div>
+                      </button>
+                    </div>
+
+                    <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {!isArtistPick && hasDurationTag && (
+                  <>
+                    <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
+                      <button
+                        disabled
+                        className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
+                      >
+                        {durationTag}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                <div
+                  className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
+                >
+                  {/* {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt="hi"
+                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )} */}
+
+                  {isBundle ? (
+                    <EProductBundlePreview product={product} />
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview EProduct={product} layout={layout} />
+                    </Link>
+                  )}
+                </div>
+                {/* <div className="mt-4 text-center">
+                <h2 className="text-lg capitalize">{name}</h2>
+                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
+                <AddToCartButton
+                  productId={productId}
+                  isEProduct
+                  RedirectTo={`/stock`}
+                />
+              </div> */}
+                <div className={`eproduct-bottom-part-card-list relative`}>
+                  <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
+                    <button
+                      disabled
+                      className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={resolutionBadgeStyle}
+                    >
+                      {resolutionBadgeLabel}
+                    </button>
+                    {isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        Slow-mo
+                      </button>
+                    )}
+                    {!isSlowmo && (
+                      <button
+                        disabled
+                        className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
+                      >
+                        24fps
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    className={`eproduct-bottom-part-card-inside-list flex items-end`}
+                  >
+                    <div className="w-full">
+                      <div className="flex justify-center">
+                        <div
+                          className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <div
+                              className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
+                            >
+                              {product.title}
+                            </div>
+                            <p
+                              className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                            >
+                              {formattedLocation}
+                            </p>
+                          </Link>
+                        </div>
+                      </div>
+                      {displayCardPrice && (
+                        <div
+                          className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
+                        >
+                          <Link
+                            className="product-item"
+                            key={product.id}
+                            prefetch="intent"
+                            to={variantUrl}
+                          >
+                            <span
+                              className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
+                            >
+                              <ProductPrice
+                                price={displayCardPrice}
+                                compareAtPrice={displayCardCompareAtPrice}
+                              />
+
+                              {/* We need to get the compareat price in here */}
+                            </span>
+                          </Link>
+                        </div>
+                      )}
+                      {layout !== 'grid' &&
+                        shouldRenderListDescription &&
+                        (product as any).descriptionHtml &&
+                        windowWidth != undefined &&
+                        windowWidth > 800 && (
+                          <>
+                            <div className="w-[50%]">
+                              <Link
+                                className="product-item"
+                                key={product.id}
+                                prefetch="intent"
+                                to={variantUrl}
+                              >
+                                <Card className="description-html-card-list ">
+                                  <div
+                                    className="px-3 py-1"
+                                    dangerouslySetInnerHTML={{
+                                      __html: (product as any).descriptionHtml,
+                                    }}
+                                  />
+                                </Card>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      {selectedVariantId && (
+                        <div
+                          className={`flex product-add-to-cart-container w-full mx-auto ${
+                            layout === 'grid'
+                              ? 'p-a-t-c-container-grid justify-center gap-x-3'
+                              : 'p-a-t-c-container-list justify-start'
+                          }`}
+                        >
+                          <AddToCartButton
+                            lines={[
+                              {
+                                merchandiseId: selectedVariantId,
+                                quantity: 1,
+                              },
+                            ]}
+                            disabled={disableButton}
+                            onClick={() => {
+                              open('cart');
+                            }}
+                          >
+                            <div className="eproducts-add-to-cart-btn-text w-full text-center">
+                              Add To Cart
+                            </div>
+                          </AddToCartButton>
+                          <Link to={`/products/${product.handle}`}>
+                            <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
+                              <div
+                                className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
+                              >
+                                View Product
+                              </div>
+                            </button>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
           {/* END 600px-800px LIST ----------------------------------*/}
-
-
-
-          {/* BEGIN 800px-900px LIST ----------------------------------*/}
-
-          {layout === 'list' && windowWidth != undefined && windowWidth > 800 && windowWidth <= 900 && <div className={cardContentClassName}>
-              <div className="cursor-pointer absolute fav-btn-container-list z-50">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={
-                          wishlistItem ? removeFromFavorites : addToFavorites
-                        }
-                        disabled={!loginValue}
-                        className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                      >
-                        {pendingWishlistChange ? (
-                          <div className='flex justify-center items-center'>
-
-                            <ReloadIcon className="animate-spin" />
-                          </div>
-                        ) : (
-                          <>
-                            {wishlistItem ? (
-                              <div className='flex justify-center items-center'>
-
-                                <FaHeart />
-                              </div>
-                            ) : (
-                              <>
-                                {loginValue ? (
-                                  <div className='flex justify-center items-center'>
-
-                                    <FaRegHeart />
-                                  </div>
-                                ) : (
-                                  
-                                  <Link to="/account/login">
-                                    <div className='flex justify-center items-center'>
-                                    <FaRegHeart />
-                                  </div>
-                                  </Link>
-                                )}
-                              </>
-                            )}
-                          </>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm z-1000">
-                      {wishlistItem
-                        ? 'Remove from Favorites'
-                        : 'Save to Favorites'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              {isArtistPick && hasDurationTag && (
-                <>
-              <div className='absolute left-[18px] top-[6px] flex flex-col'>
-
-              <button
-                disabled
-                className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
-              >
-                Artist's Pick
-                <div className='flex justify-center items-end'>
-
-                <img src={'/badge1.png'} className='badge-img'/>
-                </div>
-                    
-              </button>
-              </div>
-            
-            <div className="absolute left-[18px] top-[44px] flex flex-col gap-1">
-            
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
-
-                {durationTag}
-                
-              </button>
-            
-            
-          </div>
-          </>
-          )}
-          {!isArtistPick && hasDurationTag && (
-                <>
-              
-            
-            <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
-            
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
-
-                {durationTag}
-                
-              </button>
-            
-            
-          </div>
-          </>
-          )}
-            
-            <div
-              className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
-            >
-              {/* {thumbnail && (
-                      <img
-                        src={thumbnail}
-                        alt="hi"
-                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                    )} */}
-
-              {isBundle ? (
-                <EProductBundlePreview product={product} />
-              ) : (
-                <Link
-                  className="product-item"
-                  key={product.id}
-                  prefetch="intent"
-                  to={variantUrl}
-                >
-                  <EProductPreview EProduct={product} layout={layout}/>
-                </Link>
-              )}
-              
-            </div>
-            {/* <div className="mt-4 text-center">
-                <h2 className="text-lg capitalize">{name}</h2>
-                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
-                <AddToCartButton
-                  productId={productId}
-                  isEProduct
-                  RedirectTo={`/stock`}
-                />
-              </div> */}
-            <div
-              className={
-                 `eproduct-bottom-part-card-list relative flex items-center pt-[10px]`
-              }
-            >
-              
-            <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
-              <button
-		                  disabled
-		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-                      style={resolutionBadgeStyle}
-		                >
-		                  {resolutionBadgeLabel}
-		                </button>
-		                {isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    Slow-mo
-		                  </button>
-		                )}
-		                {!isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    24fps
-		                  </button>
-		                )}
-		                
-		              </div>
-              <div
-                className={`eproduct-bottom-part-card-inside-list w-full`}
-              >
-                <div>
-
-                <div className='flex justify-center w-full'>
-                  <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
-                >
-
-                <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <p
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list items-start'}`}
-                    >
-                      {product.title}
-                    </p>
-                    <p
-                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list items-start'}`}
-                    >
-                      {formattedLocation}
-                    </p>
-                  </Link>
-                </div>
-                </div>
-
-                <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
-                >
-                  
-                  {(product as any).descriptionHtml && <Link
-                          className="product-item"
-                          key={product.id}
-                          prefetch="intent"
-                          to={variantUrl}
-                        >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="px-3 py-1"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
-                            />
-                          </Card>
-                        </Link>}
-                </div>
-                </div>
-                
-                
-                {
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      
-                        
-                        <div className='flex justify-center items-end'>
-                          <div className='w-full'>
-
-                        {displayCardPrice && (
-                  <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
-                  >
-                    <Link
-                      className="product-item"
-                      key={product.id}
-                      prefetch="intent"
-                      to={variantUrl}
-                    >
-                      <span
-                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
-                      >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
-                    </Link>
-                  </div>
-                )}
-                        {selectedVariantId && (
-                  <div
-                    className={` product-add-to-cart-container w-full mx-auto p-a-t-c-container-list'
-                    `}
-                  >
-                    <div className='grid grid-cols-1 gap-y-2 px-1'>
-
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
-                    >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
-                        <div
-                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
-                        >
-                          View Product
-                        </div>
-                      </button>
-                    </Link>
-                    </div>
-                  </div>
-                )}
-                        </div>
-                          </div>
-                     
-                    </>
-                  )}
-                
-                
-              </div>
-            </div>
-          </div>}
-
-          {/* END 800px-900px LIST ----------------------------------*/}
-
-
-          {/* BEGIN 900px-1000px LIST ----------------------------------*/}
-
-          {layout === 'list' && windowWidth != undefined && windowWidth > 900 && windowWidth <= 1300 && <div className={cardContentClassName}>
-              <div className="cursor-pointer absolute fav-btn-container-list z-50">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={
-                          wishlistItem ? removeFromFavorites : addToFavorites
-                        }
-                        disabled={!loginValue}
-                        className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                      >
-                        {pendingWishlistChange ? (
-                          <div className='flex justify-center items-center'>
-
-                            <ReloadIcon className="animate-spin" />
-                          </div>
-                        ) : (
-                          <>
-                            {wishlistItem ? (
-                              <div className='flex justify-center items-center'>
-
-                                <FaHeart />
-                              </div>
-                            ) : (
-                              <>
-                                {loginValue ? (
-                                  <div className='flex justify-center items-center'>
-
-                                    <FaRegHeart />
-                                  </div>
-                                ) : (
-                                  
-                                  <Link to="/account/login">
-                                    <div className='flex justify-center items-center'>
-                                    <FaRegHeart />
-                                  </div>
-                                  </Link>
-                                )}
-                              </>
-                            )}
-                          </>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm z-1000">
-                      {wishlistItem
-                        ? 'Remove from Favorites'
-                        : 'Save to Favorites'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              
-          {hasDurationTag && (
-                <>
-              
-            
-            <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
-            
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
-
-                {durationTag}
-                
-              </button>
-            
-            
-          </div>
-          </>
-          )}
-            
-            <div
-              className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
-            >
-              {/* {thumbnail && (
-                      <img
-                        src={thumbnail}
-                        alt="hi"
-                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                    )} */}
-
-              {isBundle ? (
-                <EProductBundlePreview product={product} />
-              ) : (
-                <Link
-                  className="product-item"
-                  key={product.id}
-                  prefetch="intent"
-                  to={variantUrl}
-                >
-                  <EProductPreview EProduct={product} layout={layout}/>
-                </Link>
-              )}
-              
-            </div>
-            {/* <div className="mt-4 text-center">
-                <h2 className="text-lg capitalize">{name}</h2>
-                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
-                <AddToCartButton
-                  productId={productId}
-                  isEProduct
-                  RedirectTo={`/stock`}
-                />
-              </div> */}
-            <div
-              className={
-                 `eproduct-bottom-part-card-list relative flex items-center pt-[24px]`
-              }
-            >
-              
-            <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
-              {isArtistPick && (
-                <>
-              
-
-              <button
-                disabled
-                className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
-              >
-                Artist's Pick
-                <div className='flex justify-center items-end'>
-
-                <img src={'/badge1.png'} className='badge-img'/>
-                </div>
-                    
-              </button>
-              
-            
-            
-          </>
-          )}
-              <button
-		                  disabled
-		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-                      style={resolutionBadgeStyle}
-		                >
-		                  {resolutionBadgeLabel}
-		                </button>
-		                {isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    Slow-mo
-		                  </button>
-		                )}
-		                {!isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    24fps
-		                  </button>
-		                )}
-		                
-		              </div>
-              <div
-                className={`eproduct-bottom-part-card-inside-list w-full`}
-              >
-                <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start w-full'}`}
-                >
-                  <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <p
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list items-start'}`}
-                    >
-                      {product.title}
-                    </p>
-                    <p
-                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list items-start'}`}
-                    >
-                      {formattedLocation}
-                    </p>
-                  </Link>
-                  {(product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && <Link
-                          className="product-item"
-                          key={product.id}
-                          prefetch="intent"
-                          to={variantUrl}
-                        >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="px-3 py-1"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
-                            />
-                          </Card>
-                        </Link>}
-                </div>
-                
-                {layout !== 'grid' &&
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      
-                        
-                        <div className='flex justify-center items-end'>
-                          <div className='w-full'>
-
-                        {displayCardPrice && (
-                  <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
-                  >
-                    <Link
-                      className="product-item"
-                      key={product.id}
-                      prefetch="intent"
-                      to={variantUrl}
-                    >
-                      <span
-                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
-                      >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
-                    </Link>
-                  </div>
-                )}
-                        {selectedVariantId && (
-                  <div
-                    className={` product-add-to-cart-container w-full mx-auto p-a-t-c-container-list'
-                    `}
-                  >
-                    <div className='grid grid-cols-1 gap-y-2 px-1'>
-
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
-                    >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
-                        <div
-                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
-                        >
-                          View Product
-                        </div>
-                      </button>
-                    </Link>
-                    </div>
-                  </div>
-                )}
-                        </div>
-                          </div>
-                      
-                    </>
-                  )}
-                
-                
-              </div>
-            </div>
-          </div>}
-
-          {/* END 900px-1000px LIST ----------------------------------*/}
-
-          {/* BEGIN > 1000px LIST ----------------------------------*/}
-
-          {layout === 'list' && windowWidth != undefined && windowWidth > 1300 && <div className={cardContentClassName}>
-              <div className="cursor-pointer absolute fav-btn-container-list z-50">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={
-                          wishlistItem ? removeFromFavorites : addToFavorites
-                        }
-                        disabled={!loginValue}
-                        className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                      >
-                        {pendingWishlistChange ? (
-                          <div className='flex justify-center items-center'>
-
-                            <ReloadIcon className="animate-spin" />
-                          </div>
-                        ) : (
-                          <>
-                            {wishlistItem ? (
-                              <div className='flex justify-center items-center'>
-
-                                <FaHeart />
-                              </div>
-                            ) : (
-                              <>
-                                {loginValue ? (
-                                  <div className='flex justify-center items-center'>
-
-                                    <FaRegHeart />
-                                  </div>
-                                ) : (
-                                  
-                                  <Link to="/account/login">
-                                    <div className='flex justify-center items-center'>
-                                    <FaRegHeart />
-                                  </div>
-                                  </Link>
-                                )}
-                              </>
-                            )}
-                          </>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm z-1000">
-                      {wishlistItem
-                        ? 'Remove from Favorites'
-                        : 'Save to Favorites'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-              
-          {hasDurationTag && (
-                <>
-              
-            
-            <div className="absolute left-[18px] top-[6px] flex flex-col gap-1">
-            
-              <button
-                disabled
-                className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 z-50 text-sm"
-              >
-                
-
-                {durationTag}
-                
-              </button>
-            
-            
-          </div>
-          </>
-          )}
-            
-            <div
-              className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
-            >
-              {/* {thumbnail && (
-                      <img
-                        src={thumbnail}
-                        alt="hi"
-                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                    )} */}
-
-              {isBundle ? (
-                <EProductBundlePreview product={product} />
-              ) : (
-                <Link
-                  className="product-item"
-                  key={product.id}
-                  prefetch="intent"
-                  to={variantUrl}
-                >
-                  <EProductPreview EProduct={product} layout={layout}/>
-                </Link>
-              )}
-              
-            </div>
-            {/* <div className="mt-4 text-center">
-                <h2 className="text-lg capitalize">{name}</h2>
-                <p className="text-muted-foreground mt-2">{dollarsAmount}</p>
-                <AddToCartButton
-                  productId={productId}
-                  isEProduct
-                  RedirectTo={`/stock`}
-                />
-              </div> */}
-            <div
-              className={
-                 `eproduct-bottom-part-card-list relative flex items-end pb-[6px]`
-              }
-            >
-              
-            <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
-              {isArtistPick && (
-                <>
-              
-
-              <button
-                disabled
-                className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
-              >
-                Artist's Pick
-                <div className='flex justify-center items-end'>
-
-                <img src={'/badge1.png'} className='badge-img'/>
-                </div>
-                    
-              </button>
-              
-            
-            
-          </>
-          )}
-              <button
-		                  disabled
-		                  className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-                      style={resolutionBadgeStyle}
-		                >
-		                  {resolutionBadgeLabel}
-		                </button>
-		                {isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    Slow-mo
-		                  </button>
-		                )}
-		                {!isSlowmo && (
-		                  <button
-		                    disabled
-		                    className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-		                  >
-		                    24fps
-		                  </button>
-		                )}
-		                
-		              </div>
-              <div
-                className={`eproduct-bottom-part-card-inside-list w-full`}
-              >
-                <div
-                  className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start w-full'}`}
-                >
-                  <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <p
-                      className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list items-start'}`}
-                    >
-                      {product.title}
-                    </p>
-                    <p
-                      className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list items-start'}`}
-                    >
-                      {formattedLocation}
-                    </p>
-                  </Link>
-                  {(product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && <Link
-                          className="product-item"
-                          key={product.id}
-                          prefetch="intent"
-                          to={variantUrl}
-                        >
-                          <Card className="description-html-card-list ">
-                            <div
-                              className="px-3 py-1"
-                              dangerouslySetInnerHTML={{
-                                __html: (product as any).descriptionHtml,
-                              }}
-                            />
-                          </Card>
-                        </Link>}
-                        {layout !== 'grid' &&
-                  (product as any).descriptionHtml &&
-                  windowWidth != undefined &&
-                  windowWidth > 800 && (
-                    <>
-                      
-                        
-                        <div className='flex justify-center items-end'>
-                          <div className='w-full'>
-
-                        {displayCardPrice && (
-                  <div
-                    className={`flex ${layout === 'grid' ? 'justify-center' : 'justify-center'}`}
-                  >
-                    <Link
-                      className="product-item"
-                      key={product.id}
-                      prefetch="intent"
-                      to={variantUrl}
-                    >
-                      <span
-                        className={`${layout === 'grid' ? 'product-price-font-grid' : 'product-price-font-list'} flex flex-row gap-2`}
-                      >
-                        <ProductPrice
-                          price={displayCardPrice}
-                          compareAtPrice={displayCardCompareAtPrice}
-                        />
-
-                        {/* We need to get the compareat price in here */}
-                      </span>
-                    </Link>
-                  </div>
-                )}
-                        {selectedVariantId && (
-                  <div
-                    className={` product-add-to-cart-container w-full mx-auto p-a-t-c-container-list'
-                    `}
-                  >
-                    <div className='grid grid-cols-1 gap-y-2 px-1'>
-
-                    <AddToCartButton
-                      lines={[
-                        {
-                          merchandiseId:
-                            selectedVariantId,
-                          quantity: 1,
-                        },
-                      ]}
-                      disabled={disableButton}
-                      onClick={() => {
-                        open('cart');
-                      }}
-                    >
-                      <div className="eproducts-add-to-cart-btn-text w-full text-center">
-                        Add To Cart
-                      </div>
-                    </AddToCartButton>
-                    <Link to={`/products/${product.handle}`}>
-                      <button className="cursor-pointer view-product-btn rounded-md bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80">
-                        <div
-                          className={`${layout === 'grid' && 'eproducts-add-to-cart-btn-text-grid'} ${layout === 'list' && 'eproducts-add-to-cart-btn-text-list'} w-full text-center`}
-                        >
-                          View Product
-                        </div>
-                      </button>
-                    </Link>
-                    </div>
-                  </div>
-                )}
-                        </div>
-                          </div>
-                      
-                    </>
-                  )}
-                </div>
-                
-                
-                
-                
-              </div>
-            </div>
-          </div>}
-
-          {/* END > 1000px LIST ----------------------------------*/}
-          
         </Card>
         {/* <div className="absolute top-5 right-2 z-5">
                 <FavoriteToggleButton EProductId={productId} productId={null} />
@@ -2315,6 +3608,5 @@ function EProductsContainer({
     </>
   );
 }
-
 
 export default EProductsContainer;

@@ -27,6 +27,14 @@
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 367.5px), 1fr));
   align-items: stretch;
 }
+
+/* EProducts list-view scales columns in fixed 435px intervals.
+ * Use auto-fill so sparse result sets keep column slots instead of stretching.
+ */
+.eproduct-list-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 435px), 1fr));
+  align-items: stretch;
+}
 .carousel-img-list-view {
   /* One continuous rule prevents step-changes at 521px and 1000px. */
   max-height: clamp(182px, calc(206px - 1.1vw), 202px);

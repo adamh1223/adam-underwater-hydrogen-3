@@ -7,6 +7,7 @@
   "scripts": {
     "build": "shopify hydrogen build --codegen",
     "dev": "shopify hydrogen dev --codegen",
+    "dev:fresh": "pkill -f \"shopify hydrogen dev\" || true; pkill -f \"vite/node_modules/@esbuild/darwin-arm64/bin/esbuild\" || true; shopify hydrogen dev --customer-account-push__unstable",
     "preview": "shopify hydrogen preview --build",
     "lint": "eslint --no-error-on-unmatched-pattern .",
     "typecheck": "tsc --noEmit",

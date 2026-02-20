@@ -14,7 +14,12 @@ declare module '@remix-run/server-runtime' {
 
 export default defineConfig({
   server: {
-    allowedHosts: ['pacific-involvement-count-facility.tryhydrogen.dev'],
+    allowedHosts: [
+      '.tryhydrogen.dev',
+      '.trycloudflare.com',
+      'localhost',
+      '127.0.0.1',
+    ],
   },
   plugins: [
     tailwindcss(),

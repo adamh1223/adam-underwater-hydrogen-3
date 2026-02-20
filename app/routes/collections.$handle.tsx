@@ -230,12 +230,16 @@ export default function Collection() {
 
   const isPrintsListLayout =
     collection?.handle === 'prints' && layout === 'list';
+  const isStockListLayout =
+    collection?.handle === 'stock' && layout === 'list';
   const layoutClassName =
     layout === 'grid'
       ? 'prods-grid gap-x-2'
       : isPrintsListLayout
         ? 'mt-[10px] mx-[10px] grid print-list-grid gap-2'
-        : 'mt-[12px] grid';
+        : isStockListLayout
+          ? 'mt-[10px] mx-[10px] grid eproduct-list-grid gap-2'
+          : 'mt-[12px] grid';
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
