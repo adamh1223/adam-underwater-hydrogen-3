@@ -2,10 +2,6 @@ import {useState, useRef, useEffect} from 'react';
 import '../../styles/components/EProductPreview.css';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {useLocation} from '@remix-run/react';
-import {
-  activateMouseCardHighlight,
-  useMouseCardHighlight,
-} from '~/lib/mouseCardHighlight';
 
 type ShopifyImage = {url: string; altText: string};
 
@@ -33,7 +29,6 @@ function EProductPreview({
   const {featuredImage} = EProduct;
   const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
-  const mouseHighlightCardId = `eproduct-card:${String(EProduct.id ?? EProduct.handle)}`;
   const previewAspectRatio =
     featuredImage?.width && featuredImage?.height
       ? `${featuredImage.width} / ${featuredImage.height}`
@@ -93,13 +88,7 @@ function EProductPreview({
   const enableViewportAutoplay =
     (isStockFootagePage || isAccountFavoritesPage) &&
     !isStockListLargeViewport;
-  const {isMouseHighlighted} = useMouseCardHighlight(
-    mouseHighlightCardId,
-    !enableViewportAutoplay,
-  );
-  const isVideoActive = enableViewportAutoplay
-    ? isAutoplayActive
-    : isHovered || isMouseHighlighted;
+  const isVideoActive = enableViewportAutoplay ? isAutoplayActive : isHovered;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -194,12 +183,7 @@ function EProductPreview({
       className={`EProductPreviewContainer ${enableViewportAutoplay ? 'EProductPreviewContainer-autoplay' : ''} ${extraClassName || ''}`}
       style={previewAspectRatio ? {aspectRatio: previewAspectRatio} : undefined}
       onMouseEnter={
-        enableViewportAutoplay
-          ? undefined
-          : () => {
-              setIsHovered(true);
-              activateMouseCardHighlight(mouseHighlightCardId);
-            }
+        enableViewportAutoplay ? undefined : () => setIsHovered(true)
       }
       onMouseLeave={
         enableViewportAutoplay ? undefined : () => setIsHovered(false)
