@@ -121,6 +121,7 @@ function EProductBundlePreview({
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   const clips = useMemo(
     () => buildBundleClips(product.images.nodes || [], product.tags || []),
@@ -142,7 +143,16 @@ function EProductBundlePreview({
     return () => void carouselApi.off('select', updateCarouselState);
   }, [carouselApi]);
 
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
+  const shouldHideDottedCarouselArrowsOnMobile =
+    windowWidth != undefined && windowWidth < 500 && totalItems > 1;
 
   return (
     <Carousel
@@ -166,7 +176,7 @@ function EProductBundlePreview({
           </CarouselItem>
         ))}
       </CarouselContent>
-      {totalItems > 1 && (
+      {totalItems > 1 && !shouldHideDottedCarouselArrowsOnMobile && (
         <>
           <CarouselPrevious
           className="!-left-4.5"

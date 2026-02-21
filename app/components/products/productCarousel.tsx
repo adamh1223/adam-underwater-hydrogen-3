@@ -141,6 +141,8 @@ export const ProductCarousel = ({
 
   const listLayoutColumns =
     layout === 'list' ? {gridTemplateColumns: '60% 40%'} : undefined;
+  const shouldHideDottedCarouselArrowsOnMobile =
+    windowWidth != undefined && windowWidth < 500 && totalItems > 1;
 
   useEffect(() => {
     function handleResize() {
@@ -534,34 +536,36 @@ export const ProductCarousel = ({
                 </CarouselContent>
               </Link>
 
-              <div
-                className={`absolute z-40 flex items-center justify-between pointer-events-none ${
-                  layout === 'grid' ? 'inset-0' : ''
-                } ${layout === 'list' ? 'list-arrow-shell' : ''} ${
-                  layout === 'list' && isHorizontal
-                    ? 'list-horizontal-arrow-shell'
-                    : ''
-                } ${
-                  layout === 'list' && isVertical
-                    ? 'list-vertical-arrow-shell'
-                    : ''
-                }`}
-              >
-                <Button
-                  onClick={decreaseIndex}
-                  className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer ${layout === 'list' && isHorizontal && 'left-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'left-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'left-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'left-arrow-carousel-grid-vertical'}`}
-                  variant="secondary"
+              {!shouldHideDottedCarouselArrowsOnMobile && (
+                <div
+                  className={`absolute z-40 flex items-center justify-between pointer-events-none ${
+                    layout === 'grid' ? 'inset-0' : ''
+                  } ${layout === 'list' ? 'list-arrow-shell' : ''} ${
+                    layout === 'list' && isHorizontal
+                      ? 'list-horizontal-arrow-shell'
+                      : ''
+                  } ${
+                    layout === 'list' && isVertical
+                      ? 'list-vertical-arrow-shell'
+                      : ''
+                  }`}
                 >
-                  <ChevronLeftIcon className="h-6 w-6 text-white" />
-                </Button>
-                <Button
-                  onClick={increaseIndex}
-                  className={`cursor-pointer pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${layout === 'list' && isHorizontal && 'right-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'right-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'right-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'right-arrow-carousel-grid-vertical'}`}
-                  variant="secondary"
-                >
-                  <ChevronRightIcon className="h-6 w-6 text-white" />
-                </Button>
-              </div>
+                  <Button
+                    onClick={decreaseIndex}
+                    className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer ${layout === 'list' && isHorizontal && 'left-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'left-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'left-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'left-arrow-carousel-grid-vertical'}`}
+                    variant="secondary"
+                  >
+                    <ChevronLeftIcon className="h-6 w-6 text-white" />
+                  </Button>
+                  <Button
+                    onClick={increaseIndex}
+                    className={`cursor-pointer pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none ${layout === 'list' && isHorizontal && 'right-arrow-carousel-list-horizontal'} ${layout === 'list' && isVertical && 'right-arrow-carousel-list-vertical'} ${layout === 'grid' && isHorizontal && 'right-arrow-carousel-grid-horizontal'} ${layout === 'grid' && isVertical && 'right-arrow-carousel-grid-vertical'}`}
+                    variant="secondary"
+                  >
+                    <ChevronRightIcon className="h-6 w-6 text-white" />
+                  </Button>
+                </div>
+              )}
             </Carousel>
             {totalItems > 1 && layout === 'grid' && (
               <div className="carousel-preview-dots-grid absolute bottom-[-15px] left-0 right-0 z-40 pointer-events-none flex items-end justify-center gap-3 h-32 pt-[28px]">

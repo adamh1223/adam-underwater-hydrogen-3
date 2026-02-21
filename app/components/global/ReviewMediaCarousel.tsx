@@ -34,6 +34,7 @@ export const ReviewMediaCarousel = ({
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (!carouselApi) return;
@@ -50,7 +51,16 @@ export const ReviewMediaCarousel = ({
     return () => void carouselApi.off('select', updateCarouselState);
   }, [carouselApi]);
 
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const scrollToIndex = (index: number) => carouselApi?.scrollTo(index);
+  const shouldHideDottedCarouselArrowsOnMobile =
+    windowWidth != undefined && windowWidth < 500 && totalItems > 1;
 
   const increaseIndex = (evt: React.MouseEvent<HTMLButtonElement>) => {
     evt.stopPropagation();
@@ -108,23 +118,25 @@ export const ReviewMediaCarousel = ({
                 ))}
               </CarouselContent>
 
-              <div className="absolute inset-0 z-100 flex items-center justify-between pointer-events-none">
-                <Button
-                  onClick={decreaseIndex}
-                  className={`pointer-events-auto rounded-full w-7 h-7 p-0 shadow-none cursor-pointer bg-black/60 hover:bg-black/75`}
-                  variant="secondary"
-                  size='lg'
-                >
-                  <ChevronLeftIcon className="h-4 w-4 text-white" />
-                </Button>
-                <Button
-                  onClick={increaseIndex}
-                  className={`cursor-pointer pointer-events-auto rounded-full w-7 h-7 p-0 shadow-none bg-black/60 hover:bg-black/75`}
-                  variant="secondary"
-                >
-                  <ChevronRightIcon className="h-4 w-4 text-white" />
-                </Button>
-              </div>
+              {!shouldHideDottedCarouselArrowsOnMobile && (
+                <div className="absolute inset-0 z-100 flex items-center justify-between pointer-events-none">
+                  <Button
+                    onClick={decreaseIndex}
+                    className={`pointer-events-auto rounded-full w-7 h-7 p-0 shadow-none cursor-pointer bg-black/60 hover:bg-black/75`}
+                    variant="secondary"
+                    size="lg"
+                  >
+                    <ChevronLeftIcon className="h-4 w-4 text-white" />
+                  </Button>
+                  <Button
+                    onClick={increaseIndex}
+                    className={`cursor-pointer pointer-events-auto rounded-full w-7 h-7 p-0 shadow-none bg-black/60 hover:bg-black/75`}
+                    variant="secondary"
+                  >
+                    <ChevronRightIcon className="h-4 w-4 text-white" />
+                  </Button>
+                </div>
+              )}
             </Carousel>
             {totalItems > 1 && (
               <div className="carousel-preview-dots-grid absolute bottom-2 left-0 right-0 flex items-end justify-center gap-3 h-24 pt-5">
