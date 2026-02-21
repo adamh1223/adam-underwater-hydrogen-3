@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Card, CardContent} from '../ui/card';
 import {AddToCartButton} from '../AddToCartButton';
 import {ProductItemFragment} from 'storefrontapi.generated';
@@ -154,6 +154,11 @@ function EProductsContainer({
   const touchCardId = `eproduct-card:${String(product.id ?? product.handle)}`;
   const {isTouchHighlighted, touchHighlightHandlers} =
     useTouchCardHighlight(touchCardId);
+  const artistPickBadgeRef = useRef<HTMLDivElement | null>(null);
+  const listTitleContainerRef = useRef<HTMLDivElement | null>(null);
+  const listTitleContentRef = useRef<HTMLAnchorElement | null>(null);
+  const listTitleTextBlockRef = useRef<HTMLDivElement | null>(null);
+  const [listTitleOverlapShiftPx, setListTitleOverlapShiftPx] = useState(0);
   const isBundle = product.tags.includes('Bundle');
 
   const cardClassName =
@@ -309,6 +314,69 @@ function EProductsContainer({
           ? 'eproduct-list-range-expanded'
           : ''
       : '';
+  const hasActiveListArtistPickOverlapCheck =
+    layout === 'list' &&
+    isArtistPick &&
+    (shouldRenderListCompactRange || shouldRenderListExpandedRange);
+
+  const recalculateListTitleShift = useCallback(() => {
+    if (!hasActiveListArtistPickOverlapCheck) {
+      setListTitleOverlapShiftPx(0);
+      return;
+    }
+
+    const badgeElement = artistPickBadgeRef.current;
+    const titleElement =
+      listTitleTextBlockRef.current ?? listTitleContentRef.current;
+    const titleContainerElement = listTitleContainerRef.current;
+
+    if (!badgeElement || !titleElement || !titleContainerElement) {
+      setListTitleOverlapShiftPx(0);
+      return;
+    }
+
+    const badgeRect = badgeElement.getBoundingClientRect();
+    const titleRect = titleElement.getBoundingClientRect();
+    const titleContainerRect = titleContainerElement.getBoundingClientRect();
+
+    const verticalOverlap =
+      Math.min(badgeRect.bottom, titleRect.bottom) -
+      Math.max(badgeRect.top, titleRect.top);
+
+    if (verticalOverlap <= 0) {
+      setListTitleOverlapShiftPx(0);
+      return;
+    }
+
+    const overlapDistance = badgeRect.right - titleRect.left;
+    if (overlapDistance <= 0) {
+      setListTitleOverlapShiftPx(0);
+      return;
+    }
+
+    const requiredShift = overlapDistance + 6;
+    const maxAllowedShift = Math.max(
+      0,
+      titleContainerRect.right - titleRect.right - 4,
+    );
+    const nextShift = Math.min(requiredShift, maxAllowedShift);
+
+    setListTitleOverlapShiftPx((currentShift) =>
+      Math.abs(currentShift - nextShift) < 0.5 ? currentShift : nextShift,
+    );
+  }, [hasActiveListArtistPickOverlapCheck]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || windowWidth === undefined) return;
+
+    const rafId = window.requestAnimationFrame(() => {
+      recalculateListTitleShift();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, [windowWidth, recalculateListTitleShift]);
 
   const navigate = useNavigate();
   const loginValue = useIsLoggedIn(isLoggedIn);
@@ -805,7 +873,10 @@ function EProductsContainer({
           {shouldRenderListCompactRange && (
             <>
               {isArtistPick && (
-                <div className="absolute left-2 top-2 flex flex-col">
+                <div
+                  ref={artistPickBadgeRef}
+                  className="absolute left-2 top-2 flex flex-col"
+                >
                   <button
                     disabled
                     className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
@@ -817,19 +888,33 @@ function EProductsContainer({
                   </button>
                 </div>
               )}
-              <div className="product-title-container border-b py-1 min-h-[50px] text-center flex items-center justify-center">
+              <div
+                ref={listTitleContainerRef}
+                className="product-title-container border-b py-1 min-h-[50px] text-center flex items-center justify-center"
+              >
                 <Link
-                  className="product-item flex w-full flex-col items-center justify-center text-center"
+                  ref={listTitleContentRef}
+                  className="product-item flex w-full flex-col items-center justify-center text-center transition-transform duration-150"
                   key={product.id}
                   prefetch="intent"
                   to={variantUrl}
                 >
-                  <h2 className={` product-title-font-list`}>
-                    {product.title}
-                  </h2>
-                  <p className="text-muted-foreground product-location-font-list">
-                    {displaySubTitleText}
-                  </p>
+                  <div
+                    ref={listTitleTextBlockRef}
+                    className="flex flex-col items-center justify-center text-center transition-transform duration-150"
+                    style={
+                      listTitleOverlapShiftPx > 0
+                        ? {transform: `translateX(${listTitleOverlapShiftPx}px)`}
+                        : undefined
+                    }
+                  >
+                    <h2 className={` product-title-font-list`}>
+                      {product.title}
+                    </h2>
+                    <p className="text-muted-foreground product-location-font-list">
+                      {displaySubTitleText}
+                    </p>
+                  </div>
                 </Link>
               </div>
 
@@ -1103,7 +1188,10 @@ function EProductsContainer({
                 </TooltipProvider>
               </div>
               {isArtistPick && (
-                <div className="absolute left-2 top-2 flex flex-col">
+                <div
+                  ref={artistPickBadgeRef}
+                  className="absolute left-2 top-2 flex flex-col"
+                >
                   <button
                     disabled
                     className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
@@ -1196,24 +1284,38 @@ function EProductsContainer({
                   <div className="w-full">
                     <div className="flex justify-center">
                       <div
+                        ref={listTitleContainerRef}
                         className="product-title-container text-center"
                       >
                         <Link
-                          className="product-item flex w-full flex-col items-center justify-center text-center"
+                          ref={listTitleContentRef}
+                          className="product-item flex w-full flex-col items-center justify-center text-center transition-transform duration-150"
                           key={product.id}
                           prefetch="intent"
                           to={variantUrl}
                         >
                           <div
-                            className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
+                            ref={listTitleTextBlockRef}
+                            className="flex flex-col items-center justify-center text-center transition-transform duration-150"
+                            style={
+                              listTitleOverlapShiftPx > 0
+                                ? {
+                                    transform: `translateX(${listTitleOverlapShiftPx}px)`,
+                                  }
+                                : undefined
+                            }
                           >
-                            {product.title}
+                            <div
+                              className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
+                            >
+                              {product.title}
+                            </div>
+                            <p
+                              className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
+                            >
+                              {displaySubTitleText}
+                            </p>
                           </div>
-                          <p
-                            className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
-                          >
-                            {displaySubTitleText}
-                          </p>
                         </Link>
                       </div>
                     </div>
