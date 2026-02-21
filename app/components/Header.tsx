@@ -952,10 +952,8 @@ function HeaderCtas({
                     <div className='p-3'>
 
                   {links.map((link) => (
-                    
-                    <Link to={link.href}>
+                    <Link key={link.href} to={link.href}>
                       <Button
-                        key={link.href}
                         variant="ghost"
                         className="cursor-pointer"
                       >

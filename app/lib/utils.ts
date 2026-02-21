@@ -5,11 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function generateCartDescription(tag: string | undefined) {
-  if (tag === 'Prints') {
+export function generateCartDescription(tags: string[] = []) {
+  if (tags.includes('Prints')) {
     return 'Framed Canvas Print';
   }
-  if (tag === 'Video') {
+  if (tags.includes('Video') && tags.includes('Bundle')) {
+    return 'Stock Footage Video Bundle';
+  }
+  if (tags.includes('Video')) {
     return 'Stock Footage Video';
   }
 }

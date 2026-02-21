@@ -49,12 +49,14 @@ function SimpleRecommendedProducts({
               });
               const imageURL = imageFound[0]?.url;
               const productTitle = product.title;
+              const isBundle = product.tags.includes('Bundle');
 
               return {
                 id: productID,
                 handle: productName,
                 imageURL,
                 title: productTitle,
+                isBundle,
               };
             });
 

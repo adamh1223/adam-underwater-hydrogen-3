@@ -41,6 +41,9 @@ export function ProductForm({
   const formattedCompareAtPrice = selectedVariant?.compareAtPrice?.amount
     ? parseFloat(selectedVariant.compareAtPrice.amount).toFixed(2)
     : null;
+  const showSelectedVariantTitle = Boolean(
+    selectedVariant?.title && selectedVariant.title !== 'Default Title',
+  );
 
   // ✅ Function to add business days
   const addBusinessDays = (date: Date, days: number): Date => {
@@ -201,7 +204,7 @@ export function ProductForm({
               {selectedVariant?.product?.title}
             </div>
             <div className="add-to-cart-btn-variant">
-              {productOptions?.length > 1 && selectedVariant?.title}
+              {showSelectedVariantTitle ? selectedVariant?.title : ''}
             </div>
             {selectedVariant?.availableForSale ? (
               <div className="add-to-cart-btn-text">

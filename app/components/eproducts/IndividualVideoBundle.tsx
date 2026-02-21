@@ -1,93 +1,290 @@
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {
+  Carousel,
+  CarouselApi,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '../ui/carousel';
+import '../../styles/routeStyles/product.css';
 
-import {useMemo} from 'react';
-import '../../styles/routeStyles/work.css';
+type BundleClipImage = {url: string; altText?: string | null};
 
-type BundleWmlink = {index: number; id: string};
-
-const wmlinkRegex = /^wmlink(\d+)_/i;
-
-const parseBundleWmlinks = (tags: string[]): BundleWmlink[] =>
-  tags
-    .map((tag) => {
-      const match = tag.match(wmlinkRegex);
-      if (!match) return null;
-      return {index: Number(match[1]), id: tag.split('_')[1]};
-    })
-    .filter(
-      (item): item is BundleWmlink =>
-        Boolean(item?.index) && Boolean(item?.id),
-    )
-    .sort((a, b) => a.index - b.index);
-
-const splitBundleDescriptions = (descriptionHtml?: string): string[] => {
-  if (!descriptionHtml) return [];
-
-  const withParagraphs = descriptionHtml
-    .split(/(?=<div>[\s\S]*)/gi)
-    .map((section) => section.trim())
-    .filter(Boolean);
-
-  if (withParagraphs.length > 0) {
-    return withParagraphs;
-  }
-
-  return descriptionHtml
-    .split(/(?=Clip\s*\d+:)/gi)
-    .map((section) => section.trim())
-    .filter(Boolean);
+export type BundleDetailClip = {
+  index: number;
+  wmlinkId?: string;
+  image?: BundleClipImage;
+  clipName: string;
+  clipLocation?: string;
+  descriptionHtml?: string;
 };
 
 function IndividualVideoBundle({
   productName,
-  descriptionHtml,
-  tags,
+  clips,
+  activeClipIndex = 1,
+  onActiveClipChange,
 }: {
   productName: string;
-  descriptionHtml?: string;
-  tags: string[];
+  clips: BundleDetailClip[];
+  activeClipIndex?: number;
+  onActiveClipChange?: (clipIndex: number) => void;
 }) {
-  const bundleWmlinks = useMemo(() => parseBundleWmlinks(tags), [tags]);
-  const bundleDescriptions = useMemo(
-    () => splitBundleDescriptions(descriptionHtml),
-    [descriptionHtml],
+  const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const mediaContainerRef = useRef<HTMLDivElement | null>(null);
+  const shortcutsInnerRef = useRef<HTMLDivElement | null>(null);
+  const [shortcutsOuterWidth, setShortcutsOuterWidth] = useState<number | null>(
+    null,
+  );
+  const [shortcutsItemWidth, setShortcutsItemWidth] = useState<number | null>(
+    null,
   );
 
-  const clipCount = Math.max(bundleWmlinks.length, bundleDescriptions.length);
+  const activeClipArrayIndex = useMemo(() => {
+    const matchIndex = clips.findIndex((clip) => clip.index === activeClipIndex);
+    return matchIndex >= 0 ? matchIndex : 0;
+  }, [clips, activeClipIndex]);
 
-  const clips = Array.from({length: clipCount}).map((_, index) => {
-    const clipNumber = index + 1;
-    const wmlinkMatch = bundleWmlinks.find((link) => link.index === clipNumber);
-    return {
-      index: clipNumber,
-      wmlinkId: wmlinkMatch?.id,
-      descriptionHtml: bundleDescriptions[index],
+  useEffect(() => {
+    if (!carouselApi) return;
+
+    const updateFromCarousel = () => {
+      const selectedSnap = carouselApi.selectedScrollSnap();
+      setCurrentIndex(selectedSnap);
+      onActiveClipChange?.(clips[selectedSnap]?.index ?? 1);
     };
-  });
+
+    updateFromCarousel();
+    carouselApi.on('select', updateFromCarousel);
+    return () => {
+      carouselApi.off('select', updateFromCarousel);
+    };
+  }, [carouselApi, clips, onActiveClipChange]);
+
+  useEffect(() => {
+    if (!carouselApi) return;
+    if (activeClipArrayIndex === carouselApi.selectedScrollSnap()) return;
+    carouselApi.scrollTo(activeClipArrayIndex);
+  }, [activeClipArrayIndex, carouselApi]);
+
+  useEffect(() => {
+    setCurrentIndex(activeClipArrayIndex);
+  }, [activeClipArrayIndex]);
+
+  const handleThumbnailClick = (index: number) => {
+    carouselApi?.scrollTo(index);
+    setCurrentIndex(index);
+    onActiveClipChange?.(clips[index]?.index ?? 1);
+  };
+
+  const recalculateShortcutLayout = useCallback(() => {
+    if (clips.length <= 1) {
+      setShortcutsOuterWidth(null);
+      setShortcutsItemWidth(null);
+      return;
+    }
+
+    const shortcutsInner = shortcutsInnerRef.current;
+    const mediaContainer = mediaContainerRef.current;
+
+    if (!shortcutsInner || !mediaContainer) {
+      setShortcutsOuterWidth(null);
+      setShortcutsItemWidth(null);
+      return;
+    }
+
+    const availableWidth = mediaContainer.clientWidth;
+    if (!availableWidth) return;
+
+    const computedInnerStyle = window.getComputedStyle(shortcutsInner);
+    const gapValue = Number.parseFloat(
+      computedInnerStyle.columnGap || computedInnerStyle.gap || '0',
+    );
+    const gap = Number.isNaN(gapValue) ? 0 : gapValue;
+
+    const firstShortcut = shortcutsInner.querySelector<HTMLButtonElement>(
+      '.bundle-detail-shortcut',
+    );
+    const shortcutStyle = firstShortcut
+      ? window.getComputedStyle(firstShortcut)
+      : null;
+    const baseWidthVar = shortcutStyle?.getPropertyValue(
+      '--bundle-shortcut-base-width',
+    );
+    const baseItemWidth = Number.parseFloat(baseWidthVar ?? '');
+    const defaultItemWidth =
+      Number.isFinite(baseItemWidth) && baseItemWidth > 0
+        ? baseItemWidth
+        : firstShortcut?.getBoundingClientRect().width || 130;
+
+    const clipCount = clips.length;
+    const oneRowWidth = Math.round(
+      clipCount * defaultItemWidth + Math.max(0, clipCount - 1) * gap,
+    );
+
+    if (oneRowWidth <= availableWidth) {
+      setShortcutsOuterWidth(oneRowWidth);
+      setShortcutsItemWidth(null);
+      return;
+    }
+
+    const maxItemsPerRowAtDefault = Math.max(
+      1,
+      Math.floor((availableWidth + gap) / (defaultItemWidth + gap)),
+    );
+    const minItemsPerRowForTwoLines = Math.ceil(clipCount / 2);
+
+    // Prefer natural wrapping (e.g. 4 -> 3 + 1 -> 2 + 2) and only shrink
+    // thumbnail width if needed to keep the layout at two lines max.
+    const targetItemsPerRow = Math.max(
+      maxItemsPerRowAtDefault,
+      minItemsPerRowForTwoLines,
+    );
+
+    if (targetItemsPerRow <= maxItemsPerRowAtDefault) {
+      const targetWidth = Math.round(
+        targetItemsPerRow * defaultItemWidth +
+          Math.max(0, targetItemsPerRow - 1) * gap,
+      );
+      setShortcutsOuterWidth(targetWidth);
+      setShortcutsItemWidth(null);
+      return;
+    }
+
+    const fittedItemWidth = Math.max(
+      1,
+      Math.floor(
+        (availableWidth - Math.max(0, targetItemsPerRow - 1) * gap) /
+          targetItemsPerRow,
+      ),
+    );
+    const targetWidth = Math.round(
+      targetItemsPerRow * fittedItemWidth +
+        Math.max(0, targetItemsPerRow - 1) * gap,
+    );
+
+    setShortcutsOuterWidth(targetWidth);
+    setShortcutsItemWidth(fittedItemWidth);
+  }, [clips.length]);
+
+  useEffect(() => {
+    recalculateShortcutLayout();
+
+    const mediaContainer = mediaContainerRef.current;
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined' && mediaContainer
+        ? new ResizeObserver(() => {
+            recalculateShortcutLayout();
+          })
+        : null;
+
+    resizeObserver?.observe(mediaContainer as Element);
+    window.addEventListener('resize', recalculateShortcutLayout);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', recalculateShortcutLayout);
+    };
+  }, [recalculateShortcutLayout]);
+
+  if (!clips.length) return null;
 
   return (
-    <div className="flex flex-col gap-10 w-full">
-      <h2 className="text-3xl font-bold text-center">{productName}</h2>
-      {clips
-        .filter((clip) => Boolean(clip.wmlinkId))
-        .map((clip) => (
-          <div key={`bundle-clip-${clip.index}`} className="flex flex-row gap-6">
-            <div className="clip-wrapper flex justify-center relative">
-              <iframe
-                className="clip"
-                src={`https://player.vimeo.com/video/${clip.wmlinkId}?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`}
-                allow="autoplay; fullscreen; picture-in-picture;"
-                title={`Bundle clip ${clip.index}`}
-              ></iframe>
+    <div className="grid grid-cols-1">
+      <div
+        className="grid grid-cols-1 px-2 product-carousel-container relative"
+        ref={mediaContainerRef}
+      >
+        <Carousel
+          className="bundle-detail-carousel"
+          key={JSON.stringify(clips.map((clip) => clip.index))}
+          setApi={setCarouselApi}
+          opts={{watchDrag: true}}
+        >
+          <CarouselContent className="flex">
+            {clips.map((clip, idx) => (
+              <CarouselItem
+                className="flex items-center justify-center"
+                key={`bundle-individual-clip-${clip.index}`}
+              >
+                <div className="bundle-detail-main-media flex items-center justify-center">
+                  {idx === currentIndex && clip.wmlinkId ? (
+                    <iframe
+                      className="bundle-detail-iframe"
+                      src={`https://player.vimeo.com/video/${clip.wmlinkId}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      title={`${productName} - Clip ${clip.index}`}
+                    ></iframe>
+                  ) : clip.image?.url ? (
+                    <img
+                      src={clip.image.url}
+                      alt={
+                        clip.image.altText ??
+                        `${productName} preview ${clip.index}`
+                      }
+                      className="bundle-detail-image"
+                    />
+                  ) : (
+                    <div className="bundle-detail-empty">
+                      Clip {clip.index}
+                    </div>
+                  )}
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+
+          <CarouselPrevious className="cursor-pointer" />
+          <CarouselNext className="cursor-pointer" />
+        </Carousel>
+
+        {clips.length > 1 && (
+          <div
+            className="bundle-detail-shortcuts-outer"
+            style={
+              shortcutsOuterWidth
+                ? {width: `${shortcutsOuterWidth}px`}
+                : undefined
+            }
+          >
+            <div className="bundle-detail-shortcuts-inner" ref={shortcutsInnerRef}>
+              {clips.map((clip, idx) => (
+                <button
+                  type="button"
+                  key={`bundle-shortcut-${clip.index}`}
+                  className={`cursor-pointer border-2 bundle-detail-shortcut ${
+                    idx === currentIndex
+                      ? 'border-[hsl(var(--primary))]'
+                      : 'border-border'
+                  }`}
+                  style={
+                    shortcutsItemWidth
+                      ? {
+                          width: `${shortcutsItemWidth}px`,
+                          height: `${Math.round((shortcutsItemWidth * 75) / 130)}px`,
+                        }
+                      : undefined
+                  }
+                  onClick={() => handleThumbnailClick(idx)}
+                  aria-label={`Go to clip ${clip.index}`}
+                >
+                  {clip.image?.url ? (
+                    <img
+                      src={clip.image.url}
+                      alt={clip.image.altText ?? `Clip ${clip.index} thumbnail`}
+                      className="bundle-detail-shortcut-image"
+                    />
+                  ) : (
+                    <span className="text-sm">{clip.index}</span>
+                  )}
+                </button>
+              ))}
             </div>
-            {clip.descriptionHtml && (
-              <div
-                className="bundle-clip-description text-start"
-                dangerouslySetInnerHTML={{__html: clip.descriptionHtml}}
-              />
-            )}
-            
           </div>
-        ))}
+        )}
+      </div>
     </div>
   );
 }

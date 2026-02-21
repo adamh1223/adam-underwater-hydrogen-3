@@ -8,7 +8,7 @@ import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {Card, CardContent, CardDescription} from './ui/card';
 import {Button} from './ui/button';
-import {generateCartDescription, includesTagName} from '~/lib/utils';
+import {generateCartDescription} from '~/lib/utils';
 import {useEffect, useState} from 'react';
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
@@ -40,11 +40,11 @@ export function CartLineItem({
   const hasOnlyDefaultTitle = selectedOptions.some(
     (option) => option.value === 'Default Title',
   );
-  // @ts-expect-error fixed when restart
-  const hasVideoTag = includesTagName(product.tags, 'Video');
-  // @ts-expect-error fixed when restart
-  const hasPrintTag = includesTagName(product.tags, 'Prints');
-  const cartDescription = generateCartDescription(hasVideoTag || hasPrintTag);
+  const productTags = Array.isArray(product.tags) ? [...product.tags] : [];
+  const hasPrintTag = productTags.some(
+    (tag) => tag?.toLowerCase?.().includes('print'),
+  );
+  const cartDescription = generateCartDescription(productTags);
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {

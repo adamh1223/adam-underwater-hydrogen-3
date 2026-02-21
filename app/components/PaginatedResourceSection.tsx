@@ -10,15 +10,22 @@ export function PaginatedResourceSection<NodesType>({
   resourcesClassName,
 }: {
   connection: React.ComponentProps<typeof Pagination<NodesType>>['connection'];
-  children: React.FunctionComponent<{node: NodesType; index: number}>;
+  children: (props: {node: NodesType; index: number}) => React.ReactNode;
   resourcesClassName?: string;
 }) {
   return (
     <Pagination connection={connection}>
       {({nodes, isLoading, PreviousLink, NextLink}) => {
-        const resourcesMarkup = nodes?.map((node, index) =>
-          children({node, index}),
-        );
+        const resourcesMarkup = nodes?.map((node, index) => {
+          const resourceNode = node as {id?: string | number} | null;
+          const resourceKey = resourceNode?.id ?? index;
+
+          return (
+            <React.Fragment key={resourceKey}>
+              {children({node, index})}
+            </React.Fragment>
+          );
+        });
 
         return (
           <>

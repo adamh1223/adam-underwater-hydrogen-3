@@ -28,9 +28,11 @@ import {
 } from 'lucide-react';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduct';
-import IndividualVideoBundle from '~/components/eproducts/IndividualVideoBundle';
+import IndividualVideoBundle, {
+  type BundleDetailClip,
+} from '~/components/eproducts/IndividualVideoBundle';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {RootLoader} from '~/root';
 import {useIsLoggedIn, useIsVideoInCart} from '~/lib/hooks';
 import {
@@ -133,6 +135,199 @@ function getHighestResolutionVariant(
   }
 
   return highestResolutionVariant;
+}
+
+type BundleClipImage = {url: string; altText?: string | null};
+
+const bundleWmlinkRegex = /^wmlink(\d+)_/i;
+const bundleClipNameRegex = /^cn(\d+)_+(.+)$/i;
+const bundleAltRegex = /bundle(\d+)-/i;
+const bundleClipDivRegex =
+  /<div[^>]*class=(["'])[^"']*\bclip-(\d+)\b[^"']*\1[^>]*>([\s\S]*?)<\/div>/gi;
+const bundleDescriptionTitleBlacklist = new Set([
+  'location',
+  'location:',
+  'duration',
+  'duration:',
+  'resolution',
+  'resolution:',
+  'frame',
+  'frame:',
+  'frame rate',
+  'frame rate:',
+]);
+
+function decodeBasicEntities(value: string): string {
+  return value
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+}
+
+function stripHtml(value: string): string {
+  return decodeBasicEntities(value.replace(/<[^>]+>/g, ' '))
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeClipName(value: string): string {
+  return value.trim().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+}
+
+function extractClipLocationFromDescription(html: string): string | undefined {
+  const locationMatch = html.match(
+    /<strong[^>]*>\s*Location\s*:?\s*<\/strong>\s*([\s\S]*?)(?:<\/p>|<br\s*\/?>|$)/i,
+  );
+
+  if (locationMatch?.[1]) {
+    const parsed = stripHtml(locationMatch[1]);
+    if (parsed) return parsed;
+  }
+
+  const plainText = stripHtml(html);
+  const fallbackMatch = plainText.match(/location\s*:?\s*([^\n\r]+)/i);
+  if (fallbackMatch?.[1]) {
+    const parsed = fallbackMatch[1].trim();
+    if (parsed) return parsed;
+  }
+
+  return undefined;
+}
+
+function extractClipTitleFromDescription(html: string): string | undefined {
+  const strongRegex = /<strong[^>]*>([\s\S]*?)<\/strong>/gi;
+  let strongMatch: RegExpExecArray | null = strongRegex.exec(html);
+
+  while (strongMatch) {
+    const candidate = stripHtml(strongMatch[1] ?? '');
+    const normalized = candidate.toLowerCase();
+    if (candidate && !bundleDescriptionTitleBlacklist.has(normalized)) {
+      return candidate;
+    }
+    strongMatch = strongRegex.exec(html);
+  }
+
+  const paragraphMatch = html.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+  if (paragraphMatch?.[1]) {
+    const candidate = stripHtml(paragraphMatch[1]);
+    const normalized = candidate.toLowerCase();
+    if (candidate && !bundleDescriptionTitleBlacklist.has(normalized)) {
+      return candidate;
+    }
+  }
+
+  return undefined;
+}
+
+function parseBundleDescriptionsByClip(
+  descriptionHtml?: string,
+): Map<number, string> {
+  const byClip = new Map<number, string>();
+  if (!descriptionHtml) return byClip;
+
+  bundleClipDivRegex.lastIndex = 0;
+  let match = bundleClipDivRegex.exec(descriptionHtml);
+  while (match) {
+    const clipIndex = Number(match[2]);
+    const clipHtml = (match[3] ?? '').trim();
+    if (clipIndex > 0 && clipHtml) {
+      byClip.set(clipIndex, clipHtml);
+    }
+    match = bundleClipDivRegex.exec(descriptionHtml);
+  }
+
+  return byClip;
+}
+
+function buildBundleDetailClips({
+  images,
+  tags,
+  descriptionHtml,
+}: {
+  images: BundleClipImage[];
+  tags: string[];
+  descriptionHtml?: string;
+}): BundleDetailClip[] {
+  const wmlinkByClip = new Map<number, string>();
+  const clipNameByClip = new Map<number, string>();
+  const descriptionByClip = parseBundleDescriptionsByClip(descriptionHtml);
+  const imageByClip = new Map<number, BundleClipImage>();
+
+  tags.forEach((tag) => {
+    const wmlinkMatch = tag.match(bundleWmlinkRegex);
+    if (wmlinkMatch) {
+      const clipIndex = Number(wmlinkMatch[1]);
+      const wmlinkId = tag.split('_')[1];
+      if (clipIndex > 0 && wmlinkId) {
+        wmlinkByClip.set(clipIndex, wmlinkId);
+      }
+      return;
+    }
+
+    const clipNameMatch = tag.match(bundleClipNameRegex);
+    if (clipNameMatch) {
+      const clipIndex = Number(clipNameMatch[1]);
+      const clipName = clipNameMatch[2]?.trim();
+      if (clipIndex > 0 && clipName) {
+        clipNameByClip.set(clipIndex, normalizeClipName(clipName));
+      }
+    }
+  });
+
+  images.forEach((image, imageIndex) => {
+    const altText = image.altText ?? '';
+    const matchedIndex = altText.match(bundleAltRegex);
+    if (matchedIndex?.[1]) {
+      imageByClip.set(Number(matchedIndex[1]), image);
+      return;
+    }
+    if (!imageByClip.has(imageIndex + 1)) {
+      imageByClip.set(imageIndex + 1, image);
+    }
+  });
+
+  const clipCount = Math.max(
+    wmlinkByClip.size,
+    clipNameByClip.size,
+    descriptionByClip.size,
+    imageByClip.size,
+    images.length,
+  );
+
+  const clips: BundleDetailClip[] = [];
+
+  for (let clipIndex = 1; clipIndex <= clipCount; clipIndex += 1) {
+    const descriptionForClip = descriptionByClip.get(clipIndex);
+    const clipName =
+      clipNameByClip.get(clipIndex) ??
+      (descriptionForClip
+        ? extractClipTitleFromDescription(descriptionForClip)
+        : undefined) ??
+      `Clip ${clipIndex}`;
+    const clipLocation = descriptionForClip
+      ? extractClipLocationFromDescription(descriptionForClip)
+      : undefined;
+    const wmlinkId = wmlinkByClip.get(clipIndex);
+    const image = imageByClip.get(clipIndex) ?? images[clipIndex - 1];
+
+    if (!image && !wmlinkId && !descriptionForClip && !clipNameByClip.has(clipIndex)) {
+      continue;
+    }
+
+    clips.push({
+      index: clipIndex,
+      wmlinkId,
+      image,
+      clipName,
+      clipLocation,
+      descriptionHtml: descriptionForClip,
+    });
+  }
+
+  return clips;
 }
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -569,6 +764,27 @@ export default function Product() {
 
   const isVideo = product.tags.includes('Video');
   const isBundle = product.tags.includes('Bundle');
+
+  const bundleDetailClips = useMemo(
+    () =>
+      isBundle
+        ? buildBundleDetailClips({
+            images: (images?.nodes as BundleClipImage[]) ?? [],
+            tags: tags ?? [],
+            descriptionHtml,
+          })
+        : [],
+    [descriptionHtml, images?.nodes, isBundle, tags],
+  );
+  const [activeBundleClipIndex, setActiveBundleClipIndex] = useState(1);
+
+  useEffect(() => {
+    setActiveBundleClipIndex(1);
+  }, [product.id]);
+
+  const activeBundleClip =
+    bundleDetailClips.find((clip) => clip.index === activeBundleClipIndex) ??
+    bundleDetailClips[0];
 
   let isHorOnly = product.tags
     .map((tag: any) => {
@@ -1090,14 +1306,16 @@ export default function Product() {
               )}
               {isVideo && (
                 <p className="text-muted-foreground">
-                  {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
+                  {isBundle
+                    ? 'Stock Footage Video Bundle'
+                    : 'Stock Footage Video'}
                 </p>
               )}
               <ProductPrice
                 price={selectedVariant?.price}
                 compareAtPrice={selectedVariant?.compareAtPrice}
               />
-              {!isVideo && reviewsCount >= 1 && (
+              {(!isVideo || isBundle) && reviewsCount >= 1 && (
                 <a
                   href="#reviews"
                   onClick={(evt) => handleScroll('reviews', evt)}
@@ -1148,7 +1366,23 @@ export default function Product() {
                   </div>
                 </a>
               )}
-              <h4 className="text-xl individual-product-location">{`${formattedLocation}`}</h4>
+              {isBundle ? (
+                <>
+                  <h4 className="text-xl individual-product-location">
+                    {activeBundleClip?.clipName ??
+                      `Clip ${activeBundleClipIndex}`}
+                  </h4>
+                  {activeBundleClip?.clipLocation && (
+                    <p className="text-muted-foreground text-sm pb-2">
+                      {activeBundleClip.clipLocation}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <h4 className="text-xl individual-product-location">
+                  {formattedLocation}
+                </h4>
+              )}
             </div>
           </>
         )}
@@ -1173,8 +1407,9 @@ export default function Product() {
           {isVideo && isBundle && (
             <IndividualVideoBundle
               productName={title}
-              descriptionHtml={descriptionHtml}
-              tags={tags}
+              clips={bundleDetailClips}
+              activeClipIndex={activeBundleClipIndex}
+              onActiveClipChange={setActiveBundleClipIndex}
             />
           )}
           {/* <ProductImage image={selectedVariant?.image} /> */}
@@ -1229,14 +1464,16 @@ export default function Product() {
                 )}
                 {isVideo && (
                   <p className="text-muted-foreground">
-                    {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
+                    {isBundle
+                      ? 'Stock Footage Video Bundle'
+                      : 'Stock Footage Video'}
                   </p>
                 )}
                 <ProductPrice
                   price={selectedVariant?.price}
                   compareAtPrice={selectedVariant?.compareAtPrice}
                 />
-                {!isVideo && reviewsCount >= 1 && (
+                {(!isVideo || isBundle) && reviewsCount >= 1 && (
                   <a
                     href="#reviews"
                     onClick={(evt) => handleScroll('reviews', evt)}
@@ -1287,10 +1524,33 @@ export default function Product() {
                     </div>
                   </a>
                 )}
-                <h4 className="text-xl individual-product-location">{`${formattedLocation}`}</h4>
+                {isBundle ? (
+                  <>
+                    <h4 className="text-xl individual-product-location">
+                      {activeBundleClip?.clipName ??
+                        `Clip ${activeBundleClipIndex}`}
+                    </h4>
+                    {activeBundleClip?.clipLocation && (
+                      <p className="text-muted-foreground text-sm pb-2">
+                        {activeBundleClip.clipLocation}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <h4 className="text-xl individual-product-location">
+                    {formattedLocation}
+                  </h4>
+                )}
               </>
             )}
 
+            {isBundle && activeBundleClip?.descriptionHtml && (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: activeBundleClip.descriptionHtml,
+                }}
+              />
+            )}
             {!isBundle && (
               <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
             )}

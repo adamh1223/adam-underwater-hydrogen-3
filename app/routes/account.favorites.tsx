@@ -112,7 +112,9 @@ export default function Favorites() {
                 </div>
               ) : (
                 <div className="flex justify-center pb-2">
-                  Stock Footage Clip:
+                  {product.tags.includes('Bundle')
+                    ? 'Stock Footage Video Bundle:'
+                    : 'Stock Footage Clip:'}
                 </div>
               );
             }

@@ -519,6 +519,7 @@ function OrderLineRow({
 
   const lineItemTags = lineItemTagsByLineItemId[lineItem.id] ?? [];
   const isStockClipFromTags = lineItemTags.includes('Video');
+  const isBundleFromTags = lineItemTags.includes('Bundle');
   const isPrintFromTags =
     lineItemTags.includes('Prints') && !isStockClipFromTags;
 
@@ -562,7 +563,11 @@ function OrderLineRow({
                 <p className="text-muted-foreground">Framed Canvas Print</p>
               )}
               {isStockClip && (
-                <p className="text-muted-foreground">Stock Footage Video</p>
+                <p className="text-muted-foreground">
+                  {isBundleFromTags
+                    ? 'Stock Footage Video Bundle'
+                    : 'Stock Footage Video'}
+                </p>
               )}
             </div>
             <div className="flex justify-center">

@@ -41,5 +41,6 @@ export interface ThreeUpCarouselProps {
     handle: string;
     imageURL: string;
     title: string;
+    isBundle?: boolean;
   }[];
 }

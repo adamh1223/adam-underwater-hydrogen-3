@@ -5,6 +5,7 @@ type PurchaseEmailDownloadItem = {
   quantity: number;
   imageUrl?: string | null;
   downloadUrl: string;
+  isBundle?: boolean;
 };
 
 function escapeHtml(value: string): string {
@@ -76,7 +77,11 @@ function createPurchaseEmailHtml({
         <div style="border:1px solid #153157; border-radius:14px; background:#00112f; padding:20px; margin-bottom:14px;">
           <div style="font-size:13px; letter-spacing:1px; text-transform:uppercase; color:#9cb3d2; text-align:center; margin-bottom:8px;">Stock Footage</div>
           <h3 style="margin:0; font-size:24px; color:#ffffff; text-align:center;">${title}</h3>
-          <p style="margin:6px 0 0 0; color:#9cb3d2; text-align:center;">Stock Footage Video</p>
+          <p style="margin:6px 0 0 0; color:#9cb3d2; text-align:center;">${
+            item.isBundle
+              ? 'Stock Footage Video Bundle'
+              : 'Stock Footage Video'
+          }</p>
           ${imageMarkup}
           <p style="margin:14px 0 0 0; color:#ffffff;">Quantity: ${item.quantity}</p>
           <div style="text-align:center; margin-top:18px;">

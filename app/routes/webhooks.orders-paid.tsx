@@ -279,6 +279,7 @@ export async function action({request, context}: ActionFunctionArgs) {
               : 1,
           imageUrl: lineItem.variant?.image?.url ?? null,
           downloadUrl: `${siteUrl}/download/${encodeURIComponent(token)}`,
+          isBundle: tags.includes('Bundle'),
         };
       }),
     );

@@ -244,12 +244,15 @@ function SearchResultsPredictiveProducts({
           );
         }
         if (product.tags.includes('Video')) {
+          const isBundle = product.tags.includes('Bundle');
           return (
             <>
               {showProductHeader && (
                 <div className="mx-5 mb-5">
                   <div className="flex justify-center pb-2">
-                    Stock Footage Clip:
+                    {isBundle
+                      ? 'Stock Footage Video Bundle:'
+                      : 'Stock Footage Clip:'}
                   </div>
                   <EProductsContainer
                     product={product}
