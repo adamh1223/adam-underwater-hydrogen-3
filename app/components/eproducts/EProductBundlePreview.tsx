@@ -217,28 +217,28 @@ function EProductBundlePreview({
           ))}
         </CarouselContent>
         {totalItems > 1 && !shouldHideDottedCarouselArrowsOnMobile && (
-          <div className="pointer-events-none absolute inset-0 z-[90] flex items-center justify-between px-2">
+          <div className="pointer-events-none absolute inset-0 z-[90] flex items-center justify-between mx-[-8px]">
             <Button
               type="button"
               data-bundle-no-nav
               onClick={handlePrevClick}
-              className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer bg-secondary/90 hover:bg-secondary text-white ${canScrollPrev ? '' : 'opacity-55'}`}
+              className={`pointer-events-auto rounded-full w-7 h-7 p-0 shadow-none cursor-pointer bg-secondary/90 hover:bg-secondary text-white ${canScrollPrev ? '' : 'opacity-55'}`}
               variant="secondary"
               aria-label="Previous slide"
               aria-disabled={!canScrollPrev}
             >
-              <ChevronLeftIcon className="h-6 w-6 text-white" />
+              <ChevronLeftIcon className="h-5 w-5 text-white" />
             </Button>
             <Button
               type="button"
               data-bundle-no-nav
               onClick={handleNextClick}
-              className={`pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer bg-secondary/90 hover:bg-secondary text-white ${canScrollNext ? '' : 'opacity-55'}`}
+              className={`pointer-events-auto rounded-full w-7 h-7 p-0 shadow-none cursor-pointer bg-secondary/90 hover:bg-secondary text-white ${canScrollNext ? '' : 'opacity-55'}`}
               variant="secondary"
               aria-label="Next slide"
               aria-disabled={!canScrollNext}
             >
-              <ChevronRightIcon className="h-6 w-6 text-white" />
+              <ChevronRightIcon className="h-5 w-5 text-white" />
             </Button>
           </div>
         )}
