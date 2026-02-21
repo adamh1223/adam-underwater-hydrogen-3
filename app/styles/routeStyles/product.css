@@ -1003,7 +1003,13 @@
   margin: 0 auto;
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.bundle-detail-media-frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
 .bundle-detail-main-media {
@@ -1028,8 +1034,8 @@
 }
 
 .bundle-detail-image {
-  border-radius: 0.5rem;
-  border: 1px solid hsl(var(--border));
+  border-radius: 0;
+  border: 0;
 }
 
 .bundle-detail-image {

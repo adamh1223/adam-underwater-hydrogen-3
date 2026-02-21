@@ -203,41 +203,50 @@ function IndividualVideoBundle({
           setApi={setCarouselApi}
           opts={{watchDrag: true}}
         >
-          <CarouselContent className="flex">
-            {clips.map((clip, idx) => (
-              <CarouselItem
-                className="flex items-center justify-center"
-                key={`bundle-individual-clip-${clip.index}`}
-              >
-                <div className="bundle-detail-main-media flex items-center justify-center">
-                  {idx === currentIndex && clip.wmlinkId ? (
-                    <iframe
-                      className="bundle-detail-iframe"
-                      src={`https://player.vimeo.com/video/${clip.wmlinkId}?badge=0&autopause=0&player_id=0&app_id=58479`}
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      title={`${productName} - Clip ${clip.index}`}
-                    ></iframe>
-                  ) : clip.image?.url ? (
-                    <img
-                      src={clip.image.url}
-                      alt={
-                        clip.image.altText ??
-                        `${productName} preview ${clip.index}`
-                      }
-                      className="bundle-detail-image"
-                    />
-                  ) : (
-                    <div className="bundle-detail-empty">
-                      Clip {clip.index}
-                    </div>
-                  )}
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
+          <div className="bundle-detail-media-frame">
+            <CarouselContent className="flex">
+              {clips.map((clip) => (
+                <CarouselItem
+                  className="flex items-center justify-center"
+                  key={`bundle-individual-clip-${clip.index}`}
+                >
+                  <div className="bundle-detail-main-media flex items-center justify-center">
+                    {clip.wmlinkId ? (
+                      <iframe
+                        className="bundle-detail-iframe"
+                        src={`https://player.vimeo.com/video/${clip.wmlinkId}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        title={`${productName} - Clip ${clip.index}`}
+                        loading="eager"
+                      ></iframe>
+                    ) : clip.image?.url ? (
+                      <img
+                        src={clip.image.url}
+                        alt={
+                          clip.image.altText ??
+                          `${productName} preview ${clip.index}`
+                        }
+                        className="bundle-detail-image"
+                      />
+                    ) : (
+                      <div className="bundle-detail-empty">
+                        Clip {clip.index}
+                      </div>
+                    )}
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
 
-          <CarouselPrevious className="cursor-pointer" />
-          <CarouselNext className="cursor-pointer" />
+            <CarouselPrevious
+              className="cursor-pointer z-[80] h-10 w-10 rounded-full border border-border bg-background/80 text-white hover:bg-background"
+              style={{left: '-2.5rem'}}
+            />
+            <CarouselNext
+              className="cursor-pointer z-[80] h-10 w-10 rounded-full border border-border bg-background/80 text-white hover:bg-background"
+              style={{right: '-2.5rem'}}
+            />
+          </div>
         </Carousel>
 
         {clips.length > 1 && (
