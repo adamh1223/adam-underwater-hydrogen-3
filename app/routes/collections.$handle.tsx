@@ -234,6 +234,8 @@ export default function Collection() {
     collection?.handle === 'stock' && layout === 'list';
   const isPrintsGridLayout =
     collection?.handle === 'prints' && layout === 'grid';
+  const isStockGridLayout =
+    collection?.handle === 'stock' && layout === 'grid';
   const layoutClassName =
     layout === 'grid'
       ? 'prods-grid gap-x-2'
@@ -300,13 +302,13 @@ export default function Collection() {
   }, [collection?.handle]);
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
-  const printGridColumnCount =
+  const gridColumnCount =
     windowWidth != undefined
       ? Math.max(1, Math.floor((windowWidth - 1) / 700) + 1)
       : 1;
   const productsContainerStyle =
-    isPrintsGridLayout && layout === 'grid'
-      ? {gridTemplateColumns: `repeat(${printGridColumnCount}, minmax(0, 1fr))`}
+    (isPrintsGridLayout || isStockGridLayout) && layout === 'grid'
+      ? {gridTemplateColumns: `repeat(${gridColumnCount}, minmax(0, 1fr))`}
       : undefined;
   useEffect(() => {
     function handleResize() {
