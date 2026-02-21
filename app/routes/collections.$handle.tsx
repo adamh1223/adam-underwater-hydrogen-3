@@ -232,6 +232,8 @@ export default function Collection() {
     collection?.handle === 'prints' && layout === 'list';
   const isStockListLayout =
     collection?.handle === 'stock' && layout === 'list';
+  const isPrintsGridLayout =
+    collection?.handle === 'prints' && layout === 'grid';
   const layoutClassName =
     layout === 'grid'
       ? 'prods-grid gap-x-2'
@@ -298,6 +300,14 @@ export default function Collection() {
   }, [collection?.handle]);
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const printGridColumnCount =
+    windowWidth != undefined
+      ? Math.max(1, Math.floor((windowWidth - 1) / 700) + 1)
+      : 1;
+  const productsContainerStyle =
+    isPrintsGridLayout && layout === 'grid'
+      ? {gridTemplateColumns: `repeat(${printGridColumnCount}, minmax(0, 1fr))`}
+      : undefined;
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -593,7 +603,7 @@ export default function Collection() {
       )}
 
       <Separator className="mt-4" />
-      <div className={layoutClassName}>
+      <div className={layoutClassName} style={productsContainerStyle}>
         {searchText && (
           // <SearchResultsPredictive>
           //   {({items, total, term, state, closeSearch}) => {

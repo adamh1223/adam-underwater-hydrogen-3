@@ -107,9 +107,8 @@ export const ProductCarousel = ({
   const touchCardEffects =
     'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
   const touchCardId = `print-card:${String(id ?? handle)}`;
-  const {isTouchHighlighted, touchHighlightHandlers} = useTouchCardHighlight(
-    touchCardId,
-  );
+  const {isTouchHighlighted, touchHighlightHandlers} =
+    useTouchCardHighlight(touchCardId);
 
   const cardClassName =
     layout === 'grid'
@@ -280,57 +279,29 @@ export const ProductCarousel = ({
     // Horizontal Primary = 120
     carouselHeight = 'w-120';
   } else if (
-    // Vertical / Grid / >900px = 64
-    (isVertOnly || isVertPrimary) &&
-    layout === 'grid' &&
-    windowWidth != undefined &&
-    windowWidth > 1350
-  ) {
-    carouselHeight = 'w-72';
-  } else if (
-    // Vertical / Grid / >900px = 64
-    (isVertOnly || isVertPrimary) &&
-    layout === 'grid' &&
-    windowWidth != undefined &&
-    windowWidth > 1200 &&
-    windowWidth <= 1350
-  ) {
-    carouselHeight = 'w-64';
-  } else if (
-    // Vertical / Grid / >900px = 64
-    (isVertOnly || isVertPrimary) &&
-    layout === 'grid' &&
-    windowWidth != undefined &&
-    windowWidth > 900 &&
-    windowWidth <= 1200
-  ) {
-    carouselHeight = 'w-56';
-  } else if (
-    // Vertical / Grid / 800-900px = 54
+    // Vertical / Grid: repeat the same 701-1400 sizing cadence every 700px.
+    // 701-750 -> w-40, 751-900 -> w-48, 901-1200 -> w-56, 1201-1300 -> w-64, 1301-1400 -> w-72
+    // Then repeat: 1401-1450 -> w-40, 1451-1600 -> w-48, etc.
     (isVertPrimary || isVertOnly) &&
     layout === 'grid' &&
-    windowWidth != undefined &&
-    windowWidth <= 900 &&
-    windowWidth > 750
+    windowWidth != undefined
   ) {
-    carouselHeight = 'w-48';
-  } else if (
-    // Vertical / Grid / 800-900px = 54
-    (isVertPrimary || isVertOnly) &&
-    layout === 'grid' &&
-    windowWidth != undefined &&
-    windowWidth <= 750 &&
-    windowWidth > 700
-  ) {
-    carouselHeight = 'w-40';
-  } else if (
-    // Vertical / Grid / <=800px = 40
-    (isVertPrimary || isVertOnly) &&
-    layout === 'grid' &&
-    windowWidth != undefined &&
-    windowWidth <= 700
-  ) {
-    carouselHeight = 'w-64';
+    if (windowWidth <= 700) {
+      carouselHeight = 'w-64';
+    } else {
+      const cycleOffset = (windowWidth - 701) % 700;
+      if (cycleOffset <= 49) {
+        carouselHeight = 'w-40';
+      } else if (cycleOffset <= 199) {
+        carouselHeight = 'w-48';
+      } else if (cycleOffset <= 399) {
+        carouselHeight = 'w-56';
+      } else if (cycleOffset <= 599) {
+        carouselHeight = 'w-64';
+      } else {
+        carouselHeight = 'w-72';
+      }
+    }
   } else if (
     // Vertical Only / List / 28
     isVertOnly &&
