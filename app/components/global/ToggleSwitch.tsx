@@ -1,36 +1,60 @@
-import React, {useState} from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 
 export default function ToggleSwitch({
-  updateState,
+  selected,
+  onChange,
 }: {
-  updateState: React.Dispatch<React.SetStateAction<string>>;
+  selected: 'All' | 'Horizontal' | 'Vertical';
+  onChange: (value: 'All' | 'Horizontal' | 'Vertical') => void;
 }) {
-  const [selected, setSelected] = useState<string>('All');
-  const updateParent = (direction: string) => {
-    setSelected(direction);
-    updateState(direction);
-  };
-
   return (
-    <div className="toggle-container">
-      <button
-        className={`toggle-option ${selected === 'All' ? 'selected' : ''}`}
-        onClick={() => updateParent('All')}
-      >
-        All
-      </button>
-      <button
-        className={`toggle-option ${selected === 'Horizontal' ? 'selected' : ''}`}
-        onClick={() => updateParent('Horizontal')}
-      >
-        Horizontal
-      </button>
-      <button
-        className={`toggle-option ${selected === 'Vertical' ? 'selected' : ''}`}
-        onClick={() => updateParent('Vertical')}
-      >
-        Vertical
-      </button>
-    </div>
+    <TooltipProvider>
+      <div className="toggle-container">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className={`toggle-option ${selected === 'All' ? 'selected' : ''}`}
+              onClick={() => onChange('All')}
+            >
+              All
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-sm z-1000">
+            Keyboard shortcut: a
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className={`toggle-option ${selected === 'Horizontal' ? 'selected' : ''}`}
+              onClick={() => onChange('Horizontal')}
+            >
+              Horizontal
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-sm z-1000">
+            Keyboard shortcut: h
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className={`toggle-option ${selected === 'Vertical' ? 'selected' : ''}`}
+              onClick={() => onChange('Vertical')}
+            >
+              Vertical
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-sm z-1000">
+            Keyboard shortcut: v
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
   );
 }

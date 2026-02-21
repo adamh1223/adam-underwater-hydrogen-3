@@ -198,13 +198,22 @@ export default function Collection() {
       setTotalProductCount(productState?.nodes?.length);
     }
   }, [searchText]);
+  type PrintsFilterState = 'All' | 'Horizontal' | 'Vertical';
+  type StockFilterState = 'All Clips' | 'Discounted Bundles';
+
   const LAYOUT_STORAGE_KEY = 'collection-layout-mode';
+  const PRINTS_FILTER_STORAGE_KEY = 'collection-prints-filter-mode';
+  const STOCK_FILTER_STORAGE_KEY = 'collection-stock-filter-mode';
   const [layout, setLayout] = useState('grid');
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
+  const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
+    useState(false);
+  const [hasInitializedStockFilter, setHasInitializedStockFilter] =
+    useState(false);
   const setGridLayout = () => setLayout('grid');
   const setListLayout = () => setLayout('list');
-  const gridViewTooltip = '= key for shorctut';
-  const listViewTooltip = '- key for shortcut';
+  const gridViewTooltip = 'Keyboard shortcut: =';
+  const listViewTooltip = 'Keyboard shortcut: -';
 
   useEffect(() => {
     try {
@@ -247,12 +256,83 @@ export default function Collection() {
 
   type shopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
-  const [filterState, setFilterState] = useState('All');
-  const [stockFilterState, setStockFilterState] = useState('All Clips');
+  const [filterState, setFilterState] = useState<PrintsFilterState>('All');
+  const [stockFilterState, setStockFilterState] =
+    useState<StockFilterState>('All Clips');
   const [productState, setProductState] = useState(collection?.products);
   const [totalProductCount, setTotalProductCount] = useState(
     productState?.nodes?.length,
   );
+
+  useEffect(() => {
+    if (collection?.handle !== 'prints') {
+      setHasInitializedPrintsFilter(false);
+      return;
+    }
+
+    try {
+      const savedPrintsFilter = window.localStorage.getItem(
+        PRINTS_FILTER_STORAGE_KEY,
+      );
+      if (
+        savedPrintsFilter === 'All' ||
+        savedPrintsFilter === 'Horizontal' ||
+        savedPrintsFilter === 'Vertical'
+      ) {
+        setFilterState(savedPrintsFilter);
+      } else {
+        setFilterState('All');
+      }
+    } catch {
+      setFilterState('All');
+    } finally {
+      setHasInitializedPrintsFilter(true);
+    }
+  }, [collection?.handle]);
+
+  useEffect(() => {
+    if (collection?.handle !== 'prints' || !hasInitializedPrintsFilter) return;
+    try {
+      window.localStorage.setItem(PRINTS_FILTER_STORAGE_KEY, filterState);
+    } catch {
+      // Ignore storage access errors (private mode, etc.)
+    }
+  }, [collection?.handle, filterState, hasInitializedPrintsFilter]);
+
+  useEffect(() => {
+    if (collection?.handle !== 'stock') {
+      setHasInitializedStockFilter(false);
+      return;
+    }
+
+    try {
+      const savedStockFilter = window.localStorage.getItem(
+        STOCK_FILTER_STORAGE_KEY,
+      );
+      if (
+        savedStockFilter === 'All Clips' ||
+        savedStockFilter === 'Discounted Bundles'
+      ) {
+        setStockFilterState(savedStockFilter);
+      } else {
+        setStockFilterState('All Clips');
+      }
+    } catch {
+      setStockFilterState('All Clips');
+    } finally {
+      setHasInitializedStockFilter(true);
+    }
+  }, [collection?.handle]);
+
+  useEffect(() => {
+    if (collection?.handle !== 'stock' || !hasInitializedStockFilter) return;
+    try {
+      window.localStorage.setItem(STOCK_FILTER_STORAGE_KEY, stockFilterState);
+    } catch {
+      // Ignore storage access errors (private mode, etc.)
+    }
+  }, [collection?.handle, stockFilterState, hasInitializedStockFilter]);
+
   useEffect(() => {
     const baseConnection = collection?.products;
     if (!baseConnection) return;
@@ -297,10 +377,6 @@ export default function Collection() {
     setTotalProductCount(filteredCollection?.length);
   }, [collection?.handle, collection?.products, filterState, stockFilterState]);
 
-  useEffect(() => {
-    setStockFilterState('All Clips');
-  }, [collection?.handle]);
-
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const gridColumnCount =
     windowWidth != undefined
@@ -337,15 +413,59 @@ export default function Collection() {
         return;
       }
 
-      if (event.key === '-' || event.key === '_' || event.code === 'NumpadSubtract') {
+      if (
+        event.key === '-' ||
+        event.key === '_' ||
+        event.code === 'NumpadSubtract'
+      ) {
         event.preventDefault();
         setListLayout();
         return;
       }
 
-      if (event.key === '=' || event.key === '+' || event.code === 'NumpadAdd') {
+      if (
+        event.key === '=' ||
+        event.key === '+' ||
+        event.code === 'NumpadAdd'
+      ) {
         event.preventDefault();
         setGridLayout();
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+
+      if (collection?.handle === 'stock') {
+        if (key === 'a') {
+          event.preventDefault();
+          setStockFilterState('All Clips');
+          return;
+        }
+
+        if (key === 'd') {
+          event.preventDefault();
+          setStockFilterState('Discounted Bundles');
+          return;
+        }
+      }
+
+      if (collection?.handle === 'prints') {
+        if (key === 'a') {
+          event.preventDefault();
+          setFilterState('All');
+          return;
+        }
+
+        if (key === 'h') {
+          event.preventDefault();
+          setFilterState('Horizontal');
+          return;
+        }
+
+        if (key === 'v') {
+          event.preventDefault();
+          setFilterState('Vertical');
+        }
       }
     };
 
@@ -364,7 +484,7 @@ export default function Collection() {
             Filter By Orientation:
           </p>
           <div className="flex justify-center pb-3">
-            <ToggleSwitch updateState={setFilterState} />
+            <ToggleSwitch selected={filterState} onChange={setFilterState} />
           </div>
           <div className="flex justify-center">
             <div className="flex justify-center w-100 md:w-132 lg:w-148">
@@ -387,20 +507,36 @@ export default function Collection() {
       )}
       {collection?.handle === 'stock' && (
         <div className="flex justify-center py-2">
-          <div className="toggle-container">
-            <button
-              className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}
-              onClick={() => setStockFilterState('All Clips')}
-            >
-              All Clips
-            </button>
-            <button
-              className={`toggle-option ${stockFilterState === 'Discounted Bundles' ? 'selected' : ''}`}
-              onClick={() => setStockFilterState('Discounted Bundles')}
-            >
-              Discounted Bundles
-            </button>
-          </div>
+          <TooltipProvider>
+            <div className="toggle-container">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}
+                    onClick={() => setStockFilterState('All Clips')}
+                  >
+                    All Clips
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-sm z-1000">
+                  Keyboard shortcut: a
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`toggle-option ${stockFilterState === 'Discounted Bundles' ? 'selected' : ''}`}
+                    onClick={() => setStockFilterState('Discounted Bundles')}
+                  >
+                    Discounted Bundles
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-sm z-1000">
+                  Keyboard shortcut: d
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
       )}
       {windowWidth != undefined && windowWidth > 600 && (
