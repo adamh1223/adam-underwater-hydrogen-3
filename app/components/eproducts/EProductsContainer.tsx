@@ -155,22 +155,6 @@ function EProductsContainer({
   const {isTouchHighlighted, touchHighlightHandlers} =
     useTouchCardHighlight(touchCardId);
   const isBundle = product.tags.includes('Bundle');
-  const cardTouchHighlightHandlers = isBundle
-    ? {
-        onPointerDownCapture: (
-          event: React.PointerEvent<HTMLElement>,
-        ): void => {
-          const target = event.target as Element | null;
-          if (target?.closest('[data-bundle-carousel]')) return;
-          touchHighlightHandlers.onPointerDownCapture(event);
-        },
-        onTouchStartCapture: (event: React.TouchEvent<HTMLElement>): void => {
-          const target = event.target as Element | null;
-          if (target?.closest('[data-bundle-carousel]')) return;
-          touchHighlightHandlers.onTouchStartCapture(event);
-        },
-      }
-    : touchHighlightHandlers;
 
   const cardClassName =
     layout === 'grid'
@@ -408,7 +392,7 @@ function EProductsContainer({
           style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           onClick={handleBundleCardClick}
-          {...cardTouchHighlightHandlers}
+          {...touchHighlightHandlers}
         >
           {/* BEGIN GRID ---------------------------------------*/}
 
@@ -833,7 +817,7 @@ function EProductsContainer({
                   </button>
                 </div>
               )}
-              <div className="product-title-container border-b py-1 pe-12 min-h-[50px] text-center flex items-center justify-center">
+              <div className="product-title-container border-b py-1 min-h-[50px] text-center flex items-center justify-center">
                 <Link
                   className="product-item flex w-full flex-col items-center justify-center text-center"
                   key={product.id}
@@ -1212,16 +1196,16 @@ function EProductsContainer({
                   <div className="w-full">
                     <div className="flex justify-center">
                       <div
-                        className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
+                        className="product-title-container text-center"
                       >
                         <Link
-                          className="product-item"
+                          className="product-item flex w-full flex-col items-center justify-center text-center"
                           key={product.id}
                           prefetch="intent"
                           to={variantUrl}
                         >
                           <div
-                            className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list flex justify-start'}`}
+                            className={`${layout === 'grid' ? 'product-title-font-grid' : 'product-title-font-list'}`}
                           >
                             {product.title}
                           </div>

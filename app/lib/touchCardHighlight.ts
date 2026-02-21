@@ -104,11 +104,6 @@ function isAnyAsideOverlayExpanded(): boolean {
   return Boolean(document.querySelector('.overlay.expanded'));
 }
 
-function isInsideBundleCarousel(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return false;
-  return Boolean(target.closest('[data-bundle-carousel]'));
-}
-
 function resolveCardIdAtPoint(
   clientX: number,
   clientY: number,
@@ -237,7 +232,6 @@ function installGlobalTouchStartListener() {
 
   globalTouchStartListener = (event: TouchEvent) => {
     if (isAnyAsideOverlayExpanded()) return;
-    if (isInsideBundleCarousel(event.target)) return;
 
     const touch =
       getTouchByIdentifier(event.changedTouches, activeTouchIdentifier) ??
@@ -256,7 +250,6 @@ function installGlobalTouchStartListener() {
 
   globalTouchMoveListener = (event: TouchEvent) => {
     if (isAnyAsideOverlayExpanded()) return;
-    if (isInsideBundleCarousel(event.target)) return;
 
     const touch =
       getTouchByIdentifier(event.touches, activeTouchIdentifier) ??
@@ -276,7 +269,6 @@ function installGlobalTouchStartListener() {
       activeTouchIdentifier = null;
       return;
     }
-    if (isInsideBundleCarousel(event.target)) return;
 
     if (isScrollActive) {
       if (event.touches.length === 0) {
@@ -313,7 +305,6 @@ function installGlobalTouchStartListener() {
       activeTouchIdentifier = null;
       return;
     }
-    if (isInsideBundleCarousel(event.target)) return;
 
     if (isScrollActive) {
       if (event.touches.length === 0) {
@@ -344,7 +335,6 @@ function installGlobalTouchStartListener() {
   globalPointerDownListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
     if (isAnyAsideOverlayExpanded()) return;
-    if (isInsideBundleCarousel(event.target)) return;
     if (isScrollActive) return;
 
     activePointerIdentifier = event.pointerId;
@@ -357,7 +347,6 @@ function installGlobalTouchStartListener() {
   globalPointerMoveListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
     if (isAnyAsideOverlayExpanded()) return;
-    if (isInsideBundleCarousel(event.target)) return;
     if (isScrollActive) return;
     if (
       activePointerIdentifier !== null &&
@@ -381,7 +370,6 @@ function installGlobalTouchStartListener() {
       }
       return;
     }
-    if (isInsideBundleCarousel(event.target)) return;
     if (isScrollActive) {
       if (
         activePointerIdentifier !== null &&
@@ -415,7 +403,6 @@ function installGlobalTouchStartListener() {
       }
       return;
     }
-    if (isInsideBundleCarousel(event.target)) return;
     if (isScrollActive) {
       if (
         activePointerIdentifier !== null &&
