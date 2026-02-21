@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Card, CardContent} from '../ui/card';
 import {AddToCartButton} from '../AddToCartButton';
 import {ProductItemFragment} from 'storefrontapi.generated';
@@ -27,6 +27,92 @@ import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 
 type shopifyImage = {url: string; altText: string};
+
+type BundleClipMetadata = {
+  durationByClip: Map<number, string>;
+  resolutionByClip: Map<number, string>;
+  frameByClip: Map<number, string>;
+  clipNameByClip: Map<number, string>;
+};
+
+const bundleDurationRegex = /^d(\d+)-(.+)$/i;
+const bundleResolutionRegex = /^res(\d+)-(.+)$/i;
+const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
+const bundleClipNameRegex = /^cn(\d+)__+(.+)$/i;
+
+function normalizeResolutionLabel(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+function normalizeFrameLabel(value: string): string {
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized.includes('slow')) return 'Slow-mo';
+
+  const numericWithOptionalFps = normalized.match(/^(\d+(?:\.\d+)?)(fps)?$/i);
+  if (numericWithOptionalFps?.[1]) return `${numericWithOptionalFps[1]}fps`;
+
+  if (normalized.endsWith('fps')) return normalized;
+
+  return value.trim();
+}
+
+function normalizeClipName(value: string): string {
+  return value.trim().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+}
+
+function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
+  const durationByClip = new Map<number, string>();
+  const resolutionByClip = new Map<number, string>();
+  const frameByClip = new Map<number, string>();
+  const clipNameByClip = new Map<number, string>();
+
+  tags.forEach((tag) => {
+    const durationMatch = tag.match(bundleDurationRegex);
+    if (durationMatch) {
+      const clipIndex = Number(durationMatch[1]);
+      const durationValue = durationMatch[2]?.trim();
+      if (clipIndex > 0 && durationValue) {
+        durationByClip.set(clipIndex, durationValue);
+      }
+      return;
+    }
+
+    const resolutionMatch = tag.match(bundleResolutionRegex);
+    if (resolutionMatch) {
+      const clipIndex = Number(resolutionMatch[1]);
+      const resolutionValue = resolutionMatch[2]?.trim();
+      if (clipIndex > 0 && resolutionValue) {
+        resolutionByClip.set(
+          clipIndex,
+          normalizeResolutionLabel(resolutionValue),
+        );
+      }
+      return;
+    }
+
+    const frameMatch = tag.match(bundleFrameRegex);
+    if (frameMatch) {
+      const clipIndex = Number(frameMatch[1]);
+      const frameValue = frameMatch[2]?.trim();
+      if (clipIndex > 0 && frameValue) {
+        frameByClip.set(clipIndex, normalizeFrameLabel(frameValue));
+      }
+      return;
+    }
+
+    const clipNameMatch = tag.match(bundleClipNameRegex);
+    if (clipNameMatch) {
+      const clipIndex = Number(clipNameMatch[1]);
+      const clipNameValue = clipNameMatch[2]?.trim();
+      if (clipIndex > 0 && clipNameValue) {
+        clipNameByClip.set(clipIndex, normalizeClipName(clipNameValue));
+      }
+    }
+  });
+
+  return {durationByClip, resolutionByClip, frameByClip, clipNameByClip};
+}
 
 function getResolutionBadgeStyle(resolutionLabel: string): React.CSSProperties {
   const normalized = resolutionLabel.trim().toUpperCase();
@@ -68,11 +154,28 @@ function EProductsContainer({
   const touchCardId = `eproduct-card:${String(product.id ?? product.handle)}`;
   const {isTouchHighlighted, touchHighlightHandlers} =
     useTouchCardHighlight(touchCardId);
+  const isBundle = product.tags.includes('Bundle');
+  const cardTouchHighlightHandlers = isBundle
+    ? {
+        onPointerDownCapture: (
+          event: React.PointerEvent<HTMLElement>,
+        ): void => {
+          const target = event.target as Element | null;
+          if (target?.closest('[data-bundle-carousel]')) return;
+          touchHighlightHandlers.onPointerDownCapture(event);
+        },
+        onTouchStartCapture: (event: React.TouchEvent<HTMLElement>): void => {
+          const target = event.target as Element | null;
+          if (target?.closest('[data-bundle-carousel]')) return;
+          touchHighlightHandlers.onTouchStartCapture(event);
+        },
+      }
+    : touchHighlightHandlers;
 
   const cardClassName =
     layout === 'grid'
-      ? `h-full p-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`
-      : `transform h-full gap-y-3 ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`;
+      ? `h-full p-3 ${isBundle ? 'cursor-pointer' : ''} ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`
+      : `transform h-full gap-y-3 ${isBundle ? 'cursor-pointer' : ''} ${hoverCardEffects} ${isTouchHighlighted ? touchCardEffects : ''}`;
 
   const cardContentClassName =
     layout === 'grid'
@@ -80,7 +183,6 @@ function EProductsContainer({
       : 'list-view-large-row';
   const variantUrl = useVariantUrl(product.handle);
   const {open} = useAside();
-  const isBundle = product.tags.includes('Bundle');
   const highestResolutionVariant =
     getHighestResolutionVariantFromProduct(product);
   const selectedVariantForCard = (highestResolutionVariant ??
@@ -115,10 +217,39 @@ function EProductsContainer({
     ?.split('-')[1];
   const isSlowmo = product.tags.includes('slowmo');
   const isArtistPick = product.tags.includes('artist-pick');
-  const hasDurationTag = Boolean(durationTag);
-  const resolutionBadgeLabel =
+  const fallbackResolutionBadgeLabel =
     getHighestResolutionLabelFromTags(product.tags) ?? '4K';
-  const resolutionBadgeStyle = getResolutionBadgeStyle(resolutionBadgeLabel);
+  const bundleClipMetadata = useMemo(
+    () => parseBundleClipMetadata(product.tags ?? []),
+    [product.tags],
+  );
+  const [activeBundleClipIndex, setActiveBundleClipIndex] = useState(1);
+
+  useEffect(() => {
+    setActiveBundleClipIndex(1);
+  }, [product.id]);
+
+  const displayDurationTag = isBundle
+    ? bundleClipMetadata.durationByClip.get(activeBundleClipIndex) ?? durationTag
+    : durationTag;
+  const hasDisplayDurationTag = Boolean(displayDurationTag);
+
+  const displayResolutionBadgeLabel = isBundle
+    ? bundleClipMetadata.resolutionByClip.get(activeBundleClipIndex) ??
+      fallbackResolutionBadgeLabel
+    : fallbackResolutionBadgeLabel;
+  const displayResolutionBadgeStyle = getResolutionBadgeStyle(
+    displayResolutionBadgeLabel,
+  );
+
+  const fallbackFrameBadgeLabel = isSlowmo ? 'Slow-mo' : '24fps';
+  const displayFrameBadgeLabel = isBundle
+    ? bundleClipMetadata.frameByClip.get(activeBundleClipIndex) ??
+      fallbackFrameBadgeLabel
+    : fallbackFrameBadgeLabel;
+  const displayFrameIsSlowmo = displayFrameBadgeLabel
+    .toLowerCase()
+    .includes('slow');
 
   const titleCase = (w: string) =>
     w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
@@ -165,6 +296,10 @@ function EProductsContainer({
   const formattedLocation = [locationName, locationState, locationCountry]
     .filter(Boolean)
     .join(', ');
+  const displaySubTitleText = isBundle
+    ? bundleClipMetadata.clipNameByClip.get(activeBundleClipIndex) ??
+      formattedLocation
+    : formattedLocation;
   // Disabled by request; keep original condition documented.
   // const shouldRenderListDescription = layout === 'list' && Boolean((product as any).descriptionHtml);
   const shouldRenderListDescription = false;
@@ -195,6 +330,19 @@ function EProductsContainer({
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
+  const handleBundleCardClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (!isBundle) return;
+    const target = event.target as Element | null;
+    if (
+      target?.closest(
+        '[data-bundle-no-nav],button,a,input,textarea,select,[role="button"]',
+      )
+    ) {
+      return;
+    }
+    navigate(`/products/${product.handle}`);
+  };
+
   const addToFavorites = async () => {
     try {
       setPendingWishlistChange(true);
@@ -259,7 +407,8 @@ function EProductsContainer({
           className={`${cardClassName} ${listRangeCardClassName}`.trim()}
           style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
-          {...touchHighlightHandlers}
+          onClick={handleBundleCardClick}
+          {...cardTouchHighlightHandlers}
         >
           {/* BEGIN GRID ---------------------------------------*/}
 
@@ -281,12 +430,12 @@ function EProductsContainer({
                         </div>
                       </button>
                     )}
-                    {hasDurationTag && (
+                    {hasDisplayDurationTag && (
                       <button
                         disabled
                         className="clip-icon duration-tag flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
                       >
-                        {durationTag}
+                        {displayDurationTag}
                       </button>
                     )}
                     {/* {isSlowmo && (
@@ -313,7 +462,10 @@ function EProductsContainer({
             </button> */}
                   </div>
 
-                  <div className="cursor-pointer absolute fav-btn-container-grid z-60 p-1">
+                  <div
+                    className="cursor-pointer absolute fav-btn-container-grid z-60 p-1"
+                    data-bundle-no-nav
+                  >
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -380,7 +532,10 @@ function EProductsContainer({
                       />
                     )} */}
                 {isBundle ? (
-                  <EProductBundlePreview product={product} />
+                  <EProductBundlePreview
+                    product={product}
+                    onSlideChange={setActiveBundleClipIndex}
+                  />
                 ) : (
                   <Link
                     className="product-item"
@@ -424,7 +579,7 @@ function EProductsContainer({
                         <p
                           className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
                         >
-                          {formattedLocation}
+                          {displaySubTitleText}
                         </p>
                       </Link>
                     </div>
@@ -524,31 +679,31 @@ function EProductsContainer({
                     <div
                       className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                     >
-                      <div className="pointer-events-none absolute left-0 top-0 z-10">
+                      <div className="pointer-events-none absolute left-0 top-0 z-[70]">
                         <button
                           disabled
-                          className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 mt-[-20px] ms-[-5px]"
-                          style={resolutionBadgeStyle}
+                          className={`clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 ${isBundle ? 'mt-[-24px]' : 'mt-[-20px]'} ms-[-5px]`}
+                          style={displayResolutionBadgeStyle}
                         >
-                          {resolutionBadgeLabel}
+                          {displayResolutionBadgeLabel}
                         </button>
                       </div>
 
-                      <div className="pointer-events-none absolute right-0 top-0 z-10 flex flex-col items-end">
-                        {isSlowmo && (
+                      <div className="pointer-events-none absolute right-0 top-0 z-[70] flex flex-col items-end">
+                        {displayFrameIsSlowmo && (
                           <button
                             disabled
-                            className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                            className={`clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 ${isBundle ? 'mt-[-24px]' : 'mt-[-20px]'} me-[-5px]`}
                           >
-                            Slow-mo
+                            {displayFrameBadgeLabel}
                           </button>
                         )}
-                        {!isSlowmo && (
+                        {!displayFrameIsSlowmo && (
                           <button
                             disabled
-                            className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 mt-[-20px] me-[-5px]"
+                            className={`clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 ${isBundle ? 'mt-[-24px]' : 'mt-[-20px]'} me-[-5px]`}
                           >
-                            24fps
+                            {displayFrameBadgeLabel}
                           </button>
                         )}
                       </div>
@@ -566,7 +721,7 @@ function EProductsContainer({
                         <p
                           className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
                         >
-                          {formattedLocation}
+                          {displaySubTitleText}
                         </p>
                       </Link>
                       {displayCardPrice && (
@@ -678,7 +833,7 @@ function EProductsContainer({
                   </button>
                 </div>
               )}
-              <div className="product-title-container border-b py-1 text-center flex items-center justify-center">
+              <div className="product-title-container border-b py-1 pe-12 min-h-[50px] text-center flex items-center justify-center">
                 <Link
                   className="product-item flex w-full flex-col items-center justify-center text-center"
                   key={product.id}
@@ -689,12 +844,15 @@ function EProductsContainer({
                     {product.title}
                   </h2>
                   <p className="text-muted-foreground product-location-font-list">
-                    {formattedLocation}
+                    {displaySubTitleText}
                   </p>
                 </Link>
               </div>
 
-              <div className="cursor-pointer absolute right-2 top-2 z-50">
+              <div
+                className="cursor-pointer absolute right-2 top-2 z-50"
+                data-bundle-no-nav
+              >
                 {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
 
                 <TooltipProvider>
@@ -750,13 +908,13 @@ function EProductsContainer({
           {shouldRenderListCompactRange && (
             <div className={cardContentClassName}>
               <div className={`relative evideo eproduct-top-part-card-list`}>
-                {hasDurationTag && (
-                  <div className="absolute left-[6px] top-[6px] z-50 flex flex-col gap-1">
+                {hasDisplayDurationTag && (
+                  <div className="absolute left-[6px] top-[6px] z-[70] flex flex-col gap-1">
                     <button
                       disabled
                       className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
                     >
-                      {durationTag}
+                      {displayDurationTag}
                     </button>
                   </div>
                 )}
@@ -768,7 +926,10 @@ function EProductsContainer({
 	                      />
 	                    )} */}
                 {isBundle ? (
-                  <EProductBundlePreview product={product} />
+                  <EProductBundlePreview
+                    product={product}
+                    onSlideChange={setActiveBundleClipIndex}
+                  />
                 ) : (
                   <Link
                     className="product-item"
@@ -794,24 +955,24 @@ function EProductsContainer({
                   <button
                     disabled
                     className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-                    style={resolutionBadgeStyle}
+                    style={displayResolutionBadgeStyle}
                   >
-                    {resolutionBadgeLabel}
+                    {displayResolutionBadgeLabel}
                   </button>
-                  {isSlowmo && (
+                  {displayFrameIsSlowmo && (
                     <button
                       disabled
                       className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
                     >
-                      Slow-mo
+                      {displayFrameBadgeLabel}
                     </button>
                   )}
-                  {!isSlowmo && (
+                  {!displayFrameIsSlowmo && (
                     <button
                       disabled
                       className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
                     >
-                      24fps
+                      {displayFrameBadgeLabel}
                     </button>
                   )}
                 </div>
@@ -906,7 +1067,10 @@ function EProductsContainer({
           {/* Whole thing LIST 600px - 800px */}
           {shouldRenderListExpandedRange && (
             <div className={cardContentClassName}>
-              <div className="cursor-pointer absolute right-2 top-2 z-50">
+              <div
+                className="cursor-pointer absolute right-2 top-2 z-50"
+                data-bundle-no-nav
+              >
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -971,15 +1135,15 @@ function EProductsContainer({
               <div
                 className={`relative evideo ${layout === 'grid' ? 'eproduct-top-part-card-grid' : 'eproduct-top-part-card-list'}`}
               >
-                {hasDurationTag && (
+                {hasDisplayDurationTag && (
                   <div
-                    className={`absolute left-[6px] ${isArtistPick ? 'top-[44px]' : 'top-[6px]'} z-50 flex flex-col gap-1`}
+                    className={`absolute left-[6px] ${isArtistPick ? 'top-[44px]' : 'top-[6px]'} z-[70] flex flex-col gap-1`}
                   >
                     <button
                       disabled
                       className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
                     >
-                      {durationTag}
+                      {displayDurationTag}
                     </button>
                   </div>
                 )}
@@ -992,7 +1156,10 @@ function EProductsContainer({
                     )} */}
 
                 {isBundle ? (
-                  <EProductBundlePreview product={product} />
+                  <EProductBundlePreview
+                    product={product}
+                    onSlideChange={setActiveBundleClipIndex}
+                  />
                 ) : (
                   <Link
                     className="product-item"
@@ -1018,24 +1185,24 @@ function EProductsContainer({
                   <button
                     disabled
                     className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-                    style={resolutionBadgeStyle}
+                    style={displayResolutionBadgeStyle}
                   >
-                    {resolutionBadgeLabel}
+                    {displayResolutionBadgeLabel}
                   </button>
-                  {isSlowmo && (
+                  {displayFrameIsSlowmo && (
                     <button
                       disabled
                       className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
                     >
-                      Slow-mo
+                      {displayFrameBadgeLabel}
                     </button>
                   )}
-                  {!isSlowmo && (
+                  {!displayFrameIsSlowmo && (
                     <button
                       disabled
                       className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
                     >
-                      24fps
+                      {displayFrameBadgeLabel}
                     </button>
                   )}
                 </div>
@@ -1061,7 +1228,7 @@ function EProductsContainer({
                           <p
                             className={`text-muted-foreground ${layout === 'grid' ? 'product-location-font-grid' : 'product-location-font-list'}`}
                           >
-                            {formattedLocation}
+                            {displaySubTitleText}
                           </p>
                         </Link>
                       </div>
