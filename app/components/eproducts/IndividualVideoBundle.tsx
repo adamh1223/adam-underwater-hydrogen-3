@@ -192,9 +192,9 @@ function IndividualVideoBundle({
   if (!clips.length) return null;
 
   return (
-    <div className="grid grid-cols-1">
+    <div className="grid grid-cols-1 w-full h-fit lg:self-center">
       <div
-        className="grid grid-cols-1 px-2 product-carousel-container relative"
+        className="grid grid-cols-1 w-full h-fit content-start self-start px-2 product-carousel-container relative"
         ref={mediaContainerRef}
       >
         <Carousel

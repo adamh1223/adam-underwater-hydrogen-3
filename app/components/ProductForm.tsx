@@ -25,11 +25,15 @@ export function ProductForm({
   selectedVariant,
   imagesToShow,
   VideoAlreadyInCart,
+  isPrint,
 }: {
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
   imagesToShow?: SimpleProductImages[];
   VideoAlreadyInCart: boolean;
+  isVideo: boolean;
+  isPrint: boolean;
+  isVideoBundle: boolean;
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
@@ -77,7 +81,7 @@ export function ProductForm({
 
         return (
           <div className="product-options" key={option.name}>
-            <p className="mb-3">
+            <p className="mb-2">
               <strong>{option.name}:</strong>
             </p>
             <div className="product-options-grid">
@@ -157,12 +161,11 @@ export function ProductForm({
                 }
               })}
             </div>
-            <br />
           </div>
         );
       })}
 
-      {productOptions?.length > 1 && (
+      {isPrint && (
         <>
           <hr />
           <div className="grid grid-cols-1 framing-info">
@@ -174,62 +177,106 @@ export function ProductForm({
               frame
             </p>
           </div>
+          <div className="flex individual-a-t-c-print">
+            <AddToCartButton
+              disabled={
+                !selectedVariant ||
+                !selectedVariant.availableForSale ||
+                VideoAlreadyInCart
+              }
+              onClick={() => {
+                open('cart');
+              }}
+              lines={
+                selectedVariant
+                  ? [
+                      {
+                        merchandiseId: selectedVariant.id,
+                        quantity: 1,
+                        selectedVariant,
+                      },
+                    ]
+                  : []
+              }
+            >
+              <div>
+                <div className="add-to-cart-btn-product-name">
+                  {selectedVariant?.product?.title}
+                </div>
+                <div className="add-to-cart-btn-variant">
+                  {showSelectedVariantTitle ? selectedVariant?.title : ''}
+                </div>
+                {selectedVariant?.availableForSale ? (
+                  <div className="add-to-cart-btn-text">
+                    Add to cart: ${formattedPrice} &nbsp;
+                    {formattedCompareAtPrice != null && (
+                      <span className="add-to-cart-btn-compare-at-price">
+                        ${formattedCompareAtPrice}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  'Sold out'
+                )}
+              </div>
+            </AddToCartButton>
+          </div>
         </>
       )}
 
-      <div className="flex justify-center p-3">
-        <AddToCartButton
-          disabled={
-            !selectedVariant ||
-            !selectedVariant.availableForSale ||
-            VideoAlreadyInCart
-          }
-          onClick={() => {
-            open('cart');
-          }}
-          lines={
-            selectedVariant
-              ? [
-                  {
-                    merchandiseId: selectedVariant.id,
-                    quantity: 1,
-                    selectedVariant,
-                  },
-                ]
-              : []
-          }
-        >
-          <div>
-            <div className="add-to-cart-btn-product-name">
-              {selectedVariant?.product?.title}
-            </div>
-            <div className="add-to-cart-btn-variant">
-              {showSelectedVariantTitle ? selectedVariant?.title : ''}
-            </div>
-            {selectedVariant?.availableForSale ? (
-              <div className="add-to-cart-btn-text">
-                Add to cart: ${formattedPrice} &nbsp;
-                {formattedCompareAtPrice != null && (
-                  <span className="add-to-cart-btn-compare-at-price">
-                    ${formattedCompareAtPrice}
-                  </span>
-                )}
+      {!isPrint && (
+        <div className="flex individual-a-t-c py-3">
+          <AddToCartButton
+            disabled={
+              !selectedVariant ||
+              !selectedVariant.availableForSale ||
+              VideoAlreadyInCart
+            }
+            onClick={() => {
+              open('cart');
+            }}
+            lines={
+              selectedVariant
+                ? [
+                    {
+                      merchandiseId: selectedVariant.id,
+                      quantity: 1,
+                      selectedVariant,
+                    },
+                  ]
+                : []
+            }
+          >
+            <div>
+              <div className="add-to-cart-btn-product-name">
+                {selectedVariant?.product?.title}
               </div>
-            ) : (
-              'Sold out'
-            )}
-          </div>
-        </AddToCartButton>
-      </div>
+              <div className="add-to-cart-btn-variant">
+                {showSelectedVariantTitle ? selectedVariant?.title : ''}
+              </div>
+              {selectedVariant?.availableForSale ? (
+                <div className="add-to-cart-btn-text">
+                  Add to cart: ${formattedPrice} &nbsp;
+                  {formattedCompareAtPrice != null && (
+                    <span className="add-to-cart-btn-compare-at-price">
+                      ${formattedCompareAtPrice}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                'Sold out'
+              )}
+            </div>
+          </AddToCartButton>
+        </div>
+      )}
 
-      {productOptions?.length > 1 && (
-        <div className="flex justify-center pt-3 expected-delivery">
+      {isPrint && (
+        <div className="flex justify-center py-2 expected-delivery">
           Expected Delivery: &nbsp;
           <strong>{expectedDelivery}</strong>
         </div>
       )}
-
-      <br />
     </div>
   );
 }

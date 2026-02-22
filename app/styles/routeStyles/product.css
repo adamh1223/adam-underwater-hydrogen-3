@@ -1017,7 +1017,13 @@
 
 @media (min-width: 1024px) {
   .print-carousel-individual-vertical {
-    margin: 0 60px 20px 70px;
+    /* At >=1024px, increase side margins as viewport grows so portrait media
+     * height still grows, but at a slower rate (~30% less than before).
+     * Keeps the same baseline size at exactly 1024px.
+     */
+    margin-right: calc(60px + (100vw - 1024px) * 0.075);
+    margin-bottom: 20px;
+    margin-left: calc(70px + (100vw - 1024px) * 0.075);
   }
 }
 @media (min-width: 951px) and (max-width: 1023px) {
@@ -1076,6 +1082,18 @@
   width: 100%;
   max-width: 100%;
   overflow: visible;
+}
+
+@media (min-width: 1024px) {
+  .individual-video-product-detail-media {
+    /* Same idea as the vertical print carousel: keep the same baseline at
+     * 1024px, then slow the iframe's width/height growth (~30%) as viewport
+     * width increases.
+     */
+    box-sizing: border-box;
+    padding-left: calc((100vw - 1024px) * 0.075);
+    padding-right: calc((100vw - 1024px) * 0.075);
+  }
 }
 
 .bundle-detail-media-frame {

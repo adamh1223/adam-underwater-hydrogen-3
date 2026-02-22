@@ -106,11 +106,11 @@ function SimpleRecommendedProducts({
             };
 
             return (
-              <div className="recommended-products-grid-simple  gap-y-5">
+              <div className="recommended-products-grid-simple  gap-y-5 mt-5">
                 {filteredProducts.length > 0 ? (
                   <div className="w-full max-w-full min-w-0 box-border flex justify-center px-1">
                     <Carousel
-                      className="you-may-like-carousel w-full max-w-full min-w-0 box-border px-6"
+                      className="you-may-like-carousel w-full max-w-full min-w-0 box-border px-8"
                       style={{width: '100%'}}
                       opts={{
                         loop: shouldLoop,
@@ -154,11 +154,11 @@ function SimpleRecommendedProducts({
                       </CarouselContent>
                       <CarouselPrevious
                         variant="secondary"
-                        className="!left-[2px] z-50 bg-background/95 border border-border"
+                        className="!left-[-1px] z-50 bg-background/95 border border-border"
                       />
                       <CarouselNext
                         variant="secondary"
-                        className="!right-[2px] z-50 bg-background/95 border border-border"
+                        className="!right-[-2px] z-50 bg-background/95 border border-border"
                       />
                     </Carousel>
                   </div>
@@ -168,7 +168,6 @@ function SimpleRecommendedProducts({
           }}
         </Await>
       </Suspense>
-      <br />
     </div>
   );
 }

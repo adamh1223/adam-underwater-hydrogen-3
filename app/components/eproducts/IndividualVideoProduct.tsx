@@ -1,18 +1,4 @@
-import {Breadcrumb} from '../ui/breadcrumb';
-import {Link, useRouteLoaderData} from '@remix-run/react';
-import {useEffect, useRef, useState} from 'react';
-import {count} from 'console';
-import {ChevronRightIcon} from 'lucide-react';
-import {RootLoader} from '~/root';
-import '../../styles/routeStyles/work.css';
-
-import {FaRegHeart} from 'react-icons/fa';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
+import '../../styles/routeStyles/product.css';
 
 function IndividualVideoProduct({
   productName,
@@ -23,23 +9,29 @@ function IndividualVideoProduct({
   featuredImage: string | undefined;
   WMLink: string | undefined;
 }) {
-  return (
-    <>
-      {/* PLUG IN EPRODUCT PREVIEW WITH DIFFERENT TYPING BELOW */}
-      {/* <div className="px-5 flex items-center justify-center">
-        <img src={featuredImage} alt="" className="max-h-full object-contain" />
-      </div> */}
+  void featuredImage;
 
-      <div className="clip-wrapper flex justify-center relative">
-        <iframe
-          className="clip"
-          src={`https://player.vimeo.com/video/${WMLink}?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479`}
-          allow="autoplay; fullscreen; picture-in-picture;"
-          title="Seaforestation Trailer"
-        ></iframe>
-        {/* Instead of this source, get the watermarked clip */}
+  if (!WMLink) return null;
+
+  return (
+    <div className="grid grid-cols-1">
+      <div className="grid grid-cols-1 px-2 product-carousel-container relative">
+        <div className="bundle-detail-carousel individual-video-product-detail-media">
+          <div className="bundle-detail-media-frame">
+            <div className="bundle-detail-main-media flex items-center justify-center">
+              <iframe
+                className="bundle-detail-iframe"
+                src={`https://player.vimeo.com/video/${WMLink}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                allow="autoplay; fullscreen; picture-in-picture"
+                title={productName}
+                loading="eager"
+              ></iframe>
+            </div>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
+
 export default IndividualVideoProduct;

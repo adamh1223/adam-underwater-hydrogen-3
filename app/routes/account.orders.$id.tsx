@@ -362,6 +362,7 @@ export default function OrderRoute() {
                               downloadLinksByLineItemId={
                                 downloadLinksByLineItemId
                               }
+                              lineItemTagsByLineItemId={lineItemTagsByLineItemId}
                             />
                           </Card>
                         ))}
@@ -491,12 +492,12 @@ export default function OrderRoute() {
 
 function OrderLineRow({
   lineItem,
-  downloadLinksByLineItemId,
-  lineItemTagsByLineItemId,
+  downloadLinksByLineItemId = {},
+  lineItemTagsByLineItemId = {},
 }: {
   lineItem: OrderLineItemFullFragment;
-  downloadLinksByLineItemId: Record<string, string>;
-  lineItemTagsByLineItemId: Record<string, string[]>;
+  downloadLinksByLineItemId?: Record<string, string>;
+  lineItemTagsByLineItemId?: Record<string, string[]>;
 }) {
   
 

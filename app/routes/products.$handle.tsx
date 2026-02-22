@@ -769,6 +769,8 @@ export default function Product() {
 
   const isVideo = product.tags.includes('Video');
   const isBundle = product.tags.includes('Bundle');
+  const isPrint = !isVideo;
+  const isVideoBundle = isVideo && isBundle;
 
   const bundleDetailClips = useMemo(
     () =>
@@ -1418,156 +1420,331 @@ export default function Product() {
             />
           )}
           {/* <ProductImage image={selectedVariant?.image} /> */}
-          <div className="product-main">
-            {windowWidth && windowWidth >= 1024 && (
-              <>
-                <div className="title-button-wrapper">
-                  <span className="capitalize text-3xl font-bold title-text">
-                    {title}
-                  </span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={
-                            wishlistItem ? removeFromFavorites : addToFavorites
-                          }
-                          className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                        >
-                          {pendingWishlistChange ? (
-                            <ReloadIcon className="animate-spin" />
-                          ) : (
-                            <>
-                              {wishlistItem ? (
-                                <FaHeart />
-                              ) : (
-                                <>
-                                  {isLoggedIn ? (
-                                    <FaRegHeart />
-                                  ) : (
-                                    <Link to="/account/login">
+          {windowWidth != undefined && windowWidth < 1024 && (
+            <div className="product-main">
+              {windowWidth && windowWidth >= 1024 && (
+                <>
+                  <div className="title-button-wrapper">
+                    <span className="capitalize text-3xl font-bold title-text">
+                      {title}
+                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={
+                              wishlistItem
+                                ? removeFromFavorites
+                                : addToFavorites
+                            }
+                            className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                          >
+                            {pendingWishlistChange ? (
+                              <ReloadIcon className="animate-spin" />
+                            ) : (
+                              <>
+                                {wishlistItem ? (
+                                  <FaHeart />
+                                ) : (
+                                  <>
+                                    {isLoggedIn ? (
                                       <FaRegHeart />
-                                    </Link>
-                                  )}
-                                </>
-                              )}
-                            </>
-                          )}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-sm z-1000">
-                        {wishlistItem
-                          ? 'Remove from Favorites'
-                          : 'Save to Favorites'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                                    ) : (
+                                      <Link to="/account/login">
+                                        <FaRegHeart />
+                                      </Link>
+                                    )}
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm z-1000">
+                          {wishlistItem
+                            ? 'Remove from Favorites'
+                            : 'Save to Favorites'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
 
-                {!isVideo && (
-                  <p className="text-muted-foreground">Framed Canvas Print</p>
-                )}
-                {isVideo && (
-                  <p className="text-muted-foreground">
-                    {isBundle
-                      ? 'Stock Footage Video Bundle'
-                      : 'Stock Footage Video'}
-                  </p>
-                )}
-                <ProductPrice
-                  price={selectedVariant?.price}
-                  compareAtPrice={selectedVariant?.compareAtPrice}
-                />
-                {(!isVideo || isBundle) && reviewsCount >= 1 && (
-                  <a
-                    href="#reviews"
-                    onClick={(evt) => handleScroll('reviews', evt)}
-                    className="no-underline text-inherit"
-                  >
-                    <div className="average-product-rating">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="relative flex items-center"
-                          aria-hidden="true"
-                        >
-                          <Rating
-                            readOnly
-                            value={5}
-                            className="text-muted-foreground"
-                            aria-label={`Maximum rating of 5 stars`}
-                          >
-                            {FIVE_STAR_KEYS.map((starKey) => (
-                              <RatingButton
-                                key={`desktop-max-${starKey}`}
-                                className="h-5 w-5 p-0.5"
-                              />
-                            ))}
-                          </Rating>
+                  {!isVideo && (
+                    <p className="text-muted-foreground">Framed Canvas Print</p>
+                  )}
+                  {isVideo && (
+                    <p className="text-muted-foreground">
+                      {isBundle
+                        ? 'Stock Footage Video Bundle'
+                        : 'Stock Footage Video'}
+                    </p>
+                  )}
+                  <ProductPrice
+                    price={selectedVariant?.price}
+                    compareAtPrice={selectedVariant?.compareAtPrice}
+                  />
+                  {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                    <a
+                      href="#reviews"
+                      onClick={(evt) => handleScroll('reviews', evt)}
+                      className="no-underline text-inherit"
+                    >
+                      <div className="average-product-rating">
+                        <div className="flex items-center gap-2">
                           <div
-                            className="absolute inset-0 overflow-hidden text-yellow-400"
-                            style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                            className="relative flex items-center"
+                            aria-hidden="true"
                           >
-                            <Rating readOnly value={5} className="stars">
+                            <Rating
+                              readOnly
+                              value={5}
+                              className="text-muted-foreground"
+                              aria-label={`Maximum rating of 5 stars`}
+                            >
                               {FIVE_STAR_KEYS.map((starKey) => (
                                 <RatingButton
-                                  key={`desktop-fill-${starKey}`}
+                                  key={`desktop-max-${starKey}`}
                                   className="h-5 w-5 p-0.5"
-                                  aria-label={`Average rating ${formattedAverageRating} out of 5`}
                                 />
                               ))}
                             </Rating>
+                            <div
+                              className="absolute inset-0 overflow-hidden text-yellow-400"
+                              style={{
+                                width: `${(averageRating / 5) * 100 + 2}%`,
+                              }}
+                            >
+                              <Rating readOnly value={5} className="stars">
+                                {FIVE_STAR_KEYS.map((starKey) => (
+                                  <RatingButton
+                                    key={`desktop-fill-${starKey}`}
+                                    className="h-5 w-5 p-0.5"
+                                    aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                  />
+                                ))}
+                              </Rating>
+                            </div>
                           </div>
+                          <span className="text-sm text-muted-foreground">
+                            {formattedAverageRating} (
+                            {reviewsCount === 1
+                              ? '1 review'
+                              : `${reviewsCount} reviews`}
+                            )
+                          </span>
                         </div>
-                        <span className="text-sm text-muted-foreground">
-                          {formattedAverageRating} (
-                          {reviewsCount === 1
-                            ? '1 review'
-                            : `${reviewsCount} reviews`}
-                          )
-                        </span>
                       </div>
-                    </div>
-                  </a>
-                )}
-                {isBundle ? (
-                  <>
+                    </a>
+                  )}
+                  {isBundle ? (
+                    <>
+                      <h4 className="text-xl individual-product-location">
+                        {activeBundleClip?.clipName ??
+                          `Clip ${activeBundleClipIndex}`}
+                      </h4>
+                      {activeBundleClip?.clipLocation && (
+                        <p className="text-muted-foreground text-sm pb-2">
+                          {activeBundleClip.clipLocation}
+                        </p>
+                      )}
+                    </>
+                  ) : (
                     <h4 className="text-xl individual-product-location">
-                      {activeBundleClip?.clipName ??
-                        `Clip ${activeBundleClipIndex}`}
+                      {formattedLocation}
                     </h4>
-                    {activeBundleClip?.clipLocation && (
-                      <p className="text-muted-foreground text-sm pb-2">
-                        {activeBundleClip.clipLocation}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <h4 className="text-xl individual-product-location">
-                    {formattedLocation}
-                  </h4>
-                )}
-              </>
-            )}
+                  )}
+                </>
+              )}
 
-            {isBundle && activeBundleClip?.descriptionHtml && (
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: activeBundleClip.descriptionHtml,
-                }}
+              {isBundle && activeBundleClip?.descriptionHtml && (
+                <Card className="mb-2">
+                  <CardContent>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: activeBundleClip.descriptionHtml,
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+              {!isBundle && (
+                <Card className="mb-2">
+                  <CardContent>
+                    <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+                  </CardContent>
+                </Card>
+              )}
+
+              <ProductForm
+                VideoAlreadyInCart={disableButton}
+                productOptions={productOptions}
+                selectedVariant={selectedVariant}
+                imagesToShow={layoutImagesToUse as SimpleProductImages[]}
+                isVideo={isVideo}
+                isPrint={isPrint}
+                isVideoBundle={isVideoBundle}
               />
-            )}
-            {!isBundle && (
-              <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-            )}
-            <br />
+            </div>
+          )}
+          {windowWidth != undefined && windowWidth >= 1024 && (
+            <div className="product-main">
+              {windowWidth && windowWidth >= 1024 && (
+                <>
+                  <div className="title-button-wrapper">
+                    <span className="capitalize text-3xl font-bold title-text">
+                      {title}
+                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={
+                              wishlistItem
+                                ? removeFromFavorites
+                                : addToFavorites
+                            }
+                            className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                          >
+                            {pendingWishlistChange ? (
+                              <ReloadIcon className="animate-spin" />
+                            ) : (
+                              <>
+                                {wishlistItem ? (
+                                  <FaHeart />
+                                ) : (
+                                  <>
+                                    {isLoggedIn ? (
+                                      <FaRegHeart />
+                                    ) : (
+                                      <Link to="/account/login">
+                                        <FaRegHeart />
+                                      </Link>
+                                    )}
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm z-1000">
+                          {wishlistItem
+                            ? 'Remove from Favorites'
+                            : 'Save to Favorites'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
 
-            <ProductForm
-              VideoAlreadyInCart={disableButton}
-              productOptions={productOptions}
-              selectedVariant={selectedVariant}
-              imagesToShow={layoutImagesToUse as SimpleProductImages[]}
-            />
-          </div>
+                  {!isVideo && (
+                    <p className="text-muted-foreground">Framed Canvas Print</p>
+                  )}
+                  {isVideo && (
+                    <p className="text-muted-foreground">
+                      {isBundle
+                        ? 'Stock Footage Video Bundle'
+                        : 'Stock Footage Video'}
+                    </p>
+                  )}
+                  <ProductPrice
+                    price={selectedVariant?.price}
+                    compareAtPrice={selectedVariant?.compareAtPrice}
+                  />
+                  {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                    <a
+                      href="#reviews"
+                      onClick={(evt) => handleScroll('reviews', evt)}
+                      className="no-underline text-inherit"
+                    >
+                      <div className="average-product-rating">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="relative flex items-center"
+                            aria-hidden="true"
+                          >
+                            <Rating
+                              readOnly
+                              value={5}
+                              className="text-muted-foreground"
+                              aria-label={`Maximum rating of 5 stars`}
+                            >
+                              {FIVE_STAR_KEYS.map((starKey) => (
+                                <RatingButton
+                                  key={`desktop-max-${starKey}`}
+                                  className="h-5 w-5 p-0.5"
+                                />
+                              ))}
+                            </Rating>
+                            <div
+                              className="absolute inset-0 overflow-hidden text-yellow-400"
+                              style={{
+                                width: `${(averageRating / 5) * 100 + 2}%`,
+                              }}
+                            >
+                              <Rating readOnly value={5} className="stars">
+                                {FIVE_STAR_KEYS.map((starKey) => (
+                                  <RatingButton
+                                    key={`desktop-fill-${starKey}`}
+                                    className="h-5 w-5 p-0.5"
+                                    aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                  />
+                                ))}
+                              </Rating>
+                            </div>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {formattedAverageRating} (
+                            {reviewsCount === 1
+                              ? '1 review'
+                              : `${reviewsCount} reviews`}
+                            )
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                  )}
+                  {isBundle ? (
+                    <>
+                      <h4 className="text-xl individual-product-location">
+                        {activeBundleClip?.clipName ??
+                          `Clip ${activeBundleClipIndex}`}
+                      </h4>
+                      {activeBundleClip?.clipLocation && (
+                        <p className="text-muted-foreground text-sm pb-2">
+                          {activeBundleClip.clipLocation}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <h4 className="text-xl individual-product-location">
+                      {formattedLocation}
+                    </h4>
+                  )}
+                </>
+              )}
+
+              {isBundle && activeBundleClip?.descriptionHtml && (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: activeBundleClip.descriptionHtml,
+                  }}
+                />
+              )}
+              {!isBundle && (
+                <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+              )}
+              <br />
+
+              <ProductForm
+                VideoAlreadyInCart={disableButton}
+                productOptions={productOptions}
+                selectedVariant={selectedVariant}
+                imagesToShow={layoutImagesToUse as SimpleProductImages[]}
+                isVideo={isVideo}
+                isPrint={isPrint}
+                isVideoBundle={isVideoBundle}
+              />
+            </div>
+          )}
         </div>
         {windowWidth && windowWidth < 1024 && !isVideo && (
           <>
@@ -1831,7 +2008,7 @@ export default function Product() {
         )}
         {!isVideo && (
           <>
-            <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-12 extra-info">
+            <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 extra-info">
               <div className="grid grid-cols-1">
                 <div className="how-its-made">
                   {/* section title */}
@@ -1847,12 +2024,21 @@ export default function Product() {
                   {/* section body */}
                   <div className="how-its-made-container">
                     <div className="how-its-made-clip-wrapper flex justify-center position-relative">
-                      <iframe
-                        className="how-its-made-clip"
-                        src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-                        allow="autoplay; fullscreen; picture-in-picture;"
-                        title="Seaforestation Trailer"
-                      ></iframe>
+                      <div className="grid grid-cols-1 px-2 product-carousel-container relative w-[96%] max-w-full mx-auto">
+                        <div className="bundle-detail-carousel">
+                          <div className="bundle-detail-media-frame">
+                            <div className="bundle-detail-main-media flex items-center justify-center">
+                              <iframe
+                                className="bundle-detail-iframe"
+                                src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+                                allow="autoplay; fullscreen; picture-in-picture;"
+                                title="Seaforestation Trailer"
+                                loading="lazy"
+                              ></iframe>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div className="flex justify-center ">
                       <div className="how-its-made-description-container justify-start xl:mt-2">
