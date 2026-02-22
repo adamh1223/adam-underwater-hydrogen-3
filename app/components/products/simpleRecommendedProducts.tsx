@@ -45,6 +45,19 @@ function SimpleRecommendedProducts({
     [isLoggedIn],
   );
 
+  const relatedVideoColumnCount =
+    windowWidth == undefined
+      ? 1
+      : windowWidth >= 2113
+        ? 5
+        : windowWidth >= 1713
+          ? 4
+          : windowWidth >= 1313
+            ? 3
+            : windowWidth >= 913
+              ? 2
+              : 1;
+
   const baseListColumnWidth = isVideo ? 435 : 367.5;
   const outerHorizontalGutter =
     windowWidth != undefined && windowWidth < 640 ? 88 : 128;
@@ -56,6 +69,9 @@ function SimpleRecommendedProducts({
     1,
     Math.floor(usableCarouselWidth / baseListColumnWidth),
   );
+  const computedSlidesPerView = isVideo
+    ? relatedVideoColumnCount
+    : slidesPerView;
 
   return (
     <div className="recommended-products">
@@ -80,7 +96,7 @@ function SimpleRecommendedProducts({
 
             const effectiveSlidesPerView = Math.max(
               1,
-              Math.min(slidesPerView, filteredProducts.length || 1),
+              Math.min(computedSlidesPerView, filteredProducts.length || 1),
             );
             const shouldLoop = filteredProducts.length > 1;
             const effectiveSlidePercent = 100 / effectiveSlidesPerView;
@@ -137,11 +153,11 @@ function SimpleRecommendedProducts({
                       </CarouselContent>
                       <CarouselPrevious
                         variant="secondary"
-                        className="-left-7 sm:-left-8 md:-left-10 z-50 bg-background/95 border border-border"
+                        className="!-left-6 sm:!-left-8 md:!-left-10 z-50 bg-background/95 border border-border"
                       />
                       <CarouselNext
                         variant="secondary"
-                        className="-right-7 sm:-right-8 md:-right-10 z-50 bg-background/95 border border-border"
+                        className="!-right-6 sm:!-right-8 md:!-right-10 z-50 bg-background/95 border border-border"
                       />
                     </Carousel>
                   </div>

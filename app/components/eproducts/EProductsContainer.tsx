@@ -158,8 +158,12 @@ function EProductsContainer({
   const listTitleContainerRef = useRef<HTMLDivElement | null>(null);
   const listTitleContentRef = useRef<HTMLAnchorElement | null>(null);
   const listTitleTextBlockRef = useRef<HTMLDivElement | null>(null);
+  const listFavoriteButtonRef = useRef<HTMLButtonElement | null>(null);
   const [listTitleOverlapShiftPx, setListTitleOverlapShiftPx] = useState(0);
   const isBundle = product.tags.includes('Bundle');
+  const eproductCardTypeClassName = isBundle
+    ? 'eproduct-card-bundle'
+    : 'eproduct-card-clip';
 
   const cardClassName =
     layout === 'grid'
@@ -329,6 +333,7 @@ function EProductsContainer({
     const titleElement =
       listTitleTextBlockRef.current ?? listTitleContentRef.current;
     const titleContainerElement = listTitleContainerRef.current;
+    const favoriteButtonElement = listFavoriteButtonRef.current;
 
     if (!badgeElement || !titleElement || !titleContainerElement) {
       setListTitleOverlapShiftPx(0);
@@ -355,9 +360,15 @@ function EProductsContainer({
     }
 
     const requiredShift = overlapDistance + 6;
+    const safeRightBoundary = Math.min(
+      titleContainerRect.right - 4,
+      favoriteButtonElement
+        ? favoriteButtonElement.getBoundingClientRect().left - 6
+        : Number.POSITIVE_INFINITY,
+    );
     const maxAllowedShift = Math.max(
       0,
-      titleContainerRect.right - titleRect.right - 4,
+      safeRightBoundary - titleRect.right,
     );
     const nextShift = Math.min(requiredShift, maxAllowedShift);
 
@@ -369,12 +380,21 @@ function EProductsContainer({
   useEffect(() => {
     if (typeof window === 'undefined' || windowWidth === undefined) return;
 
-    const rafId = window.requestAnimationFrame(() => {
+    let rafId = 0;
+    let frameCount = 0;
+
+    const tick = () => {
       recalculateListTitleShift();
-    });
+      frameCount += 1;
+      if (frameCount < 6) {
+        rafId = window.requestAnimationFrame(tick);
+      }
+    };
+
+    rafId = window.requestAnimationFrame(tick);
 
     return () => {
-      window.cancelAnimationFrame(rafId);
+      if (rafId) window.cancelAnimationFrame(rafId);
     };
   }, [windowWidth, recalculateListTitleShift]);
 
@@ -456,7 +476,7 @@ function EProductsContainer({
           return ( */}
       <article className={`group relative h-full`}>
         <Card
-          className={`${cardClassName} ${listRangeCardClassName}`.trim()}
+          className={`${cardClassName} ${listRangeCardClassName} ${eproductCardTypeClassName}`.trim()}
           style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           onClick={handleBundleCardClick}
@@ -928,6 +948,7 @@ function EProductsContainer({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
+                        ref={listFavoriteButtonRef}
                         onClick={
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }
@@ -1144,6 +1165,7 @@ function EProductsContainer({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
+                        ref={listFavoriteButtonRef}
                         onClick={
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }

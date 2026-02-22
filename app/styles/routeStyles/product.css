@@ -39,6 +39,44 @@
   min-width: 0;
 }
 
+.you-may-like-slide-card
+  .eproduct-card-clip.eproduct-list-range-compact
+  .list-view-large-row {
+  align-items: stretch;
+}
+
+.you-may-like-slide-card
+  .eproduct-card-clip.eproduct-list-range-compact
+  .eproduct-top-part-card-list {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.you-may-like-slide-card
+  .eproduct-card-clip.eproduct-list-range-compact
+  .eproduct-top-part-card-list
+  > a.product-item {
+  display: block;
+  width: 100%;
+}
+
+.you-may-like-slide-card
+  .eproduct-card-clip.eproduct-list-range-compact
+  .eproduct-bottom-part-card-list {
+  height: 100%;
+  align-self: stretch;
+}
+
+.you-may-like-slide-card
+  .eproduct-card-clip.eproduct-list-range-compact
+  .eproduct-bottom-part-card-inside-list {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
 /* Prints list-view scales columns in fixed 367.5px intervals:
  * 1 col @ 367.5, 2 cols @ 735, 3 cols @ 1102.5, etc.
  * Use auto-fill (not auto-fit) so empty columns stay reserved when
