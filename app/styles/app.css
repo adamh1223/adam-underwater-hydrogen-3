@@ -535,7 +535,6 @@ button.reset:hover:not(:has(> *)) {
     grid-template-columns: 1fr;
     column-gap: 8px;
     row-gap: 8px;
-    padding: 10px;
   }
   .prods-grid {
     display: grid;
@@ -569,7 +568,6 @@ button.reset:hover:not(:has(> *)) {
     grid-template-columns: 1fr;
     column-gap: 8px;
     row-gap: 8px;
-    padding: 10px;
   }
   .prods-grid {
     display: grid;

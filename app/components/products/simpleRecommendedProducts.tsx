@@ -106,12 +106,12 @@ function SimpleRecommendedProducts({
             };
 
             return (
-              <div className="recommended-products-grid-simple gap-x-5 gap-y-5">
+              <div className="recommended-products-grid-simple  gap-y-5">
                 {filteredProducts.length > 0 ? (
-                  <div className="w-full flex justify-center px-6 sm:px-8 md:px-10">
+                  <div className="w-full max-w-full min-w-0 box-border flex justify-center px-1">
                     <Carousel
-                      className="you-may-like-carousel w-full"
-                      style={{width: '100%', maxWidth: '1900px'}}
+                      className="you-may-like-carousel w-full max-w-full min-w-0 box-border px-6"
+                      style={{width: '100%'}}
                       opts={{
                         loop: shouldLoop,
                         align: 'start',
@@ -137,6 +137,7 @@ function SimpleRecommendedProducts({
                                     cart={cart}
                                     isInWishlist={isInWishlist}
                                     isLoggedIn={isLoggedInPromise}
+                                    compactListMaxViewportWidth={713}
                                   />
                                 ) : (
                                   <ProductCarousel
@@ -153,11 +154,11 @@ function SimpleRecommendedProducts({
                       </CarouselContent>
                       <CarouselPrevious
                         variant="secondary"
-                        className="!-left-6 sm:!-left-8 md:!-left-10 z-50 bg-background/95 border border-border"
+                        className="!left-[2px] z-50 bg-background/95 border border-border"
                       />
                       <CarouselNext
                         variant="secondary"
-                        className="!-right-6 sm:!-right-8 md:!-right-10 z-50 bg-background/95 border border-border"
+                        className="!right-[2px] z-50 bg-background/95 border border-border"
                       />
                     </Carousel>
                   </div>

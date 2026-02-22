@@ -74,6 +74,7 @@
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   justify-content: flex-end;
 }
 
@@ -720,7 +721,8 @@
 }
 .eproduct-list-range-compact .eproduct-bottom-part-card-inside-list {
   display: block;
-  padding: 0 4px 6px 4px;
+  box-sizing: border-box;
+  padding: 36px 4px 6px 4px;
 }
 .eproduct-list-range-compact .product-title-font-list {
   display: flex;
@@ -749,7 +751,8 @@
 .eproduct-list-range-expanded .eproduct-bottom-part-card-inside-list {
   display: flex;
   align-items: flex-end;
-  padding: 0 4px 6px 4px;
+  box-sizing: border-box;
+  padding: 36px 4px 6px 4px;
 }
 .eproduct-list-range-expanded .product-title-font-list {
   display: flex;

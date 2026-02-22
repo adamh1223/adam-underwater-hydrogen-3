@@ -137,6 +137,7 @@ function EProductsContainer({
   cart,
   isLoggedIn = undefined,
   isInWishlist = false,
+  compactListMaxViewportWidth,
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
     selectedOrFirstAvailableVariant?: {id: string};
@@ -146,6 +147,7 @@ function EProductsContainer({
   cart?: Promise<CartReturn | null>;
   isLoggedIn: Promise<boolean> | undefined;
   isInWishlist: boolean;
+  compactListMaxViewportWidth?: number;
 }) {
   const hoverCardEffects =
     'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
@@ -296,18 +298,20 @@ function EProductsContainer({
   // Disabled by request; keep original condition documented.
   // const shouldRenderListDescription = layout === 'list' && Boolean((product as any).descriptionHtml);
   const shouldRenderListDescription = false;
+  const compactListUpperBound = compactListMaxViewportWidth ?? 600;
+  const expandedListLowerBound = compactListUpperBound + 1;
   const shouldRenderListBottomCard =
     layout !== 'grid' &&
     windowWidth != undefined &&
-    (windowWidth <= 600 || windowWidth >= 913);
+    (windowWidth <= compactListUpperBound || windowWidth >= 913);
   const shouldRenderListCompactRange =
     layout === 'list' &&
     windowWidth != undefined &&
-    (windowWidth <= 600 || windowWidth >= 913);
+    (windowWidth <= compactListUpperBound || windowWidth >= 913);
   const shouldRenderListExpandedRange =
     layout === 'list' &&
     windowWidth != undefined &&
-    windowWidth > 600 &&
+    windowWidth >= expandedListLowerBound &&
     windowWidth <= 912;
   const isGridCompact = windowWidth != undefined && windowWidth <= 600;
   const listRangeCardClassName =
