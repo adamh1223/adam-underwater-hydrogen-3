@@ -313,7 +313,12 @@ function buildBundleDetailClips({
     const wmlinkId = wmlinkByClip.get(clipIndex);
     const image = imageByClip.get(clipIndex) ?? images[clipIndex - 1];
 
-    if (!image && !wmlinkId && !descriptionForClip && !clipNameByClip.has(clipIndex)) {
+    if (
+      !image &&
+      !wmlinkId &&
+      !descriptionForClip &&
+      !clipNameByClip.has(clipIndex)
+    ) {
       continue;
     }
 
@@ -2260,6 +2265,9 @@ export default function Product() {
               products={recommendedProducts}
               isVideo={isVideo}
               currentProductID={product.id}
+              cart={cart}
+              isLoggedIn={isLoggedIn}
+              wishlistProducts={wishlistProducts}
             />
           </div>
         </section>

@@ -15,7 +15,28 @@
 }
 .list-view-large-row {
   display: grid;
-  grid-template-columns: 60% 40%;
+  grid-template-columns: minmax(0, 60%) minmax(0, 40%);
+  width: 100%;
+  min-width: 0;
+}
+
+.list-view-large-row > * {
+  min-width: 0;
+}
+
+.you-may-like-slide-card article {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.you-may-like-slide-card .list-view-large-row {
+  width: 100%;
+  min-width: 0;
+}
+
+.you-may-like-slide-card .list-view-large-row > * {
+  min-width: 0;
 }
 
 /* Prints list-view scales columns in fixed 367.5px intervals:
