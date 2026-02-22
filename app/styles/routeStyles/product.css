@@ -1061,6 +1061,16 @@
   }
 }
 
+/* Individual product page vertical prints can make the full product row too tall.
+ * Cap the media height while preserving aspect ratio so the details column
+ * doesn't get stretched by a very tall portrait image.
+ */
+.print-carousel-individual-vertical img.carousel-item {
+  width: auto;
+  max-width: 100%;
+  max-height: clamp(260px, 64vh, 720px);
+}
+
 .bundle-detail-carousel {
   margin: 0 auto;
   width: 100%;
