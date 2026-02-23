@@ -6,7 +6,7 @@ import {useVariantUrl} from '~/lib/variants';
 import EProductPreview from './EProductPreview';
 import EProductBundlePreview from './EProductBundlePreview';
 import {Money} from '@shopify/hydrogen';
-import {Link, useNavigate} from '@remix-run/react';
+import {Link, useLocation, useNavigate} from '@remix-run/react';
 import {useAside} from '../Aside';
 import {useIsLoggedIn, useIsVideoInCart} from '~/lib/hooks';
 import {CartReturn} from '@shopify/hydrogen';
@@ -139,6 +139,8 @@ function EProductsContainer({
   isInWishlist = false,
   compactListMaxViewportWidth,
   compactHighlightGlow = false,
+  forceCardPreviewViewportAutoplay = false,
+  disableFocusWithinHighlight = false,
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
     selectedOrFirstAvailableVariant?: {id: string};
@@ -150,13 +152,25 @@ function EProductsContainer({
   isInWishlist: boolean;
   compactListMaxViewportWidth?: number;
   compactHighlightGlow?: boolean;
+  forceCardPreviewViewportAutoplay?: boolean;
+  disableFocusWithinHighlight?: boolean;
 }) {
+  const location = useLocation();
+  const shouldDisableFocusWithinHighlight =
+    disableFocusWithinHighlight ||
+    location.pathname.startsWith('/collections/stock');
+  const focusWithinCardEffects = shouldDisableFocusWithinHighlight
+    ? ''
+    : compactHighlightGlow
+      ? ' focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)]'
+      : ' focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
   const hoverCardEffects = compactHighlightGlow
-    ? 'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)]'
-    : 'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+    ? `transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)]${focusWithinCardEffects}`
+    : `transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]${focusWithinCardEffects}`;
   const touchCardEffects = compactHighlightGlow
     ? 'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)]'
     : 'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const isBundle = product.tags.includes('Bundle');
   const touchCardId = `eproduct-card:${String(product.id ?? product.handle)}`;
   const {isTouchHighlighted, touchHighlightHandlers} =
     useTouchCardHighlight(touchCardId);
@@ -166,10 +180,10 @@ function EProductsContainer({
   const listTitleTextBlockRef = useRef<HTMLDivElement | null>(null);
   const listFavoriteButtonRef = useRef<HTMLButtonElement | null>(null);
   const [listTitleOverlapShiftPx, setListTitleOverlapShiftPx] = useState(0);
-  const isBundle = product.tags.includes('Bundle');
   const eproductCardTypeClassName = isBundle
     ? 'eproduct-card-bundle'
     : 'eproduct-card-clip';
+  const cardTouchHighlightHandlers = isBundle ? {} : touchHighlightHandlers;
 
   const cardClassName =
     layout === 'grid'
@@ -488,7 +502,7 @@ function EProductsContainer({
           style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           onClick={handleBundleCardClick}
-          {...touchHighlightHandlers}
+          {...cardTouchHighlightHandlers}
         >
           {/* BEGIN GRID ---------------------------------------*/}
 
@@ -623,7 +637,11 @@ function EProductsContainer({
                     prefetch="intent"
                     to={variantUrl}
                   >
-                    <EProductPreview EProduct={product} layout={layout} />
+                    <EProductPreview
+                      EProduct={product}
+                      layout={layout}
+                      forceViewportAutoplay={forceCardPreviewViewportAutoplay}
+                    />
                   </Link>
                 )}
               </div>
@@ -1035,7 +1053,11 @@ function EProductsContainer({
                     prefetch="intent"
                     to={variantUrl}
                   >
-                    <EProductPreview EProduct={product} layout={layout} />
+                    <EProductPreview
+                      EProduct={product}
+                      layout={layout}
+                      forceViewportAutoplay={forceCardPreviewViewportAutoplay}
+                    />
                   </Link>
                 )}
               </div>
@@ -1269,7 +1291,11 @@ function EProductsContainer({
                     prefetch="intent"
                     to={variantUrl}
                   >
-                    <EProductPreview EProduct={product} layout={layout} />
+                    <EProductPreview
+                      EProduct={product}
+                      layout={layout}
+                      forceViewportAutoplay={forceCardPreviewViewportAutoplay}
+                    />
                   </Link>
                 )}
               </div>

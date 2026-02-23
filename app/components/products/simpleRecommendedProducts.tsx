@@ -72,6 +72,14 @@ function SimpleRecommendedProducts({
   const computedSlidesPerView = isVideo
     ? relatedVideoColumnCount
     : slidesPerView;
+  const allowOuterRecommendedCarouselDrag = (
+    _emblaApi: unknown,
+    event: MouseEvent | TouchEvent,
+  ) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return true;
+    return !target.closest('[data-bundle-carousel]');
+  };
 
   return (
     <div className="recommended-products">
@@ -122,6 +130,7 @@ function SimpleRecommendedProducts({
                         loop: shouldLoop,
                         align: 'start',
                         slidesToScroll: 1,
+                        watchDrag: allowOuterRecommendedCarouselDrag,
                       }}
                     >
                       <CarouselContent className="!flex !items-stretch !justify-start mx-[5px]">
@@ -145,6 +154,8 @@ function SimpleRecommendedProducts({
                                     isLoggedIn={isLoggedInPromise}
                                     compactListMaxViewportWidth={713}
                                     compactHighlightGlow
+                                    forceCardPreviewViewportAutoplay
+                                    disableFocusWithinHighlight
                                   />
                                 ) : (
                                   <ProductCarousel
@@ -153,6 +164,7 @@ function SimpleRecommendedProducts({
                                     isInWishlist={isInWishlist}
                                     isLoggedIn={isLoggedInPromise}
                                     compactHighlightGlow
+                                    disableFocusWithinHighlight
                                   />
                                 )}
                               </div>

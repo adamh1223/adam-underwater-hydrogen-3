@@ -9,10 +9,12 @@ function EProductPreview({
   EProduct,
   extraClassName,
   layout,
+  forceViewportAutoplay = false,
 }: {
   EProduct: ProductItemFragment & {images: {nodes: ShopifyImage[]}};
   extraClassName?: string;
   layout: string;
+  forceViewportAutoplay?: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isAutoplayActive, setIsAutoplayActive] = useState(false);
@@ -59,7 +61,7 @@ function EProductPreview({
   };
 
   const handleVideoLoad = () => {
-    if (!enableViewportAutoplay) {
+    if (!shouldEnableViewportAutoplay) {
       setIsVideoReady(true);
       return;
     }
@@ -85,10 +87,12 @@ function EProductPreview({
     layout === 'list' &&
     viewportWidth != undefined &&
     viewportWidth >= 2242;
-  const enableViewportAutoplay =
-    (isStockFootagePage || isAccountFavoritesPage) &&
-    !isStockListLargeViewport;
-  const isVideoActive = enableViewportAutoplay ? isAutoplayActive : isHovered;
+  const shouldEnableViewportAutoplay =
+    forceViewportAutoplay ||
+    ((isStockFootagePage || isAccountFavoritesPage) && !isStockListLargeViewport);
+  const isVideoActive = shouldEnableViewportAutoplay
+    ? isAutoplayActive
+    : isHovered;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -100,7 +104,7 @@ function EProductPreview({
   }, []);
 
   useEffect(() => {
-    if (!enableViewportAutoplay || !isVideoActive) return;
+    if (!shouldEnableViewportAutoplay || !isVideoActive) return;
 
     // Fallback: if the iframe never fires `onLoad` on iOS, don't leave the
     // overlay permanently hidden.
@@ -111,7 +115,7 @@ function EProductPreview({
     }, 1500);
 
     return () => clearVideoLoadFallbackTimeout();
-  }, [enableViewportAutoplay, isVideoActive]);
+  }, [shouldEnableViewportAutoplay, isVideoActive]);
 
   useEffect(() => {
     if (isVideoActive) return;
@@ -128,15 +132,15 @@ function EProductPreview({
   }, []);
 
   useEffect(() => {
-    if (enableViewportAutoplay) {
+    if (shouldEnableViewportAutoplay) {
       setIsHovered(false);
     } else {
       setIsAutoplayActive(false);
     }
-  }, [enableViewportAutoplay]);
+  }, [shouldEnableViewportAutoplay]);
 
   useEffect(() => {
-    if (!enableViewportAutoplay) return;
+    if (!shouldEnableViewportAutoplay) return;
     if (typeof IntersectionObserver === 'undefined') return;
     const element = containerRef.current;
     if (!element) return;
@@ -175,18 +179,18 @@ function EProductPreview({
       observer.disconnect();
       clearAutoplayTimeout();
     };
-  }, [enableViewportAutoplay]);
+  }, [shouldEnableViewportAutoplay]);
 
   return (
     <div
       ref={containerRef}
-      className={`EProductPreviewContainer ${enableViewportAutoplay ? 'EProductPreviewContainer-autoplay' : ''} ${extraClassName || ''}`}
+      className={`EProductPreviewContainer ${shouldEnableViewportAutoplay ? 'EProductPreviewContainer-autoplay' : ''} ${extraClassName || ''}`}
       style={previewAspectRatio ? {aspectRatio: previewAspectRatio} : undefined}
       onMouseEnter={
-        enableViewportAutoplay ? undefined : () => setIsHovered(true)
+        shouldEnableViewportAutoplay ? undefined : () => setIsHovered(true)
       }
       onMouseLeave={
-        enableViewportAutoplay ? undefined : () => setIsHovered(false)
+        shouldEnableViewportAutoplay ? undefined : () => setIsHovered(false)
       }
     >
       {/* Base Image */}

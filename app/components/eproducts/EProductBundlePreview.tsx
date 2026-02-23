@@ -1,5 +1,13 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import {ProductItemFragment} from 'storefrontapi.generated';
+import {useNavigate} from '@remix-run/react';
 import {
   Carousel,
   CarouselApi,
@@ -90,6 +98,7 @@ function BundleClipPreview({
           src={clip.image.url}
           alt={clip.image.altText || 'Bundle preview'}
           className="EProductImage"
+          draggable={false}
         />
       )}
       {isVideoActive && clip.wmlinkId && (
@@ -114,6 +123,7 @@ function EProductBundlePreview({
   product: ProductItemFragment & {images: {nodes: ShopifyImage[]}};
   onSlideChange?: (clipIndex: number) => void;
 }) {
+  const navigate = useNavigate();
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
@@ -122,6 +132,14 @@ function EProductBundlePreview({
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const [isInView, setIsInView] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const previewPointerStateRef = useRef<{
+    active: boolean;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+  const suppressPreviewTapUntilRef = useRef(0);
 
   const clips = useMemo(
     () => buildBundleClips(product.images.nodes || [], product.tags || []),
@@ -187,7 +205,72 @@ function EProductBundlePreview({
     if (!carouselApi || !canScrollNext) return;
     carouselApi.scrollNext();
   };
+  const handlePreviewPointerDownCapture = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    previewPointerStateRef.current = {
+      active: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+    };
+  };
+  const handlePreviewPointerMoveCapture = (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    const pointerState = previewPointerStateRef.current;
+    if (
+      !pointerState ||
+      !pointerState.active ||
+      pointerState.pointerId !== event.pointerId
+    ) {
+      return;
+    }
 
+    const movedDistance = Math.hypot(
+      event.clientX - pointerState.startX,
+      event.clientY - pointerState.startY,
+    );
+    if (movedDistance > 8 && !pointerState.moved) {
+      pointerState.moved = true;
+      suppressPreviewTapUntilRef.current = performance.now() + 350;
+    }
+  };
+  const endPreviewPointerTracking = (pointerId?: number) => {
+    const pointerState = previewPointerStateRef.current;
+    if (!pointerState) return;
+    if (
+      typeof pointerId === 'number' &&
+      pointerState.pointerId !== pointerId &&
+      pointerState.active
+    ) {
+      return;
+    }
+    if (pointerState.moved) {
+      suppressPreviewTapUntilRef.current = performance.now() + 350;
+    }
+    previewPointerStateRef.current = null;
+  };
+  const handlePreviewClickCapture = (
+    event: ReactMouseEvent<HTMLDivElement>,
+  ) => {
+    const target = event.target as Element | null;
+    if (
+      target?.closest('button,a,input,textarea,select,[role="button"]')
+    ) {
+      return;
+    }
+
+    if (performance.now() < suppressPreviewTapUntilRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    navigate(`/products/${product.handle}`);
+  };
   useEffect(() => {
     if (!onSlideChange) return;
     const activeClip = clips[currentIndex];
@@ -195,16 +278,27 @@ function EProductBundlePreview({
   }, [clips, currentIndex, onSlideChange]);
 
   return (
-    <div ref={containerRef} data-bundle-carousel>
+    <div
+      ref={containerRef}
+      data-bundle-carousel
+      data-bundle-no-nav
+      onPointerDownCapture={handlePreviewPointerDownCapture}
+      onPointerMoveCapture={handlePreviewPointerMoveCapture}
+      onPointerUpCapture={(event) => endPreviewPointerTracking(event.pointerId)}
+      onPointerCancelCapture={(event) =>
+        endPreviewPointerTracking(event.pointerId)
+      }
+      onClickCapture={handlePreviewClickCapture}
+    >
       <Carousel
         setApi={setCarouselApi}
         opts={{watchDrag: true}}
-        className="w-full max-w-7xl transform-none mb-3 z-50 touch-pan-y"
+        className="eproduct-bundle-preview-carousel w-full max-w-7xl transform-none mb-3 z-50 touch-pan-y"
       >
         <CarouselContent>
           {clips.map((clip, idx) => (
             <CarouselItem
-              className="flex items-center justify-center"
+              className="eproduct-bundle-preview-carousel-item flex items-center justify-center overflow-hidden"
               key={`bundle-clip-${clip.index}`}
             >
               <div className="product-item w-full">
