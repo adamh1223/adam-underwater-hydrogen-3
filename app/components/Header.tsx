@@ -27,6 +27,7 @@ import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
 import {useIsLoggedIn} from '~/lib/hooks';
+import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
 import {ChevronUp, Divide} from 'lucide-react';
 import {log} from 'util';
 import { RootLoader } from '~/root';
@@ -861,6 +862,7 @@ function HeaderCtas({
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const rootData = useRouteLoaderData<RootLoader>('root');
   const customerFirstName = rootData?.customerFirstName ?? '';
+  const mobileActivationGuard = useMobileActivationGuard();
   
 
   const links: NavLink[] = [
@@ -880,7 +882,10 @@ function HeaderCtas({
       {/* <HeaderMenuMobileToggle /> */}
       <RadixHoverCard.Root
         open={accountMenuOpen}
-        onOpenChange={setAccountMenuOpen}
+        onOpenChange={(nextOpen) => {
+          if (mobileActivationGuard.isMobileTouchUi && nextOpen) return;
+          setAccountMenuOpen(nextOpen);
+        }}
         openDelay={100}
         closeDelay={100}
       >
@@ -902,6 +907,9 @@ function HeaderCtas({
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
+                    if (mobileActivationGuard.shouldSuppressActivation()) {
+                      return;
+                    }
                     setAccountMenuOpen((currentOpen) => !currentOpen);
                   }}
                 >
@@ -1064,6 +1072,7 @@ function CartBadge({count}: {count: number | null}) {
   const {open, type: activeType} = useAside();
   const navigate = useNavigate();
   const {publish, shop, cart, prevCart} = useAnalytics();
+  const mobileActivationGuard = useMobileActivationGuard();
   return (
     <div>
       <button
@@ -1076,6 +1085,11 @@ function CartBadge({count}: {count: number | null}) {
           if (e.pointerType === 'mouse') open('cart');
         }}
         onClick={(e) => {
+          if (mobileActivationGuard.shouldSuppressActivation()) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
           e.preventDefault();
           publish('cart_viewed', {
             cart,

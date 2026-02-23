@@ -1034,32 +1034,34 @@ function EProductsContainer({
                     </button>
                   </div>
                 )}
-                {/* {thumbnail && (
-		                      <img
-		                        src={thumbnail}
-	                        alt="hi"
-	                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-	                      />
-	                    )} */}
-                {isBundle ? (
-                  <EProductBundlePreview
-                    product={product}
-                    onSlideChange={setActiveBundleClipIndex}
-                  />
-                ) : (
-                  <Link
-                    className="product-item"
-                    key={product.id}
-                    prefetch="intent"
-                    to={variantUrl}
-                  >
-                    <EProductPreview
-                      EProduct={product}
-                      layout={layout}
-                      forceViewportAutoplay={forceCardPreviewViewportAutoplay}
+                <div className="eproduct-preview-stage-list">
+                  {/* {thumbnail && (
+			                      <img
+			                        src={thumbnail}
+		                        alt="hi"
+		                        className="flex items-center justify-center rounded w-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+		                      />
+		                    )} */}
+                  {isBundle ? (
+                    <EProductBundlePreview
+                      product={product}
+                      onSlideChange={setActiveBundleClipIndex}
                     />
-                  </Link>
-                )}
+                  ) : (
+                    <Link
+                      className="product-item"
+                      key={product.id}
+                      prefetch="intent"
+                      to={variantUrl}
+                    >
+                      <EProductPreview
+                        EProduct={product}
+                        layout={layout}
+                        forceViewportAutoplay={forceCardPreviewViewportAutoplay}
+                      />
+                    </Link>
+                  )}
+                </div>
               </div>
               {/* <div className="mt-4 text-center">
                 <h2 className="text-lg capitalize">{name}</h2>

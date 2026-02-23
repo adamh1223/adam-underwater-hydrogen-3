@@ -4,6 +4,7 @@ import {Link, NavLink} from '@remix-run/react';
 import React, {useEffect, useRef, useState} from 'react';
 import {ChevronUp} from 'lucide-react';
 import {Button} from '../ui/button';
+import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
 
 function ServicesDropdown({
   menuItems,
@@ -26,6 +27,7 @@ function ServicesDropdown({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const mobileActivationGuard = useMobileActivationGuard();
 
   const writeScrollTarget = (sectionId: string) => {
     try {
@@ -61,7 +63,16 @@ function ServicesDropdown({
   return (
     <RadixHoverCard.Root
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(nextOpen) => {
+        if (
+          enableMobileToggle &&
+          mobileActivationGuard.isMobileTouchUi &&
+          nextOpen
+        ) {
+          return;
+        }
+        setOpen(nextOpen);
+      }}
       openDelay={100}
       closeDelay={100}
     >
@@ -84,6 +95,10 @@ function ServicesDropdown({
                   className="dropdownbutton-services ps-[1px]  text-primary"
                   onClick={(event) => {
                     event.preventDefault();
+                    event.stopPropagation();
+                    if (mobileActivationGuard.shouldSuppressActivation()) {
+                      return;
+                    }
                     setOpen((currentOpen) => !currentOpen);
                   }}
                 >

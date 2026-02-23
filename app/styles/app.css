@@ -257,6 +257,13 @@ button.reset:hover:not(:has(> *)) {
   cursor: pointer;
   color: white;
 }
+@media (max-width: 420px) {
+  .main-navbar-small-bottom-row .nav-links-container button,
+  .main-navbar-small-bottom-row .about-dropdown-button {
+    font-size: 0.8rem !important;
+    line-height: 1rem !important;
+  }
+}
 @media (max-width: 500px) {
   .header-ctas {
     align-items: center;
@@ -716,19 +723,43 @@ button.reset:hover:not(:has(> *)) {
 .logo-container {
   width: 30%;
 } */
-
+@media (max-width: 420px) {
+  .logo {
+    height: 1.8rem;
+    border-radius: 0.375rem;
+  }
+  .footer-logo {
+    height: 3.4rem;
+  }
+  .copyright-footer-text {
+    font-size: 12px;
+  }
+}
+@media (min-width: 421px) and (max-width: 538px) {
+  .logo {
+    height: 2.1rem;
+    border-radius: 0.375rem;
+  }
+  .footer-logo {
+    height: 4rem;
+  }
+  .copyright-footer-text {
+    font-size: 14px;
+  }
+}
 @media (min-width: 539px) {
   .logo {
     height: 2.5rem;
     border-radius: 0.375rem;
   }
-}
-@media (max-width: 538px) {
-  .logo {
-    height: 2.1rem;
-    border-radius: 0.375rem;
+  .footer-logo {
+    height: 5rem;
+  }
+  .copyright-footer-text {
+    font-size: 16px;
   }
 }
+
 @media (min-width: 601px) {
   .cart-header {
     font-size: 17px;
@@ -1841,6 +1872,13 @@ span {
 .dropdownbutton-about-icon {
   height: 20px;
   width: 23px;
+}
+
+@media (max-width: 420px) {
+  .dropdownbutton-about-icon {
+    height: 17px;
+    width: 20px;
+  }
 }
 
 @media (max-width: 459px) {

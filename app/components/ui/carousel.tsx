@@ -49,11 +49,47 @@ function Carousel({
   children,
   ...props
 }: React.ComponentProps<'div'> & CarouselProps) {
+  const carouselRootRef = React.useRef<HTMLDivElement | null>(null);
+
+  const watchDrag = React.useCallback<
+    NonNullable<CarouselOptions['watchDrag']>
+  >(
+    (api, event) => {
+      const target = event.target;
+
+      if (target instanceof Element) {
+        const closestCarouselRoot = target.closest('[data-slot="carousel"]');
+
+        // If the drag started inside a nested carousel, don't let this parent
+        // carousel also begin dragging.
+        if (
+          carouselRootRef.current &&
+          closestCarouselRoot &&
+          closestCarouselRoot !== carouselRootRef.current
+        ) {
+          return false;
+        }
+      }
+
+      if (typeof opts?.watchDrag === 'function') {
+        return opts.watchDrag(api, event);
+      }
+
+      if (typeof opts?.watchDrag === 'boolean') {
+        return opts.watchDrag;
+      }
+
+      return true;
+    },
+    [opts],
+  );
+
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
       loop: true,
       axis: orientation === 'horizontal' ? 'x' : 'y',
+      watchDrag,
     },
     plugins,
   );
@@ -118,6 +154,7 @@ function Carousel({
       }}
     >
       <div
+        ref={carouselRootRef}
         onKeyDownCapture={handleKeyDown}
         className={cn('relative', className)}
         role="region"
@@ -251,7 +288,7 @@ export {
   type CarouselApi,
   Carousel,
   CarouselContent,
-  CarouselItem,
+  CarouselItem,        
   CarouselPrevious,
   CarouselNext,
 };

@@ -124,7 +124,7 @@ function SimpleRecommendedProducts({
                 {filteredProducts.length > 0 ? (
                   <div className="w-full max-w-full min-w-0 box-border flex justify-center px-1">
                     <Carousel
-                      className="you-may-like-carousel w-full max-w-full min-w-0 box-border px-8"
+                      className="you-may-like-carousel w-full max-w-full min-w-0 box-border px-6"
                       style={{width: '100%'}}
                       opts={{
                         loop: shouldLoop,
@@ -174,11 +174,11 @@ function SimpleRecommendedProducts({
                       </CarouselContent>
                       <CarouselPrevious
                         variant="secondary"
-                        className="!left-[5px] z-50 bg-background/95 border border-border"
+                        className="!left-0 z-50 bg-background/95 border border-border"
                       />
                       <CarouselNext
                         variant="secondary"
-                        className="!right-[4px] z-50 bg-background/95 border border-border"
+                        className="!right-0 z-50 bg-background/95 border border-border"
                       />
                     </Carousel>
                   </div>

@@ -4,6 +4,7 @@ import {ChevronUp} from 'lucide-react';
 import {useEffect, useMemo, useState} from 'react';
 import {LuBell} from 'react-icons/lu';
 import {Button} from '~/components/ui/button';
+import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
 
 type NotificationsResponse = {
   loggedIn: boolean;
@@ -20,6 +21,7 @@ type NotificationsResponse = {
 function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const fetcher = useFetcher<NotificationsResponse>();
+  const mobileActivationGuard = useMobileActivationGuard();
 
   const notifications = fetcher.data?.notifications ?? [];
   const unreadCount = fetcher.data?.unreadCount ?? 0;
@@ -44,7 +46,10 @@ function NotificationsDropdown() {
   return (
     <RadixHoverCard.Root
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(nextOpen) => {
+        if (mobileActivationGuard.isMobileTouchUi && nextOpen) return;
+        setOpen(nextOpen);
+      }}
       openDelay={100}
       closeDelay={100}
     >
@@ -69,6 +74,9 @@ function NotificationsDropdown() {
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
+                  if (mobileActivationGuard.shouldSuppressActivation()) {
+                    return;
+                  }
                   setOpen((currentOpen) => !currentOpen);
                 }}
               >

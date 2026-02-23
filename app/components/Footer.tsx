@@ -119,11 +119,11 @@ function FooterMenu({
       <div className="flex justify-center ms-[-5px] mb-3">
         <Button variant="link" asChild>
           <Link to="/">
-            <img src={'/colorlogo.svg'} style={{height: '4rem'}}></img>
+            <img src={'/colorlogo.svg'} className='footer-logo'></img>
           </Link>
         </Button>
       </div>
-      <div className="flex justify-center my-5 text-muted-foreground">
+      <div className="flex justify-center my-5 text-muted-foreground copyright-footer-text">
         <p>Copyright 2026 Adam Underwater, All rights reserved.</p>
       </div>
 
