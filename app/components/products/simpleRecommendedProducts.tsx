@@ -124,7 +124,7 @@ function SimpleRecommendedProducts({
                         slidesToScroll: 1,
                       }}
                     >
-                      <CarouselContent className="!flex !items-stretch !justify-start mx-[6px]">
+                      <CarouselContent className="!flex !items-stretch !justify-start mx-[5px]">
                         {filteredProducts.map((product) => {
                           const isInWishlist = wishlistProducts.includes(
                             product.id,
@@ -162,11 +162,11 @@ function SimpleRecommendedProducts({
                       </CarouselContent>
                       <CarouselPrevious
                         variant="secondary"
-                        className="!left-[-1px] z-50 bg-background/95 border border-border"
+                        className="!left-[5px] z-50 bg-background/95 border border-border"
                       />
                       <CarouselNext
                         variant="secondary"
-                        className="!right-[-2px] z-50 bg-background/95 border border-border"
+                        className="!right-[4px] z-50 bg-background/95 border border-border"
                       />
                     </Carousel>
                   </div>
