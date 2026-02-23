@@ -278,6 +278,52 @@ export const ProductCarousel = ({
   const isVertical = orientation === 'Vertical';
   // const carouselHeight = isHorOnly || isHorPrimary ? 'w-88' : 'w-4';
   let carouselHeight = '';
+  const getVerticalGridCarouselWidth = (viewportWidth: number) => {
+    if (viewportWidth <= 700) return 'w-64';
+
+    // 701-1400 retains the legacy cadence.
+    if (viewportWidth <= 1400) {
+      const cycleOffset = (viewportWidth - 701) % 700;
+      if (cycleOffset <= 49) return 'w-40';
+      if (cycleOffset <= 199) return 'w-48';
+      if (cycleOffset <= 399) return 'w-56';
+      if (cycleOffset <= 599) return 'w-64';
+      return 'w-72';
+    }
+
+    // >= 1401:
+    // 1401-2100 (3-col range) baseline:
+    //   1401-1450 w-48, 1451-1600 w-56, 1601-1800 w-64, 1801-2100 w-72
+    // For larger column ranges, scale those same breakpoint offsets by column count
+    // (rounded to 50px) and clamp at the max width step.
+    const bandStart = 1401;
+    const bandSize = 700;
+    const bandIndex = Math.floor((viewportWidth - bandStart) / bandSize); // 0 => 1401-2100, 1 => 2101-2800, ...
+    const offsetInBand = (viewportWidth - bandStart) % bandSize; // 0..699
+    const columnsInRange = bandIndex + 3; // 3-col at 1401+, 4-col at 2101+, etc.
+
+    const widthSteps = ['w-48', 'w-56', 'w-64', 'w-72'] as const;
+    const baselineBandEndOffsets = [50, 200, 400, 700] as const;
+    const startStepIndex = Math.min(bandIndex, widthSteps.length - 1);
+
+    const roundToNearest50 = (value: number) => Math.round(value / 50) * 50;
+    const scaledBandEnds = baselineBandEndOffsets
+      .slice(startStepIndex)
+      .map((offset) =>
+        Math.min(
+          bandSize,
+          roundToNearest50((offset * columnsInRange) / 3),
+        ),
+      );
+
+    for (let i = 0; i < scaledBandEnds.length; i++) {
+      if (offsetInBand < scaledBandEnds[i]) {
+        return widthSteps[startStepIndex + i];
+      }
+    }
+
+    return 'w-72';
+  };
   if (isHorOnly) {
     // Horizontal Only = 120
     carouselHeight = 'w-120';
@@ -285,29 +331,13 @@ export const ProductCarousel = ({
     // Horizontal Primary = 120
     carouselHeight = 'w-120';
   } else if (
-    // Vertical / Grid: repeat the same 701-1400 sizing cadence every 700px.
-    // 701-750 -> w-40, 751-900 -> w-48, 901-1200 -> w-56, 1201-1300 -> w-64, 1301-1400 -> w-72
-    // Then repeat: 1401-1450 -> w-40, 1451-1600 -> w-48, etc.
+    // Vertical / Grid portrait sizing follows stepped viewport bands so widths
+    // don't reset too aggressively when the grid adds a new column.
     (isVertPrimary || isVertOnly) &&
     layout === 'grid' &&
     windowWidth != undefined
   ) {
-    if (windowWidth <= 700) {
-      carouselHeight = 'w-64';
-    } else {
-      const cycleOffset = (windowWidth - 701) % 700;
-      if (cycleOffset <= 49) {
-        carouselHeight = 'w-40';
-      } else if (cycleOffset <= 199) {
-        carouselHeight = 'w-48';
-      } else if (cycleOffset <= 399) {
-        carouselHeight = 'w-56';
-      } else if (cycleOffset <= 599) {
-        carouselHeight = 'w-64';
-      } else {
-        carouselHeight = 'w-72';
-      }
-    }
+    carouselHeight = getVerticalGridCarouselWidth(windowWidth);
   } else if (
     // Vertical Only / List / 28
     isVertOnly &&
