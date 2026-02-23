@@ -239,12 +239,10 @@ export default function Collection() {
 
   const isPrintsListLayout =
     collection?.handle === 'prints' && layout === 'list';
-  const isStockListLayout =
-    collection?.handle === 'stock' && layout === 'list';
+  const isStockListLayout = collection?.handle === 'stock' && layout === 'list';
   const isPrintsGridLayout =
     collection?.handle === 'prints' && layout === 'grid';
-  const isStockGridLayout =
-    collection?.handle === 'stock' && layout === 'grid';
+  const isStockGridLayout = collection?.handle === 'stock' && layout === 'grid';
   const layoutClassName =
     layout === 'grid'
       ? 'prods-grid gap-x-2'
@@ -487,7 +485,7 @@ export default function Collection() {
             <ToggleSwitch selected={filterState} onChange={setFilterState} />
           </div>
           <div className="flex justify-center">
-            <div className="flex justify-center w-100 md:w-132 lg:w-148">
+            <div className="flex justify-center w-100 md:w-132 lg:w-148 px-3">
               <p>
                 Many horizontal prints <strong>are also available</strong> in
                 vertical on the product page

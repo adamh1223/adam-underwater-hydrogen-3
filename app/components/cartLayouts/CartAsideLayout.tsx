@@ -8,7 +8,7 @@ interface cartPageLayoutProps {
   linesCount: boolean;
   layout: CartMainProps['layout'];
   cart: DefaultCart;
-  cartHasItems: number | undefined;
+  cartHasItems: boolean;
   className: string;
 }
 
@@ -35,7 +35,7 @@ export function CartAsideLayout({
               </ul>
             </div>
           </div>
-          {cartHasItems != undefined && cartHasItems > 0 && (
+          {cartHasItems && (
             <>
               <div className="mx-4">
                 <CartSummary cart={cart} layout={layout} />

@@ -11,6 +11,10 @@ type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
 type CarouselOptions = UseCarouselParameters[0];
 type CarouselPlugin = UseCarouselParameters[1];
+type CarouselWatchDragHandler = Exclude<
+  NonNullable<CarouselOptions['watchDrag']>,
+  boolean
+>;
 
 type CarouselProps = {
   opts?: CarouselOptions;
@@ -51,9 +55,7 @@ function Carousel({
 }: React.ComponentProps<'div'> & CarouselProps) {
   const carouselRootRef = React.useRef<HTMLDivElement | null>(null);
 
-  const watchDrag = React.useCallback<
-    NonNullable<CarouselOptions['watchDrag']>
-  >(
+  const watchDrag = React.useCallback<CarouselWatchDragHandler>(
     (api, event) => {
       const target = event.target;
 
@@ -81,7 +83,7 @@ function Carousel({
 
       return true;
     },
-    [opts],
+    [opts?.watchDrag],
   );
 
   const [carouselRef, api] = useEmblaCarousel(
@@ -288,7 +290,7 @@ export {
   type CarouselApi,
   Carousel,
   CarouselContent,
-  CarouselItem,        
+  CarouselItem,
   CarouselPrevious,
   CarouselNext,
 };

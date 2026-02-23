@@ -8,7 +8,7 @@ interface cartPageLayoutProps {
   linesCount: boolean;
   layout: CartMainProps['layout'];
   cart: DefaultCart;
-  cartHasItems: boolean | 0 | undefined;
+  cartHasItems: boolean;
 }
 export function CartPageLayout({
   linesCount,

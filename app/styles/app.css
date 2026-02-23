@@ -1171,15 +1171,29 @@ span {
   border: 0.5px solid gray;
 }
 
-.toggle-container {
-  display: flex;
-  border: 2px solid #555;
-  border-radius: 10px;
-  overflow: hidden;
-  width: 400px;
-  height: 40px;
-  background-color: #333;
-  transition: border-color 0.3s ease;
+@media (max-width: 420px) {
+  .toggle-container {
+    display: flex;
+    border: 2px solid #555;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 340px;
+    height: 40px;
+    background-color: #333;
+    transition: border-color 0.3s ease;
+  }
+}
+@media (min-width: 421px) {
+  .toggle-container {
+    display: flex;
+    border: 2px solid #555;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 380px;
+    height: 40px;
+    background-color: #333;
+    transition: border-color 0.3s ease;
+  }
 }
 
 .toggle-option {
