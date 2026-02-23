@@ -45,7 +45,7 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
         className="you-may-like-carousel w-full max-w-6xl"
         opts={{loop: true, align: carouselAlign, slidesToScroll: 1}}
       >
-        <CarouselContent className="!flex !items-stretch !justify-start">
+        <CarouselContent className="!flex !items-stretch !justify-start mx-[6px]">
           {/* ≥ 1024px (3 slides) */}
           {windowWidth && windowWidth >= 1024 && (
             <>

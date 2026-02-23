@@ -99,10 +99,16 @@ function SimpleRecommendedProducts({
               Math.min(computedSlidesPerView, filteredProducts.length || 1),
             );
             const shouldLoop = filteredProducts.length > 1;
+            const simpleRecommendedCardGapPx = 12;
+            const halfSimpleRecommendedCardGapPx =
+              simpleRecommendedCardGapPx / 2;
             const effectiveSlidePercent = 100 / effectiveSlidesPerView;
             const effectiveSlideStyle = {
               flex: `0 0 ${effectiveSlidePercent}%`,
               maxWidth: `${effectiveSlidePercent}%`,
+              boxSizing: 'border-box' as const,
+              paddingLeft: `${halfSimpleRecommendedCardGapPx}px`,
+              paddingRight: `${halfSimpleRecommendedCardGapPx}px`,
             };
 
             return (
@@ -118,7 +124,7 @@ function SimpleRecommendedProducts({
                         slidesToScroll: 1,
                       }}
                     >
-                      <CarouselContent className="!flex !items-stretch !justify-start -ml-2">
+                      <CarouselContent className="!flex !items-stretch !justify-start mx-[6px]">
                         {filteredProducts.map((product) => {
                           const isInWishlist = wishlistProducts.includes(
                             product.id,
@@ -126,7 +132,7 @@ function SimpleRecommendedProducts({
                           return (
                             <CarouselItem
                               key={product.id}
-                              className="pl-2 flex items-stretch min-w-0"
+                              className="flex items-stretch min-w-0"
                               style={effectiveSlideStyle}
                             >
                               <div className="w-full h-full min-w-0 you-may-like-slide-card">
@@ -138,6 +144,7 @@ function SimpleRecommendedProducts({
                                     isInWishlist={isInWishlist}
                                     isLoggedIn={isLoggedInPromise}
                                     compactListMaxViewportWidth={713}
+                                    compactHighlightGlow
                                   />
                                 ) : (
                                   <ProductCarousel
@@ -145,6 +152,7 @@ function SimpleRecommendedProducts({
                                     layout="list"
                                     isInWishlist={isInWishlist}
                                     isLoggedIn={isLoggedInPromise}
+                                    compactHighlightGlow
                                   />
                                 )}
                               </div>

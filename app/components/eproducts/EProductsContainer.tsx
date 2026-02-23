@@ -138,6 +138,7 @@ function EProductsContainer({
   isLoggedIn = undefined,
   isInWishlist = false,
   compactListMaxViewportWidth,
+  compactHighlightGlow = false,
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
     selectedOrFirstAvailableVariant?: {id: string};
@@ -148,11 +149,14 @@ function EProductsContainer({
   isLoggedIn: Promise<boolean> | undefined;
   isInWishlist: boolean;
   compactListMaxViewportWidth?: number;
+  compactHighlightGlow?: boolean;
 }) {
-  const hoverCardEffects =
-    'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
-  const touchCardEffects =
-    'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const hoverCardEffects = compactHighlightGlow
+    ? 'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)]'
+    : 'transition-[border-color,box-shadow] duration-300 group-hover:border-primary group-hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const touchCardEffects = compactHighlightGlow
+    ? 'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)]'
+    : 'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
   const touchCardId = `eproduct-card:${String(product.id ?? product.handle)}`;
   const {isTouchHighlighted, touchHighlightHandlers} =
     useTouchCardHighlight(touchCardId);
