@@ -1077,6 +1077,16 @@
   max-height: clamp(260px, 64vh, 720px);
 }
 
+/* Product detail portrait print carousel should hard-clip the viewport so
+ * adjacent slides never peek through the side gutters.
+ */
+.print-carousel-individual-vertical
+  [data-slot='carousel-content'][data-orientation='horizontal'] {
+  overflow: hidden;
+  clip-path: none;
+  -webkit-clip-path: none;
+}
+
 .bundle-detail-carousel {
   margin: 0 auto;
   width: 100%;
