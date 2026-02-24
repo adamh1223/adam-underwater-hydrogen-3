@@ -16,14 +16,16 @@
   }
 }
 .drone-titles {
-  display: flex;
-  justify-content: space-between; /* Creates two equal halves */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 1.25rem;
   width: 94%;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
 .drone-title {
-  flex: 0 0 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,11 +52,33 @@
 }
 
 .drone-title:first-child {
-  margin-right: auto;
+  margin-right: 0;
 }
 
 .drone-title:last-child {
-  margin-left: auto;
+  margin-left: 0;
+}
+
+.drone-titles > * {
+  min-width: 0;
+  width: 100%;
+}
+
+.services-drone-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.services-drone-preview .EProductImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.services-drone-preview .EProductVideoWrapper,
+.services-drone-preview .EProductVideo {
+  width: 100%;
+  height: 100%;
 }
 
 @media (min-width: 670px) {

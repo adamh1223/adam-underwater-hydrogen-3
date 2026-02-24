@@ -1,39 +1,77 @@
-import {useState, useRef, useEffect} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import '../../styles/components/EProductPreview.css';
-import {ProductItemFragment} from 'storefrontapi.generated';
-import {redirect} from '@remix-run/server-runtime';
-import {Link} from '@remix-run/react';
-
-type shopifyImage = {url: string; altText: string};
 
 function VideoPreview({
-  //   EProduct,
+  src,
+  posterSrc,
+  posterAlt = 'Video preview image',
   extraClassName,
+  revealDelayMs = 250,
+  loadFallbackDelayMs = 1500,
 }: {
-  //   EProduct: ProductItemFragment & {images: {nodes: shopifyImage[]}};
+  src: string | number;
+  posterSrc: string;
+  posterAlt?: string;
   extraClassName?: string;
+  revealDelayMs?: number;
+  loadFallbackDelayMs?: number;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const videoRef = useRef<HTMLIFrameElement>(null);
+  const revealTimeoutRef = useRef<number | null>(null);
+  const loadFallbackTimeoutRef = useRef<number | null>(null);
 
-  //   const {featuredImage, id} = EProduct;
-  let videoLink = '';
-  // if (condition) {
-  //     videoLink = '529029170';
+  const clearRevealTimeout = () => {
+    if (revealTimeoutRef.current == null) return;
+    window.clearTimeout(revealTimeoutRef.current);
+    revealTimeoutRef.current = null;
+  };
 
-  // } else {
+  const clearLoadFallbackTimeout = () => {
+    if (loadFallbackTimeoutRef.current == null) return;
+    window.clearTimeout(loadFallbackTimeoutRef.current);
+    loadFallbackTimeoutRef.current = null;
+  };
 
-  //     videoLink = '636620330';
-  // }
+  const scheduleReveal = (delayMs: number) => {
+    clearRevealTimeout();
+    revealTimeoutRef.current = window.setTimeout(() => {
+      revealTimeoutRef.current = null;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setIsVideoReady(true));
+      });
+    }, delayMs);
+  };
 
   const handleVideoLoad = () => {
-    setIsVideoReady(true);
+    clearLoadFallbackTimeout();
+    // Wait briefly after iframe load to avoid showing Vimeo's transient black frame.
+    scheduleReveal(revealDelayMs);
   };
 
   useEffect(() => {
-    if (!isHovered) setIsVideoReady(false);
-  }, [isHovered]);
+    if (!isHovered) {
+      clearRevealTimeout();
+      clearLoadFallbackTimeout();
+      setIsVideoReady(false);
+      return;
+    }
+
+    // iOS/Safari can occasionally miss iframe onLoad timing; don't leave the
+    // preview stuck on the poster forever while hovered.
+    clearLoadFallbackTimeout();
+    loadFallbackTimeoutRef.current = window.setTimeout(() => {
+      loadFallbackTimeoutRef.current = null;
+      setIsVideoReady(true);
+    }, loadFallbackDelayMs);
+  }, [isHovered, loadFallbackDelayMs]);
+
+  useEffect(() => {
+    return () => {
+      clearRevealTimeout();
+      clearLoadFallbackTimeout();
+    };
+  }, []);
 
   return (
     <div
@@ -41,43 +79,17 @@ function VideoPreview({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Base Image */}
+      <img src={posterSrc} alt={posterAlt} className="EProductImage" />
 
-      <img
-        src={'/dji-inspire-3.jpg'}
-        alt={'Product image'}
-        className="EProductImage"
-        onPointerDown={() => redirect(`/stock/${id}`)}
-      />
-      {/* <img
-        src={'/fpv-red.jpg'}
-        alt={'Product image'}
-        className="EProductImage"
-        onPointerDown={() => redirect(`/stock/${id}`)}
-      /> */}
-
-      {/* Video overlay */}
       {isHovered && (
-        <div className="EProductVideoWrapper" onClick={() => redirect(`/`)}>
-          <Link to={`/`}>
-            {/* link to modal where you can see the video with the control options */}
-            {/* <iframe
-              ref={videoRef}
-              src={`https://player.vimeo.com/video/${videoLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
-              allow="autoplay; loop;"
-              className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
-              onLoad={handleVideoLoad}
-              onPointerDown={() => redirect(`/products/${EProduct.handle}`)}
-            ></iframe> */}
-            <iframe
-              ref={videoRef}
-              src={`https://player.vimeo.com/video/529029170?autoplay=1&muted=1&background=1&badge=0&autopause=0`}
-              allow="autoplay; loop;"
-              className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
-              onLoad={handleVideoLoad}
-              //   onPointerDown={() => redirect(`/products/${EProduct.handle}`)}
-            ></iframe>
-          </Link>
+        <div className="EProductVideoWrapper" aria-hidden="true">
+          <iframe
+            src={`https://player.vimeo.com/video/${src}?autoplay=1&muted=1&background=1&badge=0&autopause=0&playsinline=1`}
+            allow="autoplay; fullscreen; picture-in-picture"
+            className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
+            title="Services video preview"
+            onLoad={handleVideoLoad}
+          />
         </div>
       )}
     </div>
