@@ -19,9 +19,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: stretch;
-  gap: 1.25rem;
-  width: 94%;
-  max-width: 1600px;
+  gap: 8px;
+  width: 98%;
   margin: 0 auto;
 }
 
@@ -30,15 +29,15 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 20px;
+  padding: 12px;
   border-radius: 10px;
   overflow: hidden;
   font-weight: 700;
-  font-size: 25px;
+  font-size: 22px;
 }
 
 .drone-title div {
-  font-size: 1.5rem; /* Adjust title size */
+  font-size: 1.2rem; /* Adjust title size */
   font-weight: 600;
   margin-bottom: 10px; /* Space between title and image */
 }
@@ -164,7 +163,7 @@ body {
 }
 
 .subheader-services {
-  font-size: 25px;
+  font-size: 18px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -204,7 +203,6 @@ body {
 }
 
 @media (max-width: 700px) {
-
   .featured-img {
     height: 70px;
   }

@@ -515,18 +515,18 @@ function ServicesPage() {
       </section> */}
       <section id="drone">
         <Sectiontitle text="Drone Video & Photo" />
-        <br />
+
         <div className="subheader-services flex justify-center">
-          Commercial FAA drone operator with 5 years of experience in aerial
+          Commercial FAA drone operator with 7 years of experience in aerial
           cinematography.
         </div>
-        <br />
+
         <div className="drone-titles">
           <Card className="group overflow-hidden px-3 pb-3 h-full min-w-0 w-full">
             <CardHeader className="text-center drone-title">
               <CardTitle>DJI Inspire 3</CardTitle>
             </CardHeader>
-            <p className="flex justify-center pb-7 mt-[-15px] font-3xl">
+            <p className="flex justify-center pb-3 mt-[-15px] font-3xl">
               8.1K Full Frame, Pro Res Raw up to 60fps
             </p>
             <CardContent className="p-0">
@@ -548,7 +548,7 @@ function ServicesPage() {
             <CardHeader className="text-center drone-title">
               <CardTitle>FPV RED Komodo X</CardTitle>
             </CardHeader>
-            <p className="flex justify-center pb-7 mt-[-15px]">
+            <p className="flex justify-center pb-3 mt-[-15px]">
               6K Global Shutter, R3D Raw up to 75fps
             </p>
             <CardContent className="p-0">
@@ -568,7 +568,7 @@ function ServicesPage() {
           </Card>
           {/* /522510112 */}
         </div>
-        <br />
+
         <div className="subheader-services flex justify-center">
           Check out my drone website at{' '}
         </div>
@@ -584,7 +584,7 @@ function ServicesPage() {
         </div>
       </section>
       <section>
-        <div className="flex justify-center pt-5 me-4">
+        <div className="flex justify-center me-4">
           <img
             src={
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
