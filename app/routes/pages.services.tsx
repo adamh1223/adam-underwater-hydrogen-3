@@ -38,6 +38,7 @@ import HeroServices from '~/components/hero/HeroServices';
 import VideoPreview from '~/components/global/VideoPreview';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
+import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 
 // export async function loader({context}: LoaderFunctionArgs) {
 //   const {storefront} = context;
@@ -266,6 +267,28 @@ function ServicesPage() {
       new Map(servicesPhotoImages.map((url, index) => [url, index] as const)),
     [servicesPhotoImages],
   );
+
+  const droneFocusWithinCardEffects =
+    ' focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  const droneHoverCardEffects = `transition-[border-color,box-shadow] duration-300 hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]${droneFocusWithinCardEffects}`;
+  const droneTouchCardEffects =
+    'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+
+  const djiDroneTouchCardId = 'services-drone-card:dji-inspire-3';
+  const fpvDroneTouchCardId = 'services-drone-card:fpv-red-komodo-x';
+  const [activeDronePreview, setActiveDronePreview] = useState<
+    'dji' | 'fpv' | null
+  >(null);
+  const droneWebsiteUrl = 'https://flywithadam.com';
+
+  const {
+    isTouchHighlighted: isDjiDroneTouchHighlighted,
+    touchHighlightHandlers: djiDroneTouchHighlightHandlers,
+  } = useTouchCardHighlight(djiDroneTouchCardId);
+  const {
+    isTouchHighlighted: isFpvDroneTouchHighlighted,
+    touchHighlightHandlers: fpvDroneTouchHighlightHandlers,
+  } = useTouchCardHighlight(fpvDroneTouchCardId);
 
   const renderServicesPhotoCard = (
     imageURL: string,
@@ -522,7 +545,32 @@ function ServicesPage() {
         </div>
 
         <div className="drone-titles">
-          <Card className="group overflow-hidden px-3 pb-3 h-full min-w-0 w-full">
+          <Card
+            className={`group relative overflow-hidden px-3 pb-3 h-full min-w-0 w-full ${droneHoverCardEffects} ${isDjiDroneTouchHighlighted ? droneTouchCardEffects : ''}`.trim()}
+            style={{touchAction: 'pan-y'}}
+            data-touch-highlight-card-id={djiDroneTouchCardId}
+            onMouseEnter={() => setActiveDronePreview('dji')}
+            onMouseLeave={() =>
+              setActiveDronePreview((current) =>
+                current === 'dji' ? null : current,
+              )
+            }
+            onPointerDownCapture={(event) => {
+              djiDroneTouchHighlightHandlers.onPointerDownCapture(event);
+              setActiveDronePreview('dji');
+            }}
+            onTouchStartCapture={(event) => {
+              djiDroneTouchHighlightHandlers.onTouchStartCapture(event);
+              setActiveDronePreview('dji');
+            }}
+          >
+            <a
+              href={droneWebsiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open flywithadam.com for DJI Inspire 3"
+              className="absolute inset-0 z-10 rounded-xl"
+            />
             <CardHeader className="text-center drone-title">
               <CardTitle>DJI Inspire 3</CardTitle>
             </CardHeader>
@@ -538,6 +586,8 @@ function ServicesPage() {
               <VideoPreview
                 src="529029170"
                 posterSrc="/dji-inspire-3.jpg"
+                mobilePosterSrc="/services-drone.JPG"
+                isActive={activeDronePreview === 'dji'}
                 extraClassName="services-drone-preview"
                 revealDelayMs={1400}
                 loadFallbackDelayMs={2800}
@@ -546,7 +596,32 @@ function ServicesPage() {
           </Card>
           {/* /627592883 */}
 
-          <Card className="group overflow-hidden px-3 pb-3 h-full min-w-0 w-full">
+          <Card
+            className={`group relative overflow-hidden px-3 pb-3 h-full min-w-0 w-full ${droneHoverCardEffects} ${isFpvDroneTouchHighlighted ? droneTouchCardEffects : ''}`.trim()}
+            style={{touchAction: 'pan-y'}}
+            data-touch-highlight-card-id={fpvDroneTouchCardId}
+            onMouseEnter={() => setActiveDronePreview('fpv')}
+            onMouseLeave={() =>
+              setActiveDronePreview((current) =>
+                current === 'fpv' ? null : current,
+              )
+            }
+            onPointerDownCapture={(event) => {
+              fpvDroneTouchHighlightHandlers.onPointerDownCapture(event);
+              setActiveDronePreview('fpv');
+            }}
+            onTouchStartCapture={(event) => {
+              fpvDroneTouchHighlightHandlers.onTouchStartCapture(event);
+              setActiveDronePreview('fpv');
+            }}
+          >
+            <a
+              href={droneWebsiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open flywithadam.com for FPV RED Komodo X"
+              className="absolute inset-0 z-10 rounded-xl"
+            />
             <CardHeader className="text-center drone-title">
               <CardTitle>FPV RED Komodo X</CardTitle>
             </CardHeader>
@@ -562,6 +637,8 @@ function ServicesPage() {
               <VideoPreview
                 src="627592883"
                 posterSrc="/fpv-red.jpg"
+                mobilePosterSrc="/services-drone.JPG"
+                isActive={activeDronePreview === 'fpv'}
                 extraClassName="services-drone-preview"
               />
             </CardContent>
@@ -570,16 +647,16 @@ function ServicesPage() {
         </div>
 
         <div className="subheader-services flex justify-center">
-          Check out my drone website at{' '}
+          For drone shoot inquiries and rentals, visit{' '}
         </div>
-        <div className="subheader-services flex justify-center">
+        <div className="flex justify-center">
           <a
-            href="https://gifts.worldwildlife.org/"
+            href={droneWebsiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 underline"
+            className=""
           >
-            flywithadam.com
+            <Button size="lg">flywithadam.com</Button>
           </a>
         </div>
       </section>

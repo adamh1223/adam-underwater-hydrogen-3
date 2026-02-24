@@ -80,6 +80,34 @@
   height: 100%;
 }
 
+@media (max-width: 899px) {
+  .services-drone-preview {
+    aspect-ratio: auto;
+  }
+
+  .services-drone-preview .EProductImage {
+    height: auto;
+    object-fit: contain;
+  }
+
+  .services-drone-preview .EProductVideo {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: 100%;
+    min-width: 100%;
+    max-width: none;
+    aspect-ratio: 16 / 9;
+    transform: translate(-50%, -50%) scale(1.08);
+    transform-origin: center;
+  }
+
+  .services-drone-preview .EProductVideo {
+    will-change: opacity, transform;
+  }
+}
+
 @media (min-width: 670px) {
   .anchor {
     margin: 0 20px 20px 0;

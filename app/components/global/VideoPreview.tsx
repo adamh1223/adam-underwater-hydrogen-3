@@ -4,6 +4,8 @@ import '../../styles/components/EProductPreview.css';
 function VideoPreview({
   src,
   posterSrc,
+  mobilePosterSrc,
+  isActive,
   posterAlt = 'Video preview image',
   extraClassName,
   revealDelayMs = 250,
@@ -11,6 +13,8 @@ function VideoPreview({
 }: {
   src: string | number;
   posterSrc: string;
+  mobilePosterSrc?: string;
+  isActive?: boolean;
   posterAlt?: string;
   extraClassName?: string;
   revealDelayMs?: number;
@@ -20,6 +24,8 @@ function VideoPreview({
   const [isVideoReady, setIsVideoReady] = useState(false);
   const revealTimeoutRef = useRef<number | null>(null);
   const loadFallbackTimeoutRef = useRef<number | null>(null);
+
+  const isPreviewActive = isActive ?? isHovered;
 
   const clearRevealTimeout = () => {
     if (revealTimeoutRef.current == null) return;
@@ -50,7 +56,7 @@ function VideoPreview({
   };
 
   useEffect(() => {
-    if (!isHovered) {
+    if (!isPreviewActive) {
       clearRevealTimeout();
       clearLoadFallbackTimeout();
       setIsVideoReady(false);
@@ -64,7 +70,7 @@ function VideoPreview({
       loadFallbackTimeoutRef.current = null;
       setIsVideoReady(true);
     }, loadFallbackDelayMs);
-  }, [isHovered, loadFallbackDelayMs]);
+  }, [isPreviewActive, loadFallbackDelayMs]);
 
   useEffect(() => {
     return () => {
@@ -76,12 +82,19 @@ function VideoPreview({
   return (
     <div
       className={`EProductPreviewContainer ${extraClassName || ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={isActive === undefined ? () => setIsHovered(true) : undefined}
+      onMouseLeave={isActive === undefined ? () => setIsHovered(false) : undefined}
     >
-      <img src={posterSrc} alt={posterAlt} className="EProductImage" />
+      {mobilePosterSrc ? (
+        <picture className="block h-full w-full">
+          <source media="(max-width: 899px)" srcSet={mobilePosterSrc} />
+          <img src={posterSrc} alt={posterAlt} className="EProductImage" />
+        </picture>
+      ) : (
+        <img src={posterSrc} alt={posterAlt} className="EProductImage" />
+      )}
 
-      {isHovered && (
+      {isPreviewActive && (
         <div className="EProductVideoWrapper" aria-hidden="true">
           <iframe
             src={`https://player.vimeo.com/video/${src}?autoplay=1&muted=1&background=1&badge=0&autopause=0&playsinline=1`}

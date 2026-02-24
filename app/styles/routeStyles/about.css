@@ -33,7 +33,7 @@
 
 .headshot {
   height: 430px;
-  border-radius: 20%;
+  border-radius: 5%;
   margin: 0 30px 40px 30px;
 }
 
@@ -164,6 +164,8 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   align-items: stretch; /* Ensures both cards take up the same height */
+  width: 100%;
+  max-width: 100%;
 }
 
 .gear-card {
@@ -171,6 +173,7 @@
   flex-direction: column;
   justify-content: space-between;
   min-height: 500px; /* Adjust this based on design */
+  min-width: 0;
 }
 
 /* Responsive adjustments */
@@ -203,7 +206,6 @@
 }
 
 @media (max-width: 700px) {
-
   .featured-img {
     height: 70px;
   }

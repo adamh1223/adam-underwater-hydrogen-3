@@ -32,9 +32,8 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [zoomIndex, setZoomIndex] = React.useState(0);
   const [autoPlayIndex, setAutoPlayIndex] = React.useState<number | null>(null);
-  const [zoomCarouselApi, setZoomCarouselApi] = React.useState<CarouselApi | null>(
-    null,
-  );
+  const [zoomCarouselApi, setZoomCarouselApi] =
+    React.useState<CarouselApi | null>(null);
   const [zoomCurrentIndex, setZoomCurrentIndex] = React.useState(0);
   const [zoomTotalItems, setZoomTotalItems] = React.useState(0);
   const scrollZoomToIndex = (index: number) => zoomCarouselApi?.scrollTo(index);
@@ -83,7 +82,13 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, scrollZoomToIndex, zoomCarouselApi, zoomCurrentIndex, zoomTotalItems]);
+  }, [
+    isOpen,
+    scrollZoomToIndex,
+    zoomCarouselApi,
+    zoomCurrentIndex,
+    zoomTotalItems,
+  ]);
 
   const openAtIndex = (index: number, options?: {autoplay?: boolean}) => {
     setZoomIndex(index);
@@ -111,7 +116,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
             )}
           >
             <div className="flex h-full w-full flex-col gap-3 p-4">
-              <div className="flex w-full items-start justify-end">
+              <div className="flex w-full items-start justify-end pe-3">
                 <DialogClose className="inline-flex h-10 w-10 items-center justify-center text-white hover:bg-accent border rounded-md cursor-pointer">
                   <XIcon className="h-5 w-5" />
                   <span className="sr-only">Close</span>
@@ -122,6 +127,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                   <div className="w-full">
                     <Carousel
                       setApi={setZoomCarouselApi}
+                      opts={{startIndex: zoomIndex}}
                       className="w-full transform-none"
                     >
                       <CarouselContent className="ml-0">
