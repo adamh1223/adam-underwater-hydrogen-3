@@ -32,14 +32,18 @@ function Hero() {
           <img src={'/vp3.png'} className="p-3 hero-img"></img>
           <div className="flex flex-col justify-center pt-5">
             <div className="flex justify-center">
-              <Button size="lg" className="w-48 cursor-pointer">
-                <Link to="/pages/work">Video</Link>
-              </Button>
+              <Link to="/pages/work">
+                <Button size="lg" className="w-48 cursor-pointer">
+                  Video
+                </Button>
+              </Link>
             </div>
             <div className="flex justify-center">
-              <Button size="lg" className="mt-5 w-48 cursor-pointer">
-                <Link to="/collections/prints">View All Prints</Link>
-              </Button>
+              <Link to="/collections/prints">
+                <Button size="lg" className="mt-5 w-48 cursor-pointer">
+                  View All Prints
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

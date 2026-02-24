@@ -33,7 +33,7 @@
 
 .headshot {
   height: 430px;
-  border-radius: 5%;
+  border-radius: 16px;
   margin: 0 30px 40px 30px;
 }
 
@@ -203,6 +203,43 @@
 .description-card {
   margin: 20px 20px 20px 20px; /* Pushes it to the bottom */
   text-align: center;
+}
+
+.gear-description-card {
+  position: relative;
+}
+
+.gear-description-card-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 100%;
+}
+
+.gear-description-card-text {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1 1 auto;
+}
+
+.gear-description-card-text p {
+  margin: 0;
+}
+
+.gear-description-card-cta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: auto;
+}
+
+.gear-description-card-cta-button {
+  font-size: 0.9rem;
+  min-height: 2.25rem;
 }
 
 @media (max-width: 700px) {
