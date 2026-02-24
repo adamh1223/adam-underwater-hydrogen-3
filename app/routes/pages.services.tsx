@@ -536,9 +536,11 @@ function ServicesPage() {
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
               /> */}
               <VideoPreview
-                src="627592883"
+                src="529029170"
                 posterSrc="/dji-inspire-3.jpg"
                 extraClassName="services-drone-preview"
+                revealDelayMs={1400}
+                loadFallbackDelayMs={2800}
               />
             </CardContent>
           </Card>
@@ -558,11 +560,9 @@ function ServicesPage() {
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
               /> */}
               <VideoPreview
-                src="529029170"
+                src="627592883"
                 posterSrc="/fpv-red.jpg"
                 extraClassName="services-drone-preview"
-                revealDelayMs={1400}
-                loadFallbackDelayMs={2800}
               />
             </CardContent>
           </Card>
