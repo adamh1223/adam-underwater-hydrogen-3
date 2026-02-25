@@ -250,6 +250,7 @@ function GearImageCarousel({
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(slides.length);
+  const [isCarouselVisualReady, setIsCarouselVisualReady] = useState(false);
   const [slideDimensions, setSlideDimensions] = useState<
     Record<number, {width: number; height: number}>
   >(() =>
@@ -270,6 +271,7 @@ function GearImageCarousel({
     moved: boolean;
   } | null>(null);
   const suppressPreviewTapUntilRef = useRef(0);
+  const hasMarkedVisualReadyRef = useRef(false);
 
   const isVerticalLike = (slideIndex: number) => {
     const dimensions = slideDimensions[slideIndex];
@@ -362,6 +364,23 @@ function GearImageCarousel({
     : 'right-arrow-carousel-grid-horizontal-gear';
 
   const viewport = viewportWidth ?? 1200;
+  const firstSlide = slides[0];
+  const firstSlideIsVertical = firstSlide ? isVerticalLike(0) : false;
+
+  const markCarouselVisualReady = () => {
+    if (hasMarkedVisualReadyRef.current) return;
+    hasMarkedVisualReadyRef.current = true;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsCarouselVisualReady(true);
+      });
+    });
+  };
+
+  useEffect(() => {
+    hasMarkedVisualReadyRef.current = false;
+    setIsCarouselVisualReady(false);
+  }, [slides]);
 
   const handleImageLoad = (
     event: React.SyntheticEvent<HTMLImageElement>,
@@ -381,6 +400,9 @@ function GearImageCarousel({
       }
       return {...prev, [index]: {width, height}};
     });
+    if (index === 0) {
+      markCarouselVisualReady();
+    }
   };
 
   const handleCarouselPointerDownCapture = (
@@ -463,11 +485,23 @@ function GearImageCarousel({
       }
       onClickCapture={handleCarouselClickCapture}
     >
-      <Carousel
-        setApi={setCarouselApi}
-        opts={{loop: slides.length > 2}}
-        className="w-full transform-none"
-      >
+      {!isCarouselVisualReady && firstSlide ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
+          <div className="flex items-center justify-center w-[85%] pt-2 mx-auto">
+            <img
+              src={firstSlide.src}
+              alt=""
+              aria-hidden="true"
+              className={`rounded max-w-full ${
+                firstSlideIsVertical
+                  ? getVerticalGridCarouselWidth(viewport)
+                  : 'w-120'
+              } object-cover`}
+            />
+          </div>
+        </div>
+      ) : null}
+      <Carousel setApi={setCarouselApi} className="w-full transform-none">
         <CarouselContent>
           {slides.map((slide, index) => (
             <CarouselItem key={`${slide.src}-${index}`}>
