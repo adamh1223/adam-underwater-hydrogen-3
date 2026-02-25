@@ -1,5 +1,5 @@
 import {Suspense, useEffect, useRef, useState} from 'react';
-import {Await, useLoaderData, useLocation, useNavigate} from '@remix-run/react';
+import {Await, useLoaderData, useLocation} from '@remix-run/react';
 import {Button} from '~/components/ui/button';
 import {Card} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
@@ -9,12 +9,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '~/components/ui/accordion';
-import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
 import {
   Carousel,
   type CarouselApi,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from '~/components/ui/carousel';
 import '../styles/routeStyles/about.css';
 
@@ -27,6 +28,153 @@ import {
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+
+const ABOUT_GEAR_CATEGORY_STORAGE_KEY = 'about-gear-category';
+const GEAR_CATEGORY_OPTIONS = [
+  'Underwater Camera',
+  'Camera',
+  'Diving',
+  'Drone',
+] as const;
+type GearCategory = (typeof GEAR_CATEGORY_OPTIONS)[number];
+type GearSlide = {src: string; alt: string};
+type GearCardDefinition = {
+  id: string;
+  category: GearCategory;
+  title: string;
+  titleClassName?: string;
+  slides: GearSlide[];
+  description: React.ReactNode;
+  linkURL: string;
+};
+
+const gearImageDimensionCache = new Map<
+  string,
+  {width: number; height: number}
+>();
+const gearImageReadyCache = new Set<string>();
+const gearImageReadyPromiseCache = new Map<string, Promise<void>>();
+
+function ensureGearImageReady(src: string): Promise<void> {
+  if (!src) return Promise.resolve();
+  if (gearImageReadyCache.has(src)) return Promise.resolve();
+
+  const existingPromise = gearImageReadyPromiseCache.get(src);
+  if (existingPromise) return existingPromise;
+
+  if (typeof Image === 'undefined') return Promise.resolve();
+
+  const preloadPromise = new Promise<void>((resolve) => {
+    const img = new Image();
+    let settled = false;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      const width = img.naturalWidth || img.width || 0;
+      const height = img.naturalHeight || img.height || 0;
+      if (width > 0 && height > 0) {
+        gearImageDimensionCache.set(src, {width, height});
+      }
+      gearImageReadyCache.add(src);
+      resolve();
+    };
+
+    img.onload = () => {
+      if (typeof img.decode === 'function') {
+        void img.decode().then(finish).catch(finish);
+        return;
+      }
+      finish();
+    };
+
+    img.onerror = finish;
+    img.decoding = 'async';
+    img.src = src;
+
+    if (img.complete && img.naturalWidth > 0) {
+      if (typeof img.decode === 'function') {
+        void img.decode().then(finish).catch(finish);
+      } else {
+        finish();
+      }
+    }
+  });
+
+  gearImageReadyPromiseCache.set(src, preloadPromise);
+  return preloadPromise;
+}
+
+function isGearCategory(value: string): value is GearCategory {
+  return (GEAR_CATEGORY_OPTIONS as readonly string[]).includes(value);
+}
+
+const ABOUT_GEAR_CARDS: GearCardDefinition[] = [
+  {
+    id: 'canon-r5c',
+    category: 'Underwater Camera',
+    title: 'Canon EOS R5C + Nauticam NA-R5C Underwater Housing',
+    titleClassName: 'px-3',
+    slides: [
+      {src: '/gear1.png', alt: 'Gear 1'},
+      {src: '/gear2.png', alt: 'Gear 2'},
+      {src: '/gear3.png', alt: 'Gear 3'},
+    ],
+    linkURL: 'https://amazon.com',
+    description:
+      'The Canon EOS R5C is a hybrid powerhouse, capable of 8K video recording and excellent still photography, making it perfect for underwater shooting.',
+  },
+  {
+    id: 'red-komodo-x-rig',
+    category: 'Camera',
+    title: 'RED Komodo X Cinema Rig with Tilta Ring',
+    titleClassName: 'px-3',
+    slides: [
+      {src: '/gear1.png', alt: 'Gear 1'},
+      {src: '/gear2.png', alt: 'Gear 2'},
+      {src: '/gear3.png', alt: 'Gear 3'},
+    ],
+    linkURL: 'https://amazon.com',
+    description:
+      'The Canon EOS R5C is a hybrid powerhouse, capable of 8K video recording and excellent still photography, making it perfect for underwater shooting.',
+  },
+  {
+    id: 'odyssey-fins',
+    category: 'Diving',
+    title: 'Odyssey Freediving Fins',
+    slides: [
+      {src: '/neptune.png', alt: 'Keldan Light 1'},
+      {src: '/keldan1.png', alt: 'Keldan Light 2'},
+    ],
+    linkURL: 'https://amazon.com',
+    description: (
+      <>
+        I use{' '}
+        <a
+          href="https://odysseyfreediving.com/products/neptune-long-blade-fins"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline"
+        >
+          Neptune Long Blade Freediving Fins
+        </a>{' '}
+        from Odyssey Freediving
+      </>
+    ),
+  },
+  {
+    id: 'keldan-video-lights',
+    category: 'Drone',
+    title: 'Keldan Video Lights',
+    slides: [
+      {src: '/keldan2.jpg', alt: 'Keldan Light 1'},
+      {src: '/keldan1.png', alt: 'Keldan Light 2'},
+    ],
+    linkURL: 'https://amazon.com',
+    description:
+      'Keldan video lights provide high-output, natural-looking illumination underwater, essential for capturing vibrant colors at depth.',
+  },
+];
 
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
@@ -96,12 +244,24 @@ function GearImageCarousel({
   slides,
   viewportWidth,
 }: {
-  slides: Array<{src: string; alt: string; width: number; height: number}>;
+  slides: GearSlide[];
   viewportWidth?: number;
 }) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(slides.length);
+  const [slideDimensions, setSlideDimensions] = useState<
+    Record<number, {width: number; height: number}>
+  >(() =>
+    slides.reduce<Record<number, {width: number; height: number}>>(
+      (acc, slide, index) => {
+        const cached = gearImageDimensionCache.get(slide.src);
+        if (cached) acc[index] = cached;
+        return acc;
+      },
+      {},
+    ),
+  );
   const previewPointerStateRef = useRef<{
     active: boolean;
     pointerId: number;
@@ -111,19 +271,28 @@ function GearImageCarousel({
   } | null>(null);
   const suppressPreviewTapUntilRef = useRef(0);
 
-  const isVerticalLike = (slide: {width: number; height: number}) =>
-    slide.height > 0 ? slide.width / slide.height <= 1.15 : false;
+  const isVerticalLike = (slideIndex: number) => {
+    const dimensions = slideDimensions[slideIndex];
+    if (!dimensions || dimensions.height <= 0) return false;
+    return dimensions.width / dimensions.height <= 1.15;
+  };
 
   const getVerticalGridCarouselWidth = (width: number) => {
     if (width <= 700) return 'w-64';
 
     if (width <= 1400) {
       const cycleOffset = (width - 701) % 700;
-      if (cycleOffset <= 49) return 'w-40';
-      if (cycleOffset <= 199) return 'w-48';
+      if (cycleOffset <= 49) return 'w-56';
+      if (cycleOffset <= 199) return 'w-56';
       if (cycleOffset <= 399) return 'w-56';
       if (cycleOffset <= 599) return 'w-64';
       return 'w-72';
+    }
+
+    // Gear cards have less vertical room when the grid adds the 3rd column.
+    // Bump portrait-like images one step up in this band so they don't look short.
+    if (width >= 1401 && width <= 1600) {
+      return 'w-64';
     }
 
     const bandStart = 1401;
@@ -150,31 +319,6 @@ function GearImageCarousel({
     }
 
     return 'w-72';
-  };
-
-  const getPrintGridArrowInsetPx = (width: number, vertical: boolean) => {
-    if (!vertical) {
-      if (width <= 600) return 6;
-      if (width <= 700) return 10;
-      if (width <= 849) return 3;
-      if (width <= 957) return 6;
-      if (width <= 1149) return 8;
-      if (width <= 1249) return 9;
-      if (width <= 1320) return 12;
-      return 20;
-    }
-
-    if (width <= 499) return 15;
-    if (width <= 600) return 40;
-    if (width <= 700) return 90;
-    if (width <= 768) return 30;
-    if (width <= 849) return 40;
-    if (width <= 957) return 50;
-    if (width <= 1049) return 53;
-    if (width <= 1149) return 75;
-    if (width <= 1249) return 98;
-    if (width <= 1320) return 125;
-    return 140;
   };
 
   useEffect(() => {
@@ -208,13 +352,36 @@ function GearImageCarousel({
 
   const activeSlide = slides[currentIndex] ?? slides[0];
   const activeSlideIsVertical = activeSlide
-    ? isVerticalLike(activeSlide)
+    ? isVerticalLike(currentIndex)
     : false;
+  const leftGearArrowClass = activeSlideIsVertical
+    ? 'left-arrow-carousel-grid-vertical-gear'
+    : 'left-arrow-carousel-grid-horizontal-gear';
+  const rightGearArrowClass = activeSlideIsVertical
+    ? 'right-arrow-carousel-grid-vertical-gear'
+    : 'right-arrow-carousel-grid-horizontal-gear';
+
   const viewport = viewportWidth ?? 1200;
-  const gridArrowInsetPx = getPrintGridArrowInsetPx(
-    viewport,
-    activeSlideIsVertical,
-  );
+
+  const handleImageLoad = (
+    event: React.SyntheticEvent<HTMLImageElement>,
+    index: number,
+  ) => {
+    const img = event.currentTarget;
+    const width = img.naturalWidth || img.width || 0;
+    const height = img.naturalHeight || img.height || 0;
+    if (!width || !height) return;
+    const slideSrc = slides[index]?.src ?? img.currentSrc ?? '';
+    gearImageDimensionCache.set(slideSrc, {width, height});
+    if (slideSrc) gearImageReadyCache.add(slideSrc);
+    setSlideDimensions((prev) => {
+      const existing = prev[index];
+      if (existing && existing.width === width && existing.height === height) {
+        return prev;
+      }
+      return {...prev, [index]: {width, height}};
+    });
+  };
 
   const handleCarouselPointerDownCapture = (
     event: React.PointerEvent<HTMLDivElement>,
@@ -288,13 +455,19 @@ function GearImageCarousel({
       className="relative w-full max-w-sm"
       onPointerDownCapture={handleCarouselPointerDownCapture}
       onPointerMoveCapture={handleCarouselPointerMoveCapture}
-      onPointerUpCapture={(event) => endCarouselPointerTracking(event.pointerId)}
+      onPointerUpCapture={(event) =>
+        endCarouselPointerTracking(event.pointerId)
+      }
       onPointerCancelCapture={(event) =>
         endCarouselPointerTracking(event.pointerId)
       }
       onClickCapture={handleCarouselClickCapture}
     >
-      <Carousel setApi={setCarouselApi} className="w-full transform-none">
+      <Carousel
+        setApi={setCarouselApi}
+        opts={{loop: slides.length > 2}}
+        className="w-full transform-none"
+      >
         <CarouselContent>
           {slides.map((slide, index) => (
             <CarouselItem key={`${slide.src}-${index}`}>
@@ -302,8 +475,11 @@ function GearImageCarousel({
                 <img
                   src={slide.src}
                   alt={slide.alt}
+                  loading="eager"
+                  decoding="sync"
+                  onLoad={(event) => handleImageLoad(event, index)}
                   className={`rounded max-w-full ${
-                    isVerticalLike(slide)
+                    isVerticalLike(index)
                       ? getVerticalGridCarouselWidth(viewport)
                       : 'w-120'
                   } object-cover transform group-hover:scale-105 transition-transform duration-500`}
@@ -312,45 +488,24 @@ function GearImageCarousel({
             </CarouselItem>
           ))}
         </CarouselContent>
+        {totalItems > 1 && (
+          <>
+            <CarouselPrevious
+              inTheBox
+              variant="secondary"
+              className={`${leftGearArrowClass} pointer-events-auto shadow-none cursor-pointer`}
+            />
+            <CarouselNext
+              inTheBox
+              variant="secondary"
+              className={`${rightGearArrowClass} pointer-events-auto shadow-none cursor-pointer`}
+            />
+          </>
+        )}
       </Carousel>
 
       {totalItems > 1 && (
-        <div
-          className="absolute z-40 flex items-center justify-between pointer-events-none inset-0"
-          style={{
-            paddingLeft: `${gridArrowInsetPx}px`,
-            paddingRight: `${gridArrowInsetPx}px`,
-          }}
-        >
-          <Button
-            type="button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              carouselApi?.scrollPrev();
-            }}
-            className="pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer"
-            variant="secondary"
-          >
-            <ChevronLeftIcon className="h-6 w-6 text-white" />
-          </Button>
-          <Button
-            type="button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              carouselApi?.scrollNext();
-            }}
-            className="pointer-events-auto rounded-full w-8 h-8 p-0 shadow-none cursor-pointer"
-            variant="secondary"
-          >
-            <ChevronRightIcon className="h-6 w-6 text-white" />
-          </Button>
-        </div>
-      )}
-
-      {totalItems > 1 && (
-        <div className="carousel-preview-dots-grid absolute bottom-[-15px] left-0 right-0 z-40 pointer-events-none flex items-end justify-center gap-3 h-32 pt-[28px]">
+        <div className="carousel-preview-dots-grid relative z-0 pointer-events-none flex justify-center gap-3 pt-3 pb-1">
           {Array.from({length: totalItems}).map((_, idx) => (
             <button
               key={idx}
@@ -369,13 +524,13 @@ function GearImageCarousel({
 
 function GearDescriptionCard({
   children,
-  amazonHref = 'https://www.amazon.com',
+  linkURL = 'https://amazon.com',
 }: {
   children: React.ReactNode;
-  amazonHref?: string;
+  linkURL?: string;
 }) {
   return (
-    <Card className="description-card gear-description-card p-4">
+    <Card className="description-card gear-description-card p-2">
       <div className="gear-description-card-stack">
         <div className="gear-description-card-text">
           <p>{children}</p>
@@ -386,7 +541,7 @@ function GearDescriptionCard({
             className="gear-description-card-cta-button text-center whitespace-normal leading-tight px-5"
           >
             <a
-              href={amazonHref}
+              href={linkURL}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View Product"
@@ -400,13 +555,80 @@ function GearDescriptionCard({
   );
 }
 
+function GearCardItem({
+  card,
+  viewportWidth,
+  gearHoverCardEffects,
+  gearTouchCardEffects,
+  onGearCardPointerDownCapture,
+  onGearCardPointerMoveCapture,
+  onGearCardPointerUpCapture,
+  onGearCardPointerCancelCapture,
+  onGearCardClick,
+  onGearCardKeyDown,
+}: {
+  card: GearCardDefinition;
+  viewportWidth?: number;
+  gearHoverCardEffects: string;
+  gearTouchCardEffects: string;
+  onGearCardPointerDownCapture: React.PointerEventHandler<HTMLElement>;
+  onGearCardPointerMoveCapture: React.PointerEventHandler<HTMLElement>;
+  onGearCardPointerUpCapture: React.PointerEventHandler<HTMLElement>;
+  onGearCardPointerCancelCapture: React.PointerEventHandler<HTMLElement>;
+  onGearCardClick: (
+    event: React.MouseEvent<HTMLElement>,
+    linkURL: string,
+  ) => void;
+  onGearCardKeyDown: (
+    event: React.KeyboardEvent<HTMLElement>,
+    linkURL: string,
+  ) => void;
+}) {
+  const touchHighlightId = `about-gear-card:${card.id}`;
+  const {isTouchHighlighted, touchHighlightHandlers} =
+    useTouchCardHighlight(touchHighlightId);
+
+  return (
+    <Card
+      className={`gear-card group relative cursor-pointer ${gearHoverCardEffects} ${isTouchHighlighted ? gearTouchCardEffects : ''}`}
+      style={{touchAction: 'pan-y'}}
+      role="link"
+      tabIndex={0}
+      aria-label="Open product link in new tab"
+      data-touch-highlight-card-id={touchHighlightId}
+      {...touchHighlightHandlers}
+      onPointerDownCapture={onGearCardPointerDownCapture}
+      onPointerMoveCapture={onGearCardPointerMoveCapture}
+      onPointerUpCapture={onGearCardPointerUpCapture}
+      onPointerCancelCapture={onGearCardPointerCancelCapture}
+      onClick={(event) => onGearCardClick(event, card.linkURL)}
+      onKeyDown={(event) => onGearCardKeyDown(event, card.linkURL)}
+    >
+      <h1 className={`subheader ${card.titleClassName ?? ''}`.trim()}>
+        {card.title}
+      </h1>
+
+      <div className="gear-container">
+        <GearImageCarousel slides={card.slides} viewportWidth={viewportWidth} />
+      </div>
+
+      <GearDescriptionCard linkURL={card.linkURL}>
+        {card.description}
+      </GearDescriptionCard>
+    </Card>
+  );
+}
+
 export default function AboutPage() {
   const data = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
 
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [selectedGearCategory, setSelectedGearCategory] =
+    useState<GearCategory>('Underwater Camera');
   const retryTimerRef = useRef<number | null>(null);
+  const gearCategorySwitchRequestRef = useRef(0);
+  const gearCategorySwitchDelayTimerRef = useRef<number | null>(null);
 
   // Track window width
   useEffect(() => {
@@ -415,6 +637,80 @@ export default function AboutPage() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    try {
+      const savedCategory = window.localStorage.getItem(
+        ABOUT_GEAR_CATEGORY_STORAGE_KEY,
+      );
+      if (savedCategory && isGearCategory(savedCategory)) {
+        setSelectedGearCategory(savedCategory);
+      }
+    } catch {
+      // Ignore storage errors and keep default category.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        ABOUT_GEAR_CATEGORY_STORAGE_KEY,
+        selectedGearCategory,
+      );
+    } catch {
+      // Ignore storage errors.
+    }
+  }, [selectedGearCategory]);
+
+  useEffect(() => {
+    return () => {
+      if (gearCategorySwitchDelayTimerRef.current != null) {
+        window.clearTimeout(gearCategorySwitchDelayTimerRef.current);
+        gearCategorySwitchDelayTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const uniqueImageSources = Array.from(
+      new Set(
+        ABOUT_GEAR_CARDS.flatMap((card) =>
+          card.slides.map((slide) => slide.src),
+        ),
+      ),
+    );
+    uniqueImageSources.forEach((src) => {
+      void ensureGearImageReady(src);
+    });
+  }, []);
+
+  const handleGearCategoryToggleClick = (category: GearCategory) => {
+    if (category === selectedGearCategory) return;
+
+    const requestId = ++gearCategorySwitchRequestRef.current;
+    if (gearCategorySwitchDelayTimerRef.current != null) {
+      window.clearTimeout(gearCategorySwitchDelayTimerRef.current);
+      gearCategorySwitchDelayTimerRef.current = null;
+    }
+    const firstSlideSources = ABOUT_GEAR_CARDS.filter(
+      (card) => card.category === category,
+    )
+      .map((card) => card.slides[0]?.src)
+      .filter((src): src is string => Boolean(src));
+
+    void Promise.all(firstSlideSources.map((src) => ensureGearImageReady(src)))
+      .catch(() => {
+        // Allow switching even if preload fails.
+      })
+      .finally(() => {
+        if (gearCategorySwitchRequestRef.current !== requestId) return;
+        gearCategorySwitchDelayTimerRef.current = window.setTimeout(() => {
+          if (gearCategorySwitchRequestRef.current !== requestId) return;
+          setSelectedGearCategory(category);
+          gearCategorySwitchDelayTimerRef.current = null;
+        }, 0);
+      });
+  };
 
   const getYOffset = () => {
     if (windowWidth == null) return -180;
@@ -426,8 +722,15 @@ export default function AboutPage() {
     windowWidth != undefined
       ? Math.max(1, Math.floor((windowWidth - 1) / 700) + 1)
       : 1;
+  const visibleGearCards = ABOUT_GEAR_CARDS.filter(
+    (card) => card.category === selectedGearCategory,
+  );
+  const activeGearCardCount = Math.max(1, visibleGearCards.length);
   const gearGridStyle = {
-    gridTemplateColumns: `repeat(${gearGridColumnCount}, minmax(0, 1fr))`,
+    gridTemplateColumns: `repeat(${Math.max(
+      1,
+      Math.min(gearGridColumnCount, activeGearCardCount),
+    )}, minmax(0, 1fr))`,
   };
 
   const gearFocusWithinCardEffects =
@@ -435,23 +738,6 @@ export default function AboutPage() {
   const gearHoverCardEffects = `transition-[border-color,box-shadow] duration-300 hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]${gearFocusWithinCardEffects}`;
   const gearTouchCardEffects =
     'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
-
-  const {
-    isTouchHighlighted: isCanonGearTouchHighlighted,
-    touchHighlightHandlers: canonGearTouchHighlightHandlers,
-  } = useTouchCardHighlight('about-gear-card:canon-r5c');
-  const {
-    isTouchHighlighted: isKeldanGearTouchHighlighted,
-    touchHighlightHandlers: keldanGearTouchHighlightHandlers,
-  } = useTouchCardHighlight('about-gear-card:keldan-video-lights');
-  const {
-    isTouchHighlighted: isRedKomodoGearTouchHighlighted,
-    touchHighlightHandlers: redKomodoGearTouchHighlightHandlers,
-  } = useTouchCardHighlight('about-gear-card:red-komodo-x-rig');
-  const {
-    isTouchHighlighted: isFinsGearTouchHighlighted,
-    touchHighlightHandlers: finsGearTouchHighlightHandlers,
-  } = useTouchCardHighlight('about-gear-card:odyssey-fins');
   const gearCardPointerStateRef = useRef<{
     active: boolean;
     pointerId: number;
@@ -460,6 +746,13 @@ export default function AboutPage() {
     moved: boolean;
   } | null>(null);
   const suppressGearCardTapUntilRef = useRef(0);
+
+  const openGearLinkInNewTab = (linkURL: string) => {
+    const normalizedLink = /^https?:\/\//i.test(linkURL)
+      ? linkURL
+      : `https://${linkURL}`;
+    window.open(normalizedLink, '_blank', 'noopener,noreferrer');
+  };
 
   const handleGearCardPointerDownCapture = (
     event: React.PointerEvent<HTMLElement>,
@@ -512,7 +805,10 @@ export default function AboutPage() {
     gearCardPointerStateRef.current = null;
   };
 
-  const handleGearCardClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleGearCardClick = (
+    event: React.MouseEvent<HTMLElement>,
+    linkURL: string,
+  ) => {
     if (performance.now() < suppressGearCardTapUntilRef.current) {
       event.preventDefault();
       return;
@@ -525,10 +821,13 @@ export default function AboutPage() {
     ) {
       return;
     }
-    navigate('/');
+    openGearLinkInNewTab(linkURL);
   };
 
-  const handleGearCardKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+  const handleGearCardKeyDown = (
+    event: React.KeyboardEvent<HTMLElement>,
+    linkURL: string,
+  ) => {
     const target = event.target as HTMLElement | null;
     if (
       target?.closest(
@@ -539,7 +838,7 @@ export default function AboutPage() {
     }
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    navigate('/');
+    openGearLinkInNewTab(linkURL);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -789,193 +1088,58 @@ export default function AboutPage() {
             {'My Gear'}
           </h2>
           <Separator />
+          <div className="flex justify-center px-3 py-3">
+            <div
+              className="toggle-container"
+              style={{
+                width: 'min(95vw, 720px)',
+                height: '48px',
+              }}
+            >
+              {GEAR_CATEGORY_OPTIONS.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  className={`toggle-option ${selectedGearCategory === category ? 'selected' : ''}`}
+                  onClick={() => handleGearCategoryToggleClick(category)}
+                  aria-pressed={selectedGearCategory === category}
+                  style={{
+                    fontSize:
+                      windowWidth != undefined && windowWidth < 500
+                        ? '12px'
+                        : '13px',
+                    lineHeight: 1.1,
+                    padding: '4px 6px',
+                    whiteSpace: 'normal',
+                    textAlign: 'center',
+                  }}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="gear-layout px-8 py-8" style={gearGridStyle}>
-          <Card
-            className={`gear-card group relative cursor-pointer ${gearHoverCardEffects} ${isCanonGearTouchHighlighted ? gearTouchCardEffects : ''}`}
-            style={{touchAction: 'pan-y'}}
-            role="link"
-            tabIndex={0}
-            aria-label="Open home page"
-            data-touch-highlight-card-id="about-gear-card:canon-r5c"
-            {...canonGearTouchHighlightHandlers}
-            onPointerDownCapture={handleGearCardPointerDownCapture}
-            onPointerMoveCapture={handleGearCardPointerMoveCapture}
-            onPointerUpCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onPointerCancelCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onClick={handleGearCardClick}
-            onKeyDown={handleGearCardKeyDown}
-          >
-            <h1 className="subheader">
-              Canon EOS R5C + Nauticam NA-R5C Underwater Housing
-            </h1>
-
-            <div className="gear-container">
-              <GearImageCarousel
-                slides={[
-                  {src: '/gear1.png', alt: 'Gear 1', width: 2456, height: 1636},
-                  {src: '/gear2.png', alt: 'Gear 2', width: 1460, height: 1096},
-                  {src: '/gear3.png', alt: 'Gear 3', width: 800, height: 600},
-                ]}
-                viewportWidth={windowWidth}
-              />
-            </div>
-
-            <GearDescriptionCard>
-              The Canon EOS R5C is a hybrid powerhouse, capable of 8K video
-              recording and excellent still photography, making it perfect for
-              underwater shooting.
-            </GearDescriptionCard>
-          </Card>
-
-          <Card
-            className={`gear-card group relative cursor-pointer ${gearHoverCardEffects} ${isKeldanGearTouchHighlighted ? gearTouchCardEffects : ''}`}
-            style={{touchAction: 'pan-y'}}
-            role="link"
-            tabIndex={0}
-            aria-label="Open home page"
-            data-touch-highlight-card-id="about-gear-card:keldan-video-lights"
-            {...keldanGearTouchHighlightHandlers}
-            onPointerDownCapture={handleGearCardPointerDownCapture}
-            onPointerMoveCapture={handleGearCardPointerMoveCapture}
-            onPointerUpCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onPointerCancelCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onClick={handleGearCardClick}
-            onKeyDown={handleGearCardKeyDown}
-          >
-            <h1 className="subheader">Keldan Video Lights</h1>
-
-            <div className="gear-container">
-              <GearImageCarousel
-                slides={[
-                  {
-                    src: '/keldan2.jpg',
-                    alt: 'Keldan Light 1',
-                    width: 500,
-                    height: 500,
-                  },
-                  {
-                    src: '/keldan1.png',
-                    alt: 'Keldan Light 2',
-                    width: 1020,
-                    height: 902,
-                  },
-                ]}
-                viewportWidth={windowWidth}
-              />
-            </div>
-
-            <GearDescriptionCard>
-              Keldan video lights provide high-output, natural-looking
-              illumination underwater, essential for capturing vibrant colors at
-              depth.
-            </GearDescriptionCard>
-          </Card>
-          <Card
-            className={`gear-card group relative cursor-pointer ${gearHoverCardEffects} ${isRedKomodoGearTouchHighlighted ? gearTouchCardEffects : ''}`}
-            style={{touchAction: 'pan-y'}}
-            role="link"
-            tabIndex={0}
-            aria-label="Open home page"
-            data-touch-highlight-card-id="about-gear-card:red-komodo-x-rig"
-            {...redKomodoGearTouchHighlightHandlers}
-            onPointerDownCapture={handleGearCardPointerDownCapture}
-            onPointerMoveCapture={handleGearCardPointerMoveCapture}
-            onPointerUpCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onPointerCancelCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onClick={handleGearCardClick}
-            onKeyDown={handleGearCardKeyDown}
-          >
-            <h1 className="subheader">
-              RED Komodo X Cinema Rig with Tilta Ring
-            </h1>
-
-            <div className="gear-container">
-              <GearImageCarousel
-                slides={[
-                  {src: '/gear1.png', alt: 'Gear 1', width: 2456, height: 1636},
-                  {src: '/gear2.png', alt: 'Gear 2', width: 1460, height: 1096},
-                  {src: '/gear3.png', alt: 'Gear 3', width: 800, height: 600},
-                ]}
-                viewportWidth={windowWidth}
-              />
-            </div>
-
-            <GearDescriptionCard>
-              The Canon EOS R5C is a hybrid powerhouse, capable of 8K video
-              recording and excellent still photography, making it perfect for
-              underwater shooting.
-            </GearDescriptionCard>
-          </Card>
-
-          <Card
-            className={`gear-card group relative cursor-pointer ${gearHoverCardEffects} ${isFinsGearTouchHighlighted ? gearTouchCardEffects : ''}`}
-            style={{touchAction: 'pan-y'}}
-            role="link"
-            tabIndex={0}
-            aria-label="Open home page"
-            data-touch-highlight-card-id="about-gear-card:odyssey-fins"
-            {...finsGearTouchHighlightHandlers}
-            onPointerDownCapture={handleGearCardPointerDownCapture}
-            onPointerMoveCapture={handleGearCardPointerMoveCapture}
-            onPointerUpCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onPointerCancelCapture={(event) =>
-              endGearCardPointerTracking(event.pointerId)
-            }
-            onClick={handleGearCardClick}
-            onKeyDown={handleGearCardKeyDown}
-          >
-            <h1 className="subheader">Odyssey Freediving Fins</h1>
-
-            <div className="gear-container">
-              <GearImageCarousel
-                slides={[
-                  {
-                    src: '/neptune.png',
-                    alt: 'Keldan Light 1',
-                    width: 1600,
-                    height: 1598,
-                  },
-                  {
-                    src: '/keldan1.png',
-                    alt: 'Keldan Light 2',
-                    width: 1020,
-                    height: 902,
-                  },
-                ]}
-                viewportWidth={windowWidth}
-              />
-            </div>
-
-            <GearDescriptionCard>
-              <>
-                I use{' '}
-                <a
-                  href="https://odysseyfreediving.com/products/neptune-long-blade-fins"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline"
-                >
-                  Neptune Long Blade Freediving Fins
-                </a>{' '}
-                from Odyssey Freediving
-              </>
-            </GearDescriptionCard>
-          </Card>
+          {visibleGearCards.map((card) => (
+            <GearCardItem
+              key={card.id}
+              card={card}
+              viewportWidth={windowWidth}
+              gearHoverCardEffects={gearHoverCardEffects}
+              gearTouchCardEffects={gearTouchCardEffects}
+              onGearCardPointerDownCapture={handleGearCardPointerDownCapture}
+              onGearCardPointerMoveCapture={handleGearCardPointerMoveCapture}
+              onGearCardPointerUpCapture={(event) =>
+                endGearCardPointerTracking(event.pointerId)
+              }
+              onGearCardPointerCancelCapture={(event) =>
+                endGearCardPointerTracking(event.pointerId)
+              }
+              onGearCardClick={handleGearCardClick}
+              onGearCardKeyDown={handleGearCardKeyDown}
+            />
+          ))}
         </div>
       </section>
       <section>

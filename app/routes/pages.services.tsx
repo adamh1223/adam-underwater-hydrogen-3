@@ -223,23 +223,6 @@ function ServicesPage() {
     };
   }, []);
 
-  const photographyArrowLeftSmallViewport =
-    windowWidth != undefined && windowWidth < 768
-      ? 'photography-arrow-left-small'
-      : '';
-  const photographyArrowRightSmallViewport =
-    windowWidth != undefined && windowWidth < 768
-      ? 'photography-arrow-right-small'
-      : '';
-  const photographyArrowLeftMediumViewport =
-    windowWidth != undefined && windowWidth >= 768 && windowWidth < 1024
-      ? 'photography-arrow-left-medium'
-      : '';
-  const photographyArrowRightMediumViewport =
-    windowWidth != undefined && windowWidth >= 768 && windowWidth < 1024
-      ? 'photography-arrow-right-medium'
-      : '';
-
   const servicesPhotoImages = useMemo(
     () =>
       Array.from(
@@ -484,12 +467,6 @@ function ServicesPage() {
                   )}
                 </CarouselContent>
 
-                <CarouselPrevious
-                  className={`${photographyArrowLeftSmallViewport} ${photographyArrowLeftMediumViewport}`}
-                />
-                <CarouselNext
-                  className={`${photographyArrowRightSmallViewport} ${photographyArrowRightMediumViewport}`}
-                />
               </Carousel>
             )}
           </CarouselZoom>
@@ -546,7 +523,7 @@ function ServicesPage() {
 
         <div className="drone-titles">
           <Card
-            className={`group relative overflow-hidden px-3 pb-3 h-full min-w-0 w-full ${droneHoverCardEffects} ${isDjiDroneTouchHighlighted ? droneTouchCardEffects : ''}`.trim()}
+            className={`group relative flex flex-col overflow-hidden px-3 pb-3 h-full min-w-0 w-full ${droneHoverCardEffects} ${isDjiDroneTouchHighlighted ? droneTouchCardEffects : ''}`.trim()}
             style={{touchAction: 'pan-y'}}
             data-touch-highlight-card-id={djiDroneTouchCardId}
             onMouseEnter={() => setActiveDronePreview('dji')}
@@ -577,7 +554,7 @@ function ServicesPage() {
             <p className="flex justify-center pb-3 mt-[-15px] font-3xl">
               8.1K Full Frame, Pro Res Raw up to 60fps
             </p>
-            <CardContent className="p-0">
+            <CardContent className="p-0 mt-auto">
               {/* <img
                 src={'/inspire3.jpg'}
                 alt="DJI Inspire 3"
@@ -597,7 +574,7 @@ function ServicesPage() {
           {/* /627592883 */}
 
           <Card
-            className={`group relative overflow-hidden px-3 pb-3 h-full min-w-0 w-full ${droneHoverCardEffects} ${isFpvDroneTouchHighlighted ? droneTouchCardEffects : ''}`.trim()}
+            className={`group relative flex flex-col overflow-hidden px-3 pb-3 h-full min-w-0 w-full ${droneHoverCardEffects} ${isFpvDroneTouchHighlighted ? droneTouchCardEffects : ''}`.trim()}
             style={{touchAction: 'pan-y'}}
             data-touch-highlight-card-id={fpvDroneTouchCardId}
             onMouseEnter={() => setActiveDronePreview('fpv')}
@@ -628,7 +605,7 @@ function ServicesPage() {
             <p className="flex justify-center pb-3 mt-[-15px]">
               6K Global Shutter, R3D Raw up to 75fps
             </p>
-            <CardContent className="p-0">
+            <CardContent className="p-0 mt-auto">
               {/* <img
                 src={'/inspire3.jpg'}
                 alt="DJI Inspire 3"
@@ -646,8 +623,8 @@ function ServicesPage() {
           {/* /522510112 */}
         </div>
 
-        <div className="subheader-services flex justify-center">
-          For drone shoot inquiries and rentals, visit{' '}
+        <div className="subheader-services flex justify-center text-lg">
+          For drone shoot inquiries and drone rentals, visit:{' '}
         </div>
         <div className="flex justify-center">
           <a

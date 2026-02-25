@@ -90,7 +90,7 @@
 
   .about-icon-wrapper {
     margin: 0;
-    width: 100%;
+    width: 90%;
     align-items: center;
   }
 
@@ -104,8 +104,8 @@
   }
 
   .headshot {
-    height: 400px;
-    margin: 0 0 20px 0;
+    height: 350px;
+    margin: 0 8px 20px 8px;
   }
 }
 @media (min-width: 670px) {
@@ -251,5 +251,253 @@
   .hero-img,
   .featured-img {
     height: 80px;
+  }
+}
+
+@media (max-width: 499px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 6px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 6px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 6px;
+  }
+
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 6px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 6px 0 0;
+  }
+}
+
+@media (min-width: 500px) and (max-width: 600px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 6px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 6px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 6px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 6px 0 0;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 700px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 10px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 10px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 10px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 10px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 10px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 10px 0 0;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 768px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 3px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 3px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 3px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 15px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 3px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 15px 0 0;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 849px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 3px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 3px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 3px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 3px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 3px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 3px 0 0;
+  }
+}
+
+@media (min-width: 850px) and (max-width: 957px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 6px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 6px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 6px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 6px 0 0;
+  }
+}
+
+@media (min-width: 958px) and (max-width: 1049px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 8px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 8px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 8px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 8px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 8px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 8px 0 0;
+  }
+}
+
+@media (min-width: 1050px) and (max-width: 1149px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 8px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 8px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 8px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 8px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 8px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 8px 0 0;
+  }
+}
+
+@media (min-width: 1150px) and (max-width: 1249px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 9px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 9px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 9px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 9px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 9px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 9px 0 0;
+  }
+}
+
+@media (min-width: 1250px) and (max-width: 1420px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 12px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 12px 0 0;
+  }
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 12px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 12px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 12px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 12px 0 0;
+  }
+}
+
+@media (min-width: 1401px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 20px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 20px 0 0;
+  }
+}
+@media (min-width: 1401px) and (max-width: 1800px) {
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 20px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 20px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 20px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 20px 0 0;
+  }
+}
+@media (min-width: 1801px) {
+  .left-arrow-carousel-grid-horizontal-gear {
+    margin: 0 0 0 12px;
+  }
+  .left-arrow-carousel-grid-vertical-gear {
+    margin: 0 0 0 12px;
+  }
+  .right-arrow-carousel-grid-horizontal-gear {
+    margin: 0 12px 0 0;
+  }
+  .right-arrow-carousel-grid-vertical-gear {
+    margin: 0 12px 0 0;
   }
 }

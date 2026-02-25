@@ -89,7 +89,7 @@ function Carousel({
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
-      loop: true,
+      loop: opts?.loop ?? true,
       axis: orientation === 'horizontal' ? 'x' : 'y',
       watchDrag,
     },

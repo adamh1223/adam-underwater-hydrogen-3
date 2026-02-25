@@ -80,6 +80,107 @@
   height: 100%;
 }
 
+/* Mirror print grid horizontal arrow offsets for the services photo carousel.
+ * product.css is not loaded on this route, so these classes must exist here. */
+@media (max-width: 499px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 6px 0 0;
+  }
+}
+
+@media (min-width: 500px) and (max-width: 600px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 6px 0 0;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 700px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 10px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 10px 0 0;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 768px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 3px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 3px 0 0;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 849px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 3px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 3px 0 0;
+  }
+}
+
+@media (min-width: 850px) and (max-width: 957px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 6px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 6px 0 0;
+  }
+}
+
+@media (min-width: 958px) and (max-width: 1049px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 8px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 8px 0 0;
+  }
+}
+
+@media (min-width: 1050px) and (max-width: 1149px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 8px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 8px 0 0;
+  }
+}
+
+@media (min-width: 1150px) and (max-width: 1249px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 9px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 9px 0 0;
+  }
+}
+
+@media (min-width: 1250px) and (max-width: 1420px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 12px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 12px 0 0;
+  }
+}
+
+@media (min-width: 1401px) {
+  .left-arrow-carousel-grid-horizontal {
+    margin: 0 0 0 20px;
+  }
+  .right-arrow-carousel-grid-horizontal {
+    margin: 0 20px 0 0;
+  }
+}
+
 @media (max-width: 899px) {
   .services-drone-preview {
     aspect-ratio: auto;
