@@ -144,21 +144,13 @@
   align-items: center;
 }
 
-.gear-image-carousel-shell [data-slot='carousel-content'] {
-  overflow: hidden !important;
-}
-
-.gear-image-carousel-shell [data-slot='carousel-item'] {
-  overflow: hidden;
-}
-
 .subheader {
   min-height: 72px; /* Adjust based on font size to fit 3 lines */
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 1.25rem; /* Adjust as needed */
+  font-size: 1.1rem; /* Adjust as needed */
   font-weight: bold;
   line-height: 1.4;
 }
@@ -209,8 +201,7 @@
 }
 
 .description-card {
-  margin: 20px 20px 20px 20px; /* Pushes it to the bottom */
-  text-align: center;
+  margin: 4px; /* Pushes it to the bottom */
 }
 
 .gear-description-card {
@@ -229,8 +220,8 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  justify-content: start;
+  text-align: start;
   flex: 1 1 auto;
 }
 
@@ -250,117 +241,7 @@
   min-height: 2.25rem;
 }
 
-.gear-mobile-cta {
-  display: none;
-}
-
 @media (max-width: 700px) {
-  .gear-layout {
-    grid-template-columns: 1fr !important;
-    gap: 16px;
-  }
-
-  .gear-card {
-    display: grid;
-    grid-template-columns: minmax(0, 60%) minmax(0, 40%);
-    grid-template-rows: auto auto auto;
-    grid-template-areas:
-      'title title'
-      'media desc'
-      'media cta';
-    align-items: stretch;
-    justify-content: initial;
-    min-height: 0;
-  }
-
-  .gear-card > .subheader {
-    grid-area: title;
-    min-height: 0;
-    height: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 1rem;
-    line-height: 1.2;
-    padding: 14px 12px 4px 12px;
-  }
-
-  .gear-card > .gear-container {
-    grid-area: media;
-    min-width: 0;
-    min-height: 0;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 0 8px 8px;
-  }
-
-  .gear-card .gear-image-carousel-shell {
-    max-width: 100%;
-  }
-
-  .gear-card .gear-image-carousel-stage {
-    width: 96%;
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: 0.5rem;
-  }
-
-  .gear-card
-    .gear-image-carousel-shell
-    .carousel-preview-dots-grid {
-    gap: 10px;
-    padding-top: 8px;
-    padding-bottom: 0;
-  }
-
-  .gear-card > .gear-description-card {
-    grid-area: desc;
-    margin: 8px 8px 0 8px;
-    min-width: 0;
-    align-self: start;
-    display: block;
-    height: auto;
-  }
-
-  .gear-card > .gear-description-card .gear-description-card-stack {
-    width: 100%;
-    min-height: 0;
-    gap: 10px;
-  }
-
-  .gear-card > .gear-description-card .gear-description-card-text {
-    align-items: flex-start;
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .gear-card > .gear-description-card .gear-description-card-text p {
-    font-size: 0.85rem;
-    line-height: 1.3;
-  }
-
-  .gear-card > .gear-description-card .gear-description-card-cta {
-    display: none;
-  }
-
-  .gear-card > .gear-mobile-cta {
-    grid-area: cta;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 8px 8px 12px 8px;
-    min-width: 0;
-  }
-
-  .gear-card > .gear-mobile-cta .gear-mobile-cta-button {
-    width: auto;
-    min-height: 2.25rem;
-    font-size: 0.85rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-
   .featured-img {
     height: 70px;
   }

@@ -487,7 +487,7 @@ function GearImageCarousel({
     >
       {!isCarouselVisualReady && firstSlide ? (
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
-          <div className="gear-image-carousel-stage flex items-center justify-center w-[82%] pt-2 mx-auto overflow-hidden rounded">
+          <div className="gear-image-carousel-stage flex items-center justify-center w-[92%] mx-auto rounded">
             <img
               src={firstSlide.src}
               alt=""
@@ -501,11 +501,14 @@ function GearImageCarousel({
           </div>
         </div>
       ) : null}
-      <Carousel setApi={setCarouselApi} className="w-full transform-none">
+      <Carousel
+        setApi={setCarouselApi}
+        className="w-full transform-none carousel-hover-safe"
+      >
         <CarouselContent>
           {slides.map((slide, index) => (
             <CarouselItem key={`${slide.src}-${index}`}>
-              <div className="gear-image-carousel-stage flex items-center justify-center w-[82%] pt-2 mx-auto overflow-hidden rounded">
+              <div className="gear-image-carousel-stage flex items-center justify-center w-[92%] mx-auto rounded">
                 <img
                   src={slide.src}
                   alt={slide.alt}
@@ -539,7 +542,11 @@ function GearImageCarousel({
       </Carousel>
 
       {totalItems > 1 && (
-        <div className="carousel-preview-dots-grid relative z-0 pointer-events-none flex justify-center gap-3 pt-3 pb-1">
+        <div
+          className={`carousel-preview-dots-grid relative z-0 pointer-events-none flex justify-center gap-3 pb-1 ${
+            activeSlideIsVertical ? 'pt-3' : 'pt-1'
+          }`}
+        >
           {Array.from({length: totalItems}).map((_, idx) => (
             <button
               key={idx}
@@ -566,9 +573,7 @@ function GearDescriptionCard({
   return (
     <Card className="description-card gear-description-card p-2">
       <div className="gear-description-card-stack">
-        <div className="gear-description-card-text">
-          <p>{children}</p>
-        </div>
+        <div className="gear-description-card-text">{children}</div>
         <div className="gear-description-card-cta">
           <Button
             asChild
@@ -644,22 +649,6 @@ function GearCardItem({
 
       <div className="gear-container">
         <GearImageCarousel slides={card.slides} viewportWidth={viewportWidth} />
-      </div>
-
-      <div className="gear-mobile-cta">
-        <Button
-          asChild
-          className="gear-mobile-cta-button text-center whitespace-normal leading-tight px-5"
-        >
-          <a
-            href={card.linkURL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View Product"
-          >
-            View Product
-          </a>
-        </Button>
       </div>
 
       <GearDescriptionCard linkURL={card.linkURL}>
