@@ -96,6 +96,64 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
     setIsOpen(true);
   };
 
+  const suppressPostCloseInteraction = React.useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    const eventTypes: Array<keyof WindowEventMap> = [
+      'click',
+      'mouseup',
+      'pointerup',
+      'touchend',
+    ];
+
+    const swallow = (event: Event) => {
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+      if ('stopImmediatePropagation' in event) {
+        (event as Event & {stopImmediatePropagation?: () => void})
+          .stopImmediatePropagation?.();
+      }
+    };
+
+    eventTypes.forEach((type) => {
+      window.addEventListener(type, swallow, true);
+    });
+
+    window.setTimeout(() => {
+      eventTypes.forEach((type) => {
+        window.removeEventListener(type, swallow, true);
+      });
+    }, 500);
+  }, []);
+
+  const closeZoomDialog = React.useCallback(() => {
+    setIsOpen(false);
+    setAutoPlayIndex(null);
+  }, []);
+
+  const handleCloseButtonPointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    suppressPostCloseInteraction();
+    window.setTimeout(() => {
+      closeZoomDialog();
+    }, 0);
+  };
+
+  const handleCloseButtonClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    // Keyboard activation fallback (Enter/Space). Pointer path is handled onPointerDown.
+    event.preventDefault();
+    event.stopPropagation();
+    suppressPostCloseInteraction();
+    window.setTimeout(() => {
+      closeZoomDialog();
+    }, 0);
+  };
+
   return (
     <>
       {children(openAtIndex)}
@@ -117,7 +175,11 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
           >
             <div className="flex h-full w-full flex-col gap-3 p-4">
               <div className="flex w-full items-start justify-end pe-3">
-                <DialogClose className="inline-flex h-10 w-10 items-center justify-center text-white hover:bg-accent border rounded-md cursor-pointer">
+                <DialogClose
+                  onPointerDown={handleCloseButtonPointerDown}
+                  onClick={handleCloseButtonClick}
+                  className="inline-flex h-10 w-10 items-center justify-center text-white hover:bg-accent border rounded-md cursor-pointer"
+                >
                   <XIcon className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </DialogClose>

@@ -474,7 +474,7 @@ function GearImageCarousel({
 
   return (
     <div
-      className="relative w-full max-w-sm"
+      className="gear-image-carousel-shell relative w-full max-w-sm"
       onPointerDownCapture={handleCarouselPointerDownCapture}
       onPointerMoveCapture={handleCarouselPointerMoveCapture}
       onPointerUpCapture={(event) =>
@@ -487,7 +487,7 @@ function GearImageCarousel({
     >
       {!isCarouselVisualReady && firstSlide ? (
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
-          <div className="flex items-center justify-center w-[85%] pt-2 mx-auto">
+          <div className="gear-image-carousel-stage flex items-center justify-center w-[82%] pt-2 mx-auto overflow-hidden rounded">
             <img
               src={firstSlide.src}
               alt=""
@@ -505,7 +505,7 @@ function GearImageCarousel({
         <CarouselContent>
           {slides.map((slide, index) => (
             <CarouselItem key={`${slide.src}-${index}`}>
-              <div className="flex items-center justify-center w-[85%] pt-2 mx-auto">
+              <div className="gear-image-carousel-stage flex items-center justify-center w-[82%] pt-2 mx-auto overflow-hidden rounded">
                 <img
                   src={slide.src}
                   alt={slide.alt}
@@ -646,6 +646,22 @@ function GearCardItem({
         <GearImageCarousel slides={card.slides} viewportWidth={viewportWidth} />
       </div>
 
+      <div className="gear-mobile-cta">
+        <Button
+          asChild
+          className="gear-mobile-cta-button text-center whitespace-normal leading-tight px-5"
+        >
+          <a
+            href={card.linkURL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View Product"
+          >
+            View Product
+          </a>
+        </Button>
+      </div>
+
       <GearDescriptionCard linkURL={card.linkURL}>
         {card.description}
       </GearDescriptionCard>
@@ -759,12 +775,8 @@ export default function AboutPage() {
   const visibleGearCards = ABOUT_GEAR_CARDS.filter(
     (card) => card.category === selectedGearCategory,
   );
-  const activeGearCardCount = Math.max(1, visibleGearCards.length);
   const gearGridStyle = {
-    gridTemplateColumns: `repeat(${Math.max(
-      1,
-      Math.min(gearGridColumnCount, activeGearCardCount),
-    )}, minmax(0, 1fr))`,
+    gridTemplateColumns: `repeat(${Math.max(1, gearGridColumnCount)}, minmax(0, 1fr))`,
   };
 
   const gearFocusWithinCardEffects =

@@ -36,6 +36,36 @@ export const ImageZoom = ({
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  const suppressPostCloseInteraction = React.useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    const eventTypes: Array<keyof WindowEventMap> = [
+      'click',
+      'mouseup',
+      'pointerup',
+      'touchend',
+    ];
+
+    const swallow = (event: Event) => {
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+      if ('stopImmediatePropagation' in event) {
+        (event as Event & {stopImmediatePropagation?: () => void})
+          .stopImmediatePropagation?.();
+      }
+    };
+
+    eventTypes.forEach((type) => {
+      window.addEventListener(type, swallow, true);
+    });
+
+    window.setTimeout(() => {
+      eventTypes.forEach((type) => {
+        window.removeEventListener(type, swallow, true);
+      });
+    }, 500);
+  }, []);
+
   return (
     <div
       className={cn(
@@ -66,7 +96,23 @@ export const ImageZoom = ({
             {img}
             <button
               type="button"
-              onClick={onUnzoom}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                suppressPostCloseInteraction();
+                window.setTimeout(() => {
+                  onUnzoom();
+                }, 0);
+              }}
+              onClick={(event) => {
+                // Keyboard activation fallback (Enter/Space). Pointer path closes onPointerDown.
+                event.preventDefault();
+                event.stopPropagation();
+                suppressPostCloseInteraction();
+                window.setTimeout(() => {
+                  onUnzoom();
+                }, 0);
+              }}
               className="absolute right-6 top-6 z-10 inline-flex h-10 w-10 items-center justify-center text-white hover:bg-accent border rounded-md cursor-pointer"
               aria-label="Close"
             >
