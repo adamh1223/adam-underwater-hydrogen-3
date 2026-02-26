@@ -1672,7 +1672,7 @@ span {
 }
 @media (min-width: 1025px) {
   .about-paragraphs-container {
-    margin: 30px 100px;
+    margin: 15px 50px;
   }
   .about-paragraphs {
     padding: 30px 20px;
@@ -1729,7 +1729,7 @@ span {
 
 @media (min-width: 670px) and (max-width: 1024px) {
   .about-paragraphs-container {
-    margin: 30px 50px;
+    margin: 15px;
   }
   .about-paragraphs {
     padding: 30px 20px;
@@ -1784,7 +1784,7 @@ span {
 }
 @media (max-width: 669px) {
   .about-paragraphs-container {
-    margin: 30px 20px;
+    margin: 15px;
   }
   .about-paragraphs {
     padding: 10px;

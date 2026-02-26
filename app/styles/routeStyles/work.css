@@ -46,6 +46,20 @@
   }
 }
 
+@media (max-width: 699px) {
+  .clip-wrapper {
+    /* Override fixed Tailwind px-[40px] on small screens so embeds can fill more width */
+    padding: 16px 24px 0 24px;
+  }
+
+  .clip {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+  }
+}
 
 @media (max-width: 700px) {
   .hero-img,
