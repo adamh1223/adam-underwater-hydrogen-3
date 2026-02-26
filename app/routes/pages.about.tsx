@@ -1166,7 +1166,7 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
-        <div className="gear-layout px-8 py-8" style={gearGridStyle}>
+        <div className="gear-layout px-3 py-3" style={gearGridStyle}>
           {visibleGearCards.map((card) => (
             <GearCardItem
               key={card.id}
