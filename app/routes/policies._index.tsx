@@ -29,7 +29,7 @@ export default function Policies() {
   return (
     <div className="policies">
       <div className="flex justify-center mt-5">
-        <img src={'/policies.png'} style={{height: '85px'}}></img>
+        <img src={'https://downloads.adamunderwater.com/store-1-au/public/policies.png'} style={{height: '85px'}}></img>
       </div>
       {windowWidth != undefined && windowWidth <= 768 && (
         <div className="flex justify-center policy-container-small flex-wrap px-5">

@@ -37,13 +37,13 @@ export default function AccountLayout() {
       // `Welcome, ${customer.firstName}`
       <>
         <div className="flex justify-center">
-          <img src={'/account.png'} style={{height: '80px'}}></img>
+          <img src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}}></img>
         </div>
         <div className="flex justify-center">Welcome, {customer.firstName}</div>
       </>
     ) : (
       <div className="flex justify-center pt-3">
-        <img src={'/account.png'} style={{height: '80px'}} className=""></img>
+        <img src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}} className=""></img>
       </div>
     )
   ) : (

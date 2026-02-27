@@ -29,7 +29,7 @@ function Hero() {
     <section className="flex flex-col items-center justify-center text-center main">
       <div>
         <div className="pb-[40px]" id="prints">
-          <img src={'/vp3.png'} className="p-3 hero-img"></img>
+          <img src={'https://downloads.adamunderwater.com/store-1-au/public/vp3.png'} className="p-3 hero-img"></img>
           <div className="flex flex-col justify-center pt-5">
             <div className="flex justify-center">
               <Link to="/pages/work">
@@ -50,7 +50,7 @@ function Hero() {
       </div>
       <div className="media-container">
         <img
-          src="/print1.jpg"
+          src="https://downloads.adamunderwater.com/store-1-au/public/print1.jpg"
           alt="Loading video..."
           className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
         />

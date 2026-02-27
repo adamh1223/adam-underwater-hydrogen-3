@@ -28,7 +28,7 @@ body {
   height: 100%;
   overflow: hidden;
   z-index: -1;
-  background-image: url('/print1.jpg');
+  background-image: url('https://downloads.adamunderwater.com/store-1-au/public/print1.jpg');
 }
 
 /* Placeholder image */

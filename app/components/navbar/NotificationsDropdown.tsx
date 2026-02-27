@@ -3,7 +3,6 @@ import {Link, NavLink, useFetcher} from '@remix-run/react';
 import {ChevronUp} from 'lucide-react';
 import {useEffect, useMemo, useState} from 'react';
 import {LuBell} from 'react-icons/lu';
-import {Button} from '~/components/ui/button';
 import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
 
 type NotificationsResponse = {
@@ -56,10 +55,7 @@ function NotificationsDropdown() {
       <RadixHoverCard.Trigger asChild>
         <NavLink prefetch="intent" to={notificationsUrl}>
           <div className="flex items-center cursor-pointer">
-            <button
-              
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-[6px] py-2 flex items-center gap-[0px] cursor-pointer"
-            >
+            <div className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-[6px] py-2 flex items-center gap-[0px] cursor-pointer">
               <div>
                 <LuBell className="relative -right-[1px] top-[10px]" />
                 <span className="relative -top-[28px] -right-[12px] bg-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
@@ -87,7 +83,7 @@ function NotificationsDropdown() {
                   size={18}
                 />
               </button>
-            </button>
+            </div>
           </div>
         </NavLink>
       </RadixHoverCard.Trigger>

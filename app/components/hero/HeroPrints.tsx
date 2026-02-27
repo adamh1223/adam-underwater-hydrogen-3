@@ -66,7 +66,7 @@ function HeroPrints() {
       </div>
       <div className="media-container">
         <img
-          src="/print1.jpg"
+          src="https://downloads.adamunderwater.com/store-1-au/public/print1.jpg"
           alt="Loading video..."
           className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
         />

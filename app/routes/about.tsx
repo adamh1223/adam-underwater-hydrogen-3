@@ -146,7 +146,7 @@ export default function AboutPage() {
       {/* <section id="about">
         <div className="flex justify-center img-container">
           <img
-            src={'/about2.png'}
+            src={'https://downloads.adamunderwater.com/store-1-au/public/about2.png'}
             style={{height: '100px'}}
             className="pt-5 mb-5"
           />
@@ -166,24 +166,24 @@ export default function AboutPage() {
         </div>
 
         <div className="about-container">
-          <img src={'/headshot3.png'} className="pt-5 headshot" />
+          <img src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} className="pt-5 headshot" />
 
           <div className="about-icon-wrapper">
             <div className="about-icon-container">
-              <img src={'/padi-logo2.png'} className="padi-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/padi-logo2.png'} className="padi-icon" />
               <p className="padi-description text-lg">
                 PADI Open Water Scuba Instructor
               </p>
             </div>
 
             <div className="about-icon-container">
-              <img src={'/aaus-logo.png'} className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/aaus-logo.png'} className="about-icon" />
               <p className="text-lg description sci-description">
                 AAUS Scientific Diver
               </p>
             </div>
             <div className="about-icon-container">
-              <img src={'/faa-logo.png'} className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/faa-logo.png'} className="about-icon" />
               <p className="text-lg description faa-description">
                 FAA Part 107 Drone Operator
               </p>
@@ -306,17 +306,17 @@ export default function AboutPage() {
                 <CarouselContent>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/gear1.png'} alt="Gear 1" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/gear1.png'} alt="Gear 1" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/gear2.png'} alt="Gear 2" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/gear2.png'} alt="Gear 2" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/gear3.png'} alt="Gear 3" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/gear3.png'} alt="Gear 3" />
                     </div>
                   </CarouselItem>
                 </CarouselContent>
@@ -342,12 +342,12 @@ export default function AboutPage() {
                 <CarouselContent>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/keldan2.jpg'} alt="Keldan Light 1" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/keldan2.jpg'} alt="Keldan Light 1" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/keldan1.png'} alt="Keldan Light 2" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/keldan1.png'} alt="Keldan Light 2" />
                     </div>
                   </CarouselItem>
                 </CarouselContent>
@@ -376,17 +376,17 @@ export default function AboutPage() {
                 <CarouselContent>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/gear1.png'} alt="Gear 1" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/gear1.png'} alt="Gear 1" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/gear2.png'} alt="Gear 2" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/gear2.png'} alt="Gear 2" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/gear3.png'} alt="Gear 3" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/gear3.png'} alt="Gear 3" />
                     </div>
                   </CarouselItem>
                 </CarouselContent>
@@ -412,12 +412,12 @@ export default function AboutPage() {
                 <CarouselContent>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/neptune.png'} alt="Keldan Light 1" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/neptune.png'} alt="Keldan Light 1" />
                     </div>
                   </CarouselItem>
                   <CarouselItem>
                     <div className="p-4 flex items-center justify-center">
-                      <img src={'/keldan1.png'} alt="Keldan Light 2" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/keldan1.png'} alt="Keldan Light 2" />
                     </div>
                   </CarouselItem>
                 </CarouselContent>
@@ -445,7 +445,12 @@ export default function AboutPage() {
       </section>
       <section>
         <div className="flex justify-center pt-5">
-          <img src={'/featured.png'} className="featured-img" />
+          <img
+            src={
+              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+            }
+            className="featured-img"
+          />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
           <p>Framed Canvas Wall Art</p>

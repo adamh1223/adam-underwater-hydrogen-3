@@ -32,6 +32,13 @@ import {ChevronUp, Divide} from 'lucide-react';
 import {log} from 'util';
 import { RootLoader } from '~/root';
 
+const CLOUDFLARE_PUBLIC_ASSET_BASE =
+  'https://downloads.adamunderwater.com/store-1-au/public';
+
+function cloudflarePublicAssetUrl(filename: string) {
+  return `${CLOUDFLARE_PUBLIC_ASSET_BASE}/${filename}`;
+}
+
 interface HeaderProps {
   header: HeaderQuery & {
     collection?: {
@@ -856,7 +863,7 @@ function HeaderCtas({
   type NavLink = {
     href: string;
     label: string;
-    icon: string;
+    iconFile: string;
   };
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -866,12 +873,12 @@ function HeaderCtas({
   
 
   const links: NavLink[] = [
-    {href: '/', label: 'Home', icon: 'home-icon'},
-    {href: 'account/profile', label: 'My Account', icon: 'profile-icon'},
-    {href: 'account/orders', label: 'My Orders', icon: 'orders-icon'},
-    {href: 'account/favorites', label: 'My Favorites', icon: 'favorite-icon'},
-    {href: 'account/reviews', label: 'My Reviews', icon: 'reviews-icon'},
-    {href: 'account/addresses', label: 'My Addresses', icon: 'addresses-icon'},
+    {href: '/', label: 'Home', iconFile: 'home-icon.png'},
+    {href: 'account/profile', label: 'My Account', iconFile: 'profile-icon.png'},
+    {href: 'account/orders', label: 'My Orders', iconFile: 'orders-icon.png'},
+    {href: 'account/favorites', label: 'My Favorites', iconFile: 'favorite-icon.png'},
+    {href: 'account/reviews', label: 'My Reviews', iconFile: 'reviews-icon.png'},
+    {href: 'account/addresses', label: 'My Addresses', iconFile: 'addresses-icon.png'},
   ];
 
 
@@ -892,10 +899,7 @@ function HeaderCtas({
         <RadixHoverCard.Trigger asChild>
           <NavLink prefetch="intent" to="/account">
             <div className="account-menu-dropdown">
-              <button
-                
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-[6px] py-2 flex items-center gap-[4px] cursor-pointer"
-              >
+              <div className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-[6px] py-2 flex items-center gap-[4px] cursor-pointer">
                 {/* <LuAlignLeft className="w-6 h-6" /> */}
                 {/* Place dropdown arrow here */}
                 <LuUser className="lu-user-icon bg-primary rounded-full text-white"/>
@@ -925,7 +929,7 @@ function HeaderCtas({
                   {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
                 </Await>
               </Suspense> */}
-              </button>
+              </div>
             </div>
           </NavLink>
         </RadixHoverCard.Trigger>
@@ -967,7 +971,7 @@ function HeaderCtas({
                       >
                         <div className={`flex justify-start items-center`}>
                           <img
-                            src={`/${link.icon}.png`}
+                            src={cloudflarePublicAssetUrl(link.iconFile)}
                             alt="icon"
                             style={{height: '1rem'}}
                           ></img>
@@ -994,7 +998,7 @@ function HeaderCtas({
                     <Button variant="ghost" className="mb-3 cursor-pointer">
                       <div className="flex justify-start items-center me-3">
                         <img
-                          src={`/signup-icon.png`}
+                          src={cloudflarePublicAssetUrl('signup-icon.png')}
                           alt="icon"
                           style={{height: '1rem'}}
                         ></img>
@@ -1030,7 +1034,7 @@ function Logout() {
       <Button type="submit" variant="ghost" className="custor-pointer">
         <div className="flex justify-start items-center cursor-pointer">
           <img
-            src={`/signout-icon.png`}
+            src={cloudflarePublicAssetUrl('signout-icon.png')}
             alt="icon"
             style={{height: '1rem'}}
           ></img>

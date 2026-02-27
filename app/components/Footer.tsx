@@ -119,7 +119,7 @@ function FooterMenu({
       <div className="flex justify-center ms-[-5px] mb-3">
         <Button variant="link" asChild>
           <Link to="/">
-            <img src={'/colorlogo.svg'} className='footer-logo'></img>
+            <img src={'https://downloads.adamunderwater.com/store-1-au/public/colorlogo.svg'} className='footer-logo'></img>
           </Link>
         </Button>
       </div>

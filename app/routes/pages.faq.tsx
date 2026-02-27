@@ -12,7 +12,7 @@ const faq = () => {
     <>
       <section>
         <div className="flex justify-center">
-          <img src={'/faq2.png'} className="pt-5 faq-header-img" />
+          <img src={'https://downloads.adamunderwater.com/store-1-au/public/faq2.png'} className="pt-5 faq-header-img" />
         </div>
         <div className="flex justify-center card-container pt-5">
           <Card className="p-7 faq-card">

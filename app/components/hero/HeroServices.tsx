@@ -72,7 +72,7 @@ function HeroServices() {
       </div>
       <div className="media-container">
         <img
-          src="/print3.jpg"
+          src="https://downloads.adamunderwater.com/store-1-au/public/print3.jpg"
           alt="Loading video..."
           className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
         />

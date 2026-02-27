@@ -940,31 +940,31 @@ export default function Product() {
 
   const cards = [
     {
-      icon: '/1x-icon-2.png',
+      icon: 'https://downloads.adamunderwater.com/store-1-au/public/1x-icon-2.png',
       title: 'Canvas Print',
       description:
         'Each framed print comes with heavy duty hanging wire attached',
-      image: '/gear1.png',
+      image: 'https://downloads.adamunderwater.com/store-1-au/public/gear1.png',
     },
     {
-      icon: '/1x-icon-2.png',
+      icon: 'https://downloads.adamunderwater.com/store-1-au/public/1x-icon-2.png',
       title: 'NFC Tags',
       description:
         'Try tapping your phone to the bottom right corner of the frame',
-      image: '/gear1.png',
+      image: 'https://downloads.adamunderwater.com/store-1-au/public/gear1.png',
     },
     {
-      icon: '/2x-icon.png',
+      icon: 'https://downloads.adamunderwater.com/store-1-au/public/2x-icon.png',
       title: 'Hangers and nails',
       description: 'Each print comes with 2 sets of picture hangers and nails',
-      image: '/hangers-image.png',
+      image: 'https://downloads.adamunderwater.com/store-1-au/public/hangers-image.png',
     },
     {
-      icon: '/4x-icon.png',
+      icon: 'https://downloads.adamunderwater.com/store-1-au/public/4x-icon.png',
       title: 'Command Strips',
       description:
         'Each shipment comes with velcro 4 command strips to secure the print flush on the wall.',
-      image: '/gear1.png',
+      image: 'https://downloads.adamunderwater.com/store-1-au/public/gear1.png',
     },
   ];
   let parsedReviews: any[] = [];
@@ -1753,7 +1753,7 @@ export default function Product() {
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
                   <img
-                    src={'/usaflag3.png'}
+                    src={'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'}
                     alt=""
                     style={{height: '2.2rem'}}
                   />
@@ -1764,7 +1764,7 @@ export default function Product() {
               </div>
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
-                  <img src={'/diamond.png'} alt="" style={{height: '2.4rem'}} />
+                  <img src={'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'} alt="" style={{height: '2.4rem'}} />
                 </div>
                 <div className="flex justify-center mt-2">
                   <p>Premium Quality</p>
@@ -1773,7 +1773,7 @@ export default function Product() {
               <div className="grid grid-cols-1">
                 <div className="flex justify-center items-center">
                   <img
-                    src={'/returnarrow2.png'}
+                    src={'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'}
                     alt=""
                     style={{height: '2.7rem'}}
                   />
@@ -1801,7 +1801,7 @@ export default function Product() {
                           <div className="column-1">
                             <div className="flex justify-center">
                               <img
-                                src={'/printingprocess.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -1824,7 +1824,7 @@ export default function Product() {
                           <div className="column-2">
                             <div className="flex justify-center">
                               <img
-                                src={'/antiglare.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -1849,7 +1849,7 @@ export default function Product() {
                           <div className="column-1">
                             <div className="flex justify-center">
                               <img
-                                src={'/paperquality2.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -1872,7 +1872,7 @@ export default function Product() {
                           <div className="column-2">
                             <div className="flex justify-center">
                               <img
-                                src={'/durable.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/durable.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -1906,7 +1906,7 @@ export default function Product() {
                           <div className="column-1">
                             <div className="flex justify-center">
                               <img
-                                src={'/handcrafted.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -1929,7 +1929,7 @@ export default function Product() {
                           <div className="column-2">
                             <div className="flex justify-center">
                               <img
-                                src={'/lightweight.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -1954,7 +1954,7 @@ export default function Product() {
                           <div className="column-1">
                             <div className="flex justify-center">
                               <img
-                                src={'/phonetap.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -1977,7 +1977,7 @@ export default function Product() {
                           <div className="column-2">
                             <div className="flex justify-center">
                               <img
-                                src={'/readytohang.png'}
+                                src={'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'}
                                 alt=""
                                 style={{height: '2.7rem'}}
                               />
@@ -2063,7 +2063,7 @@ export default function Product() {
                         <div className="grid grid-cols-1">
                           <div className="flex justify-center items-center">
                             <img
-                              src={'/usaflag3.png'}
+                              src={'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'}
                               alt=""
                               style={{height: '2.2rem'}}
                             />
@@ -2075,7 +2075,7 @@ export default function Product() {
                         <div className="grid grid-cols-1">
                           <div className="flex justify-center items-center">
                             <img
-                              src={'/diamond.png'}
+                              src={'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'}
                               alt=""
                               style={{height: '2.4rem'}}
                             />
@@ -2087,7 +2087,7 @@ export default function Product() {
                         <div className="grid grid-cols-1">
                           <div className="flex justify-center items-center">
                             <img
-                              src={'/returnarrow2.png'}
+                              src={'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'}
                               alt=""
                               style={{height: '2.7rem'}}
                             />
@@ -2116,7 +2116,7 @@ export default function Product() {
                                   <div className="column-1">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/printingprocess.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />
@@ -2140,7 +2140,7 @@ export default function Product() {
                                   <div className="column-2">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/antiglare.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />
@@ -2166,7 +2166,7 @@ export default function Product() {
                                   <div className="column-1">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/paperquality2.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />
@@ -2190,7 +2190,7 @@ export default function Product() {
                                   <div className="column-2">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/durable.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/durable.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />
@@ -2226,7 +2226,7 @@ export default function Product() {
                                   <div className="column-1">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/handcrafted.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />
@@ -2250,7 +2250,7 @@ export default function Product() {
                                   <div className="column-2">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/lightweight.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />
@@ -2276,7 +2276,7 @@ export default function Product() {
                                   <div className="column-1">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/phonetap.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />
@@ -2299,7 +2299,7 @@ export default function Product() {
                                   <div className="column-2">
                                     <div className="flex justify-center">
                                       <img
-                                        src={'/readytohang.png'}
+                                        src={'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'}
                                         alt=""
                                         style={{height: '2.7rem'}}
                                       />

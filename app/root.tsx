@@ -52,20 +52,20 @@ export function links() {
       rel: 'icon',
       type: 'image/png',
       sizes: '48x48',
-      href: '/favicon-48.png',
+      href: 'https://downloads.adamunderwater.com/store-1-au/public/favicon-48.png',
     },
 
     // Browser tab icon (high quality)
     {
       rel: 'icon',
       type: 'image/png',
-      href: '/real-icon-2.png',
+      href: 'https://downloads.adamunderwater.com/store-1-au/public/real-icon-2.png',
     },
 
     // Apple
     {
       rel: 'apple-touch-icon',
-      href: '/real-icon-2.png',
+      href: 'https://downloads.adamunderwater.com/store-1-au/public/real-icon-2.png',
     },
   ];
 }

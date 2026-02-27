@@ -520,7 +520,7 @@ function EProductsContainer({
                       >
                         Artist's Pick
                         <div className="flex justify-center items-end">
-                          <img src={'/badge1.png'} className="badge-img" />
+                          <img src={'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'} className="badge-img" />
                         </div>
                       </button>
                     )}
@@ -929,7 +929,7 @@ function EProductsContainer({
                   >
                     Artist's Pick
                     <div className="flex justify-center items-end">
-                      <img src={'/badge1.png'} className="badge-img" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'} className="badge-img" />
                     </div>
                   </button>
                 </div>
@@ -1252,7 +1252,7 @@ function EProductsContainer({
                   >
                     Artist's Pick
                     <div className="flex justify-center items-end">
-                      <img src={'/badge1.png'} className="badge-img" />
+                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'} className="badge-img" />
                     </div>
                   </button>
                 </div>

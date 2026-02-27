@@ -39,9 +39,9 @@ export function Aside({
   const location = useLocation();
   const imageSource =
     type === 'cart'
-      ? '/mycart.png'
+      ? 'https://downloads.adamunderwater.com/store-1-au/public/mycart.png'
       : type === 'search'
-        ? '/searchstore.png'
+        ? 'https://downloads.adamunderwater.com/store-1-au/public/searchstore.png'
         : undefined;
   const asideRef = useRef<HTMLElement | null>(null);
   const isStockFormOpen = () =>

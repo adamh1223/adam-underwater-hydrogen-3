@@ -88,7 +88,7 @@ export default function SearchPage() {
   return (
     <div className="search">
       <div className="flex justify-center pt-5">
-        <img src={'/searchstore.png'} style={{height: '95px'}}></img>
+        <img src={'https://downloads.adamunderwater.com/store-1-au/public/searchstore.png'} style={{height: '95px'}}></img>
       </div>
       <SearchForm>
         {({inputRef}) => (

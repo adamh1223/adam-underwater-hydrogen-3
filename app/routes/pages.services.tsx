@@ -556,14 +556,14 @@ function ServicesPage() {
             </p>
             <CardContent className="p-0 mt-auto">
               {/* <img
-                src={'/inspire3.jpg'}
+                src={'https://downloads.adamunderwater.com/store-1-au/public/inspire3.jpg'}
                 alt="DJI Inspire 3"
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
               /> */}
               <VideoPreview
                 src="529029170"
-                posterSrc="/dji-inspire-3.jpg"
-                mobilePosterSrc="/services-drone.JPG"
+                posterSrc="https://downloads.adamunderwater.com/store-1-au/public/dji-inspire-3.jpg"
+                mobilePosterSrc="https://downloads.adamunderwater.com/store-1-au/public/services-drone.JPG"
                 isActive={activeDronePreview === 'dji'}
                 extraClassName="services-drone-preview"
                 revealDelayMs={1400}
@@ -607,14 +607,14 @@ function ServicesPage() {
             </p>
             <CardContent className="p-0 mt-auto">
               {/* <img
-                src={'/inspire3.jpg'}
+                src={'https://downloads.adamunderwater.com/store-1-au/public/inspire3.jpg'}
                 alt="DJI Inspire 3"
                 className="h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
               /> */}
               <VideoPreview
                 src="627592883"
-                posterSrc="/fpv-red.jpg"
-                mobilePosterSrc="/services-drone.JPG"
+                posterSrc="https://downloads.adamunderwater.com/store-1-au/public/fpv-red.jpg"
+                mobilePosterSrc="https://downloads.adamunderwater.com/store-1-au/public/services-drone.JPG"
                 isActive={activeDronePreview === 'fpv'}
                 extraClassName="services-drone-preview"
               />

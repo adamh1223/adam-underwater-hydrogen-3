@@ -112,7 +112,7 @@ export default function Cart() {
     <div className="cart">
       <div className="flex justify-center">
         <img
-          src={'/mycart.png'}
+          src={'https://downloads.adamunderwater.com/store-1-au/public/mycart.png'}
           style={{height: '110px'}}
           className="pt-5"
         ></img>

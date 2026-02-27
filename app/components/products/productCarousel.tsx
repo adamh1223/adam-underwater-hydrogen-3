@@ -427,7 +427,7 @@ export const ProductCarousel = ({
             >
               Most Popular
               <div className="flex justify-center items-end">
-                <img src="/badge1.png" className="badge-img" alt="" />
+                <img src="https://downloads.adamunderwater.com/store-1-au/public/badge1.png" className="badge-img" alt="" />
               </div>
             </button>
           </div>

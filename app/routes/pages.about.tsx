@@ -116,9 +116,9 @@ const ABOUT_GEAR_CARDS: GearCardDefinition[] = [
     title: 'Canon EOS R5C + Nauticam NA-R5C Underwater Housing',
     titleClassName: 'px-3',
     slides: [
-      {src: '/gear1.png', alt: 'Gear 1'},
-      {src: '/gear2.png', alt: 'Gear 2'},
-      {src: '/gear3.png', alt: 'Gear 3'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/gear1.png', alt: 'Gear 1'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/gear2.png', alt: 'Gear 2'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/gear3.png', alt: 'Gear 3'},
     ],
     linkURL: 'https://amazon.com',
     description:
@@ -130,9 +130,9 @@ const ABOUT_GEAR_CARDS: GearCardDefinition[] = [
     title: 'RED Komodo X Cinema Rig with Tilta Ring',
     titleClassName: 'px-3',
     slides: [
-      {src: '/gear1.png', alt: 'Gear 1'},
-      {src: '/gear2.png', alt: 'Gear 2'},
-      {src: '/gear3.png', alt: 'Gear 3'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/gear1.png', alt: 'Gear 1'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/gear2.png', alt: 'Gear 2'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/gear3.png', alt: 'Gear 3'},
     ],
     linkURL: 'https://amazon.com',
     description:
@@ -143,8 +143,8 @@ const ABOUT_GEAR_CARDS: GearCardDefinition[] = [
     category: 'Diving',
     title: 'Odyssey Freediving Fins',
     slides: [
-      {src: '/neptune.png', alt: 'Keldan Light 1'},
-      {src: '/keldan1.png', alt: 'Keldan Light 2'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/neptune.png', alt: 'Keldan Light 1'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/keldan1.png', alt: 'Keldan Light 2'},
     ],
     linkURL: 'https://amazon.com',
     description: (
@@ -167,8 +167,8 @@ const ABOUT_GEAR_CARDS: GearCardDefinition[] = [
     category: 'Drone',
     title: 'Keldan Video Lights',
     slides: [
-      {src: '/keldan2.jpg', alt: 'Keldan Light 1'},
-      {src: '/keldan1.png', alt: 'Keldan Light 2'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/keldan2.jpg', alt: 'Keldan Light 1'},
+      {src: 'https://downloads.adamunderwater.com/store-1-au/public/keldan1.png', alt: 'Keldan Light 2'},
     ],
     linkURL: 'https://amazon.com',
     description:
@@ -976,24 +976,24 @@ export default function AboutPage() {
         </div>
 
         <div className="about-container">
-          <img src={'/headshot3.png'} className="mt-5 headshot" />
+          <img src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} className="mt-5 headshot" />
 
           <div className="about-icon-wrapper">
             <div className="about-icon-container">
-              <img src={'/padi-logo2.png'} className="padi-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/padi-logo2.png'} className="padi-icon" />
               <p className="padi-description text-lg">
                 PADI Open Water Scuba Instructor
               </p>
             </div>
 
             <div className="about-icon-container">
-              <img src={'/aaus-logo.png'} className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/aaus-logo.png'} className="about-icon" />
               <p className="text-lg description sci-description">
                 AAUS Scientific Diver
               </p>
             </div>
             <div className="about-icon-container">
-              <img src={'/faa-logo.png'} className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/faa-logo.png'} className="about-icon" />
               <p className="text-lg description faa-description">
                 FAA Part 107 Drone Operator
               </p>
