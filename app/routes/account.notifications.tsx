@@ -642,6 +642,14 @@ function NotificationDetail({
                           </div>
                         )}
 
+                        {lineItem.downloadUrl ? (
+                          <div className="pt-3">
+                            <Button variant="outline" asChild>
+                              <a href={lineItem.downloadUrl}>Download ↓</a>
+                            </Button>
+                          </div>
+                        ) : null}
+
                         {isPrint && productId ? (
                           existingReview ? (
                             <div className='mt-3'>

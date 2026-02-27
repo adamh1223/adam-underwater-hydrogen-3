@@ -7,6 +7,7 @@ import {
   parseNotifications,
   type Notification,
 } from '~/lib/notifications';
+import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
 
 type NotificationsState = {
@@ -387,6 +388,7 @@ export async function syncCustomerNotifications(
   }
 
   const deliveredStatuses = new Set(['DELIVERED', 'SUCCESS']);
+  const paidStatuses = new Set(['PAID', 'PARTIALLY_PAID']);
   const orders = (customer.orders?.nodes ?? []) as Array<any>;
   let didUpdateOrderSnapshot = false;
 
@@ -442,9 +444,12 @@ export async function syncCustomerNotifications(
     const isDelivered =
       typeof fulfillmentStatus === 'string' &&
       deliveredStatuses.has(fulfillmentStatus);
+    const isPaid =
+      typeof financialStatus === 'string' && paidStatuses.has(financialStatus);
+    const shouldCreatePostPurchaseNotifications = isDelivered || isPaid;
 
     if (
-      isDelivered &&
+      shouldCreatePostPurchaseNotifications &&
       !hasNotification(
         notifications,
         (n) => n.type === 'leave_review' && n.payload?.orderId === orderId,
@@ -464,7 +469,7 @@ export async function syncCustomerNotifications(
       didMutate = true;
     }
 
-    if (!isDelivered) continue;
+    if (!shouldCreatePostPurchaseNotifications) continue;
 
     const {categories, purchasedTitleByCategory} =
       await resolveOrderRecommendationDetails(
@@ -677,6 +682,7 @@ export type NotificationOrderLineItem = {
   title: string;
   variantTitle: string | null;
   quantity: number;
+  downloadUrl: string | null;
   image: {
     url: string;
     altText?: string | null;
@@ -726,36 +732,73 @@ export async function getNotificationOrderDetails(
       ),
     );
 
-    const productByVariantId = new Map<
+    const variantMetadataByVariantId = new Map<
       string,
-      {id: string; handle: string; tags: string[]}
+      {
+        product: {id: string; handle: string; tags: string[]};
+        selectedOptions: Array<{name?: string; value?: string}>;
+      }
     >();
 
     for (const result of variantResults) {
       const node = result?.node as any;
       const product = node?.product;
       if (!node?.id || !product?.id || !product?.handle) continue;
-      productByVariantId.set(node.id as string, {
-        id: product.id as string,
-        handle: product.handle as string,
-        tags: Array.isArray(product.tags) ? (product.tags as string[]) : [],
+      const selectedOptions = Array.isArray(node?.selectedOptions)
+        ? (node.selectedOptions as Array<{name?: string; value?: string}>)
+        : [];
+      variantMetadataByVariantId.set(node.id as string, {
+        product: {
+          id: product.id as string,
+          handle: product.handle as string,
+          tags: Array.isArray(product.tags) ? (product.tags as string[]) : [],
+        },
+        selectedOptions,
       });
+    }
+
+    const resolvedOrderId = (order?.id as string) ?? orderId;
+    let encodedOrderId: string | null = null;
+    try {
+      encodedOrderId = encodeURIComponent(btoa(resolvedOrderId));
+    } catch {
+      encodedOrderId = null;
     }
 
     const hydratedLineItems: NotificationOrderLineItem[] = lineItems.map(
       (lineItem) => {
         const variantId =
           typeof lineItem?.variantId === 'string' ? (lineItem.variantId as string) : null;
-        const product = variantId ? productByVariantId.get(variantId) ?? null : null;
+        const variantMetadata = variantId
+          ? variantMetadataByVariantId.get(variantId) ?? null
+          : null;
+        const product = variantMetadata?.product ?? null;
+        const lineItemId =
+          typeof lineItem?.id === 'string' ? (lineItem.id as string) : '';
+
+        let downloadUrl: string | null = null;
+        if (encodedOrderId && lineItemId && variantMetadata) {
+          const objectKey = getR2ObjectKeyFromTagsForVariant({
+            tags: variantMetadata.product.tags,
+            selectedOptions: variantMetadata.selectedOptions,
+            variantTitle: lineItem?.variantTitle,
+          });
+
+          if (objectKey) {
+            downloadUrl =
+              `/account/orders/${encodedOrderId}/download?lineItemId=${encodeURIComponent(lineItemId)}`;
+          }
+        }
 
         return {
-          id: (lineItem?.id as string) ?? `${variantId ?? ''}-${Math.random()}`,
+          id: lineItemId || `${variantId ?? ''}-${Math.random()}`,
           title: (lineItem?.title as string) ?? '',
           variantTitle:
             typeof lineItem?.variantTitle === 'string'
               ? (lineItem.variantTitle as string)
               : null,
           quantity: typeof lineItem?.quantity === 'number' ? lineItem.quantity : 1,
+          downloadUrl,
           image: lineItem?.image?.url
             ? {
                 url: lineItem.image.url as string,
