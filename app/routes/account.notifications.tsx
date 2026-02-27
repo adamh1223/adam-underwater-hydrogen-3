@@ -409,6 +409,7 @@ function NotificationDetail({
   featuredReviewDetail,
   isLoadingFeaturedReviewDetail,
   isLoggedIn,
+  viewportWidth,
 }: {
   notification: Notification;
   recommendedProducts?: RecommendedProduct[];
@@ -422,6 +423,7 @@ function NotificationDetail({
   featuredReviewDetail?: {product: unknown; review: Review} | null;
   isLoadingFeaturedReviewDetail?: boolean;
   isLoggedIn?: Promise<boolean> | undefined;
+  viewportWidth?: number;
 }) {
   const category = notification.payload?.category;
   const navigate = useNavigate();
@@ -431,6 +433,10 @@ function NotificationDetail({
   const [localUserReviewsByProductId, setLocalUserReviewsByProductId] = useState<
     Record<string, Review | null>
   >(() => userReviewsByProductId ?? {});
+  const isFeaturedReviewStackedTabletDesktop =
+    typeof viewportWidth === 'number' &&
+    viewportWidth >= 861 &&
+    viewportWidth <= 1250;
 
   useEffect(() => {
     setLocalUserReviewsByProductId(userReviewsByProductId ?? {});
@@ -720,7 +726,13 @@ function NotificationDetail({
 	                Loading featured review…
 	              </p>
 	            ) : featuredReviewDetail ? (
-	              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+	              <div
+                  className={`grid grid-cols-1 gap-4 ${
+                    isFeaturedReviewStackedTabletDesktop
+                      ? ''
+                      : 'md:grid-cols-[1fr_auto_1fr] md:items-center'
+                  }`}
+                >
 	                <div className="min-w-0">
 	                  {(() => {
 	                    const featuredProductId = (featuredReviewDetail.product as any)
@@ -754,7 +766,13 @@ function NotificationDetail({
 	                </div>
 
                 <div className="flex justify-center">
-                  <ArrowRight className="rotate-90 text-muted-foreground md:rotate-0" />
+                  <ArrowRight
+                    className={`text-muted-foreground ${
+                      isFeaturedReviewStackedTabletDesktop
+                        ? 'rotate-90'
+                        : 'rotate-90 md:rotate-0'
+                    }`}
+                  />
                 </div>
 
                 <div className="min-w-0">
@@ -1232,9 +1250,9 @@ export default function AccountNotifications() {
 
           <div className="min-w-0">
             {selected ? (
-              <NotificationDetail
-                notification={selected}
-                recommendedProducts={selectedRecommendedProducts}
+	              <NotificationDetail
+	                notification={selected}
+	                recommendedProducts={selectedRecommendedProducts}
                 dateTimeLabel={
                   formatNotificationDateTime(selected.createdAt, clientTimeZone)
                     ?.dateTimeLabel
@@ -1246,6 +1264,7 @@ export default function AccountNotifications() {
 	                isLoadingFeaturedReviewDetail={isLoadingSelectedFeaturedReviewDetail}
 	                wishlistProducts={wishlistProducts}
 	                isLoggedIn={isLoggedInPromise}
+                  viewportWidth={windowWidth}
 	                customerId={customerId}
 	                customerName={customerName}
 	              />
@@ -1327,9 +1346,9 @@ export default function AccountNotifications() {
 
                       <AccordionPrimitive.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm">
                         <div className="pt-2">
-                          <NotificationDetail
-                            notification={notification}
-                            recommendedProducts={accordionRecommendedProducts}
+	                          <NotificationDetail
+	                            notification={notification}
+	                            recommendedProducts={accordionRecommendedProducts}
                             dateTimeLabel={dateTime?.dateTimeLabel}
                             orderDetails={accordionOrderDetails}
                             userReviewsByProductId={accordionUserReviewsByProductId}
@@ -1338,9 +1357,10 @@ export default function AccountNotifications() {
 	                            isLoadingOrderDetails={isLoadingOrderDetails}
 	                            featuredReviewDetail={accordionFeaturedReviewDetail}
 	                            isLoadingFeaturedReviewDetail={isLoadingFeaturedReviewDetail}
-	                            wishlistProducts={wishlistProducts}
-	                            isLoggedIn={isLoggedInPromise}
-	                          />
+		                            wishlistProducts={wishlistProducts}
+		                            isLoggedIn={isLoggedInPromise}
+                                  viewportWidth={windowWidth}
+		                          />
                         </div>
                       </AccordionPrimitive.Content>
                     </AccordionPrimitive.Item>
