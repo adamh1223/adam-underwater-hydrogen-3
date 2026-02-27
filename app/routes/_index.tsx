@@ -27,6 +27,8 @@ export const meta: MetaFunction = () => {
   const title = 'Adam Underwater | Underwater Video & Photo';
   const description =
     'Underwater video and photo services. Shop underwater wall art and premium stock footage by Adam Hussain.';
+  const shareImage =
+    'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
 
   return [
     { title },
@@ -37,11 +39,19 @@ export const meta: MetaFunction = () => {
     { property: 'og:description', content: description },
     { property: 'og:type', content: 'website' },
     { property: 'og:url', content: 'https://adamunderwater.com' },
+    { property: 'og:image', content: shareImage },
+    { property: 'og:image:secure_url', content: shareImage },
+    {
+      property: 'og:image:alt',
+      content: 'Adam Underwater icon preview',
+    },
 
     // Twitter
-    { name: 'twitter:card', content: 'summary' },
+    { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },
+    { name: 'twitter:image', content: shareImage },
+    { name: 'twitter:image:alt', content: 'Adam Underwater icon preview' },
   ];
 };
 
@@ -171,6 +181,7 @@ export default function Homepage() {
             src={
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
             }
+            alt="Framed Canvas Wall Art"
             className="featured-img"
           />
         </div>
