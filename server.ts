@@ -33,13 +33,19 @@ export default {
         getLoadContext: () => appLoadContext,
       });
 
-      const response = await handleRequest(request);
+      let response = await handleRequest(request);
 
       if (appLoadContext.session.isPending) {
-        response.headers.set(
-          'Set-Cookie',
-          await appLoadContext.session.commit(),
-        );
+        const headers = new Headers(response.headers);
+        headers.append('Set-Cookie', await appLoadContext.session.commit());
+
+        // `createRequestHandler` can return an immutable Headers instance in dev.
+        // Rebuild the Response before appending session cookies.
+        response = new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
       }
 
       if (response.status === 404) {
