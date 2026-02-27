@@ -448,27 +448,6 @@ export async function syncCustomerNotifications(
       typeof financialStatus === 'string' && paidStatuses.has(financialStatus);
     const shouldCreatePostPurchaseNotifications = isDelivered || isPaid;
 
-    if (
-      shouldCreatePostPurchaseNotifications &&
-      !hasNotification(
-        notifications,
-        (n) => n.type === 'leave_review' && n.payload?.orderId === orderId,
-      )
-    ) {
-      notifications.push({
-        id: createNotificationId(),
-        type: 'leave_review',
-        title: `Order #${orderNumber ?? ''} delivered`,
-        message:
-          'Your order was delivered. Please take a moment to leave a review.',
-        createdAt: new Date().toISOString(),
-        readAt: null,
-        href: '/account/reviews',
-        payload: {orderId, orderNumber, processedAt},
-      });
-      didMutate = true;
-    }
-
     if (!shouldCreatePostPurchaseNotifications) continue;
 
     const {categories, purchasedTitleByCategory} =
@@ -479,6 +458,44 @@ export async function syncCustomerNotifications(
           title?: unknown;
         }>,
       );
+    const hasPrintsInOrder = categories.includes('Prints');
+    const leaveReviewTitle = `Order #${orderNumber ?? ''} delivered`;
+    const leaveReviewMessage = hasPrintsInOrder
+      ? 'Your order was delivered. Please take a moment to leave a review.'
+      : 'Your order was delivered.';
+
+    const leaveReviewIndex = notifications.findIndex(
+      (notification) =>
+        notification.type === 'leave_review' &&
+        notification.payload?.orderId === orderId,
+    );
+
+    if (leaveReviewIndex === -1) {
+      notifications.push({
+        id: createNotificationId(),
+        type: 'leave_review',
+        title: leaveReviewTitle,
+        message: leaveReviewMessage,
+        createdAt: new Date().toISOString(),
+        readAt: null,
+        href: '/account/reviews',
+        payload: {orderId, orderNumber, processedAt},
+      });
+      didMutate = true;
+    } else {
+      const existing = notifications[leaveReviewIndex];
+      if (
+        existing.title !== leaveReviewTitle ||
+        existing.message !== leaveReviewMessage
+      ) {
+        notifications[leaveReviewIndex] = {
+          ...existing,
+          title: leaveReviewTitle,
+          message: leaveReviewMessage,
+        };
+        didMutate = true;
+      }
+    }
 
     for (const category of categories) {
       const purchasedTitle = purchasedTitleByCategory[category];

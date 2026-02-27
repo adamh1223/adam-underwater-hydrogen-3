@@ -843,6 +843,12 @@ button.reset:hover:not(:has(> *)) {
 .tr {
   padding: 15px 0;
 }
+
+/* Remove only the extra top gap for order line rows on /account/orders/:id */
+.account-order .account-order-line-row {
+  padding-top: 0;
+}
+
 span {
   display: flex;
   justify-content: center;

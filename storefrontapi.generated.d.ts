@@ -725,6 +725,75 @@ export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
 
 export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
 
+export type OrderLineItemVariantDetailsQueryVariables = StorefrontAPI.Exact<{
+  id: StorefrontAPI.Scalars['ID']['input'];
+}>;
+
+export type OrderLineItemVariantDetailsQuery = {
+  node?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.ProductVariant, 'id'> & {
+      selectedOptions: Array<
+        Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
+      >;
+      product: Pick<
+        StorefrontAPI.Product,
+        'id' | 'title' | 'handle' | 'tags' | 'descriptionHtml'
+      > & {
+        featuredImage?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
+        >;
+        images: {
+          nodes: Array<
+            Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
+          >;
+        };
+        priceRange: {
+          minVariantPrice: Pick<
+            StorefrontAPI.MoneyV2,
+            'amount' | 'currencyCode'
+          >;
+        };
+        selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.ProductVariant, 'id' | 'availableForSale'> & {
+            compareAtPrice?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+            >;
+            price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
+          }
+        >;
+        options: Array<
+          Pick<StorefrontAPI.ProductOption, 'name'> & {
+            optionValues: Array<
+              Pick<StorefrontAPI.ProductOptionValue, 'name'> & {
+                firstSelectableVariant?: StorefrontAPI.Maybe<
+                  Pick<
+                    StorefrontAPI.ProductVariant,
+                    'id' | 'availableForSale'
+                  > & {
+                    image?: StorefrontAPI.Maybe<
+                      Pick<
+                        StorefrontAPI.Image,
+                        'url' | 'altText' | 'width' | 'height'
+                      >
+                    >;
+                    price: Pick<
+                      StorefrontAPI.MoneyV2,
+                      'amount' | 'currencyCode'
+                    >;
+                    compareAtPrice?: StorefrontAPI.Maybe<
+                      Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+                    >;
+                  }
+                >;
+              }
+            >;
+          }
+        >;
+      };
+    }
+  >;
+};
+
 export type CustomerReviewsQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
@@ -1885,6 +1954,10 @@ interface GeneratedQueryTypes {
   '#graphql\n  query StoreRobots($country: CountryCode, $language: LanguageCode)\n   @inContext(country: $country, language: $language) {\n    shop {\n      id\n    }\n  }\n': {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
+  };
+  '#graphql\n  query OrderLineItemVariantDetails($id: ID!) {\n    node(id: $id) {\n      ... on ProductVariant {\n        id\n        selectedOptions {\n          name\n          value\n        }\n        product {\n          id\n          title\n          handle\n          tags\n          descriptionHtml\n          featuredImage {\n            url\n            altText\n            width\n            height\n          }\n          images(first: 20) {\n            nodes {\n              url\n              altText\n              width\n              height\n            }\n          }\n          priceRange {\n            minVariantPrice {\n              amount\n              currencyCode\n            }\n          }\n          selectedOrFirstAvailableVariant {\n            id\n            availableForSale\n            compareAtPrice {\n              amount\n              currencyCode\n            }\n            price {\n              amount\n              currencyCode\n            }\n          }\n          options {\n            name\n            optionValues {\n              name\n              firstSelectableVariant {\n                id\n                availableForSale\n                image {\n                  url\n                  altText\n                  width\n                  height\n                }\n                price {\n                  amount\n                  currencyCode\n                }\n                compareAtPrice {\n                  amount\n                  currencyCode\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
+    return: OrderLineItemVariantDetailsQuery;
+    variables: OrderLineItemVariantDetailsQueryVariables;
   };
   '#graphql\n  query CustomerReviews($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    products(first: 50, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        id\n        title\n        handle\n        tags\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n        images(first: 10) {\n          nodes {\n            url\n            altText\n          }\n        }\n        featuredImage {\n          url\n          altText\n        }\n        metafield(namespace: "custom", key: "reviews") {\n          value\n        }\n      }\n    }\n  }\n': {
     return: CustomerReviewsQuery;

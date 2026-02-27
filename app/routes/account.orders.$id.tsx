@@ -1,18 +1,95 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
-import {
-  Money,
-  Image,
-  flattenConnection,
-} from '@shopify/hydrogen';
+import {Money, flattenConnection} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {useEffect, useState} from 'react';
-import {variantQuery} from '~/lib/customerQueries';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
+import {ProductCarousel} from '~/components/products/productCarousel';
+import EProductsContainer from '~/components/eproducts/EProductsContainer';
+
+const ORDER_LINE_ITEM_VARIANT_DETAILS_QUERY = `#graphql
+  query OrderLineItemVariantDetails($id: ID!) {
+    node(id: $id) {
+      ... on ProductVariant {
+        id
+        selectedOptions {
+          name
+          value
+        }
+        product {
+          id
+          title
+          handle
+          tags
+          descriptionHtml
+          featuredImage {
+            url
+            altText
+            width
+            height
+          }
+          images(first: 20) {
+            nodes {
+              url
+              altText
+              width
+              height
+            }
+          }
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          selectedOrFirstAvailableVariant {
+            id
+            availableForSale
+            compareAtPrice {
+              amount
+              currencyCode
+            }
+            price {
+              amount
+              currencyCode
+            }
+          }
+          options {
+            name
+            optionValues {
+              name
+              firstSelectableVariant {
+                id
+                availableForSale
+                image {
+                  url
+                  altText
+                  width
+                  height
+                }
+                price {
+                  amount
+                  currencyCode
+                }
+                compareAtPrice {
+                  amount
+                  currencyCode
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+` as const;
+
+const ACCOUNT_LOGGED_IN_PROMISE = Promise.resolve(true);
+type LineItemSelectedOption = {name: string; value: string};
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
@@ -30,7 +107,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       variables: {orderId},
     },
   );
-  
+
   if (errors?.length || !data?.order) {
     throw new Error('Order not found');
   }
@@ -52,36 +129,46 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const discountPercentage =
     firstDiscount?.__typename === 'PricingPercentageValue' &&
     firstDiscount?.percentage;
-  
 
   const variantIds = Array.from(
     new Set(
       lineItems
         .map((lineItem: any) => lineItem?.variantId)
-        .filter((variantId): variantId is string => typeof variantId === 'string'),
+        .filter(
+          (variantId): variantId is string => typeof variantId === 'string',
+        ),
     ),
   );
   const variantResponses = await Promise.all(
     variantIds.map((id) =>
-      storefront.query(variantQuery, {
-        variables: {
-          id,
-        },
-      }),
+      storefront
+        .query(ORDER_LINE_ITEM_VARIANT_DETAILS_QUERY, {
+          variables: {
+            id,
+          },
+        })
+        .catch(() => null),
     ),
   );
   const downloadMetadataByVariantId = new Map<
     string,
     {tags: string[]; selectedOptions: Array<{name?: string; value?: string}>}
   >();
+  const productByVariantId = new Map<string, any>();
   for (const response of variantResponses) {
     const variant = response?.node as any;
     if (typeof variant?.id !== 'string') continue;
-    const tags = Array.isArray(variant?.product?.tags) ? variant.product.tags : [];
+    const product = variant?.product as any;
+    const tags = Array.isArray(variant?.product?.tags)
+      ? variant.product.tags
+      : [];
     const selectedOptions = Array.isArray(variant?.selectedOptions)
       ? variant.selectedOptions
       : [];
     downloadMetadataByVariantId.set(variant.id, {tags, selectedOptions});
+    if (product?.id && product?.handle) {
+      productByVariantId.set(variant.id, product);
+    }
   }
 
   const lineItemTagsByLineItemId = lineItems.reduce<Record<string, string[]>>(
@@ -124,6 +211,49 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     {},
   );
 
+  const lineItemProductsByLineItemId = lineItems.reduce<Record<string, any>>(
+    (acc, lineItem: any) => {
+      const lineItemId = typeof lineItem?.id === 'string' ? lineItem.id : '';
+      const variantId =
+        typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
+      if (!lineItemId || !variantId) return acc;
+
+      const product = productByVariantId.get(variantId);
+      if (!product) return acc;
+
+      acc[lineItemId] = product;
+      return acc;
+    },
+    {},
+  );
+
+  const lineItemSelectedOptionsByLineItemId = lineItems.reduce<
+    Record<string, LineItemSelectedOption[]>
+  >((acc, lineItem: any) => {
+    const lineItemId = typeof lineItem?.id === 'string' ? lineItem.id : '';
+    const variantId =
+      typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
+    if (!lineItemId || !variantId) return acc;
+
+    const variantMetadata = downloadMetadataByVariantId.get(variantId);
+    if (!variantMetadata) return acc;
+
+    const selectedOptions = (variantMetadata.selectedOptions ?? [])
+      .map((option) => {
+        const name = typeof option?.name === 'string' ? option.name.trim() : '';
+        const value =
+          typeof option?.value === 'string' ? option.value.trim() : '';
+        if (!name || !value) return null;
+        if (value.toLowerCase() === 'default title') return null;
+        return {name, value};
+      })
+      .filter((option): option is LineItemSelectedOption => option !== null);
+
+    if (!selectedOptions.length) return acc;
+    acc[lineItemId] = selectedOptions;
+    return acc;
+  }, {});
+
   return {
     order,
     lineItems,
@@ -132,6 +262,8 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     fulfillmentStatus,
     downloadLinksByLineItemId,
     lineItemTagsByLineItemId,
+    lineItemProductsByLineItemId,
+    lineItemSelectedOptionsByLineItemId,
   };
 }
 
@@ -144,8 +276,10 @@ export default function OrderRoute() {
     fulfillmentStatus,
     downloadLinksByLineItemId,
     lineItemTagsByLineItemId,
+    lineItemProductsByLineItemId,
+    lineItemSelectedOptionsByLineItemId,
   } = useLoaderData<typeof loader>();
-  
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -155,11 +289,10 @@ export default function OrderRoute() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   });
-  
 
   return (
     <>
-    <Sectiontitle text="My Orders" />
+      <Sectiontitle text="My Orders" />
       <div className="mx-5 mt-3">
         <Card className="account-order p-[10px]">
           <CardHeader>
@@ -177,11 +310,10 @@ export default function OrderRoute() {
                   <div className="upper-part-large grid grid-cols-2">
                     <div>
                       {/* <table> */}
-                      <Card className="p-5">
-                        <div>
-                          {/* <tbody> */}
-                          {lineItems.length <= 1 &&
-                            lineItems.map((lineItem, lineItemIndex) => (
+                      {lineItems.length <= 1 ? (
+                        <Card className="p-5">
+                          <div>
+                            {lineItems.map((lineItem, lineItemIndex) => (
                               <OrderLineRow
                                 key={`${lineItem.id ?? lineItemIndex}`}
                                 lineItem={
@@ -190,33 +322,47 @@ export default function OrderRoute() {
                                 downloadLinksByLineItemId={
                                   downloadLinksByLineItemId
                                 }
-                                lineItemTagsByLineItemId={lineItemTagsByLineItemId}
+                                lineItemTagsByLineItemId={
+                                  lineItemTagsByLineItemId
+                                }
+                                lineItemProductsByLineItemId={
+                                  lineItemProductsByLineItemId
+                                }
+                                lineItemSelectedOptionsByLineItemId={
+                                  lineItemSelectedOptionsByLineItemId
+                                }
                               />
-
-                              // ATTENTION: conditionally render the download button only on eproduct line items
                             ))}
-                          {lineItems.length > 1 &&
-                            lineItems.map((lineItem, lineItemIndex) => (
-                              <Card
-                                key={`${lineItem.id ?? lineItemIndex}`}
-                                className="p-3 mb-5"
-                              >
-                                <OrderLineRow
-                                  lineItem={
-                                    lineItem as unknown as OrderLineItemFullFragment
-                                  }
-                                  downloadLinksByLineItemId={
-                                    downloadLinksByLineItemId
-                                  }
-                                  lineItemTagsByLineItemId={
-                                    lineItemTagsByLineItemId
-                                  }
-                                />
-                              </Card>
-                              // ATTENTION: conditionally render the download button only on eproduct line items
-                            ))}
+                          </div>
+                        </Card>
+                      ) : (
+                        <div className="space-y-5">
+                          {lineItems.map((lineItem, lineItemIndex) => (
+                            <Card
+                              key={`${lineItem.id ?? lineItemIndex}`}
+                              className="p-3"
+                            >
+                              <OrderLineRow
+                                lineItem={
+                                  lineItem as unknown as OrderLineItemFullFragment
+                                }
+                                downloadLinksByLineItemId={
+                                  downloadLinksByLineItemId
+                                }
+                                lineItemTagsByLineItemId={
+                                  lineItemTagsByLineItemId
+                                }
+                                lineItemProductsByLineItemId={
+                                  lineItemProductsByLineItemId
+                                }
+                                lineItemSelectedOptionsByLineItemId={
+                                  lineItemSelectedOptionsByLineItemId
+                                }
+                              />
+                            </Card>
+                          ))}
                         </div>
-                      </Card>
+                      )}
                     </div>
                     {windowWidth && windowWidth >= 604 && (
                       <>
@@ -362,7 +508,15 @@ export default function OrderRoute() {
                               downloadLinksByLineItemId={
                                 downloadLinksByLineItemId
                               }
-                              lineItemTagsByLineItemId={lineItemTagsByLineItemId}
+                              lineItemTagsByLineItemId={
+                                lineItemTagsByLineItemId
+                              }
+                              lineItemProductsByLineItemId={
+                                lineItemProductsByLineItemId
+                              }
+                              lineItemSelectedOptionsByLineItemId={
+                                lineItemSelectedOptionsByLineItemId
+                              }
                             />
                           </Card>
                         ))}
@@ -486,7 +640,7 @@ export default function OrderRoute() {
           </CardContent>
         </Card>
       </div>
-   </>
+    </>
   );
 }
 
@@ -494,20 +648,25 @@ function OrderLineRow({
   lineItem,
   downloadLinksByLineItemId = {},
   lineItemTagsByLineItemId = {},
+  lineItemProductsByLineItemId = {},
+  lineItemSelectedOptionsByLineItemId = {},
 }: {
   lineItem: OrderLineItemFullFragment;
   downloadLinksByLineItemId?: Record<string, string>;
   lineItemTagsByLineItemId?: Record<string, string[]>;
+  lineItemProductsByLineItemId?: Record<string, any>;
+  lineItemSelectedOptionsByLineItemId?: Record<
+    string,
+    LineItemSelectedOption[]
+  >;
 }) {
-  
-
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const downloadUrl = downloadLinksByLineItemId[lineItem.id];
-  
   const itemSubtotal =
     lineItem.quantity * Number(lineItem.price?.amount) -
     Number(lineItem.totalDiscount.amount);
-  
+  const selectedOptions =
+    lineItemSelectedOptionsByLineItemId[lineItem.id] ?? [];
 
   useEffect(() => {
     function handleResize() {
@@ -516,9 +675,16 @@ function OrderLineRow({
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
 
-  const lineItemTags = lineItemTagsByLineItemId[lineItem.id] ?? [];
+  const lineItemProduct = lineItemProductsByLineItemId[lineItem.id] ?? null;
+  const tagsFromLineItemMap = lineItemTagsByLineItemId[lineItem.id] ?? [];
+  const tagsFromProduct = Array.isArray(lineItemProduct?.tags)
+    ? (lineItemProduct.tags as string[])
+    : [];
+  const lineItemTags = tagsFromLineItemMap.length
+    ? tagsFromLineItemMap
+    : tagsFromProduct;
   const isStockClipFromTags = lineItemTags.includes('Video');
   const isBundleFromTags = lineItemTags.includes('Bundle');
   const isPrintFromTags =
@@ -533,89 +699,155 @@ function OrderLineRow({
     isHorizontalProductFromImage || isVerticalProductFromImage;
 
   const hasTypeFromTags = isStockClipFromTags || isPrintFromTags;
-  const isHorizontalProduct =
-    hasTypeFromTags
-      ? isPrintFromTags && isHorizontalProductFromImage
-      : isHorizontalProductFromImage;
-  const isStockClip =
-    hasTypeFromTags ? isStockClipFromTags : !isPrintFromImage;
-  const isVerticalProduct =
-    hasTypeFromTags
-      ? isPrintFromTags && isVerticalProductFromImage
-      : isVerticalProductFromImage;
-
+  const isStockClip = hasTypeFromTags ? isStockClipFromTags : !isPrintFromImage;
   const isPrint = hasTypeFromTags ? isPrintFromTags : isPrintFromImage;
 
-  
-  return (
-    <div key={lineItem.id} className="tr">
-      {/* <tr key={lineItem.id}> */}
-      <div className="td pb-5">
-        {/* <td className="pb-5"> */}
-        <div>
-          <div className="grid grid-cols-1 pb-3">
-            <div className="flex justify-center">
-              <p>
-                <strong>{lineItem.title}</strong>
-              </p>
-            </div>
-            <div className="flex justify-center">
-              {isPrint && (
-                <p className="text-muted-foreground">Framed Canvas Print</p>
-              )}
-              {isStockClip && (
-                <p className="text-muted-foreground">
-                  {isBundleFromTags
-                    ? 'Stock Footage Video Bundle'
-                    : 'Stock Footage Video'}
-                </p>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <small>{lineItem.variantTitle}</small>
-            </div>
-          </div>
+  const fallbackPreview = (
+    <div>
+      <div className="grid grid-cols-1 pb-3">
+        <div className="flex justify-center">
+          <p>
+            <strong>{lineItem.title}</strong>
+          </p>
+        </div>
+        <div className="flex justify-center">
+          {isPrint && (
+            <p className="text-muted-foreground">Framed Canvas Print</p>
+          )}
+          {isStockClip && (
+            <p className="text-muted-foreground">
+              {isBundleFromTags
+                ? 'Stock Footage Video Bundle'
+                : 'Stock Footage Video'}
+            </p>
+          )}
+        </div>
+        <div className="flex justify-center">
+          <small>{lineItem.variantTitle}</small>
+        </div>
+      </div>
+      {lineItem?.image?.url ? (
+        <div className="flex justify-center">
+          <img
+            src={lineItem.image.url}
+            alt={lineItem.image.altText ?? lineItem.title ?? 'Ordered item'}
+            className="max-h-[250px] rounded object-cover"
+          />
+        </div>
+      ) : null}
+    </div>
+  );
 
-          {lineItem?.image && isHorizontalProduct && (
-            <div className="flex justify-center">
-              <Image data={lineItem.image} width={250} height={200} />
+  return (
+    <div key={lineItem.id} className="tr account-order-line-row">
+      <div className="td pb-5">
+        <div className="pb-3">
+          {lineItemProduct && isPrint ? (
+            <div className="mx-auto max-w-[900px]">
+              <ProductCarousel
+                product={lineItemProduct}
+                layout="list"
+                isInWishlist={false}
+                isLoggedIn={ACCOUNT_LOGGED_IN_PROMISE}
+              />
             </div>
-          )}
-          {/* horizontal print^ */}
-          {lineItem?.image && isVerticalProduct && (
-            <div className="flex justify-center">
-              <Image data={lineItem.image} width={200} height={250} />
+          ) : null}
+
+          {lineItemProduct && isStockClip ? (
+            <div className="mx-auto max-w-[900px]">
+              <EProductsContainer
+                product={lineItemProduct}
+                layout="list"
+                isInWishlist={false}
+                isLoggedIn={ACCOUNT_LOGGED_IN_PROMISE}
+              />
             </div>
-          )}
-          {/* vertical print^ */}
-          {lineItem?.image && isStockClip && (
-            <div className="flex justify-center">
-              <Image data={lineItem.image} width={250} height={200} />
-            </div>
-          )}
-          {/* Stock footage clip^ */}
+          ) : null}
+
+          {(!lineItemProduct || (!isPrint && !isStockClip)) && fallbackPreview}
         </div>
-        <div className="price-quantity-total ps-3 pt-3">
-          <div className="flex justify-start">
-            Price: &nbsp;
-            <Money data={lineItem.price!} />
+        {isPrint ? (
+          <div className="grid grid-cols-2">
+            <div className="flex justify-center">
+              <div className="min-w-0">
+                {selectedOptions.map((option, optionIndex) => (
+                  <div
+                    key={`${lineItem.id}-${option.name}-${option.value}-${optionIndex}`}
+                    className="flex justify-start pb-1"
+                  >
+                    {option.name}: &nbsp;{option.value}
+                  </div>
+                ))}
+                {!selectedOptions.length && lineItem.variantTitle ? (
+                  <div className="flex justify-start pb-1">
+                    Variant: &nbsp;{lineItem.variantTitle}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="price-quantity-total">
+                <div className="flex justify-start">
+                  Price: &nbsp;
+                  <Money data={lineItem.price!} />
+                </div>
+                <div className="flex justify-start">
+                  Quantity: &nbsp;{lineItem.quantity}
+                </div>
+                {lineItem.totalDiscount.amount != '0.0' && (
+                  <div className="flex justify-start">
+                    Discount: &nbsp; -
+                    <Money data={lineItem.totalDiscount!} />
+                  </div>
+                )}
+                <div className="flex justify-start">
+                  Total: &nbsp;
+                  <Money
+                    data={{
+                      amount: itemSubtotal.toString(),
+                      currencyCode: 'USD',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-start">
-            Quantity: &nbsp;{lineItem.quantity}
-          </div>
-          {lineItem.totalDiscount.amount != '0.0' && (
+        ) : (
+          <div className="price-quantity-total ps-3 pt-3">
+            {selectedOptions.map((option, optionIndex) => (
+              <div
+                key={`${lineItem.id}-${option.name}-${option.value}-${optionIndex}`}
+                className="flex justify-start pb-1"
+              >
+                {option.name}: &nbsp;{option.value}
+              </div>
+            ))}
+            {!selectedOptions.length && lineItem.variantTitle ? (
+              <div className="flex justify-start pb-1">
+                Variant: &nbsp;{lineItem.variantTitle}
+              </div>
+            ) : null}
             <div className="flex justify-start">
-              Discount: &nbsp; -
-              <Money data={lineItem.totalDiscount!} />
+              Price: &nbsp;
+              <Money data={lineItem.price!} />
             </div>
-          )}
-          <div className="flex justify-start">
-            Total: &nbsp;
-            <Money
-              data={{amount: itemSubtotal.toString(), currencyCode: 'USD'}}
-            />
+            <div className="flex justify-start">
+              Quantity: &nbsp;{lineItem.quantity}
+            </div>
+            {lineItem.totalDiscount.amount != '0.0' && (
+              <div className="flex justify-start">
+                Discount: &nbsp; -
+                <Money data={lineItem.totalDiscount!} />
+              </div>
+            )}
+            <div className="flex justify-start">
+              Total: &nbsp;
+              <Money
+                data={{amount: itemSubtotal.toString(), currencyCode: 'USD'}}
+              />
+            </div>
           </div>
-        </div>
+        )}
         {windowWidth && windowWidth < 605 && (
           <>
             {downloadUrl && (
