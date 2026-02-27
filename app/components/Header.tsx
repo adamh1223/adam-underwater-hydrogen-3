@@ -885,6 +885,14 @@ function HeaderCtas({
 
   return (
     <nav className="header-ctas" role="navigation">
+      {/* Preload dropdown icons into browser cache so they display instantly on first open */}
+      <div aria-hidden="true" style={{position: 'absolute', width: 0, height: 0, overflow: 'hidden', pointerEvents: 'none'}}>
+        {links.map((link) => (
+          <img key={link.iconFile} src={cloudflarePublicAssetUrl(link.iconFile)} alt="" />
+        ))}
+        <img src={cloudflarePublicAssetUrl('signout-icon.png')} alt="" />
+        <img src={cloudflarePublicAssetUrl('signup-icon.png')} alt="" />
+      </div>
       <NotificationsDropdown />
       {/* <HeaderMenuMobileToggle /> */}
       <RadixHoverCard.Root

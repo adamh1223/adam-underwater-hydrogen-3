@@ -82,13 +82,90 @@ function BundleClipPreview({
   isVideoActive: boolean;
 }) {
   const [isVideoReady, setIsVideoReady] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const vimeoPlayReceivedRef = useRef(false);
+  const videoRevealTimeoutRef = useRef<number | null>(null);
+
+  const clearRevealTimeout = () => {
+    if (videoRevealTimeoutRef.current !== null) {
+      window.clearTimeout(videoRevealTimeoutRef.current);
+      videoRevealTimeoutRef.current = null;
+    }
+  };
 
   useEffect(() => {
-    if (!isVideoActive) setIsVideoReady(false);
+    if (!isVideoActive) {
+      clearRevealTimeout();
+      vimeoPlayReceivedRef.current = false;
+      setIsVideoReady(false);
+    }
   }, [isVideoActive]);
 
+  // Listen for Vimeo postMessage to detect actual playback start.
+  useEffect(() => {
+    if (!isVideoActive || !clip.wmlinkId) return;
+    vimeoPlayReceivedRef.current = false;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (vimeoPlayReceivedRef.current) return;
+      if (
+        typeof event.origin !== 'string' ||
+        !event.origin.includes('vimeo.com')
+      )
+        return;
+      if (
+        !iframeRef.current ||
+        event.source !== iframeRef.current.contentWindow
+      )
+        return;
+
+      let data: any;
+      try {
+        data =
+          typeof event.data === 'string'
+            ? JSON.parse(event.data)
+            : event.data;
+      } catch {
+        return;
+      }
+
+      if (data.event === 'ready') {
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({method: 'addEventListener', value: 'play'}),
+          'https://player.vimeo.com',
+        );
+      } else if (data.event === 'play') {
+        vimeoPlayReceivedRef.current = true;
+        clearRevealTimeout();
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => setIsVideoReady(true));
+        });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isVideoActive, clip.wmlinkId]);
+
+  useEffect(() => {
+    return () => clearRevealTimeout();
+  }, []);
+
   const handleVideoLoad = () => {
-    requestAnimationFrame(() => setIsVideoReady(true));
+    if (vimeoPlayReceivedRef.current) return;
+    // Fallback reveal in case Vimeo postMessage play event never arrives.
+    clearRevealTimeout();
+    const isCoarsePointer =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const delay = isCoarsePointer ? 3500 : 1000;
+    videoRevealTimeoutRef.current = window.setTimeout(() => {
+      videoRevealTimeoutRef.current = null;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setIsVideoReady(true));
+      });
+    }, delay);
   };
 
   return (
@@ -104,6 +181,7 @@ function BundleClipPreview({
       {isVideoActive && clip.wmlinkId && (
         <div className="EProductVideoWrapper pointer-events-none">
           <iframe
+            ref={iframeRef}
             src={`https://player.vimeo.com/video/${clip.wmlinkId}?autoplay=1&muted=1&background=1&badge=0&autopause=0&playsinline=1`}
             allow="autoplay; fullscreen; picture-in-picture"
             className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}

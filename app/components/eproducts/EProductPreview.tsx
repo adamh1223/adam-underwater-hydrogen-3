@@ -23,6 +23,8 @@ function EProductPreview({
   const autoplayTimeoutRef = useRef<number | null>(null);
   const videoRevealTimeoutRef = useRef<number | null>(null);
   const videoLoadFallbackTimeoutRef = useRef<number | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const vimeoPlayReceivedRef = useRef(false);
   const location = useLocation();
   const [viewportWidth, setViewportWidth] = useState<number | undefined>(
     undefined,
@@ -61,22 +63,24 @@ function EProductPreview({
   };
 
   const handleVideoLoad = () => {
-    if (!shouldEnableViewportAutoplay) {
-      setIsVideoReady(true);
-      return;
-    }
+    // If the Vimeo play event already triggered the reveal, nothing more to do.
+    if (vimeoPlayReceivedRef.current) return;
 
-    // iOS Safari can occasionally fail to fire `onLoad` reliably for cross-origin
-    // iframes. Ensure any mount-time fallback is cleared once we do load.
+    // Clear the last-resort fallback since the iframe at least loaded.
     clearVideoLoadFallbackTimeout();
 
-    // Reveal shortly after load to avoid the 1-frame "shrink/grow" glitch that
-    // can occur on real iOS devices when the iframe first paints video.
+    // Use onLoad as a delayed fallback in case the Vimeo postMessage play event
+    // never arrives (e.g. ad-blocker strips the player JS). The primary reveal
+    // path is the postMessage listener that waits for the actual "play" event.
     const isCoarsePointer =
       typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    scheduleVideoReveal(isCoarsePointer ? 2000 : 200);
+    if (!shouldEnableViewportAutoplay) {
+      scheduleVideoReveal(isCoarsePointer ? 2000 : 500);
+    } else {
+      scheduleVideoReveal(isCoarsePointer ? 3500 : 1000);
+    }
   };
 
   const isStockFootagePage = location.pathname.startsWith('/collections/stock');
@@ -103,16 +107,70 @@ function EProductPreview({
     return () => window.removeEventListener('resize', updateViewportWidth);
   }, []);
 
+  // Listen for Vimeo Player postMessage events to detect actual playback start.
+  // This is the primary reveal path — the video only becomes visible once Vimeo
+  // confirms it is playing, which avoids the "shrink/grow" glitch caused by
+  // revealing the iframe before the player has rendered its first video frame.
+  useEffect(() => {
+    if (!isVideoActive || !parsedWMLink) return;
+    vimeoPlayReceivedRef.current = false;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (vimeoPlayReceivedRef.current) return;
+      if (
+        typeof event.origin !== 'string' ||
+        !event.origin.includes('vimeo.com')
+      )
+        return;
+      if (
+        !iframeRef.current ||
+        event.source !== iframeRef.current.contentWindow
+      )
+        return;
+
+      let data: any;
+      try {
+        data =
+          typeof event.data === 'string'
+            ? JSON.parse(event.data)
+            : event.data;
+      } catch {
+        return;
+      }
+
+      if (data.event === 'ready') {
+        // Player initialised — ask it to notify us when playback starts.
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({method: 'addEventListener', value: 'play'}),
+          'https://player.vimeo.com',
+        );
+      } else if (data.event === 'play') {
+        vimeoPlayReceivedRef.current = true;
+        clearVideoRevealTimeout();
+        clearVideoLoadFallbackTimeout();
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => setIsVideoReady(true));
+        });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isVideoActive, parsedWMLink]);
+
   useEffect(() => {
     if (!shouldEnableViewportAutoplay || !isVideoActive) return;
 
-    // Fallback: if the iframe never fires `onLoad` on iOS, don't leave the
-    // overlay permanently hidden.
+    // Last-resort fallback: if neither onLoad nor the Vimeo play event arrive
+    // (e.g. iOS Safari drops onLoad for cross-origin iframes), reveal after a
+    // generous timeout so the card doesn't stay as a static image forever.
     clearVideoLoadFallbackTimeout();
     videoLoadFallbackTimeoutRef.current = window.setTimeout(() => {
       videoLoadFallbackTimeoutRef.current = null;
-      setIsVideoReady(true);
-    }, 1500);
+      if (!vimeoPlayReceivedRef.current) {
+        setIsVideoReady(true);
+      }
+    }, 8000);
 
     return () => clearVideoLoadFallbackTimeout();
   }, [shouldEnableViewportAutoplay, isVideoActive]);
@@ -121,6 +179,7 @@ function EProductPreview({
     if (isVideoActive) return;
     clearVideoRevealTimeout();
     clearVideoLoadFallbackTimeout();
+    vimeoPlayReceivedRef.current = false;
     setIsVideoReady(false);
   }, [isVideoActive]);
 
@@ -208,6 +267,7 @@ function EProductPreview({
       {isVideoActive && parsedWMLink && (
         <div className="EProductVideoWrapper">
 	          <iframe
+	            ref={iframeRef}
 	            src={`https://player.vimeo.com/video/${parsedWMLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0&playsinline=1`}
 	            allow="autoplay; fullscreen; picture-in-picture"
 	            className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}

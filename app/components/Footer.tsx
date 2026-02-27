@@ -76,7 +76,7 @@ function FooterMenu({
         </div>
       </div> 
 
-      <div className="flex justify-evenly pb-[40px] text-muted-foreground mx-5">
+      <div className="help-policies-footer flex justify-evenly pb-[40px] text-muted-foreground mx-5">
         <div className="help">
           <div className="footer-title flex justify-center text-3xl mb-2">
             Help
