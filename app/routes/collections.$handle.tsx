@@ -25,9 +25,14 @@ import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
-import {useEffect, useId, useState} from 'react';
-import {Button} from '~/components/ui/button';
-import {LuZoomIn, LuZoomOut} from 'react-icons/lu';
+import {useEffect, useId, useRef, useState} from 'react';
+import {LuFilter, LuZoomIn, LuZoomOut} from 'react-icons/lu';
+import {Popover, PopoverTrigger, PopoverContent} from '~/components/ui/popover';
+import {
+  applyHighestResolutionVariantToProducts,
+  parseResolutionValue,
+} from '~/lib/resolution';
+import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {Input} from '~/components/ui/input';
 import {SearchFormPredictive} from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
@@ -46,8 +51,6 @@ import {
 } from '~/components/ui/tooltip';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
-import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
-
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
     {title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`},
@@ -159,6 +162,294 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
   return {};
 }
 
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Stock Footage Filters                                                    */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const DURATION_NOTCHES = [
+  {value: 10, label: 'Up to 10'},
+  {value: 20, label: 'Up to 20'},
+  {value: 30, label: 'Up to 30'},
+  {value: 40, label: 'Up to 40'},
+  {value: 50, label: 'Up to 50'},
+  {value: Infinity, label: 'All Durations'},
+];
+
+const RESOLUTION_NOTCHES = [
+  {value: 4, label: 'Has 4K+'},
+  {value: 5, label: 'Has 5K+'},
+  {value: 6, label: 'Has 6K+'},
+  {value: 8, label: 'Has 8K+'},
+];
+
+function NotchedSlider({
+  notches,
+  value,
+  onChange,
+  label,
+}: {
+  notches: {value: number; label: string}[];
+  value: number;
+  onChange: (index: number) => void;
+  label: string;
+}) {
+  const max = notches.length - 1;
+  const sliderTrackRef = useRef<HTMLDivElement | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [draftValue, setDraftValue] = useState<number | null>(null);
+  const activeSliderValue = draftValue ?? value;
+  const activeIndex = draftValue === null ? value : Math.round(activeSliderValue);
+  const previewIndex =
+    draftValue === null && hoveredIndex !== null && hoveredIndex > value
+      ? hoveredIndex
+      : null;
+
+  const getContinuousValueFromClientX = (clientX: number) => {
+    const trackElement = sliderTrackRef.current;
+    if (!trackElement || max <= 0) return 0;
+
+    const {left, width} = trackElement.getBoundingClientRect();
+    if (width <= 0) return 0;
+
+    const progress = Math.min(1, Math.max(0, (clientX - left) / width));
+    return progress * max;
+  };
+
+  const getNearestNotchIndex = (clientX: number) => {
+    return Math.round(getContinuousValueFromClientX(clientX));
+  };
+
+  const getNotchPosition = (index: number) => {
+    if (max <= 0) return '0%';
+    return `${(index / max) * 100}%`;
+  };
+
+  const handleRailHover = (event: React.MouseEvent<HTMLDivElement>) => {
+    setHoveredIndex(getNearestNotchIndex(event.clientX));
+  };
+
+  const handleTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+
+    const nextValue = getContinuousValueFromClientX(event.clientX);
+    const nextIndex = Math.round(nextValue);
+
+    setDraftValue(nextValue);
+    setHoveredIndex(nextIndex);
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const movedValue = getContinuousValueFromClientX(moveEvent.clientX);
+      setDraftValue(movedValue);
+      setHoveredIndex(Math.round(movedValue));
+    };
+
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      const finalValue = getContinuousValueFromClientX(upEvent.clientX);
+      const snappedIndex = Math.round(finalValue);
+      setDraftValue(null);
+      setHoveredIndex(null);
+      onChange(snappedIndex);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+  };
+
+  return (
+    <div className="notched-slider-section">
+      <p className="text-sm font-medium mb-4 text-foreground">{label}</p>
+      <div className="notched-slider-container">
+        <div className="notched-slider-labels">
+          {notches.map((notch, idx) => (
+            <button
+              key={`${label}-${notch.label}-${String(notch.value)}`}
+              type="button"
+              className={`notched-slider-label ${idx === value ? 'active' : ''}`}
+              onClick={() => onChange(idx)}
+              onMouseEnter={() => setHoveredIndex(idx)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              onFocus={() => setHoveredIndex(idx)}
+              onBlur={() => setHoveredIndex(null)}
+            >
+              {notch.label}
+            </button>
+          ))}
+        </div>
+        <div className="notched-slider-rail">
+          <div className="notched-slider-markers">
+            {notches.map((notch, idx) => (
+              <button
+                key={`${label}-marker-${notch.label}-${String(notch.value)}`}
+                type="button"
+                className="notched-slider-marker-slot"
+                style={{left: getNotchPosition(idx)}}
+                onClick={() => onChange(idx)}
+                onMouseEnter={() => setHoveredIndex(idx)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onFocus={() => setHoveredIndex(idx)}
+                onBlur={() => setHoveredIndex(null)}
+                aria-label={`Set ${label} to ${notch.label}`}
+              >
+                <span
+                  className={`notched-slider-tick ${idx <= activeIndex ? 'active' : ''} ${previewIndex === idx ? 'preview' : ''}`.trim()}
+                />
+              </button>
+            ))}
+          </div>
+          <div
+            ref={sliderTrackRef}
+            className="notched-slider-track"
+            role="slider"
+            tabIndex={0}
+            aria-label={label}
+            aria-valuemin={0}
+            aria-valuemax={max}
+            aria-valuenow={value}
+            onPointerDown={handleTrackPointerDown}
+            onMouseMove={handleRailHover}
+            onMouseLeave={() => {
+              if (draftValue === null) setHoveredIndex(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+                event.preventDefault();
+                onChange(Math.max(0, value - 1));
+              }
+              if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                onChange(Math.min(max, value + 1));
+              }
+            }}
+          >
+            <div
+              className="notched-slider-track-fill"
+              style={{width: getNotchPosition(activeSliderValue)}}
+            />
+            <div
+              className="notched-slider-thumb"
+              style={{left: getNotchPosition(activeSliderValue)}}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StockFiltersPopover({
+  durationFilterIndex,
+  setDurationFilterIndex,
+  resolutionFilterIndex,
+  setResolutionFilterIndex,
+}: {
+  durationFilterIndex: number;
+  setDurationFilterIndex: (v: number) => void;
+  resolutionFilterIndex: number;
+  setResolutionFilterIndex: (v: number) => void;
+}) {
+  const isFiltered =
+    durationFilterIndex !== DURATION_NOTCHES.length - 1 ||
+    resolutionFilterIndex !== 0;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          aria-label="Filter stock footage"
+        >
+          <LuFilter className="w-4 h-4" />
+          {isFiltered && (
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={8}
+        className="z-[160] w-80 p-5"
+      >
+        <div className="space-y-6">
+          <NotchedSlider
+            label="Duration (seconds)"
+            notches={DURATION_NOTCHES}
+            value={durationFilterIndex}
+            onChange={setDurationFilterIndex}
+          />
+          <NotchedSlider
+            label="Resolution"
+            notches={RESOLUTION_NOTCHES}
+            value={resolutionFilterIndex}
+            onChange={setResolutionFilterIndex}
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+/** Parse the numeric seconds from a product's duration tag (e.g. "10s" → 10). */
+function parseDurationSeconds(product: {tags: string[]}): number | null {
+  const tag = product.tags.find((t) => t?.startsWith?.('duration-'));
+  if (!tag) return null;
+  const rawValue = tag.slice('duration-'.length).trim();
+  if (!rawValue) return null;
+
+  // Supports formats like "9", "9s", "0:09", or "1:02:03".
+  const colonParts = rawValue.split(':').map((part) => part.trim());
+  if (
+    colonParts.length > 1 &&
+    colonParts.every((part) => /^\d+(?:\.\d+)?$/.test(part))
+  ) {
+    const totalSeconds = colonParts.reduce((accumulator, part) => {
+      return accumulator * 60 + Number(part);
+    }, 0);
+    return Number.isFinite(totalSeconds) ? totalSeconds : null;
+  }
+
+  const normalizedValue = rawValue
+    .replace(/\b(seconds?|secs?)\b/gi, '')
+    .replace(/s$/i, '')
+    .trim();
+  if (!/^\d+(?:\.\d+)?$/.test(normalizedValue)) return null;
+
+  const parsed = Number(normalizedValue);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** Get the highest resolution number from a product's option values (e.g. 5 for "5K"). */
+function getHighestResolutionNumber(product: {
+  tags: string[];
+  options?: {name?: string; optionValues?: {name?: string}[]}[];
+}): number {
+  // First try from variant options
+  const resolutionOption = product.options?.find(
+    (o) => typeof o.name === 'string' && o.name.trim().toLowerCase() === 'resolution',
+  );
+  if (resolutionOption?.optionValues) {
+    let highest = 0;
+    for (const ov of resolutionOption.optionValues) {
+      const val = parseResolutionValue(ov.name);
+      if (val !== null && val > highest) highest = val;
+    }
+    if (highest > 0) return highest;
+  }
+
+  // Fallback: parse from R2 tags
+  const label = getHighestResolutionLabelFromTags(product.tags);
+  if (label) {
+    const val = parseResolutionValue(label);
+    if (val !== null) return val;
+  }
+
+  return 4; // default — all products have at least 4K
+}
+
 export default function Collection() {
   const {collection, searchTerm, cart, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
@@ -182,12 +473,6 @@ export default function Collection() {
   //   p.tags.includes('vertPrimary'),
   // );
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value);
-    if (searchText && searchText?.length > 4) {
-    }
-  };
-
   // Add other queries here, so that they are loaded in parallel
 
   useEffect(() => {
@@ -204,7 +489,13 @@ export default function Collection() {
   const LAYOUT_STORAGE_KEY = 'collection-layout-mode';
   const PRINTS_FILTER_STORAGE_KEY = 'collection-prints-filter-mode';
   const STOCK_FILTER_STORAGE_KEY = 'collection-stock-filter-mode';
+  const STOCK_DURATION_FILTER_KEY = 'collection-stock-duration-filter';
+  const STOCK_RESOLUTION_FILTER_KEY = 'collection-stock-resolution-filter';
   const [layout, setLayout] = useState('grid');
+  const [durationFilterIndex, setDurationFilterIndex] = useState(
+    DURATION_NOTCHES.length - 1,
+  ); // default: "All Durations"
+  const [resolutionFilterIndex, setResolutionFilterIndex] = useState(0); // default: "Has 4K+"
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
   const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
     useState(false);
@@ -252,7 +543,7 @@ export default function Collection() {
           ? 'mt-[10px] mx-[10px] grid eproduct-list-grid gap-2'
           : 'mt-[12px] grid';
 
-  type shopifyImage = {url: string; altText: string};
+  type ShopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
   const [filterState, setFilterState] = useState<PrintsFilterState>('All');
   const [stockFilterState, setStockFilterState] =
@@ -331,6 +622,50 @@ export default function Collection() {
     }
   }, [collection?.handle, stockFilterState, hasInitializedStockFilter]);
 
+  // Restore duration/resolution filter from localStorage on stock pages
+  useEffect(() => {
+    if (collection?.handle !== 'stock') return;
+    try {
+      const savedDuration = window.localStorage.getItem(
+        STOCK_DURATION_FILTER_KEY,
+      );
+      if (savedDuration !== null) {
+        const idx = Number(savedDuration);
+        if (idx >= 0 && idx < DURATION_NOTCHES.length) {
+          setDurationFilterIndex(idx);
+        }
+      }
+      const savedResolution = window.localStorage.getItem(
+        STOCK_RESOLUTION_FILTER_KEY,
+      );
+      if (savedResolution !== null) {
+        const idx = Number(savedResolution);
+        if (idx >= 0 && idx < RESOLUTION_NOTCHES.length) {
+          setResolutionFilterIndex(idx);
+        }
+      }
+    } catch {
+      // Ignore storage access errors
+    }
+  }, [collection?.handle]);
+
+  // Persist duration/resolution filter to localStorage
+  useEffect(() => {
+    if (collection?.handle !== 'stock') return;
+    try {
+      window.localStorage.setItem(
+        STOCK_DURATION_FILTER_KEY,
+        String(durationFilterIndex),
+      );
+      window.localStorage.setItem(
+        STOCK_RESOLUTION_FILTER_KEY,
+        String(resolutionFilterIndex),
+      );
+    } catch {
+      // Ignore storage access errors
+    }
+  }, [collection?.handle, durationFilterIndex, resolutionFilterIndex]);
+
   useEffect(() => {
     const baseConnection = collection?.products;
     if (!baseConnection) return;
@@ -357,13 +692,31 @@ export default function Collection() {
     }
 
     if (collection?.handle === 'stock') {
+      const maxDuration = DURATION_NOTCHES[durationFilterIndex]?.value ?? Infinity;
+      const minResolution = RESOLUTION_NOTCHES[resolutionFilterIndex]?.value ?? 4;
+
       filteredCollection = baseConnection.nodes?.filter((p: any) => {
+        // Existing clip-type filter
         if (stockFilterState === 'All Clips') {
-          return p.tags.includes('Video') && !p.tags.includes('Bundle');
+          if (!(p.tags.includes('Video') && !p.tags.includes('Bundle')))
+            return false;
+        } else if (stockFilterState === 'Discounted Bundles') {
+          if (!p.tags.includes('Bundle')) return false;
         }
-        if (stockFilterState === 'Discounted Bundles') {
-          return p.tags.includes('Bundle');
+
+        // Duration filter
+        if (maxDuration !== Infinity) {
+          const seconds = parseDurationSeconds(p);
+          // If no duration tag, include the product (don't exclude unknown durations)
+          if (seconds !== null && seconds > maxDuration) return false;
         }
+
+        // Resolution filter
+        if (minResolution > 4) {
+          const highest = getHighestResolutionNumber(p);
+          if (highest < minResolution) return false;
+        }
+
         return true;
       });
     }
@@ -373,7 +726,14 @@ export default function Collection() {
       nodes: filteredCollection,
     });
     setTotalProductCount(filteredCollection?.length);
-  }, [collection?.handle, collection?.products, filterState, stockFilterState]);
+  }, [
+    collection?.handle,
+    collection?.products,
+    filterState,
+    stockFilterState,
+    durationFilterIndex,
+    resolutionFilterIndex,
+  ]);
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const gridColumnCount =
@@ -539,12 +899,22 @@ export default function Collection() {
       )}
       {windowWidth != undefined && windowWidth > 600 && (
         <div className="counter-search-toggle-container ">
-          <div className="product-counter-container">
-            <div className="flex flex-col items-end">
-              <h4 className="font-medium text-xl">
-                {totalProductCount} product{totalProductCount > 1 && 's'}
-              </h4>
+          <div className="product-counter-filter-group">
+            <div className="product-counter-container">
+              <div className="flex flex-col items-end">
+                <h4 className="font-medium text-xl">
+                  {totalProductCount} product{totalProductCount > 1 && 's'}
+                </h4>
+              </div>
             </div>
+            {collection?.handle === 'stock' && (
+              <StockFiltersPopover
+                durationFilterIndex={durationFilterIndex}
+                setDurationFilterIndex={setDurationFilterIndex}
+                resolutionFilterIndex={resolutionFilterIndex}
+                setResolutionFilterIndex={setResolutionFilterIndex}
+              />
+            )}
           </div>
           <div className="search-product-container">
             <div className="flex flex-col items-center mt-[25px]">
@@ -673,7 +1043,7 @@ export default function Collection() {
             </div>
 
             <div className="bottom-row">
-              <div className="product-count">
+              <div className="product-count flex items-center gap-2">
                 <div className="product-counter-container">
                   <div className="flex flex-col items-end">
                     <h4 className="font-medium text-xl">
@@ -681,6 +1051,14 @@ export default function Collection() {
                     </h4>
                   </div>
                 </div>
+                {collection?.handle === 'stock' && (
+                  <StockFiltersPopover
+                    durationFilterIndex={durationFilterIndex}
+                    setDurationFilterIndex={setDurationFilterIndex}
+                    resolutionFilterIndex={resolutionFilterIndex}
+                    setResolutionFilterIndex={setResolutionFilterIndex}
+                  />
+                )}
               </div>
               <div className="layout-toggle">
                 <div className="grid-list-toggle-container flex gap-x-4">
@@ -843,7 +1221,7 @@ export default function Collection() {
               index,
             }: {
               node: ProductItemFragment & {
-                images: {nodes: shopifyImage[]};
+                images: {nodes: ShopifyImage[]};
                 descriptionHtml?: string;
               };
               index: number;

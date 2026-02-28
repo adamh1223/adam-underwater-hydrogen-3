@@ -8,7 +8,7 @@ type ProductOption = {
   optionValues?: unknown;
 };
 
-function parseResolutionValue(value: unknown): number | null {
+export function parseResolutionValue(value: unknown): number | null {
   if (typeof value !== 'string') return null;
   const match = value.match(/(\d+)\s*k/i);
   if (!match) return null;

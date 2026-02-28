@@ -1226,28 +1226,39 @@ span {
 }
 @media (min-width: 601px) {
   .counter-search-toggle-container {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    padding-left: 50px;
-    padding-right: 15px;
+    column-gap: 12px;
+    padding-inline: clamp(15px, 4vw, 50px);
+  }
+  .product-counter-filter-group {
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    gap: 12px;
+    min-width: 0;
   }
   .product-counter-container {
     display: flex;
     flex-direction: column;
     grid-template-columns: 1fr;
     justify-content: end;
+    min-width: 0;
   }
 
   .search-product-container {
     display: flex;
     justify-content: center;
     align-items: center;
+    justify-self: center;
+    min-width: 0;
   }
   .grid-list-toggle-container {
     display: flex;
     padding: 15px;
     gap: 1px;
+    justify-self: end;
   }
 }
 
@@ -1299,6 +1310,146 @@ span {
   .layout-toggle {
     justify-self: end;
   }
+}
+
+/* ── Notched Slider (Stock Filters Popover) ─────────────────────────────── */
+
+.notched-slider-section + .notched-slider-section {
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 1rem;
+}
+
+.notched-slider-container {
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.notched-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.notched-slider-label {
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px 1px;
+  flex: 1;
+  min-width: 0;
+  transition: color 150ms ease, font-weight 150ms ease;
+}
+
+.notched-slider-label:hover {
+  color: hsl(var(--foreground));
+}
+
+.notched-slider-label.active {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.notched-slider-rail {
+  position: relative;
+}
+
+.notched-slider-markers {
+  position: relative;
+  height: 12px;
+  margin-bottom: 6px;
+  overflow: visible;
+}
+
+.notched-slider-marker-slot {
+  position: absolute;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transform: translateX(-50%);
+  overflow: visible;
+}
+
+.notched-slider-tick {
+  width: 2px;
+  height: 8px;
+  border-radius: 1px;
+  background: hsl(var(--muted-foreground) / 0.35);
+  transition:
+    background 150ms ease,
+    width 150ms ease,
+    height 150ms ease,
+    border-radius 150ms ease,
+    transform 150ms ease;
+}
+
+.notched-slider-tick.active {
+  background: hsl(var(--primary));
+}
+
+.notched-slider-tick.preview {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: hsl(var(--primary));
+  transform: translateY(0);
+}
+
+.notched-slider-track {
+  position: relative;
+  height: 10px;
+  width: 100%;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
+
+.notched-slider-track-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 10px;
+  transform: translateY(-50%);
+  border-radius: 9999px;
+  background: hsl(var(--primary));
+}
+
+.notched-slider-track::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 10px;
+  transform: translateY(-50%);
+  border-radius: 9999px;
+  background: hsl(var(--muted));
+}
+
+.notched-slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  border: 3px solid hsl(var(--primary));
+  background: hsl(var(--background));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  cursor: grab;
+  z-index: 1;
+}
+
+.notched-slider-track:active,
+.notched-slider-track:active .notched-slider-thumb {
+  cursor: grabbing;
 }
 
 .add-to-cart-btn {
