@@ -741,6 +741,7 @@ function EProductsContainer({
                         }`}
                       >
                         <AddToCartButton
+                          cart={cart}
                           lines={[
                             {
                               merchandiseId: selectedVariantId,
@@ -751,6 +752,7 @@ function EProductsContainer({
                           onClick={() => {
                             open('cart');
                           }}
+                          replaceExistingLineProductId={product.id}
                         >
                           <div className="eproducts-add-to-cart-btn-text w-full text-center">
                             Add To Cart
@@ -878,6 +880,7 @@ function EProductsContainer({
                           }`}
                         >
                           <AddToCartButton
+                            cart={cart}
                             lines={[
                               {
                                 merchandiseId: selectedVariantId,
@@ -888,6 +891,7 @@ function EProductsContainer({
                             onClick={() => {
                               open('cart');
                             }}
+                            replaceExistingLineProductId={product.id}
                           >
                             <div className="eproducts-add-to-cart-btn-text w-full text-center">
                               Add To Cart
@@ -1151,6 +1155,7 @@ function EProductsContainer({
                     `}
                     >
                       <AddToCartButton
+                        cart={cart}
                         lines={[
                           {
                             merchandiseId: selectedVariantId,
@@ -1161,6 +1166,7 @@ function EProductsContainer({
                         onClick={() => {
                           open('cart');
                         }}
+                        replaceExistingLineProductId={product.id}
                       >
                         <div className="eproducts-add-to-cart-btn-text w-full text-center">
                           Add To Cart
@@ -1434,6 +1440,7 @@ function EProductsContainer({
                         }`}
                       >
                         <AddToCartButton
+                          cart={cart}
                           lines={[
                             {
                               merchandiseId: selectedVariantId,
@@ -1444,6 +1451,7 @@ function EProductsContainer({
                           onClick={() => {
                             open('cart');
                           }}
+                          replaceExistingLineProductId={product.id}
                         >
                           <div className="eproducts-add-to-cart-btn-text w-full text-center">
                             Add To Cart

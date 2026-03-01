@@ -1496,6 +1496,36 @@ span {
   align-items: stretch;
 }
 
+.eproduct-bottom-part-card-grid .eproduct-bottom-part-card-inside {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.p-a-t-c-container-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.p-a-t-c-container-grid > .add-to-cart-btn,
+.p-a-t-c-container-grid > a {
+  flex: 0 0 min(9rem, calc((100% - 0.75rem) / 2));
+  width: min(9rem, calc((100% - 0.75rem) / 2));
+  max-width: min(9rem, calc((100% - 0.75rem) / 2));
+}
+
+.p-a-t-c-container-grid > a {
+  display: block;
+}
+
+.p-a-t-c-container-grid > a .view-product-btn,
+.p-a-t-c-container-grid > .add-to-cart-btn {
+  width: 100%;
+}
+
 .product-add-to-cart-container button,
 .product-add-to-cart-container .eproducts-add-to-cart-btn-text {
   display: flex;

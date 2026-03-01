@@ -182,6 +182,12 @@ const RESOLUTION_NOTCHES = [
   {value: 8, label: '8K+'},
 ];
 
+const DEFAULT_DURATION_FILTER_INDEX = DURATION_NOTCHES.length - 1;
+const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
+
+const STOCK_FILTER_ICON_BUTTON_CLASS_NAME =
+  'relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-default disabled:opacity-50';
+
 function NotchedSlider({
   notches,
   value,
@@ -356,15 +362,20 @@ function StockFiltersPopover({
   setResolutionFilterIndex: (v: number) => void;
 }) {
   const isFiltered =
-    durationFilterIndex !== DURATION_NOTCHES.length - 1 ||
-    resolutionFilterIndex !== 0;
+    durationFilterIndex !== DEFAULT_DURATION_FILTER_INDEX ||
+    resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX;
+
+  const handleReset = () => {
+    setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
+    setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
+  };
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+          className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
           aria-label="Filter stock footage"
         >
           <img
@@ -381,6 +392,22 @@ function StockFiltersPopover({
       </PopoverTrigger>
       <PopoverContent align="start" sideOffset={8} className="z-[160] w-80 p-5">
         <div className="space-y-6">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+              aria-label="Reset stock filters"
+              onClick={handleReset}
+            >
+              <img
+                src={
+                  'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                }
+                alt=""
+                className="w-5 h-5"
+              ></img>
+            </button>
+          </div>
           <NotchedSlider
             label="Duration (seconds)"
             notches={DURATION_NOTCHES}
@@ -501,9 +528,11 @@ export default function Collection() {
   const STOCK_RESOLUTION_FILTER_KEY = 'collection-stock-resolution-filter';
   const [layout, setLayout] = useState('grid');
   const [durationFilterIndex, setDurationFilterIndex] = useState(
-    DURATION_NOTCHES.length - 1,
+    DEFAULT_DURATION_FILTER_INDEX,
   ); // default: "All Durations"
-  const [resolutionFilterIndex, setResolutionFilterIndex] = useState(0); // default: "Has 4K+"
+  const [resolutionFilterIndex, setResolutionFilterIndex] = useState(
+    DEFAULT_RESOLUTION_FILTER_INDEX,
+  ); // default: "Has 4K+"
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
   const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
     useState(false);
