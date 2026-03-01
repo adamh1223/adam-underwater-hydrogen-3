@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 
 import '../../styles/components/Hero.css';
 import {Link} from '@remix-run/react';
@@ -6,6 +6,15 @@ import {Button} from '../ui/button';
 
 function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
   const [isVideoReady, setIsVideoReady] = useState(false);
+  const heroImgRef = useRef<HTMLImageElement>(null);
+  const hasCalledLoad = useRef(false);
+
+  const handleHeroImgLoad = useCallback(() => {
+    if (!hasCalledLoad.current) {
+      hasCalledLoad.current = true;
+      onHeroImgLoad?.();
+    }
+  }, [onHeroImgLoad]);
 
   const handleVideoLoad = () => {
     setTimeout(() => {
@@ -18,18 +27,22 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
     if (iframe) {
       iframe.addEventListener('load', handleVideoLoad);
     }
+    // If hero image already loaded from cache before React attached onLoad
+    if (heroImgRef.current?.complete && heroImgRef.current.naturalWidth > 0) {
+      handleHeroImgLoad();
+    }
     return () => {
       if (iframe) {
         iframe.removeEventListener('load', handleVideoLoad);
       }
     };
-  }, []);
+  }, [handleHeroImgLoad]);
 
   return (
     <section className="flex flex-col items-center justify-center text-center main">
       <div>
         <div className="pb-[40px]" id="prints">
-          <img src={'https://downloads.adamunderwater.com/store-1-au/public/vp3.png'} className="p-3 hero-img" onLoad={onHeroImgLoad}></img>
+          <img ref={heroImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/vp3.png'} className="p-3 hero-img" onLoad={handleHeroImgLoad}></img>
           <div className="flex flex-col justify-center pt-5">
             <div className="flex justify-center">
               <Link to="/pages/work">
