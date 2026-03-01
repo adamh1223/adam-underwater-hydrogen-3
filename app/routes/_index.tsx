@@ -6,7 +6,7 @@ import {
   type MetaFunction,
   useLocation,
 } from '@remix-run/react';
-import {Suspense, useEffect} from 'react';
+import {Suspense, useEffect, useState} from 'react';
 import {Image, Money} from '@shopify/hydrogen';
 import type {
   FeaturedCollectionFragment,
@@ -24,6 +24,7 @@ import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import FeaturedProductReviews from '~/components/products/featuredProductReviews';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import {getCustomerReviewLocation} from '~/lib/reviews';
+import HomePageSkeleton from '~/components/home/HomePageSkeleton';
 
 export const meta: MetaFunction = () => {
   const title = 'Adam Underwater | Underwater Video & Photo';
@@ -186,6 +187,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   const location = useLocation();
+  const [isPageReady, setIsPageReady] = useState(false);
 
   useEffect(() => {
     const hashTarget = location.hash ? location.hash.replace('#', '') : null;
@@ -210,37 +212,47 @@ export default function Homepage() {
 
   return (
     <div className="home">
-      <Hero></Hero>
-      <section>
-        <div className="flex justify-center pt-5 me-4">
-          <img
-            src={
-              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
-            }
-            alt="Framed Canvas Wall Art"
-            className="featured-img"
+      {/* Full-page skeleton overlay — covers everything including navbar */}
+      {!isPageReady && (
+        <div className="fixed inset-0 z-[999] bg-background">
+          <HomePageSkeleton />
+        </div>
+      )}
+
+      {/* Real content — invisible until hero-img loads, then revealed */}
+      <div className={isPageReady ? '' : 'invisible'}>
+        <Hero onHeroImgLoad={() => setIsPageReady(true)} />
+        <section>
+          <div className="flex justify-center pt-5 me-4">
+            <img
+              src={
+                'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+              }
+              alt="Framed Canvas Wall Art"
+              className="featured-img"
+            />
+          </div>
+          <div className="flex justify-center font-bold text-xl pb-2">
+            <p>Framed Canvas Wall Art</p>
+          </div>
+        </section>
+        {/* <FeaturedCollection collection={data.featuredCollection} /> */}
+        <RecommendedProducts
+          products={data.recommendedProducts}
+          wishlistProducts={data.wishlistProducts}
+          isLoggedIn={data.isLoggedIn}
+        />
+        <div id="featured-reviews" className="scroll-mt-28">
+          <div className="flex justify-center font-bold text-xl pb-2">
+            <p>What our customers are saying</p>
+          </div>
+          <FeaturedProductReviews
+            reviews={data.featuredReviews}
+            currentCustomerId={data.currentCustomerId}
+            currentCustomerState={data.currentCustomerState}
+            currentCustomerCountry={data.currentCustomerCountry}
           />
         </div>
-        <div className="flex justify-center font-bold text-xl pb-2">
-          <p>Framed Canvas Wall Art</p>
-        </div>
-      </section>
-      {/* <FeaturedCollection collection={data.featuredCollection} /> */}
-      <RecommendedProducts
-        products={data.recommendedProducts}
-        wishlistProducts={data.wishlistProducts}
-        isLoggedIn={data.isLoggedIn}
-      />
-      <div id="featured-reviews" className="scroll-mt-28">
-        <div className="flex justify-center font-bold text-xl pb-2">
-          <p>What our customers are saying</p>
-        </div>
-        <FeaturedProductReviews
-          reviews={data.featuredReviews}
-          currentCustomerId={data.currentCustomerId}
-          currentCustomerState={data.currentCustomerState}
-          currentCustomerCountry={data.currentCustomerCountry}
-        />
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import '../../styles/components/Hero.css';
 import {Link} from '@remix-run/react';
 import {Button} from '../ui/button';
 
-function Hero() {
+function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
   const [isVideoReady, setIsVideoReady] = useState(false);
 
   const handleVideoLoad = () => {
@@ -29,7 +29,7 @@ function Hero() {
     <section className="flex flex-col items-center justify-center text-center main">
       <div>
         <div className="pb-[40px]" id="prints">
-          <img src={'https://downloads.adamunderwater.com/store-1-au/public/vp3.png'} className="p-3 hero-img"></img>
+          <img src={'https://downloads.adamunderwater.com/store-1-au/public/vp3.png'} className="p-3 hero-img" onLoad={onHeroImgLoad}></img>
           <div className="flex flex-col justify-center pt-5">
             <div className="flex justify-center">
               <Link to="/pages/work">
