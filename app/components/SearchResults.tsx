@@ -124,6 +124,17 @@ function SearchResultsProducts({
       <br />
       <Pagination connection={products}>
         {({nodes, isLoading, NextLink, PreviousLink}) => {
+          const hasPrintProducts = nodes.some((product) =>
+            product.tags.includes('Prints'),
+          );
+          const hasVideoProducts = nodes.some((product) =>
+            product.tags.includes('Video'),
+          );
+          const productGridClassName =
+            hasPrintProducts && hasVideoProducts
+              ? 'prods-grid gap-x-5 mixed-product-grid'
+              : 'prods-grid gap-x-5';
+
           const ItemsMarkup = nodes.map((product) => {
             const productUrl = urlWithTrackingParams({
               baseUrl: `/products/${product.handle}`,
@@ -187,7 +198,7 @@ function SearchResultsProducts({
                   {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
                 </PreviousLink>
               </div>
-              <div className="prods-grid gap-x-5">{ItemsMarkup}</div>
+              <div className={productGridClassName}>{ItemsMarkup}</div>
               <div className="flex justify-center">
                 <NextLink>
                   {isLoading ? 'Loading...' : <span>Load more ↓</span>}

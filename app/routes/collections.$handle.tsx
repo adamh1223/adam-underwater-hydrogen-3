@@ -20,13 +20,19 @@ import {
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {Card} from '~/components/ui/card';
+import {Card, CardContent} from '~/components/ui/card';
 import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
 import {useEffect, useId, useRef, useState} from 'react';
-import {LuFilter, LuFilterX, LuZoomIn, LuZoomOut} from 'react-icons/lu';
+import {
+  LuFilter,
+  LuFilterX,
+  LuSearch,
+  LuZoomIn,
+  LuZoomOut,
+} from 'react-icons/lu';
 import {Popover, PopoverTrigger, PopoverContent} from '~/components/ui/popover';
 import {
   applyHighestResolutionVariantToProducts,
@@ -34,6 +40,12 @@ import {
 } from '~/lib/resolution';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {Input} from '~/components/ui/input';
+import {Skeleton} from '~/components/ui/skeleton';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '~/components/ui/input-group';
 import {SearchFormPredictive} from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
@@ -967,22 +979,34 @@ export default function Collection() {
                   };
 
                   return (
-                    <>
-                      <div className="flex justify-center items-center">
-                        <Input
-                          className="search-input w-[260px]"
+                    <div className="flex flex-col items-center">
+                      <InputGroup className="w-[300px]">
+                        <InputGroupAddon align="inline-start">
+                          <LuSearch className="text-muted-foreground" />
+                        </InputGroupAddon>
+                        <InputGroupInput
                           name="q"
                           onChange={handleInput}
                           onFocus={handleInput}
-                          placeholder="Search Product"
+                          placeholder="Search..."
                           ref={inputRef}
                           type="search"
                           value={searchText ?? ''}
                           list={queriesDatalistId}
                         />
-                      </div>
-                      &nbsp;
-                    </>
+                        {searchText && (
+                          <InputGroupAddon align="inline-end">
+                            <span className="text-muted-foreground text-xs whitespace-nowrap">
+                              {totalProductCount} result
+                              {totalProductCount !== 1 ? 's' : ''}
+                            </span>
+                          </InputGroupAddon>
+                        )}
+                      </InputGroup>
+                      <p className="text-muted-foreground text-[11px] mt-1.5">
+                        Try &ldquo;Sea Lion&rdquo; or &ldquo;Night&rdquo;
+                      </p>
+                    </div>
                   );
                 }}
               </SearchFormPredictive>
@@ -1057,22 +1081,35 @@ export default function Collection() {
                         };
 
                         return (
-                          <>
-                            <div className="flex justify-center items-center">
-                              <Input
-                                className="search-input w-[260px]"
+                          <div className="flex flex-col items-center">
+                            <InputGroup className="w-[300px]">
+                              <InputGroupAddon align="inline-start">
+                                <LuSearch className="text-muted-foreground" />
+                              </InputGroupAddon>
+                              <InputGroupInput
                                 name="q"
                                 onChange={handleInput}
                                 onFocus={handleInput}
-                                placeholder="Search Product"
+                                placeholder="Search..."
                                 ref={inputRef}
                                 type="search"
                                 value={searchText ?? ''}
                                 list={queriesDatalistId}
                               />
-                            </div>
-                            &nbsp;
-                          </>
+                              {searchText && (
+                                <InputGroupAddon align="inline-end">
+                                  <span className="text-muted-foreground text-xs whitespace-nowrap">
+                                    {totalProductCount} result
+                                    {totalProductCount !== 1 ? 's' : ''}
+                                  </span>
+                                </InputGroupAddon>
+                              )}
+                            </InputGroup>
+                            <p className="text-muted-foreground text-[11px] mt-1.5">
+                              Try &ldquo;Sea Lion&rdquo; or
+                              &ldquo;Night&rdquo;
+                            </p>
+                          </div>
                         );
                       }}
                     </SearchFormPredictive>
@@ -1225,7 +1262,27 @@ export default function Collection() {
               setTotalProductCount(stockFilteredSearches?.length);
 
               if (state === 'loading' && term.current) {
-                return <div>Loading...</div>;
+                const skeletonCount = Math.max(
+                  2,
+                  gridColumnCount * 2,
+                );
+                return (
+                  <>
+                    {Array.from({length: skeletonCount}).map((_, i) => (
+                      <Card key={`skel-${i}`} className="h-full mb-1 pb-1">
+                        <CardContent className="flex flex-col h-full p-0">
+                          <Skeleton className="w-full rounded-b-none rounded-t-xl aspect-[16/10]" />
+                          <div className="flex flex-col items-center gap-2 px-3 py-3">
+                            <Skeleton className="h-4 w-3/5" />
+                            <Skeleton className="h-3.5 w-2/5" />
+                            <Skeleton className="h-3.5 w-1/4" />
+                            <Skeleton className="h-8 w-full rounded-md mt-0.5" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </>
+                );
               }
 
               if (!total) {

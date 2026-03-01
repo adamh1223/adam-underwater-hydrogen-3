@@ -641,13 +641,17 @@ button.reset:hover:not(:has(> *)) {
 * account.favorites.tsx (mixed print + eproduct rows)
 * --------------------------------------------------
 */
-.favorites-product-grid .eproduct-grid-card-content {
+.favorites-product-grid .eproduct-grid-card-content,
+.mixed-product-grid .eproduct-grid-card-content {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
 .favorites-product-grid
+  .eproduct-grid-card-content
+  > .eproduct-bottom-part-card-grid,
+.mixed-product-grid
   .eproduct-grid-card-content
   > .eproduct-bottom-part-card-grid {
   flex: 1 1 auto;
@@ -656,6 +660,10 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .favorites-product-grid
+  .eproduct-grid-card-content
+  > .eproduct-bottom-part-card-grid
+  > .eproduct-bottom-part-card-inside,
+.mixed-product-grid
   .eproduct-grid-card-content
   > .eproduct-bottom-part-card-grid
   > .eproduct-bottom-part-card-inside {

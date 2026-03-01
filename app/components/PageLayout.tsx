@@ -17,6 +17,14 @@ import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import {Button} from './ui/button';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import {Input} from './ui/input';
+import {LuSearch} from 'react-icons/lu';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from './ui/input-group';
+import {Skeleton} from './ui/skeleton';
+import {Card, CardContent} from './ui/card';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
