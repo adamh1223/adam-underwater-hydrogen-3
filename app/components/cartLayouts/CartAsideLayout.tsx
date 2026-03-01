@@ -19,8 +19,6 @@ export function CartAsideLayout({
   cartHasItems,
   className,
 }: cartPageLayoutProps) {
-  
-
   return (
     <>
       <div className={className}>
@@ -28,7 +26,7 @@ export function CartAsideLayout({
         <div className="cart-details">
           <div aria-labelledby="cart-lines">
             <div className="mt-5">
-              <ul className="mx-4">
+              <ul className="mx-2">
                 {(cart?.lines?.nodes ?? []).map((line) => (
                   <CartLineItem key={line.id} line={line} layout={layout} />
                 ))}
@@ -37,7 +35,7 @@ export function CartAsideLayout({
           </div>
           {cartHasItems && (
             <>
-              <div className="mx-4">
+              <div className="mx-2">
                 <CartSummary cart={cart} layout={layout} />
               </div>
             </>

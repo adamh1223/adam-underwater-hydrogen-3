@@ -80,7 +80,7 @@ export function CartLineItem({
   };
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-2">
       <CardContent>
         <li
           key={id}

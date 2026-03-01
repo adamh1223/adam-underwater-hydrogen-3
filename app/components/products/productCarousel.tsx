@@ -423,7 +423,7 @@ export const ProductCarousel = ({
           <div className="absolute left-[6px] top-[6px] z-50 flex flex-col">
             <button
               disabled
-              className={`${layout === 'list' ? 'most-popular-list' : 'most-popular-grid'} rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 disabled:cursor-default disabled:opacity-100`}
+              className={`${layout === 'list' ? 'most-popular-list' : 'most-popular-grid'} rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] disabled:cursor-default disabled:opacity-100`}
             >
               Most Popular
               <div className="flex justify-center items-end">

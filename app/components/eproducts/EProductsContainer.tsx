@@ -516,7 +516,7 @@ function EProductsContainer({
                     {isArtistPick && (
                       <button
                         disabled
-                        className="artist-pick rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-md hover:bg-background disabled:cursor-default disabled:opacity-100"
+                        className="artist-pick rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] text-md hover:bg-background disabled:cursor-default disabled:opacity-100"
                       >
                         Artist's Pick
                         <div className="flex justify-center items-end">
@@ -925,7 +925,7 @@ function EProductsContainer({
                 >
                   <button
                     disabled
-                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] text-sm  disabled:cursor-default disabled:opacity-100"
                   >
                     Artist's Pick
                     <div className="flex justify-center items-end">
@@ -1248,7 +1248,7 @@ function EProductsContainer({
                 >
                   <button
                     disabled
-                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-yellow-400 text-sm  disabled:cursor-default disabled:opacity-100"
+                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] text-sm  disabled:cursor-default disabled:opacity-100"
                   >
                     Artist's Pick
                     <div className="flex justify-center items-end">

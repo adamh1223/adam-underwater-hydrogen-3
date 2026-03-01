@@ -1325,12 +1325,16 @@ span {
 }
 
 .notched-slider-labels {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 2.5rem;
   margin-bottom: 8px;
+  overflow: visible;
 }
 
 .notched-slider-label {
+  position: absolute;
+  top: 0;
+  left: 0;
   font-size: 11px;
   line-height: 1.2;
   text-align: center;
@@ -1339,9 +1343,11 @@ span {
   background: none;
   border: none;
   padding: 2px 1px;
-  flex: 1;
-  min-width: 0;
+  width: 4.75rem;
+  min-width: 4.75rem;
+  transform: translateX(-50%);
   transition: color 150ms ease, font-weight 150ms ease;
+  overflow: visible;
 }
 
 .notched-slider-label:hover {
@@ -1557,7 +1563,7 @@ span {
 }
 
 .stars {
-  color: rgb(214, 183, 72);
+  color: #d4af37;
 }
 
 .review-card {

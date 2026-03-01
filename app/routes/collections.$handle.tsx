@@ -26,7 +26,7 @@ import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
 import {useEffect, useId, useRef, useState} from 'react';
-import {LuFilter, LuZoomIn, LuZoomOut} from 'react-icons/lu';
+import {LuFilter, LuFilterX, LuZoomIn, LuZoomOut} from 'react-icons/lu';
 import {Popover, PopoverTrigger, PopoverContent} from '~/components/ui/popover';
 import {
   applyHighestResolutionVariantToProducts,
@@ -167,19 +167,19 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 /* ────────────────────────────────────────────────────────────────────────── */
 
 const DURATION_NOTCHES = [
-  {value: 10, label: 'Up to 10'},
-  {value: 20, label: 'Up to 20'},
-  {value: 30, label: 'Up to 30'},
-  {value: 40, label: 'Up to 40'},
-  {value: 50, label: 'Up to 50'},
-  {value: Infinity, label: 'All Durations'},
+  {value: 10, label: '10'},
+  {value: 20, label: '20'},
+  {value: 30, label: '30'},
+  {value: 40, label: '40'},
+  {value: 50, label: '50'},
+  {value: Infinity, label: 'All'},
 ];
 
 const RESOLUTION_NOTCHES = [
-  {value: 4, label: 'Has 4K+'},
-  {value: 5, label: 'Has 5K+'},
-  {value: 6, label: 'Has 6K+'},
-  {value: 8, label: 'Has 8K+'},
+  {value: 4, label: '4K+'},
+  {value: 5, label: '5K+'},
+  {value: 6, label: '6K+'},
+  {value: 8, label: '8K+'},
 ];
 
 function NotchedSlider({
@@ -198,7 +198,8 @@ function NotchedSlider({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [draftValue, setDraftValue] = useState<number | null>(null);
   const activeSliderValue = draftValue ?? value;
-  const activeIndex = draftValue === null ? value : Math.round(activeSliderValue);
+  const activeIndex =
+    draftValue === null ? value : Math.round(activeSliderValue);
   const previewIndex =
     draftValue === null && hoveredIndex !== null && hoveredIndex > value
       ? hoveredIndex
@@ -228,7 +229,9 @@ function NotchedSlider({
     setHoveredIndex(getNearestNotchIndex(event.clientX));
   };
 
-  const handleTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handleTrackPointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
     if (event.button !== 0) return;
 
     const nextValue = getContinuousValueFromClientX(event.clientX);
@@ -269,6 +272,7 @@ function NotchedSlider({
               key={`${label}-${notch.label}-${String(notch.value)}`}
               type="button"
               className={`notched-slider-label ${idx === value ? 'active' : ''}`}
+              style={{left: getNotchPosition(idx)}}
               onClick={() => onChange(idx)}
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
@@ -363,17 +367,19 @@ function StockFiltersPopover({
           className="relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
           aria-label="Filter stock footage"
         >
-          <LuFilter className="w-4 h-4" />
+          <img
+            src={
+              'https://downloads.adamunderwater.com/store-1-au/public/filter.png'
+            }
+            alt=""
+            className="w-5 h-5"
+          ></img>
           {isFiltered && (
             <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        sideOffset={8}
-        className="z-[160] w-80 p-5"
-      >
+      <PopoverContent align="start" sideOffset={8} className="z-[160] w-80 p-5">
         <div className="space-y-6">
           <NotchedSlider
             label="Duration (seconds)"
@@ -429,7 +435,9 @@ function getHighestResolutionNumber(product: {
 }): number {
   // First try from variant options
   const resolutionOption = product.options?.find(
-    (o) => typeof o.name === 'string' && o.name.trim().toLowerCase() === 'resolution',
+    (o) =>
+      typeof o.name === 'string' &&
+      o.name.trim().toLowerCase() === 'resolution',
   );
   if (resolutionOption?.optionValues) {
     let highest = 0;
@@ -692,8 +700,10 @@ export default function Collection() {
     }
 
     if (collection?.handle === 'stock') {
-      const maxDuration = DURATION_NOTCHES[durationFilterIndex]?.value ?? Infinity;
-      const minResolution = RESOLUTION_NOTCHES[resolutionFilterIndex]?.value ?? 4;
+      const maxDuration =
+        DURATION_NOTCHES[durationFilterIndex]?.value ?? Infinity;
+      const minResolution =
+        RESOLUTION_NOTCHES[resolutionFilterIndex]?.value ?? 4;
 
       filteredCollection = baseConnection.nodes?.filter((p: any) => {
         // Existing clip-type filter

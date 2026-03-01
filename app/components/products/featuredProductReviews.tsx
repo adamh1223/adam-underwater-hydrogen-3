@@ -207,7 +207,7 @@ function FeaturedReviewsContent({
                 ))}
               </Rating>
               <div
-                className="absolute inset-0 overflow-hidden text-yellow-400"
+                className="absolute inset-0 overflow-hidden text-[#d4af37]"
                 style={{
                   width: `${(averageRating / 5) * 100 + 2}%`,
                 }}

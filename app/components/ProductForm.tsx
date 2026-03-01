@@ -1,6 +1,7 @@
 import {Link, useNavigate} from '@remix-run/react';
 import {
   getAdjacentAndFirstAvailableVariants,
+  type CartReturn,
   type MappedProductOptions,
 } from '@shopify/hydrogen';
 import type {
@@ -21,12 +22,17 @@ import {Card} from '~/components/ui/card';
 import {useMemo} from 'react';
 
 export function ProductForm({
+  cart,
+  productId,
   productOptions,
   selectedVariant,
   imagesToShow,
   VideoAlreadyInCart,
+  isVideo,
   isPrint,
 }: {
+  cart?: Promise<CartReturn | null>;
+  productId: string;
   productOptions: MappedProductOptions[];
   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
   imagesToShow?: SimpleProductImages[];
@@ -179,6 +185,7 @@ export function ProductForm({
           </div>
           <div className="flex individual-a-t-c-print">
             <AddToCartButton
+              cart={cart}
               disabled={
                 !selectedVariant ||
                 !selectedVariant.availableForSale ||
@@ -227,6 +234,7 @@ export function ProductForm({
       {!isPrint && (
         <div className="flex individual-a-t-c py-3">
           <AddToCartButton
+            cart={cart}
             disabled={
               !selectedVariant ||
               !selectedVariant.availableForSale ||
@@ -246,6 +254,7 @@ export function ProductForm({
                   ]
                 : []
             }
+            replaceExistingLineProductId={isVideo ? productId : undefined}
           >
             <div>
               <div className="add-to-cart-btn-product-name">

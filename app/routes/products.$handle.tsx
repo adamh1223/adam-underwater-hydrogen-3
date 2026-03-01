@@ -1348,7 +1348,7 @@ export default function Product() {
                           ))}
                         </Rating>
                         <div
-                          className="absolute inset-0 overflow-hidden text-yellow-400"
+                          className="absolute inset-0 overflow-hidden text-[#d4af37]"
                           style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                         >
                           <Rating readOnly value={5} className="stars">
@@ -1509,7 +1509,7 @@ export default function Product() {
                               ))}
                             </Rating>
                             <div
-                              className="absolute inset-0 overflow-hidden text-yellow-400"
+                              className="absolute inset-0 overflow-hidden text-[#d4af37]"
                               style={{
                                 width: `${(averageRating / 5) * 100 + 2}%`,
                               }}
@@ -1577,6 +1577,8 @@ export default function Product() {
 
               <ProductForm
                 VideoAlreadyInCart={disableButton}
+                cart={cart}
+                productId={product.id}
                 productOptions={productOptions}
                 selectedVariant={selectedVariant}
                 imagesToShow={layoutImagesToUse as SimpleProductImages[]}
@@ -1675,7 +1677,7 @@ export default function Product() {
                               ))}
                             </Rating>
                             <div
-                              className="absolute inset-0 overflow-hidden text-yellow-400"
+                              className="absolute inset-0 overflow-hidden text-[#d4af37]"
                               style={{
                                 width: `${(averageRating / 5) * 100 + 2}%`,
                               }}
@@ -1736,6 +1738,8 @@ export default function Product() {
 
               <ProductForm
                 VideoAlreadyInCart={disableButton}
+                cart={cart}
+                productId={product.id}
                 productOptions={productOptions}
                 selectedVariant={selectedVariant}
                 imagesToShow={layoutImagesToUse as SimpleProductImages[]}
@@ -2384,7 +2388,7 @@ export default function Product() {
                       ))}
                     </Rating>
                     <div
-                      className="absolute inset-0 overflow-hidden text-yellow-400"
+                      className="absolute inset-0 overflow-hidden text-[#d4af37]"
                       style={{width: `${(averageRating / 5) * 100 + 2}%`}}
                     >
                       <Rating readOnly value={5} className="stars">

@@ -1,6 +1,10 @@
 import {type MetaFunction, useLoaderData} from '@remix-run/react';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
+import type {
+  CartLineInput,
+  CartLineUpdateInput,
+} from '@shopify/hydrogen/storefront-api-types';
 import {
   data,
   type LoaderFunctionArgs,
@@ -8,6 +12,291 @@ import {
   type HeadersFunction,
 } from '@shopify/remix-oxygen';
 import {CartMain} from '~/components/CartMain';
+import type {CartApiQueryFragment} from 'storefrontapi.generated';
+type VariantProductSummary = {
+  productId: string;
+  tags: string[];
+};
+
+const VARIANT_PRODUCT_SUMMARY_QUERY = `#graphql
+  query CartVariantProductSummary($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on ProductVariant {
+        id
+        product {
+          id
+          tags
+        }
+      }
+    }
+  }
+`;
+
+function isVideoProduct(tags: string[] | null | undefined) {
+  return Array.isArray(tags) && tags.includes('Video');
+}
+
+function toCartLineInput(line: unknown): CartLineInput | null {
+  if (typeof line !== 'object' || line === null) return null;
+
+  const candidate = line as {
+    merchandiseId?: unknown;
+    quantity?: unknown;
+    attributes?: CartLineInput['attributes'];
+    sellingPlanId?: CartLineInput['sellingPlanId'];
+  };
+
+  if (typeof candidate.merchandiseId !== 'string' || !candidate.merchandiseId) {
+    return null;
+  }
+
+  return {
+    merchandiseId: candidate.merchandiseId,
+    quantity:
+      typeof candidate.quantity === 'number' && Number.isFinite(candidate.quantity)
+        ? candidate.quantity
+        : 1,
+    attributes: candidate.attributes,
+    sellingPlanId: candidate.sellingPlanId,
+  };
+}
+
+function toCartLineUpdateInput(line: unknown): CartLineUpdateInput | null {
+  if (typeof line !== 'object' || line === null) return null;
+
+  const candidate = line as {
+    id?: unknown;
+    merchandiseId?: unknown;
+    quantity?: unknown;
+    attributes?: CartLineUpdateInput['attributes'];
+  };
+
+  if (typeof candidate.id !== 'string' || !candidate.id) return null;
+
+  return {
+    id: candidate.id,
+    merchandiseId:
+      typeof candidate.merchandiseId === 'string' ? candidate.merchandiseId : undefined,
+    quantity:
+      typeof candidate.quantity === 'number' && Number.isFinite(candidate.quantity)
+        ? candidate.quantity
+        : undefined,
+    attributes: candidate.attributes,
+  };
+}
+
+async function getVariantProductSummaries(
+  context: ActionFunctionArgs['context'],
+  variantIds: string[],
+) {
+  const ids = Array.from(new Set(variantIds.filter(Boolean)));
+  const summaryByVariantId = new Map<string, VariantProductSummary>();
+
+  if (!ids.length) return summaryByVariantId;
+
+  const response = await context.storefront.query<{
+    nodes?: Array<
+      | {
+          id: string;
+          product?: {id?: string | null; tags?: string[] | null} | null;
+        }
+      | null
+    >;
+  }>(VARIANT_PRODUCT_SUMMARY_QUERY, {
+    variables: {ids},
+  });
+
+  for (const node of response?.nodes ?? []) {
+    if (!node?.id || !node.product?.id) continue;
+    summaryByVariantId.set(node.id, {
+      productId: node.product.id,
+      tags: Array.isArray(node.product.tags) ? node.product.tags : [],
+    });
+  }
+
+  return summaryByVariantId;
+}
+
+async function runCartMutations({
+  cart,
+  currentCart,
+  updates,
+  removeLineIds,
+  adds,
+}: {
+  cart: ActionFunctionArgs['context']['cart'];
+  currentCart: CartApiQueryFragment | null;
+  updates: CartLineUpdateInput[];
+  removeLineIds: string[];
+  adds: CartLineInput[];
+}) {
+  let result: CartQueryDataReturn | null = null;
+
+  if (updates.length) {
+    result = await cart.updateLines(updates);
+    if (result.errors?.length) return result;
+  }
+
+  if (removeLineIds.length) {
+    result = await cart.removeLines(removeLineIds);
+    if (result.errors?.length) return result;
+  }
+
+  if (adds.length) {
+    result = await cart.addLines(adds);
+    if (result.errors?.length) return result;
+  }
+
+  if (result) return result;
+
+  return {
+    cart: currentCart,
+    errors: [],
+    warnings: [],
+  } as CartQueryDataReturn;
+}
+
+async function handleVideoAwareLineAdd({
+  context,
+  lines,
+}: {
+  context: ActionFunctionArgs['context'];
+  lines: unknown[];
+}) {
+  const normalizedLines = lines.map(toCartLineInput).filter(Boolean);
+  const currentCart = await context.cart.get();
+  const currentLines = currentCart?.lines.nodes ?? [];
+  const incomingVariantSummaries = await getVariantProductSummaries(
+    context,
+    normalizedLines.map((line) => line.merchandiseId),
+  );
+
+  const regularAdds: CartLineInput[] = [];
+  const pendingVideoAdds = new Map<string, CartLineInput>();
+  const videoLineUpdates = new Map<string, CartLineUpdateInput>();
+  const removeLineIds = new Set<string>();
+
+  for (const line of normalizedLines) {
+    const summary = incomingVariantSummaries.get(line.merchandiseId);
+    if (!summary || !isVideoProduct(summary.tags)) {
+      regularAdds.push(line);
+      continue;
+    }
+
+    const videoLine: CartLineInput = {
+      ...line,
+      quantity: 1,
+    };
+
+    const matchingExistingLines = currentLines.filter(
+      (currentLine) => currentLine.merchandise.product.id === summary.productId,
+    );
+
+    if (matchingExistingLines.length) {
+      const keeperLineId =
+        videoLineUpdates.get(summary.productId)?.id ?? matchingExistingLines[0]?.id;
+
+      if (!keeperLineId) {
+        pendingVideoAdds.set(summary.productId, videoLine);
+        continue;
+      }
+
+      videoLineUpdates.set(summary.productId, {
+        id: keeperLineId,
+        merchandiseId: videoLine.merchandiseId,
+        quantity: 1,
+        attributes: videoLine.attributes,
+      });
+
+      for (const duplicateLine of matchingExistingLines) {
+        if (duplicateLine.id !== keeperLineId) {
+          removeLineIds.add(duplicateLine.id);
+        }
+      }
+      pendingVideoAdds.delete(summary.productId);
+      continue;
+    }
+
+    pendingVideoAdds.set(summary.productId, videoLine);
+  }
+
+  return runCartMutations({
+    cart: context.cart,
+    currentCart,
+    updates: Array.from(videoLineUpdates.values()),
+    removeLineIds: Array.from(removeLineIds),
+    adds: [...regularAdds, ...Array.from(pendingVideoAdds.values())],
+  });
+}
+
+async function handleVideoAwareLineUpdate({
+  context,
+  lines,
+}: {
+  context: ActionFunctionArgs['context'];
+  lines: unknown[];
+}) {
+  const normalizedLines = lines.map(toCartLineUpdateInput).filter(Boolean);
+  const currentCart = await context.cart.get();
+  const currentLines = currentCart?.lines.nodes ?? [];
+  const currentLineById = new Map(currentLines.map((line) => [line.id, line]));
+  const incomingVariantSummaries = await getVariantProductSummaries(
+    context,
+    normalizedLines
+      .map((line) => line.merchandiseId)
+      .filter((merchandiseId): merchandiseId is string => Boolean(merchandiseId)),
+  );
+
+  const regularUpdates: CartLineUpdateInput[] = [];
+  const videoUpdates = new Map<string, CartLineUpdateInput>();
+  const videoKeeperLineIds = new Map<string, string>();
+
+  for (const line of normalizedLines) {
+    const existingLine = currentLineById.get(line.id);
+    const summary = line.merchandiseId
+      ? incomingVariantSummaries.get(line.merchandiseId)
+      : existingLine
+        ? {
+            productId: existingLine.merchandise.product.id,
+            tags: Array.isArray(existingLine.merchandise.product.tags)
+              ? existingLine.merchandise.product.tags
+              : [],
+          }
+        : null;
+
+    if (!summary || !isVideoProduct(summary.tags)) {
+      regularUpdates.push(line);
+      continue;
+    }
+
+    videoKeeperLineIds.set(summary.productId, line.id);
+    videoUpdates.set(summary.productId, {
+      ...line,
+      quantity: 1,
+    });
+  }
+
+  const removeLineIds = new Set<string>();
+
+  for (const [productId, keeperLineId] of videoKeeperLineIds) {
+    for (const currentLine of currentLines) {
+      if (
+        currentLine.merchandise.product.id === productId &&
+        currentLine.id !== keeperLineId
+      ) {
+        removeLineIds.add(currentLine.id);
+      }
+    }
+  }
+
+  return runCartMutations({
+    cart: context.cart,
+    currentCart,
+    updates: [...regularUpdates, ...Array.from(videoUpdates.values())],
+    removeLineIds: Array.from(removeLineIds),
+    adds: [],
+  });
+}
 
 export const meta: MetaFunction = () => {
   return [{title: `Adam Underwater | Cart`}];
@@ -31,10 +320,16 @@ export async function action({request, context}: ActionFunctionArgs) {
 
   switch (action) {
     case CartForm.ACTIONS.LinesAdd:
-      result = await cart.addLines(inputs.lines);
+      result = await handleVideoAwareLineAdd({
+        context,
+        lines: Array.isArray(inputs.lines) ? inputs.lines : [],
+      });
       break;
     case CartForm.ACTIONS.LinesUpdate:
-      result = await cart.updateLines(inputs.lines);
+      result = await handleVideoAwareLineUpdate({
+        context,
+        lines: Array.isArray(inputs.lines) ? inputs.lines : [],
+      });
       break;
     case CartForm.ACTIONS.LinesRemove:
       result = await cart.removeLines(inputs.lineIds);
@@ -114,6 +409,7 @@ export default function Cart() {
         <img
           src={'https://downloads.adamunderwater.com/store-1-au/public/mycart.png'}
           style={{height: '110px'}}
+          alt=""
           className="pt-5"
         ></img>
       </div>
