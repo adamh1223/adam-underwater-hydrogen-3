@@ -22,6 +22,8 @@ function ReviewForm({
   productName,
   customerId,
   customerName,
+  customerState,
+  customerCountry,
   updateExistingReviews,
   userReviewExists,
   isBlocked,
@@ -32,8 +34,10 @@ function ReviewForm({
   productName: string;
   customerId: string | undefined;
   customerName: string | undefined;
-  userReviewExists: Boolean;
-  isBlocked: Boolean;
+  customerState?: string;
+  customerCountry?: string;
+  userReviewExists: boolean;
+  isBlocked: boolean;
   updateExistingReviews: (reviews: any[]) => void;
   successToast?: ReviewFormSuccessToast;
   submittedMessage?: string;
@@ -115,6 +119,8 @@ function ReviewForm({
       form.append('stars', String(stars));
       form.append('title', title || '');
       form.append('customerName', customerName || '');
+      form.append('customerState', customerState || '');
+      form.append('customerCountry', customerCountry || '');
       form.append('productName', productName);
 
       if (selectedImage) {

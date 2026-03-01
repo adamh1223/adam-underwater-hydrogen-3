@@ -48,9 +48,13 @@ const mergeProductReviews = (
 function FeaturedReviewsContent({
   response,
   currentCustomerId,
+  currentCustomerState,
+  currentCustomerCountry,
 }: {
   response: FeaturedReviewsQuery;
   currentCustomerId?: string;
+  currentCustomerState?: string;
+  currentCustomerCountry?: string;
 }) {
   const reviewsFromResponse = useMemo(
     () =>
@@ -155,6 +159,8 @@ function FeaturedReviewsContent({
     form.append('stars', updates.stars.toString());
     form.append('title', updates.title);
     form.append('customerName', review.customerName ?? '');
+    form.append('customerState', currentCustomerState ?? '');
+    form.append('customerCountry', currentCustomerCountry ?? '');
     if (updates.image) {
       form.append('image', updates.image);
     }
@@ -237,6 +243,8 @@ function FeaturedReviewsContent({
         reviews={featuredReviews}
         isAdmin={isAdmin}
         currentCustomerId={currentCustomerId}
+        currentCustomerState={currentCustomerState}
+        currentCustomerCountry={currentCustomerCountry}
         showProductLink
         onRemove={handleRemoveReview}
         onEdit={handleEditReview}
@@ -248,9 +256,13 @@ function FeaturedReviewsContent({
 function FeaturedProductReviews({
   reviews,
   currentCustomerId,
+  currentCustomerState,
+  currentCustomerCountry,
 }: {
   reviews: Promise<FeaturedReviewsQuery | null>;
   currentCustomerId?: string;
+  currentCustomerState?: string;
+  currentCustomerCountry?: string;
 }) {
   return (
     <>
@@ -264,6 +276,8 @@ function FeaturedProductReviews({
                 <FeaturedReviewsContent
                   response={response}
                   currentCustomerId={currentCustomerId}
+                  currentCustomerState={currentCustomerState}
+                  currentCustomerCountry={currentCustomerCountry}
                 />
               );
             }}

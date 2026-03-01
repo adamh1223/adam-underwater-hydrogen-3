@@ -21,6 +21,7 @@ import type {Notification} from '~/lib/notifications';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {GET_REVIEW_QUERY} from '~/lib/homeQueries';
+import {getCustomerReviewLocation} from '~/lib/reviews';
 import {toast} from 'sonner';
 
 type RecommendedProduct = {
@@ -122,6 +123,8 @@ export async function loader({context, request}: LoaderFunctionArgs) {
 
   let customerId: string | null = null;
   let customerName: string | null = null;
+  let customerState: string | null = null;
+  let customerCountry: string | null = null;
   let wishlistProducts: string[] = [];
   if (loggedIn) {
     const customerResponse = await context.customerAccount
@@ -137,6 +140,9 @@ export async function loader({context, request}: LoaderFunctionArgs) {
         .join(' ')
         .trim();
       customerName = name.length ? name : null;
+      const location = getCustomerReviewLocation(customer);
+      customerState = location.customerState ?? null;
+      customerCountry = location.customerCountry ?? null;
     }
 
     const wishlistResponse = await context.customerAccount
@@ -230,6 +236,8 @@ export async function loader({context, request}: LoaderFunctionArgs) {
     recommendedProducts,
     customerId,
     customerName,
+    customerState,
+    customerCountry,
     wishlistProducts,
     selectedLeaveReviewOrder,
     selectedLeaveReviewUserReviews,
@@ -403,6 +411,8 @@ function NotificationDetail({
   orderDetails,
   customerId,
   customerName,
+  customerState,
+  customerCountry,
   wishlistProducts,
   userReviewsByProductId,
   isLoadingOrderDetails,
@@ -417,6 +427,8 @@ function NotificationDetail({
   orderDetails?: NotificationOrderDetails | null;
   customerId?: string | null;
   customerName?: string | null;
+  customerState?: string | null;
+  customerCountry?: string | null;
   wishlistProducts?: string[];
   userReviewsByProductId?: Record<string, Review | null> | null;
   isLoadingOrderDetails?: boolean;
@@ -429,6 +441,10 @@ function NotificationDetail({
   const navigate = useNavigate();
   const resolvedCustomerId = typeof customerId === 'string' ? customerId : null;
   const resolvedCustomerName = typeof customerName === 'string' ? customerName : '';
+  const resolvedCustomerState =
+    typeof customerState === 'string' ? customerState : '';
+  const resolvedCustomerCountry =
+    typeof customerCountry === 'string' ? customerCountry : '';
 
   const [localUserReviewsByProductId, setLocalUserReviewsByProductId] = useState<
     Record<string, Review | null>
@@ -502,6 +518,8 @@ function NotificationDetail({
     form.append('stars', updates.stars.toString());
     form.append('title', updates.title);
     form.append('customerName', resolvedCustomerName);
+    form.append('customerState', resolvedCustomerState);
+    form.append('customerCountry', resolvedCustomerCountry);
     if (updates.image) {
       form.append('image', updates.image);
     }
@@ -663,6 +681,12 @@ function NotificationDetail({
                                 }}
                                 isAdmin={false}
                                 currentCustomerId={resolvedCustomerId ?? undefined}
+                                currentCustomerState={
+                                  resolvedCustomerState || undefined
+                                }
+                                currentCustomerCountry={
+                                  resolvedCustomerCountry || undefined
+                                }
                                 onRemove={(review) => handleRemoveReview(productId, review)}
                                 onEdit={(review, updates) =>
                                   handleEditReview(productId, review, updates)
@@ -675,6 +699,10 @@ function NotificationDetail({
                               productName={lineItem.title}
                               customerId={resolvedCustomerId ?? undefined}
                               customerName={resolvedCustomerName || undefined}
+                              customerState={resolvedCustomerState || undefined}
+                              customerCountry={
+                                resolvedCustomerCountry || undefined
+                              }
                               updateExistingReviews={(updatedReviews) => {
                                 const matching = (updatedReviews ?? [])
                                   .filter(
@@ -846,6 +874,8 @@ export default function AccountNotifications() {
     recommendedProducts,
     customerId,
     customerName,
+    customerState,
+    customerCountry,
     wishlistProducts,
     selectedLeaveReviewOrder,
     selectedLeaveReviewUserReviews,
@@ -1275,6 +1305,8 @@ export default function AccountNotifications() {
                   viewportWidth={windowWidth}
 	                customerId={customerId}
 	                customerName={customerName}
+                  customerState={customerState}
+                  customerCountry={customerCountry}
 	              />
             ) : (
               <div className="rounded border p-4 text-sm text-muted-foreground">
@@ -1362,6 +1394,8 @@ export default function AccountNotifications() {
                             userReviewsByProductId={accordionUserReviewsByProductId}
 	                            customerId={customerId}
 	                            customerName={customerName}
+                              customerState={customerState}
+                              customerCountry={customerCountry}
 	                            isLoadingOrderDetails={isLoadingOrderDetails}
 	                            featuredReviewDetail={accordionFeaturedReviewDetail}
 	                            isLoadingFeaturedReviewDetail={isLoadingFeaturedReviewDetail}

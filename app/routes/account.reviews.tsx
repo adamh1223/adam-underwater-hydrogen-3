@@ -10,6 +10,7 @@ import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetails
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {useIsLoggedIn} from '~/lib/hooks';
+import {getCustomerReviewLocation} from '~/lib/reviews';
 
 const CUSTOMER_REVIEWS_QUERY = `#graphql
   query CustomerReviews($country: CountryCode, $language: LanguageCode)
@@ -90,6 +91,8 @@ export default function AccountReviewsRoute() {
   ]
     .join(' ')
     .trim();
+  const {customerState, customerCountry} =
+    getCustomerReviewLocation(resolvedCustomer);
 
   return (
     <div className="account-reviews space-y-3">
@@ -98,6 +101,8 @@ export default function AccountReviewsRoute() {
         products={products}
         customerId={customerId}
         customerName={customerName || undefined}
+        customerState={customerState}
+        customerCountry={customerCountry}
         wishlistProducts={wishlistProducts}
         isLoggedIn={isLoggedIn}
       />

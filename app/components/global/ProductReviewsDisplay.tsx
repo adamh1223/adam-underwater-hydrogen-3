@@ -5,13 +5,29 @@ import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {Button} from '../ui/button';
 import {Input} from '../ui/input';
 import {ReloadIcon} from '@radix-ui/react-icons';
+import {CheckIcon} from 'lucide-react';
 import ReviewMediaCarousel from './ReviewMediaCarousel';
 import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
 import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
 import ReviewVideoPlayer from './ReviewVideoPlayer';
-import { replaceSpacesWithDashes } from '~/utils/grammer';
+import {replaceSpacesWithDashes} from '~/utils/grammer';
+import {formatReviewLocation} from '~/lib/reviews';
 
 const REVIEW_CHAR_LIMIT = 200;
+
+function formatReviewAuthorName(value?: string) {
+  const trimmed = value?.trim();
+  if (!trimmed) return 'Anonymous';
+
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  const firstName = parts[0];
+  const lastName = parts.length > 1 ? parts[parts.length - 1] : '';
+
+  if (!firstName) return 'Anonymous';
+  if (!lastName) return firstName;
+
+  return `${firstName} ${lastName.charAt(0).toUpperCase()}.`;
+}
 
 export interface Review {
   text?: string;
@@ -23,6 +39,8 @@ export interface Review {
   stars?: number | string;
   title?: string;
   customerName?: string;
+  customerState?: string;
+  customerCountry?: string;
   customerImage?: string;
   customerVideo?: string;
   isFeatured?: boolean;
@@ -30,8 +48,10 @@ export interface Review {
 
 interface ProductReviewsDisplayProps {
   review: Review;
-  isAdmin: Boolean;
+  isAdmin: boolean;
   currentCustomerId?: string;
+  currentCustomerState?: string;
+  currentCustomerCountry?: string;
   showProductLink?: boolean;
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
@@ -50,6 +70,8 @@ interface ProductReviewsDisplayProps {
 const ProductReviewsDisplay = ({
   review,
   currentCustomerId,
+  currentCustomerState,
+  currentCustomerCountry,
   onRemove,
   onEdit,
   isAdmin,
@@ -106,14 +128,14 @@ const ProductReviewsDisplay = ({
     typeof stars === 'string' ? parseInt(stars, 10) : (stars ?? 0);
 
   const displayTitle = title?.trim() ? title : 'Review';
-  const displayAuthor = customerName?.trim() ? customerName : 'Anonymous';
+  const displayAuthor = formatReviewAuthorName(customerName);
   const displayText = text ?? '';
   const displayDate = (() => {
     const iso = review.createdAt;
     if (!iso) return '';
 
     // Expecting: YYYY-MM-DDT...
-    const year = iso.slice(0, 4);
+    const year = iso.slice(2, 4);
     const month = iso.slice(5, 7);
     const day = iso.slice(8, 10);
 
@@ -133,6 +155,14 @@ const ProductReviewsDisplay = ({
 
   const isCurrentUserReview =
     customerId && resolvedCustomerId && customerId === resolvedCustomerId;
+  const displayLocation = formatReviewLocation({
+    customerState:
+      review.customerState ??
+      (isCurrentUserReview ? currentCustomerState : undefined),
+    customerCountry:
+      review.customerCountry ??
+      (isCurrentUserReview ? currentCustomerCountry : undefined),
+  });
 
   /** Sync displayed review -> editor state */
   useEffect(() => {
@@ -206,6 +236,50 @@ const ProductReviewsDisplay = ({
     }
   };
 
+  const renderReviewIdentity = ({
+    ratingValue,
+    editable = false,
+    lowered = false,
+  }: {
+    ratingValue: number;
+    editable?: boolean;
+    lowered?: boolean;
+  }) => (
+    <div
+      className={`flex flex-col items-center justify-center text-center ${
+        lowered ? 'pt-3' : ''
+      }`}
+    >
+      <Rating
+        value={ratingValue}
+        onValueChange={editable ? setEditStars : undefined}
+        readOnly={!editable}
+      >
+        {Array.from({length: 5}).map((_, index) => (
+          <RatingButton key={index} className="stars" />
+        ))}
+      </Rating>
+      <div className="flex items-center justify-center gap-1">
+        <span>{displayAuthor}</span>
+        <CheckIcon
+          className="h-4 w-4 text-primary"
+          strokeWidth={4}
+          aria-hidden="true"
+        />
+      </div>
+      {displayLocation && (
+        <div className="flex justify-center text-sm text-muted-foreground">
+          {displayLocation}
+        </div>
+      )}
+      {displayDate && (
+        <div className="flex justify-center text-sm text-muted-foreground">
+          {displayDate}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <Card className="review-card w-full">
       {isEditing ? (
@@ -214,21 +288,18 @@ const ProductReviewsDisplay = ({
             <div className="review-left-side  review-left-side-display">
               <div className="stars-writtenby-buttons">
                 <div className="flex items-center justify-center rating-and-author">
-                  <div>
-                    <Rating value={editStars} onValueChange={setEditStars}>
-                      {Array.from({length: 5}).map((_, index) => (
-                        <RatingButton key={index} className="stars" />
-                      ))}
-                    </Rating>
-                    <div className='flex justify-center'>{displayAuthor}</div>
-                  </div>
+                  {renderReviewIdentity({
+                    ratingValue: editStars,
+                    editable: true,
+                    lowered: true,
+                  })}
                 </div>
                 <div className="review-right-side-slot">
                   <div className="review-right-side-container">
                     <div className="reviewbuttons-container">
                       <div className="review-right-side">
                         <Button
-                        size='reviewbtn'
+                          size="reviewbtn"
                           onClick={handleEdit}
                           disabled={isSaving}
                           className="reviewbutton cursor-pointer mb-2"
@@ -242,7 +313,7 @@ const ProductReviewsDisplay = ({
 
                         <Button
                           variant="outline"
-                          size='reviewbtn'
+                          size="reviewbtn"
                           onClick={() => {
                             resetEditState();
                             setIsEditing(false);
@@ -260,12 +331,13 @@ const ProductReviewsDisplay = ({
 
               {isAdmin && (
                 <div className="mx-5 mb-4 mt-2 flex justify-center">
-
-                  <div className="flex justify-center items-center font-semibold me-2">isFeatured:</div>
+                  <div className="flex justify-center items-center font-semibold me-2">
+                    isFeatured:
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
-                      size='reviewbtn'
+                      size="reviewbtn"
                       variant={editIsFeatured ? 'default' : 'outline'}
                       onClick={() => setEditIsFeatured(true)}
                       disabled={isSaving}
@@ -275,7 +347,7 @@ const ProductReviewsDisplay = ({
                     </Button>
                     <Button
                       type="button"
-                      size='reviewbtn'
+                      size="reviewbtn"
                       variant={!editIsFeatured ? 'default' : 'outline'}
                       onClick={() => setEditIsFeatured(false)}
                       disabled={isSaving}
@@ -396,30 +468,24 @@ const ProductReviewsDisplay = ({
       ) : (
         <>
           <div className="review-container">
-            
             <div className="review-left-side review-left-side-display">
               {(isCurrentUserReview || isAdmin) && (
                 <>
                   <div className="stars-writtenby-buttons">
                     <div className="flex items-center justify-center rating-and-author">
-                      <div>
-                        <Rating value={parsedStars} readOnly>
-                          {Array.from({length: 5}).map((_, index) => (
-                            <RatingButton key={index} className="stars" />
-                          ))}
-                        </Rating>
-
-                        <div className='flex justify-center'>{displayAuthor}</div>
-                      </div>
+                      {renderReviewIdentity({
+                        ratingValue: parsedStars,
+                        lowered: true,
+                      })}
                     </div>
-                    
+
                     <div className="review-right-side-slot">
                       <div className="review-right-side-container">
                         <div className="reviewbuttons-container">
                           <div className="review-right-side">
                             <Button
                               variant="destructive"
-                              size='reviewbtn'
+                              size="reviewbtn"
                               onClick={handleRemove}
                               disabled={isRemoving}
                               className="mb-2 cursor-pointer reviewbutton"
@@ -433,7 +499,7 @@ const ProductReviewsDisplay = ({
 
                             <Button
                               variant="secondary"
-                              size='reviewbtn'
+                              size="reviewbtn"
                               onClick={() => {
                                 resetEditState();
                                 setIsEditing(true);
@@ -454,17 +520,7 @@ const ProductReviewsDisplay = ({
                 <>
                   <div className="stars-writtenby pt-4">
                     <div className="flex items-center justify-center">
-                      <div>
-                        <div className="flex justify-center">
-                          <Rating value={parsedStars} readOnly>
-                            {Array.from({length: 5}).map((_, index) => (
-                              <RatingButton key={index} className="stars" />
-                            ))}
-                          </Rating>
-                        </div>
-
-                        <div className='flex justify-center'>{displayAuthor}</div>
-                      </div>
+                      {renderReviewIdentity({ratingValue: parsedStars})}
                     </div>
                   </div>
                 </>
@@ -479,7 +535,7 @@ const ProductReviewsDisplay = ({
                   </Link>
                 </div>
               )}
-                <div className="customer-media-container pt-2 rounded-md">
+              <div className="customer-media-container pt-2 rounded-md">
                 {customerImage && customerVideo ? (
                   <CarouselZoom items={urls}>
                     {(openAtIndex) => (
@@ -503,7 +559,9 @@ const ProductReviewsDisplay = ({
                       </div>
                     )}
                     {customerVideo && (
-                      <CarouselZoom items={[{url: customerVideo, type: 'video'}]}>
+                      <CarouselZoom
+                        items={[{url: customerVideo, type: 'video'}]}
+                      >
                         {(openAtIndex) => (
                           <div className="home-video px-2 pb-2">
                             <ReviewVideoPlayer
@@ -527,15 +585,9 @@ const ProductReviewsDisplay = ({
                   <div className="ps-5 pt-3">
                     <p className="review-title font-bold">{displayTitle}</p>
                   </div>
-                  <div className="ps-5">
-                    <p className="text-muted-foreground text-sm">
-                      {displayDate}
-                    </p>
-                  </div>
                 </div>
                 <CardContent>
                   <p className="review-body">{displayText}</p>
-                  
                 </CardContent>
               </Card>
             </div>

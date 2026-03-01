@@ -69,6 +69,7 @@ import ProductReviewsCarousel from '~/components/global/ProductReviewsCarousel';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import {getCustomerReviewLocation} from '~/lib/reviews';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -384,6 +385,15 @@ async function loadCriticalData({
   const reviews = await context.storefront.query(GET_REVIEW_QUERY, {
     variables: {productId: product.id},
   });
+  if (reviews?.product?.metafield?.value) {
+    const {hydrateReviewLocationsInMetafieldValue} = await import(
+      '~/lib/reviews.server'
+    );
+    reviews.product.metafield.value = await hydrateReviewLocationsInMetafieldValue(
+      context.env,
+      reviews.product.metafield.value,
+    );
+  }
   let customer = null;
   let wishlistProducts: string[] = [];
   let isLoggedIn = false;
@@ -455,6 +465,9 @@ export default function Product() {
   const customerFirstName = customer?.customer?.firstName ?? '';
   const customerLastName = customer?.customer?.lastName ?? '';
   const customerName = `${customerFirstName} ${customerLastName}`.trim();
+  const {customerState, customerCountry} = getCustomerReviewLocation(
+    customer?.customer,
+  );
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -1051,6 +1064,8 @@ export default function Product() {
     form.append('stars', updates.stars.toString());
     form.append('title', updates.title);
     form.append('customerName', customerName);
+    form.append('customerState', customerState ?? '');
+    form.append('customerCountry', customerCountry ?? '');
     if (updates.image) {
       form.append('image', updates.image);
     }
@@ -2416,6 +2431,8 @@ export default function Product() {
               <ProductReviewsCarousel
                 reviews={reviewsList}
                 currentCustomerId={customerId}
+                currentCustomerState={customerState}
+                currentCustomerCountry={customerCountry}
                 onRemove={handleRemoveReview}
                 onEdit={handleEditReview}
                 isAdmin={isAdmin}
@@ -2425,6 +2442,8 @@ export default function Product() {
                 productName={product.title}
                 customerId={customerId}
                 customerName={customerName}
+                customerState={customerState}
+                customerCountry={customerCountry}
                 updateExistingReviews={updateExistingReviews}
                 userReviewExists={userReviewExists}
                 isBlocked={isBlocked}

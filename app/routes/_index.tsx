@@ -22,6 +22,8 @@ import {
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import FeaturedProductReviews from '~/components/products/featuredProductReviews';
+import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
+import {getCustomerReviewLocation} from '~/lib/reviews';
 
 export const meta: MetaFunction = () => {
   const title = 'Adam Underwater | Underwater Video & Photo';
@@ -80,6 +82,22 @@ export async function loader(args: LoaderFunctionArgs) {
   }
   const isLoggedIn = args.context.customerAccount.isLoggedIn();
   const currentCustomerId = customer.data.customer.id;
+  let currentCustomerState: string | undefined;
+  let currentCustomerCountry: string | undefined;
+
+  try {
+    const customerDetails = await args.context.customerAccount.query(
+      CUSTOMER_DETAILS_QUERY,
+    );
+    const reviewLocation = getCustomerReviewLocation(
+      customerDetails?.data?.customer,
+    );
+    currentCustomerState = reviewLocation.customerState;
+    currentCustomerCountry = reviewLocation.customerCountry;
+  } catch {
+    currentCustomerState = undefined;
+    currentCustomerCountry = undefined;
+  }
 
   let wishlistProducts: string[] = [];
   const wishlistValue = customer.data.customer.metafield?.value;
@@ -102,6 +120,8 @@ export async function loader(args: LoaderFunctionArgs) {
     wishlistProducts,
     isLoggedIn,
     currentCustomerId,
+    currentCustomerState,
+    currentCustomerCountry,
   };
 }
 
@@ -109,7 +129,7 @@ export async function loader(args: LoaderFunctionArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-export async function loadCriticalData({context}: LoaderFunctionArgs) {
+async function loadCriticalData({context}: LoaderFunctionArgs) {
   const [{collections}] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
     // Add other queries here, so that they are loaded in parallel
@@ -125,7 +145,7 @@ export async function loadCriticalData({context}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-export function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData({context}: LoaderFunctionArgs) {
   const recommendedProducts = context.storefront
     .query(RECOMMENDED_PRODUCTS_QUERY)
     .catch((error) => {
@@ -136,6 +156,22 @@ export function loadDeferredData({context}: LoaderFunctionArgs) {
 
   const featuredReviews = context.storefront
     .query(FEATURED_REVIEWS_QUERY)
+    .then(async (response) => {
+      const {hydrateReviewLocationsInMetafieldValue} = await import(
+        '~/lib/reviews.server'
+      );
+      await Promise.all(
+        (response?.products?.nodes ?? []).map(async (node) => {
+          if (!node?.metafield?.value) return;
+          node.metafield.value = await hydrateReviewLocationsInMetafieldValue(
+            context.env,
+            node.metafield.value,
+          );
+        }),
+      );
+
+      return response;
+    })
     .catch((error) => {
       console.error(error);
       return null;
@@ -202,6 +238,8 @@ export default function Homepage() {
         <FeaturedProductReviews
           reviews={data.featuredReviews}
           currentCustomerId={data.currentCustomerId}
+          currentCustomerState={data.currentCustomerState}
+          currentCustomerCountry={data.currentCustomerCountry}
         />
       </div>
     </div>

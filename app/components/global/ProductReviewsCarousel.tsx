@@ -4,8 +4,10 @@ import {Button} from '../ui/button';
 
 interface ProductReviewsCarouselProps {
   reviews: Review[];
-  isAdmin: Boolean;
+  isAdmin: boolean;
   currentCustomerId?: string;
+  currentCustomerState?: string;
+  currentCustomerCountry?: string;
   showProductLink?: boolean;
   onRemove?: (review: Review) => Promise<void> | void;
   onEdit?: (
@@ -25,6 +27,8 @@ export default function ProductReviewsCarousel({
   reviews,
   isAdmin,
   currentCustomerId,
+  currentCustomerState,
+  currentCustomerCountry,
   onRemove,
   onEdit,
   showProductLink = false,
@@ -114,6 +118,8 @@ export default function ProductReviewsCarousel({
                     <ProductReviewsDisplay
                       review={review}
                       currentCustomerId={currentCustomerId}
+                      currentCustomerState={currentCustomerState}
+                      currentCustomerCountry={currentCustomerCountry}
                       onRemove={onRemove}
                       onEdit={onEdit}
                       isAdmin={isAdmin}

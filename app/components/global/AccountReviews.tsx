@@ -13,6 +13,8 @@ interface AccountReviewsProps {
   products: ProductReviewSource[];
   customerId?: string | null;
   customerName?: string;
+  customerState?: string;
+  customerCountry?: string;
   wishlistProducts?: string[];
   isLoggedIn?: Promise<boolean> | undefined;
 }
@@ -100,6 +102,8 @@ const AccountReviews = ({
   products,
   customerId,
   customerName,
+  customerState,
+  customerCountry,
   wishlistProducts,
   isLoggedIn,
 }: AccountReviewsProps) => {
@@ -189,6 +193,8 @@ const AccountReviews = ({
     form.append('stars', updates.stars.toString());
     form.append('title', updates.title);
     form.append('customerName', customerName ?? '');
+    form.append('customerState', customerState ?? '');
+    form.append('customerCountry', customerCountry ?? '');
     if (updates.image) {
       form.append('image', updates.image);
     }
@@ -281,6 +287,8 @@ const AccountReviews = ({
             <ProductReviewsDisplay
               review={entry.review}
               currentCustomerId={customerId ?? undefined}
+              currentCustomerState={customerState}
+              currentCustomerCountry={customerCountry}
               onRemove={() => handleRemoveReview(entry)}
               onEdit={(review, update) => handleEditReview(entry, update)}
               isAdmin={false}

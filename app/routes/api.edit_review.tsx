@@ -6,6 +6,7 @@ import {
   ADMIN_NOTIFICATION_EMAIL,
   sendDirectEmail,
 } from '~/lib/email-provider.server';
+import {formatReviewLocation} from '~/lib/reviews';
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
@@ -17,6 +18,8 @@ export async function action({request, context}: ActionFunctionArgs) {
     const stars = (form.get('stars') as string) ?? '';
     const title = (form.get('title') as string) ?? '';
     let customerName = (form.get('customerName') as string) ?? '';
+    const customerState = (form.get('customerState') as string) ?? '';
+    const customerCountry = (form.get('customerCountry') as string) ?? '';
     const createdAt = form.get('createdAt') as string;
     const imageFile = form.get('image') as File | null;
     const videoFile = form.get('video') as File | null;
@@ -144,6 +147,12 @@ export async function action({request, context}: ActionFunctionArgs) {
       stars: stars || targetReview?.stars || 0,
       title: title || targetReview?.title || '',
       customerName: customerName || targetReview?.customerName || '',
+      customerState: isAdminCustomer
+        ? targetReview?.customerState
+        : customerState || targetReview?.customerState || undefined,
+      customerCountry: isAdminCustomer
+        ? targetReview?.customerCountry
+        : customerCountry || targetReview?.customerCountry || undefined,
       customerImage: newCustomerImage,
       customerVideo: newCustomerVideo,
       isFeatured: isAdminCustomer
@@ -309,6 +318,12 @@ export async function action({request, context}: ActionFunctionArgs) {
         subject: `Review updated: ${productName}`,
         text: [
           `Customer: ${customerName}`,
+          `Location: ${
+            formatReviewLocation({
+              customerState: updatedReview.customerState,
+              customerCountry: updatedReview.customerCountry,
+            }) ?? 'none'
+          }`,
           `Product: ${productName}`,
           `Title: ${title}`,
           `Stars: ${stars}`,
@@ -319,6 +334,12 @@ export async function action({request, context}: ActionFunctionArgs) {
         html: `
           <h2>Review updated</h2>
           <p><strong>Customer:</strong> ${customerName}</p>
+          <p><strong>Location:</strong> ${
+            formatReviewLocation({
+              customerState: updatedReview.customerState,
+              customerCountry: updatedReview.customerCountry,
+            }) ?? 'none'
+          }</p>
           <p><strong>Product:</strong> ${productName}</p>
           <p><strong>Title:</strong> ${title}</p>
           <p><strong>Stars:</strong> ${stars}</p>

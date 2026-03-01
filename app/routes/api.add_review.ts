@@ -5,6 +5,7 @@ import {
   ADMIN_NOTIFICATION_EMAIL,
   sendDirectEmail,
 } from '~/lib/email-provider.server';
+import {formatReviewLocation} from '~/lib/reviews';
 import {uploadReviewMedia} from '~/lib/review-media.server';
 // const BUCKET = 'main-bucket';
 // function getSupabase(env: Env) {
@@ -64,6 +65,8 @@ export async function action({request, context}: ActionFunctionArgs) {
     const stars = form.get('stars') as string;
     const title = form.get('title') as string;
     const customerName = form.get('customerName') as string;
+    const customerState = form.get('customerState') as string;
+    const customerCountry = form.get('customerCountry') as string;
     const imageFile = form.get('image') as File | null;
     const videoFile = form.get('video') as File | null;
 
@@ -178,6 +181,8 @@ export async function action({request, context}: ActionFunctionArgs) {
         productName,
         title,
         customerName,
+        customerState: customerState || undefined,
+        customerCountry: customerCountry || undefined,
         customerImage,
         customerVideo,
         isFeatured: false,
@@ -240,6 +245,12 @@ export async function action({request, context}: ActionFunctionArgs) {
         subject: `New review submitted: ${productName}`,
         text: [
           `Customer: ${customerName}`,
+          `Location: ${
+            formatReviewLocation({
+              customerState,
+              customerCountry,
+            }) ?? 'none'
+          }`,
           `Product: ${productName}`,
           `Title: ${title}`,
           `Stars: ${stars}`,
@@ -250,6 +261,12 @@ export async function action({request, context}: ActionFunctionArgs) {
         html: `
           <h2>New review submitted</h2>
           <p><strong>Customer:</strong> ${customerName}</p>
+          <p><strong>Location:</strong> ${
+            formatReviewLocation({
+              customerState,
+              customerCountry,
+            }) ?? 'none'
+          }</p>
           <p><strong>Product:</strong> ${productName}</p>
           <p><strong>Title:</strong> ${title}</p>
           <p><strong>Stars:</strong> ${stars}</p>
