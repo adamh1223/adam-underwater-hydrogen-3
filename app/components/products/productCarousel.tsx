@@ -146,7 +146,9 @@ export const ProductCarousel = ({
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
+    typeof window === 'undefined' ? undefined : window.innerWidth,
+  );
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
 
@@ -345,6 +347,13 @@ export const ProductCarousel = ({
     windowWidth != undefined
   ) {
     carouselHeight = getVerticalGridCarouselWidth(windowWidth);
+  } else if (
+    (isVertPrimary || isVertOnly) &&
+    layout === 'grid'
+  ) {
+    // Prevent portrait prints from briefly rendering at natural image size
+    // before the viewport-dependent width calculation is available.
+    carouselHeight = 'w-56';
   } else if (
     // Vertical Only / List / 28
     isVertOnly &&

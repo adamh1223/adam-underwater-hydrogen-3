@@ -17,6 +17,7 @@ export default defineConfig({
     allowedHosts: [
       '.tryhydrogen.dev',
       '.trycloudflare.com',
+      '.free.pinggy.link',
       'localhost',
       '127.0.0.1',
     ],

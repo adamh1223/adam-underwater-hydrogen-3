@@ -16,7 +16,6 @@ import {
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import {Button} from './ui/button';
 import {EnhancedPartialSearchResult} from '~/lib/types';
-import {Input} from './ui/input';
 import {LuSearch} from 'react-icons/lu';
 import {
   InputGroup,
@@ -118,19 +117,22 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
               fetchResults(e);
             };
             return (
-              <>
-                <div className="flex justify-center mb-5 mx-3 bg-background">
-                  <Input
-                    className="overflow-clip search-input w-[220px]"
-                    name="q"
-                    onChange={handleChange}
-                    onFocus={fetchResults}
-                    placeholder="Search"
-                    ref={inputRef}
-                    type="search"
-                    list={queriesDatalistId}
-                  />
-                  &nbsp;
+              <div className="flex flex-col items-center mb-5 mx-3 bg-background">
+                <div className="flex items-center gap-2">
+                  <InputGroup className="w-[220px]">
+                    <InputGroupAddon align="inline-start">
+                      <LuSearch className="text-muted-foreground" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      name="q"
+                      onChange={handleChange}
+                      onFocus={fetchResults}
+                      placeholder="Search"
+                      ref={inputRef}
+                      type="search"
+                      list={queriesDatalistId}
+                    />
+                  </InputGroup>
                   <Button
                     variant="outline"
                     onClick={handleClick}
@@ -139,7 +141,10 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
                     Search
                   </Button>
                 </div>
-              </>
+                <p className="text-muted-foreground text-[11px] mt-1.5 w-[220px] text-left pl-8">
+                  Try &ldquo;Sea Lion&rdquo; or &ldquo;Night&rdquo;
+                </p>
+              </div>
             );
           }}
         </SearchFormPredictive>
@@ -150,8 +155,20 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
 
             if (state === 'loading' && term.current) {
               return (
-                <div className="flex justify-center text-lg fw-bold">
-                  Loading...
+                <div className="flex flex-col gap-3 px-3">
+                  {Array.from({length: 2}).map((_, i) => (
+                    <Card key={`aside-skel-${i}`} className="h-full mb-1 pb-1">
+                      <CardContent className="flex flex-col h-full p-0">
+                        <Skeleton className="w-full rounded-b-none rounded-t-xl aspect-[16/10]" />
+                        <div className="flex flex-col items-center gap-2 px-3 py-3">
+                          <Skeleton className="h-4 w-3/5" />
+                          <Skeleton className="h-3.5 w-2/5" />
+                          <Skeleton className="h-3.5 w-1/4" />
+                          <Skeleton className="h-8 w-full rounded-md mt-0.5" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               );
             }

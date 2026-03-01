@@ -1,0 +1,75 @@
+#!/bin/bash
+# Wrapper script that mimics cloudflared output but uses localtunnel.
+# Used when Cloudflare's quick tunnel API is rate-limiting.
+# Shopify CLI reads stdout for a URL and connection messages.
+
+# Handle --version flag (Shopify CLI checks this during install step)
+if [[ "$1" == "--version" || "$1" == "version" ]]; then
+  echo "cloudflared version 2026.2.0 (localtunnel-wrapper)"
+  exit 0
+fi
+
+# Extract port from args: cloudflared tunnel --url http://localhost:PORT --no-autoupdate
+PORT=""
+for arg in "$@"; do
+  if [[ "$arg" =~ http://localhost:([0-9]+) ]]; then
+    PORT="${BASH_REMATCH[1]}"
+  fi
+done
+
+if [ -z "$PORT" ]; then
+  PORT=3000
+fi
+
+# Start localtunnel in background and capture its output
+TMPFILE=$(mktemp)
+npx --yes localtunnel --port "$PORT" > "$TMPFILE" 2>&1 &
+LT_PID=$!
+
+# Wait for localtunnel to produce a URL (up to 20 seconds)
+ATTEMPTS=0
+URL=""
+while [ $ATTEMPTS -lt 40 ]; do
+  if [ -f "$TMPFILE" ]; then
+    URL=$(grep -o 'https://[^ ]*\.loca\.lt' "$TMPFILE" | head -1)
+    if [ -n "$URL" ]; then
+      break
+    fi
+  fi
+  sleep 0.5
+  ATTEMPTS=$((ATTEMPTS + 1))
+done
+
+if [ -z "$URL" ]; then
+  echo "ERR Failed to start localtunnel" >&2
+  kill $LT_PID 2>/dev/null
+  rm -f "$TMPFILE"
+  exit 1
+fi
+
+# Output in the format Shopify CLI expects:
+# 1. The URL (findUrl looks for https://xxx.DOMAIN)
+echo "INF +---------------------------------------------------+"
+echo "INF |  Your quick tunnel has been created! Visit it at:  |"
+echo "INF |  $URL  |"
+echo "INF +---------------------------------------------------+"
+# 2. Connection established messages (findConnection looks for these)
+echo "INF Registered tunnel connection connIndex=0"
+echo "INF Registered tunnel connection connIndex=1"
+echo "INF Registered tunnel connection connIndex=2"
+echo "INF Registered tunnel connection connIndex=3"
+
+# Keep running until killed (the Shopify CLI will send SIGTERM/SIGINT)
+cleanup() {
+  kill $LT_PID 2>/dev/null
+  rm -f "$TMPFILE"
+  exit 0
+}
+trap cleanup SIGTERM SIGINT EXIT
+
+# Keep alive
+while kill -0 $LT_PID 2>/dev/null; do
+  sleep 1
+done
+
+rm -f "$TMPFILE"

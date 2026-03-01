@@ -15,7 +15,11 @@ interface AugmentedPartialSearchResult {
     maxVariantPrice: {amount: string; currencyCode: CurrencyCode};
   };
 
-  selectedOrFirstAvailableVariant?: {id: string};
+  selectedOrFirstAvailableVariant?: {
+    id: string;
+    price?: {amount: string; currencyCode: CurrencyCode};
+    compareAtPrice?: {amount: string; currencyCode: CurrencyCode} | null;
+  };
 }
 export type EnhancedPartialSearchResult =
   PartialPredictiveSearchResult<'products'> & AugmentedPartialSearchResult;

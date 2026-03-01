@@ -184,6 +184,10 @@ fragment MoneyProductItem on MoneyV2 {
         amount
         currencyCode
       }
+      compareAtPrice {
+        amount
+        currencyCode
+      }
     }
     options {
       name

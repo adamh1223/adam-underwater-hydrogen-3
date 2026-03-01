@@ -5,6 +5,7 @@ import {
   type MetaFunction,
   useSearchParams,
   Form,
+  useFetcher,
 } from '@remix-run/react';
 import {
   getPaginationVariables,
@@ -20,12 +21,11 @@ import {
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {Card, CardContent} from '~/components/ui/card';
 import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
-import {useEffect, useId, useRef, useState} from 'react';
+import {useEffect, useId, useMemo, useRef, useState} from 'react';
 import {
   LuFilter,
   LuFilterX,
@@ -40,7 +40,6 @@ import {
 } from '~/lib/resolution';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {Input} from '~/components/ui/input';
-import {Skeleton} from '~/components/ui/skeleton';
 import {
   InputGroup,
   InputGroupAddon,
@@ -51,6 +50,7 @@ import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {capitalizeFirstLetter} from '~/utils/grammer';
 import {EnhancedPartialSearchResult} from '~/lib/types';
+import {type PredictiveSearchReturn} from '~/lib/search';
 import Product from './products.$handle';
 import {Checkbox} from '~/components/ui/checkbox';
 import ToggleSwitch from '~/components/global/ToggleSwitch';
@@ -497,6 +497,55 @@ function getHighestResolutionNumber(product: {
   return 4; // default — all products have at least 4K
 }
 
+function getFilteredCollectionSearchProducts({
+  products,
+  collectionHandle,
+  collectionTitle,
+  stockFilterState,
+}: {
+  products: EnhancedPartialSearchResult[];
+  collectionHandle?: string;
+  collectionTitle?: string | null;
+  stockFilterState: 'All Clips' | 'Discounted Bundles';
+}) {
+  const extraTags: string[] = [];
+  const collectionName = capitalizeFirstLetter(collectionTitle ?? '');
+
+  if (collectionName === 'Stock') {
+    extraTags.push('Video');
+  }
+
+  const filteredProducts = products.filter((product) =>
+    product?.tags?.includes(collectionName),
+  );
+  const extraFilteredProducts =
+    extraTags.length > 0
+      ? products.filter((product) =>
+          product?.tags?.some((tag) => extraTags.includes(tag)),
+        )
+      : [];
+  const combinedProductSearches = [
+    ...filteredProducts,
+    ...extraFilteredProducts,
+  ];
+
+  if (collectionHandle !== 'stock') {
+    return combinedProductSearches;
+  }
+
+  return combinedProductSearches.filter((product) => {
+    if (stockFilterState === 'All Clips') {
+      return product.tags.includes('Video') && !product.tags.includes('Bundle');
+    }
+
+    if (stockFilterState === 'Discounted Bundles') {
+      return product.tags.includes('Bundle');
+    }
+
+    return true;
+  });
+}
+
 export default function Collection() {
   const {collection, searchTerm, cart, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
@@ -525,11 +574,6 @@ export default function Collection() {
   useEffect(() => {
     setSearchText('');
   }, [collection?.handle]);
-  useEffect(() => {
-    if (searchText === '') {
-      setTotalProductCount(productState?.nodes?.length);
-    }
-  }, [searchText]);
   type PrintsFilterState = 'All' | 'Horizontal' | 'Vertical';
   type StockFilterState = 'All Clips' | 'Discounted Bundles';
 
@@ -598,9 +642,42 @@ export default function Collection() {
   const [stockFilterState, setStockFilterState] =
     useState<StockFilterState>('All Clips');
   const [productState, setProductState] = useState(collection?.products);
-  const [totalProductCount, setTotalProductCount] = useState(
-    productState?.nodes?.length,
+  const searchFetcher = useFetcher<PredictiveSearchReturn>({key: 'search'});
+  const [committedSearchProducts, setCommittedSearchProducts] = useState<
+    EnhancedPartialSearchResult[] | null
+  >(null);
+  const activeSearchText = searchText ?? '';
+  const hasActiveSearchText = activeSearchText.length > 0;
+  const predictiveProducts = useMemo(
+    () =>
+      getFilteredCollectionSearchProducts({
+        products:
+          (searchFetcher.data?.type === 'predictive'
+            ? searchFetcher.data.result.items.products
+            : []) as EnhancedPartialSearchResult[],
+        collectionHandle: collection?.handle,
+        collectionTitle: collection?.title,
+        stockFilterState,
+      }),
+    [
+      searchFetcher.data,
+      collection?.handle,
+      collection?.title,
+      stockFilterState,
+    ],
   );
+  const predictiveQueries =
+    searchFetcher.data?.type === 'predictive'
+      ? searchFetcher.data.result.items.queries
+      : [];
+  const baseProductCount = productState?.nodes?.length ?? 0;
+  const displayedSearchProducts =
+    hasActiveSearchText && committedSearchProducts
+      ? committedSearchProducts
+      : ((productState?.nodes ?? []) as unknown as EnhancedPartialSearchResult[]);
+  const displayedProductCount = hasActiveSearchText
+    ? committedSearchProducts?.length ?? baseProductCount
+    : baseProductCount;
 
   useEffect(() => {
     if (collection?.handle !== 'prints') {
@@ -776,7 +853,6 @@ export default function Collection() {
       ...baseConnection,
       nodes: filteredCollection,
     });
-    setTotalProductCount(filteredCollection?.length);
   }, [
     collection?.handle,
     collection?.products,
@@ -786,13 +862,36 @@ export default function Collection() {
     resolutionFilterIndex,
   ]);
 
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (!hasActiveSearchText) {
+      setCommittedSearchProducts(null);
+      return;
+    }
+
+    if (searchFetcher.state !== 'idle') return;
+    if (searchFetcher.data?.type !== 'predictive') return;
+    if (searchFetcher.data.term !== activeSearchText) return;
+
+    setCommittedSearchProducts(predictiveProducts);
+  }, [
+    hasActiveSearchText,
+    activeSearchText,
+    searchFetcher.state,
+    searchFetcher.data,
+    predictiveProducts,
+  ]);
+
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
+    typeof window === 'undefined' ? undefined : window.innerWidth,
+  );
   const gridColumnCount =
     windowWidth != undefined
       ? Math.max(1, Math.floor((windowWidth - 1) / 700) + 1)
       : 1;
   const productsContainerStyle =
-    (isPrintsGridLayout || isStockGridLayout) && layout === 'grid'
+    (isPrintsGridLayout || isStockGridLayout) &&
+    layout === 'grid' &&
+    windowWidth != undefined
       ? {gridTemplateColumns: `repeat(${gridColumnCount}, minmax(0, 1fr))`}
       : undefined;
   useEffect(() => {
@@ -802,7 +901,7 @@ export default function Collection() {
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
 
   useEffect(() => {
     const isSupportedCollection =
@@ -883,7 +982,7 @@ export default function Collection() {
   }, [collection?.handle]);
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       {collection?.handle === 'prints' && <ProductsHeader />}
       {collection?.handle === 'stock' && <EProductsHeader />}
 
@@ -954,7 +1053,8 @@ export default function Collection() {
             <div className="product-counter-container">
               <div className="flex flex-col items-end">
                 <h4 className="font-medium text-xl">
-                  {totalProductCount} product{totalProductCount > 1 && 's'}
+                  {displayedProductCount} product
+                  {displayedProductCount > 1 && 's'}
                 </h4>
               </div>
             </div>
@@ -997,13 +1097,13 @@ export default function Collection() {
                         {searchText && (
                           <InputGroupAddon align="inline-end">
                             <span className="text-muted-foreground text-xs whitespace-nowrap">
-                              {totalProductCount} result
-                              {totalProductCount !== 1 ? 's' : ''}
+                              {displayedProductCount} result
+                              {displayedProductCount !== 1 ? 's' : ''}
                             </span>
                           </InputGroupAddon>
                         )}
                       </InputGroup>
-                      <p className="text-muted-foreground text-[11px] mt-1.5">
+                      <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
                         Try &ldquo;Sea Lion&rdquo; or &ldquo;Night&rdquo;
                       </p>
                     </div>
@@ -1099,13 +1199,13 @@ export default function Collection() {
                               {searchText && (
                                 <InputGroupAddon align="inline-end">
                                   <span className="text-muted-foreground text-xs whitespace-nowrap">
-                                    {totalProductCount} result
-                                    {totalProductCount !== 1 ? 's' : ''}
+                                    {displayedProductCount} result
+                                    {displayedProductCount !== 1 ? 's' : ''}
                                   </span>
                                 </InputGroupAddon>
                               )}
                             </InputGroup>
-                            <p className="text-muted-foreground text-[11px] mt-1.5">
+                            <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
                               Try &ldquo;Sea Lion&rdquo; or
                               &ldquo;Night&rdquo;
                             </p>
@@ -1123,7 +1223,8 @@ export default function Collection() {
                 <div className="product-counter-container">
                   <div className="flex flex-col items-end">
                     <h4 className="font-medium text-xl">
-                      {totalProductCount} product{totalProductCount > 1 && 's'}
+                      {displayedProductCount} product
+                      {displayedProductCount > 1 && 's'}
                     </h4>
                   </div>
                 </div>
@@ -1193,121 +1294,35 @@ export default function Collection() {
       )}
 
       <Separator className="mt-4" />
-      <div className={layoutClassName} style={productsContainerStyle}>
-        {searchText && (
-          // <SearchResultsPredictive>
-          //   {({items, total, term, state, closeSearch}) => {
-          //     const {articles, collections, pages, products, queries} = items;
-
-          //     if (state === 'loading' && term.current) {
-          //       return <div>Loading...</div>;
-          //     }
-
-          //     if (!total) {
-          //       return <SearchResultsPredictive.Empty term={term} />;
-          //     }
-
-          //     return (
-          //       <>
-          //         <SearchResultsPredictive.Products
-          //           products={products}
-          //           layout={layout}
-          //           closeSearch={closeSearch}
-          //           term={term}
-          //         />
-          //       </>
-          //     );
-          //   }}
-          // </SearchResultsPredictive>
-
-          <SearchResultsPredictive>
-            {({items, total, term, state, closeSearch}) => {
-              const {articles, collections, pages, products, queries} = items;
-
-              const extraTags: string[] = [];
-              const collectionName = capitalizeFirstLetter(collection?.title);
-              if (collectionName === 'Stock') {
-                extraTags.push('Video');
-                // For other types of EProducts, push that tag here
-              }
-              const filteredProducts = products.filter((product) =>
-                product?.tags?.includes(collectionName),
-              );
-              const extraFilteredProducts =
-                extraTags?.length > 0
-                  ? products.filter((product) =>
-                      product?.tags?.some((tag) => extraTags.includes(tag)),
-                    )
-                  : [];
-              const combinedProductSearches = [
-                ...filteredProducts,
-                ...extraFilteredProducts,
-              ];
-              const stockFilteredSearches =
-                collection?.handle === 'stock'
-                  ? combinedProductSearches.filter((product) => {
-                      if (stockFilterState === 'All Clips') {
-                        return (
-                          product.tags.includes('Video') &&
-                          !product.tags.includes('Bundle')
-                        );
-                      }
-                      if (stockFilterState === 'Discounted Bundles') {
-                        return product.tags.includes('Bundle');
-                      }
-                      return true;
-                    })
-                  : combinedProductSearches;
-
-              setTotalProductCount(stockFilteredSearches?.length);
-
-              if (state === 'loading' && term.current) {
-                const skeletonCount = Math.max(
-                  2,
-                  gridColumnCount * 2,
-                );
-                return (
-                  <>
-                    {Array.from({length: skeletonCount}).map((_, i) => (
-                      <Card key={`skel-${i}`} className="h-full mb-1 pb-1">
-                        <CardContent className="flex flex-col h-full p-0">
-                          <Skeleton className="w-full rounded-b-none rounded-t-xl aspect-[16/10]" />
-                          <div className="flex flex-col items-center gap-2 px-3 py-3">
-                            <Skeleton className="h-4 w-3/5" />
-                            <Skeleton className="h-3.5 w-2/5" />
-                            <Skeleton className="h-3.5 w-1/4" />
-                            <Skeleton className="h-8 w-full rounded-md mt-0.5" />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </>
-                );
-              }
-
-              if (!total) {
-                return <SearchResultsPredictive.Empty term={term} />;
-              }
-
-              return (
-                <>
-                  <SearchResultsPredictive.Products
-                    products={
-                      stockFilteredSearches as unknown as EnhancedPartialSearchResult[]
-                    }
-                    layout={layout}
-                    term={term}
-                    collectionHandle={collection?.handle}
-                    cart={cart}
-                    wishlistProducts={wishlistProducts as string[]}
-                    isLoggedIn={isLoggedIn}
-                  />
-                </>
-              );
-            }}
-          </SearchResultsPredictive>
-        )}
-        {!searchText && (
+      {searchText && (
+        <>
+          <SearchResultsPredictive.Queries
+            queries={predictiveQueries}
+            queriesDatalistId={queriesDatalistId}
+          />
+          {committedSearchProducts && committedSearchProducts.length === 0 ? (
+            <div className="flex justify-center px-4 py-6 text-center">
+              <SearchResultsPredictive.Empty
+                term={{current: activeSearchText}}
+              />
+            </div>
+          ) : (
+            <div className={layoutClassName} style={productsContainerStyle}>
+              <SearchResultsPredictive.Products
+                products={displayedSearchProducts}
+                layout={layout}
+                term={{current: activeSearchText}}
+                collectionHandle={collection?.handle}
+                cart={cart}
+                wishlistProducts={wishlistProducts as string[]}
+                isLoggedIn={isLoggedIn}
+              />
+            </div>
+          )}
+        </>
+      )}
+      {!searchText && (
+        <div className={layoutClassName} style={productsContainerStyle}>
           <PaginatedResourceSection
             connection={productState}
             resourcesClassName="products-grid"
@@ -1351,6 +1366,7 @@ export default function Collection() {
               );
             }}
           </PaginatedResourceSection>
+        </div>
         )}
         <Analytics.CollectionView
           data={{
@@ -1360,7 +1376,6 @@ export default function Collection() {
             },
           }}
         />
-      </div>
       {/* {collection?.handle === 'stock' && <RecommendedProducts
         products={data?.recommendedProducts}
         isLoggedIn={data.isLoggedIn}

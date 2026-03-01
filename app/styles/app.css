@@ -16,6 +16,10 @@ body {
   overflow-x: clip;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 /*
 * --------------------------------------------------
 * Non anchor links
@@ -491,6 +495,29 @@ button.reset:hover:not(:has(> *)) {
   height: 100%;
 }
 
+.predictive-search-empty {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.predictive-search-empty > * {
+  min-width: 0;
+}
+
+.predictive-search-empty q {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .search-result {
   margin-bottom: 1.5rem;
 }
@@ -550,6 +577,7 @@ button.reset:hover:not(:has(> *)) {
     row-gap: 8px;
     padding: 10px;
     align-items: stretch;
+    overflow-x: hidden;
   }
   .prods-grid > * {
     height: 100%;
@@ -583,6 +611,7 @@ button.reset:hover:not(:has(> *)) {
     row-gap: 8px;
     padding: 10px;
     align-items: stretch;
+    overflow-x: hidden;
   }
   .prods-grid > * {
     height: 100%;

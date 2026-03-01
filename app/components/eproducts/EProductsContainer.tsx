@@ -773,7 +773,7 @@ function EProductsContainer({
                 </div>
               )}
               {/* GRID VIEW / SMALL VW / BOTTOM-PART-CARD */}
-              {layout === 'grid' && windowWidth != undefined && (
+              {layout === 'grid' && (
                 <div className="eproduct-bottom-part-card-grid">
                   <div className="eproduct-bottom-part-card-inside relative w-full">
                     <div

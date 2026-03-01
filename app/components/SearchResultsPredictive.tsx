@@ -195,7 +195,7 @@ interface PredictiveSearchLayout {
   products: EnhancedPartialSearchResult[];
   collectionHandle?: string;
   cart?: Promise<CartReturn | null>;
-  showProductHeader?: Boolean;
+  showProductHeader?: boolean;
   wishlistProducts: string[];
   isLoggedIn: Promise<boolean> | undefined;
 }
@@ -214,11 +214,10 @@ function SearchResultsPredictiveProducts({
   return (
     <>
       {products.map((product) => {
-        
         const isInWishlist = wishlistProducts?.includes(product.id);
         if (product.tags.includes('Prints')) {
           return (
-            <>
+            <React.Fragment key={product.id}>
               {showProductHeader && (
                 <div className="m-5">
                   <div className="flex justify-center pb-2">
@@ -240,13 +239,13 @@ function SearchResultsPredictiveProducts({
                   isLoggedIn={isLoggedIn}
                 />
               )}
-            </>
+            </React.Fragment>
           );
         }
         if (product.tags.includes('Video')) {
           const isBundle = product.tags.includes('Bundle');
           return (
-            <>
+            <React.Fragment key={product.id}>
               {showProductHeader && (
                 <div className="mx-5 mb-5">
                   <div className="flex justify-center pb-2">
@@ -272,9 +271,11 @@ function SearchResultsPredictiveProducts({
                   isLoggedIn={isLoggedIn}
                 />
               )}
-            </>
+            </React.Fragment>
           );
         }
+
+        return null;
       })}
     </>
   );
@@ -309,8 +310,9 @@ function SearchResultsPredictiveEmpty({
   }
 
   return (
-    <div className="flex justify-center text-lg fw-bold">
-      No results found for &nbsp;<q>{term.current}</q>
+    <div className="predictive-search-empty text-lg fw-bold">
+      <span>No results found for</span>
+      <q>{term.current}</q>
     </div>
   );
 }

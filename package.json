@@ -7,7 +7,8 @@
   "scripts": {
     "build": "shopify hydrogen build --codegen",
     "dev": "shopify hydrogen dev --codegen",
-    "dev:fresh": "pkill -f \"shopify hydrogen dev\" || true; pkill -f \"vite/node_modules/@esbuild/darwin-arm64/bin/esbuild\" || true; shopify hydrogen dev --customer-account-push__unstable",
+    "dev:fresh": "pkill -f \"shopify hydrogen dev\" || true; pkill -f \"vite/node_modules/@esbuild/darwin-arm64/bin/esbuild\" || true; SHOPIFY_CLI_CLOUDFLARED_PATH=/opt/homebrew/bin/cloudflared shopify hydrogen dev --customer-account-push__unstable",
+    "dev:tunnel": "pkill -f \"shopify hydrogen dev\" || true; pkill -f \"vite/node_modules/@esbuild/darwin-arm64/bin/esbuild\" || true; SHOPIFY_CLI_CLOUDFLARED_PATH=\"$(pwd)/bin/cloudflared-pinggy\" SHOPIFY_CLI_CLOUDFLARED_DOMAIN=free.pinggy.link shopify hydrogen dev --customer-account-push__unstable",
     "preview": "shopify hydrogen preview --build",
     "lint": "eslint --no-error-on-unmatched-pattern .",
     "typecheck": "tsc --noEmit",
