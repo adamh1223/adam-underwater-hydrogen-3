@@ -31,7 +31,7 @@ import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduc
 import IndividualVideoBundle, {
   type BundleDetailClip,
 } from '~/components/eproducts/IndividualVideoBundle';
-import {warmImageUrls} from '~/lib/imageWarmup';
+import {markWarmedImageUrl} from '~/lib/imageWarmup';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {RootLoader} from '~/root';
@@ -461,6 +461,8 @@ export default function Product() {
   } = useLoaderData<typeof loader>();
 
   const [isPageReady, setIsPageReady] = useState(false);
+  const [initialLoadedGateImageUrl, setInitialLoadedGateImageUrl] =
+    useState('');
   const hasCalledLoad = useRef(false);
   const productImgRef = useRef<HTMLImageElement>(null);
 
@@ -515,6 +517,8 @@ export default function Product() {
     selectedOrFirstAvailableVariant,
     tags,
   } = product;
+  const currentGateImageUrl =
+    selectedVariant?.image?.url ?? featuredImage?.url ?? '';
 
   const WMLink = tags.filter((tag: string) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
@@ -831,9 +835,11 @@ export default function Product() {
   const isVideoBundle = isVideo && isBundle;
 
   useEffect(() => {
-    if (!(isPageReady && isPrint && allPrintProductImages.length > 0)) return;
-    void warmImageUrls(allPrintProductImages.map((image) => image.url));
-  }, [allPrintProductImages, isPageReady, isPrint]);
+    if (!isPageReady || !currentGateImageUrl || initialLoadedGateImageUrl)
+      return;
+    setInitialLoadedGateImageUrl(currentGateImageUrl);
+    markWarmedImageUrl(currentGateImageUrl);
+  }, [currentGateImageUrl, initialLoadedGateImageUrl, isPageReady]);
 
   const bundleDetailClips = useMemo(
     () =>
@@ -1297,7 +1303,7 @@ export default function Product() {
     {/* Hidden preloader for featured image to trigger skeleton gate */}
     <img
       ref={productImgRef}
-      src={selectedVariant?.image?.url ?? featuredImage?.url ?? ''}
+      src={currentGateImageUrl}
       alt=""
       style={{position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none'}}
       onLoad={handleProductImgLoad}
@@ -1478,6 +1484,11 @@ export default function Product() {
               threeDViewImages={threeDImagesToUse}
               allProductImages={allPrintProductImages}
               enableBackgroundImageWarmup={isPageReady && isPrint}
+              initialLoadedImages={
+                initialLoadedGateImageUrl
+                  ? [{url: initialLoadedGateImageUrl, altText: title}]
+                  : []
+              }
             ></IndividualProduct>
           )}
           {isVideo && !isBundle && (
@@ -2618,6 +2629,8 @@ const PRODUCT_FRAGMENT = `#graphql
       nodes {
         url
         altText
+        width
+        height
       }
     }
     options {

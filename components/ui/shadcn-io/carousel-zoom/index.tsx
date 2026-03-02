@@ -174,7 +174,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
             )}
           >
             <div className="flex h-full w-full flex-col gap-3 p-4">
-              <div className="flex w-full items-start justify-end pe-3">
+              <div className="flex w-full items-start justify-start ps-3">
                 <DialogClose
                   onPointerDown={handleCloseButtonPointerDown}
                   onClick={handleCloseButtonClick}

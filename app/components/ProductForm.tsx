@@ -119,7 +119,7 @@ export function ProductForm({
                     <Link
                       className="product-options-item"
                       key={option.name + name}
-                      prefetch="intent"
+                      prefetch={isPrint ? 'render' : 'intent'}
                       preventScrollReset
                       replace
                       to={`/products/${handle}?${variantUriQuery}`}

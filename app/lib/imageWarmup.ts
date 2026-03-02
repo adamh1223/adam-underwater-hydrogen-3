@@ -1,8 +1,30 @@
 const warmedImageUrls = new Set<string>();
 const imageWarmPromises = new Map<string, Promise<void>>();
+const DEFAULT_MAX_CONCURRENT_WARMS = 2;
+
+export function getOptimizedImageUrl(url: string, width: number) {
+  if (!url || !Number.isFinite(width) || width <= 0) return url;
+
+  try {
+    const parsedUrl = new URL(url);
+    if (!parsedUrl.hostname.includes('shopify.com')) {
+      return url;
+    }
+
+    parsedUrl.searchParams.set('width', String(Math.round(width)));
+    return parsedUrl.toString();
+  } catch {
+    return url;
+  }
+}
 
 export function hasWarmedImageUrl(url: string) {
   return warmedImageUrls.has(url);
+}
+
+export function markWarmedImageUrl(url: string) {
+  if (!url) return;
+  warmedImageUrls.add(url);
 }
 
 export function warmImageUrl(url: string): Promise<void> {
@@ -52,9 +74,27 @@ export function warmImageUrl(url: string): Promise<void> {
   return warmPromise;
 }
 
-export function warmImageUrls(urls: string[]) {
+export function warmImageUrls(
+  urls: string[],
+  options?: {maxConcurrent?: number},
+) {
   const uniqueUrls = Array.from(new Set(urls.filter(Boolean)));
-  return Promise.all(uniqueUrls.map((url) => warmImageUrl(url))).then(
-    () => undefined,
+  const maxConcurrent = Math.max(
+    1,
+    Math.floor(options?.maxConcurrent ?? DEFAULT_MAX_CONCURRENT_WARMS),
   );
+
+  let currentIndex = 0;
+
+  async function warmNextBatch(): Promise<void> {
+    if (currentIndex >= uniqueUrls.length) return;
+
+    const batch = uniqueUrls.slice(currentIndex, currentIndex + maxConcurrent);
+    currentIndex += maxConcurrent;
+
+    await Promise.all(batch.map((url) => warmImageUrl(url)));
+    await warmNextBatch();
+  }
+
+  return warmNextBatch();
 }
