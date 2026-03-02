@@ -25,6 +25,7 @@ import FeaturedProductReviews from '~/components/products/featuredProductReviews
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import {getCustomerReviewLocation} from '~/lib/reviews';
 import HomePageSkeleton from '~/components/home/HomePageSkeleton';
+import {useEntranceSkeletonReady} from '~/components/skeletons/shared';
 
 export const meta: MetaFunction = () => {
   const title = 'Adam Underwater | Underwater Video & Photo';
@@ -188,6 +189,7 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   const location = useLocation();
   const [isPageReady, setIsPageReady] = useState(false);
+  const isContentReady = useEntranceSkeletonReady(isPageReady);
 
   useEffect(() => {
     const hashTarget = location.hash ? location.hash.replace('#', '') : null;
@@ -213,14 +215,14 @@ export default function Homepage() {
   return (
     <div className="home">
       {/* Full-page skeleton overlay — covers everything including navbar */}
-      {!isPageReady && (
+      {!isContentReady && (
         <div className="fixed inset-0 z-[999] bg-background">
           <HomePageSkeleton />
         </div>
       )}
 
       {/* Real content — invisible until hero-img loads, then revealed */}
-      <div className={isPageReady ? '' : 'invisible'}>
+      <div className={isContentReady ? '' : 'invisible'}>
         <Hero onHeroImgLoad={() => setIsPageReady(true)} />
         <section>
           <div className="flex justify-center pt-5 me-4">

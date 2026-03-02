@@ -2,6 +2,13 @@ import {Skeleton} from '~/components/ui/skeleton';
 import {Card, CardContent} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
 import {useEffect, useRef, useState} from 'react';
+import {useLocation} from '@remix-run/react';
+import {
+  hasCompletedDocumentEntranceSkeleton,
+  markCorePageWarm,
+  markDocumentEntranceReady,
+  normalizeCorePagePath,
+} from '~/lib/corePageWarmup';
 
 // ─── Shared hook ───────────────────────────────────────────────────────
 // Still exported for page-specific sizing needs, but no longer required
@@ -245,11 +252,31 @@ export function SkeletonGate({
   /** Safety timeout (ms) — auto-reveal content if isReady never fires. */
   maxWait?: number;
 }) {
+  const ready = useEntranceSkeletonReady(isReady, maxWait);
+
+  return (
+    <>
+      {!ready && (
+        <div className="fixed inset-0 z-[999] bg-background">{skeleton}</div>
+      )}
+      <div className={ready ? '' : 'invisible'}>{children}</div>
+    </>
+  );
+}
+
+export function useEntranceSkeletonReady(
+  isReady: boolean,
+  maxWait = 2000,
+) {
+  const location = useLocation();
   const [timedOut, setTimedOut] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isCorePage = Boolean(normalizeCorePagePath(location.pathname));
+  const shouldBypassSkeleton =
+    isCorePage && hasCompletedDocumentEntranceSkeleton();
 
   useEffect(() => {
-    if (isReady) {
+    if (shouldBypassSkeleton || isReady) {
       // Already ready — clear any pending timer
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -265,16 +292,15 @@ export function SkeletonGate({
         timerRef.current = null;
       }
     };
-  }, [isReady, maxWait]);
+  }, [isReady, maxWait, shouldBypassSkeleton]);
 
-  const ready = isReady || timedOut;
+  useEffect(() => {
+    if (!(isReady || timedOut)) return;
+    markDocumentEntranceReady();
+    if (isCorePage) {
+      markCorePageWarm(location.pathname);
+    }
+  }, [isCorePage, isReady, timedOut, location.pathname]);
 
-  return (
-    <>
-      {!ready && (
-        <div className="fixed inset-0 z-[999] bg-background">{skeleton}</div>
-      )}
-      <div className={ready ? '' : 'invisible'}>{children}</div>
-    </>
-  );
+  return shouldBypassSkeleton || isReady || timedOut;
 }

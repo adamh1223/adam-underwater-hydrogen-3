@@ -31,6 +31,7 @@ import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduc
 import IndividualVideoBundle, {
   type BundleDetailClip,
 } from '~/components/eproducts/IndividualVideoBundle';
+import {warmImageUrls} from '~/lib/imageWarmup';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {RootLoader} from '~/root';
@@ -799,11 +800,40 @@ export default function Product() {
   standardVerticalCarouselImages.unshift(selectedVariant?.image);
   //
   standardCarouselImages.unshift(selectedVariant?.image);
+  const allPrintProductImages = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          [selectedVariant?.image, featuredImage, ...(images?.nodes ?? [])]
+            .filter(
+              (
+                image,
+              ): image is {
+                url: string;
+                altText?: string | null;
+              } => typeof image?.url === 'string' && image.url.length > 0,
+            )
+            .map((image) => [
+              image.url,
+              {
+                url: image.url,
+                altText: image.altText ?? '',
+              },
+            ]),
+        ).values(),
+      ),
+    [featuredImage, images?.nodes, selectedVariant?.image],
+  );
 
   const isVideo = product.tags.includes('Video');
   const isBundle = product.tags.includes('Bundle');
   const isPrint = !isVideo;
   const isVideoBundle = isVideo && isBundle;
+
+  useEffect(() => {
+    if (!(isPageReady && isPrint && allPrintProductImages.length > 0)) return;
+    void warmImageUrls(allPrintProductImages.map((image) => image.url));
+  }, [allPrintProductImages, isPageReady, isPrint]);
 
   const bundleDetailClips = useMemo(
     () =>
@@ -1446,6 +1476,8 @@ export default function Product() {
               verticalProductImages={standardVerticalCarouselImages}
               orientation={orientation}
               threeDViewImages={threeDImagesToUse}
+              allProductImages={allPrintProductImages}
+              enableBackgroundImageWarmup={isPageReady && isPrint}
             ></IndividualProduct>
           )}
           {isVideo && !isBundle && (

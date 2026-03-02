@@ -14,6 +14,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import {CorePageWarmup} from '~/components/CorePageWarmup';
 import {Button} from './ui/button';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import {LuSearch} from 'react-icons/lu';
@@ -56,6 +57,7 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <Aside.Provider>
+      <CorePageWarmup />
       <CartAside cart={cart} />
       <SearchAside
         isLoggedIn={isLoggedIn}

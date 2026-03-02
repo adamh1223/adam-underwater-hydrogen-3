@@ -10,6 +10,28 @@ import '../../styles/routeStyles/product.css';
 import ThreeDViewModal from '../global/ThreeDViewModal';
 import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
 import {Skeleton} from '~/components/ui/skeleton';
+import {hasWarmedImageUrl, warmImageUrls} from '~/lib/imageWarmup';
+
+type ProductImageData = {
+  url: string;
+  altText: string;
+};
+
+function collectWarmImageUrls(images: ProductImageData[]) {
+  return Array.from(
+    new Set(
+      images
+        .map((image) => image?.url)
+        .filter((url): url is string => typeof url === 'string' && url.length > 0),
+    ),
+  );
+}
+
+function collectAlreadyWarmedImageUrls(images: ProductImageData[]) {
+  return new Set(
+    collectWarmImageUrls(images).filter((url) => hasWarmedImageUrl(url)),
+  );
+}
 
 function IndividualProduct({
   productName,
@@ -17,21 +39,16 @@ function IndividualProduct({
   orientation,
   verticalProductImages,
   threeDViewImages,
+  allProductImages,
+  enableBackgroundImageWarmup,
 }: {
   productName: string;
   orientation: string;
-  productImages: {
-    url: string;
-    altText: string;
-  }[];
-  verticalProductImages: {
-    url: string;
-    altText: string;
-  }[];
-  threeDViewImages: {
-    url: string;
-    altText: string;
-  }[];
+  productImages: ProductImageData[];
+  verticalProductImages: ProductImageData[];
+  threeDViewImages: ProductImageData[];
+  allProductImages: ProductImageData[];
+  enableBackgroundImageWarmup: boolean;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<any>(null);
@@ -45,7 +62,9 @@ function IndividualProduct({
   );
 
   // Track which image URLs have finished loading (persists across variant switches)
-  const [loadedUrls, setLoadedUrls] = useState<Set<string>>(new Set());
+  const [loadedUrls, setLoadedUrls] = useState<Set<string>>(() =>
+    collectAlreadyWarmedImageUrls(allProductImages),
+  );
   const handleImageLoaded = useCallback((url: string) => {
     setLoadedUrls((prev) => {
       if (prev.has(url)) return prev;
@@ -54,6 +73,53 @@ function IndividualProduct({
       return next;
     });
   }, []);
+
+  useEffect(() => {
+    setLoadedUrls((prev) => {
+      const next = new Set(prev);
+      let changed = false;
+
+      collectAlreadyWarmedImageUrls(allProductImages).forEach((url) => {
+        if (!next.has(url)) {
+          next.add(url);
+          changed = true;
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [allProductImages]);
+
+  useEffect(() => {
+    if (!enableBackgroundImageWarmup) return;
+
+    const urlsToWarm = collectWarmImageUrls(allProductImages);
+    if (!urlsToWarm.length) return;
+
+    let cancelled = false;
+
+    void warmImageUrls(urlsToWarm).then(() => {
+      if (cancelled) return;
+
+      setLoadedUrls((prev) => {
+        const next = new Set(prev);
+        let changed = false;
+
+        urlsToWarm.forEach((url) => {
+          if (!next.has(url)) {
+            next.add(url);
+            changed = true;
+          }
+        });
+
+        return changed ? next : prev;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [allProductImages, enableBackgroundImageWarmup]);
 
   // Sync active index when carousel changes (via chevrons or user scroll)
   useEffect(() => {
