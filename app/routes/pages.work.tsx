@@ -1,3 +1,4 @@
+import {useCallback, useEffect, useRef, useState} from 'react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import '../styles/routeStyles/work.css';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
@@ -8,6 +9,8 @@ import {
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {useLoaderData} from '@remix-run/react';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import WorkPageSkeleton from '~/components/skeletons/WorkPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
@@ -75,8 +78,29 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 function WorkPage() {
   const collection = useLoaderData<typeof loader>() || {};
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const featuredImgRef = useRef<HTMLImageElement>(null);
+
+  const handleFeaturedImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  // Catch cached images whose onLoad fired before React hydrated
+  useEffect(() => {
+    const img = featuredImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleFeaturedImgLoad();
+    }
+  }, [handleFeaturedImgLoad]);
+
   return (
-    <>
+    <SkeletonGate
+      isReady={isPageReady}
+      skeleton={<WorkPageSkeleton />}
+    >
       <div className="flex justify-center items-center gap-4 mt-3">
         <img
           src={
@@ -120,10 +144,12 @@ function WorkPage() {
       <section>
         <div className="flex justify-center me-4">
           <img
+            ref={featuredImgRef}
             src={
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
             }
             className="featured-img"
+            onLoad={handleFeaturedImgLoad}
           />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
@@ -136,7 +162,7 @@ function WorkPage() {
         wishlistProducts={collection?.wishlistProducts}
         isLoggedIn={collection?.isLoggedIn}
       />
-    </>
+    </SkeletonGate>
   );
 }
 

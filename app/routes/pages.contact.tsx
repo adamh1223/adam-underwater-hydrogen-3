@@ -1,3 +1,4 @@
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useLoaderData} from '@remix-run/react';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import ContactForm from '~/components/form/Contact';
@@ -9,6 +10,8 @@ import {
 } from '~/lib/homeQueries';
 import '../styles/routeStyles/contact.css';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import ContactPageSkeleton from '~/components/skeletons/ContactPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 export async function loader(args: LoaderFunctionArgs) {
   const deferredData = loadDeferredData(args);
@@ -74,9 +77,26 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 function ContactPage() {
   const collection = useLoaderData<typeof loader>() || {};
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const featuredImgRef = useRef<HTMLImageElement>(null);
+
+  const handleFeaturedImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  // Catch cached images whose onLoad fired before React hydrated
+  useEffect(() => {
+    const img = featuredImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleFeaturedImgLoad();
+    }
+  }, [handleFeaturedImgLoad]);
 
   return (
-    <>
+    <SkeletonGate isReady={isPageReady} skeleton={<ContactPageSkeleton />}>
       <div className="contact-header-container">
         <img
           src={
@@ -102,6 +122,7 @@ function ContactPage() {
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
             }
             className="featured-img"
+            onLoad={handleFeaturedImgLoad}
           />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
@@ -114,7 +135,7 @@ function ContactPage() {
         wishlistProducts={collection?.wishlistProducts}
         isLoggedIn={collection?.isLoggedIn}
       />
-    </>
+    </SkeletonGate>
   );
 }
 

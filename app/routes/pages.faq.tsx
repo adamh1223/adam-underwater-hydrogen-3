@@ -1,3 +1,4 @@
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -5,14 +6,37 @@ import {
   AccordionTrigger,
 } from '~/components/ui/accordion';
 import {Card} from '~/components/ui/card';
-
+import FaqPageSkeleton from '~/components/skeletons/FaqPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 const faq = () => {
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleFaqImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleFaqImgLoad();
+    }
+  }, [handleFaqImgLoad]);
+
   return (
-    <>
+    <SkeletonGate isReady={isPageReady} skeleton={<FaqPageSkeleton />}>
       <section>
         <div className="flex justify-center">
-          <img src={'https://downloads.adamunderwater.com/store-1-au/public/faq2.png'} className="pt-5 faq-header-img" />
+          <img
+            ref={imgRef}
+            src={'https://downloads.adamunderwater.com/store-1-au/public/faq2.png'}
+            className="pt-5 faq-header-img"
+            onLoad={handleFaqImgLoad}
+          />
         </div>
         <div className="flex justify-center card-container pt-5">
           <Card className="p-7 faq-card">
@@ -63,7 +87,7 @@ const faq = () => {
           </Card>
         </div>
       </section>
-    </>
+    </SkeletonGate>
   );
 };
 

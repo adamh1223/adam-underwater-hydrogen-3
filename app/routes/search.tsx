@@ -13,8 +13,10 @@ import {
 } from '~/lib/search';
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
+import SearchPageSkeleton from '~/components/skeletons/SearchPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
 
 export const meta: MetaFunction = () => {
@@ -75,6 +77,23 @@ export default function SearchPage() {
   const {type, term, result, error, cart, isLoggedIn, wishlistProducts} = data;
   if (type === 'predictive') return null;
 
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const searchImgRef = useRef<HTMLImageElement>(null);
+
+  const handleSearchImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  useEffect(() => {
+    const img = searchImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleSearchImgLoad();
+    }
+  }, [handleSearchImgLoad]);
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -86,9 +105,10 @@ export default function SearchPage() {
   });
 
   return (
+    <SkeletonGate isReady={isPageReady} skeleton={<SearchPageSkeleton />}>
     <div className="search">
       <div className="flex justify-center pt-5">
-        <img src={'https://downloads.adamunderwater.com/store-1-au/public/searchstore.png'} style={{height: '95px'}}></img>
+        <img ref={searchImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/searchstore.png'} style={{height: '95px'}} onLoad={handleSearchImgLoad}></img>
       </div>
       <SearchForm>
         {({inputRef}) => (
@@ -130,6 +150,7 @@ export default function SearchPage() {
       )}
       <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
     </div>
+    </SkeletonGate>
   );
 }
 

@@ -1,4 +1,4 @@
-import {Suspense, useEffect, useRef, useState} from 'react';
+import {Suspense, useCallback, useEffect, useRef, useState} from 'react';
 import {Await, useLoaderData, useLocation} from '@remix-run/react';
 import {Button} from '~/components/ui/button';
 import {Card} from '~/components/ui/card';
@@ -28,6 +28,8 @@ import {
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import AboutPageSkeleton from '~/components/skeletons/AboutPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 const ABOUT_GEAR_CATEGORY_STORAGE_KEY = 'about-gear-category';
 const GEAR_CATEGORY_OPTIONS = [
@@ -665,9 +667,17 @@ export default function AboutPage() {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const [selectedGearCategory, setSelectedGearCategory] =
     useState<GearCategory>('Underwater Camera');
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledPageReady = useRef(false);
   const retryTimerRef = useRef<number | null>(null);
   const gearCategorySwitchRequestRef = useRef(0);
   const gearCategorySwitchDelayTimerRef = useRef<number | null>(null);
+
+  const handleHeadshotLoad = useCallback(() => {
+    if (hasCalledPageReady.current) return;
+    hasCalledPageReady.current = true;
+    setIsPageReady(true);
+  }, []);
 
   // Track window width
   useEffect(() => {
@@ -944,7 +954,7 @@ export default function AboutPage() {
   }, [location, windowWidth]);
 
   return (
-    <>
+    <SkeletonGate isReady={isPageReady} skeleton={<AboutPageSkeleton />}>
       <section id="about">
         <div className="header-container">
           <img
@@ -976,7 +986,7 @@ export default function AboutPage() {
         </div>
 
         <div className="about-container">
-          <img src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} className="mt-5 headshot" />
+          <img src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} className="mt-5 headshot" onLoad={handleHeadshotLoad} />
 
           <div className="about-icon-wrapper">
             <div className="about-icon-container">
@@ -1195,7 +1205,7 @@ export default function AboutPage() {
         wishlistProducts={data?.wishlistProducts}
         isLoggedIn={data?.isLoggedIn}
       />
-    </>
+    </SkeletonGate>
   );
 }
 

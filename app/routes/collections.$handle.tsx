@@ -25,7 +25,7 @@ import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
-import {useEffect, useId, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useId, useMemo, useRef, useState} from 'react';
 import {
   LuFilter,
   LuFilterX,
@@ -63,6 +63,8 @@ import {
 } from '~/components/ui/tooltip';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
+import CollectionPageSkeleton from '~/components/skeletons/CollectionPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
     {title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`},
@@ -550,6 +552,15 @@ export default function Collection() {
   const {collection, searchTerm, cart, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
 
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+
+  const handleHeaderLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
   const [searchText, setSearchText] = useState<string | undefined>();
@@ -982,9 +993,10 @@ export default function Collection() {
   }, [collection?.handle]);
 
   return (
+    <SkeletonGate isReady={isPageReady} skeleton={<CollectionPageSkeleton />}>
     <div className="overflow-x-hidden">
-      {collection?.handle === 'prints' && <ProductsHeader />}
-      {collection?.handle === 'stock' && <EProductsHeader />}
+      {collection?.handle === 'prints' && <ProductsHeader onLoad={handleHeaderLoad} />}
+      {collection?.handle === 'stock' && <EProductsHeader onLoad={handleHeaderLoad} />}
 
       {collection?.handle === 'prints' && (
         <div>
@@ -1382,6 +1394,7 @@ export default function Collection() {
       />} */}
       {/* add recommendedproducts to bottom of stock footage page */}
     </div>
+    </SkeletonGate>
   );
 }
 

@@ -4,7 +4,7 @@ import Hero from '../hero/Hero';
 import Sectiontitle from '../global/Sectiontitle';
 import HeroPrints from '../hero/HeroPrints';
 
-const ProductsHeader = () => {
+const ProductsHeader = ({onLoad}: {onLoad?: () => void}) => {
   return (
     <>
       <div className="header-container">
@@ -20,6 +20,7 @@ const ProductsHeader = () => {
             'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/prints.png'
           }
           className="prints-header"
+          onLoad={onLoad}
         />
       </div>
 

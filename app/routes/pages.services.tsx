@@ -1,7 +1,7 @@
 import Sectiontitle from '~/components/global/Sectiontitle';
 import '../styles/routeStyles/services.css';
 import {Button} from '~/components/ui/button';
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   Card,
   CardContent,
@@ -39,6 +39,8 @@ import VideoPreview from '~/components/global/VideoPreview';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import ServicesPageSkeleton from '~/components/skeletons/ServicesPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 // export async function loader({context}: LoaderFunctionArgs) {
 //   const {storefront} = context;
@@ -116,8 +118,16 @@ function ServicesPage() {
 
   const location = useLocation();
 
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledPageReady = useRef(false);
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const retryTimerRef = useRef<number | null>(null);
+
+  const handleFeaturedImgLoad = useCallback(() => {
+    if (hasCalledPageReady.current) return;
+    hasCalledPageReady.current = true;
+    setIsPageReady(true);
+  }, []);
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -306,7 +316,7 @@ function ServicesPage() {
   );
 
   return (
-    <>
+    <SkeletonGate isReady={isPageReady} skeleton={<ServicesPageSkeleton />}>
       <div className="services-header-container">
         <img
           src={
@@ -644,6 +654,7 @@ function ServicesPage() {
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
             }
             className="featured-img"
+            onLoad={handleFeaturedImgLoad}
           />
         </div>
         <div className="flex justify-center font-bold text-xl pb-2">
@@ -675,7 +686,7 @@ function ServicesPage() {
           <li>The first coaching session is 50% off.</li>
         </ul>
       </section> */}
-    </>
+    </SkeletonGate>
   );
 }
 const COLLECTION_QUERY = `#graphql

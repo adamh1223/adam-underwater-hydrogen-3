@@ -1,3 +1,4 @@
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {type MetaFunction, useLoaderData} from '@remix-run/react';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
@@ -13,6 +14,8 @@ import {
 } from '@shopify/remix-oxygen';
 import {CartMain} from '~/components/CartMain';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
+import CartPageSkeleton from '~/components/skeletons/CartPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 type VariantProductSummary = {
   productId: string;
   tags: string[];
@@ -402,18 +405,38 @@ export async function loader({context}: LoaderFunctionArgs) {
 
 export default function Cart() {
   const cart = useLoaderData<typeof loader>();
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleCartImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleCartImgLoad();
+    }
+  }, [handleCartImgLoad]);
 
   return (
-    <div className="cart">
-      <div className="flex justify-center">
-        <img
-          src={'https://downloads.adamunderwater.com/store-1-au/public/mycart.png'}
-          style={{height: '110px'}}
-          alt=""
-          className="pt-5"
-        ></img>
+    <SkeletonGate isReady={isPageReady} skeleton={<CartPageSkeleton />}>
+      <div className="cart">
+        <div className="flex justify-center">
+          <img
+            ref={imgRef}
+            src={'https://downloads.adamunderwater.com/store-1-au/public/mycart.png'}
+            style={{height: '110px'}}
+            alt=""
+            className="pt-5"
+            onLoad={handleCartImgLoad}
+          ></img>
+        </div>
+        <CartMain layout="page" cart={cart} />
       </div>
-      <CartMain layout="page" cart={cart} />
-    </div>
+    </SkeletonGate>
   );
 }

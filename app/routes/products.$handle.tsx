@@ -70,6 +70,8 @@ import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {getCustomerReviewLocation} from '~/lib/reviews';
+import ProductPageSkeleton from '~/components/skeletons/ProductPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -456,6 +458,24 @@ export default function Product() {
     isLoggedIn,
     wishlistProducts,
   } = useLoaderData<typeof loader>();
+
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const productImgRef = useRef<HTMLImageElement>(null);
+
+  const handleProductImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  useEffect(() => {
+    const img = productImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleProductImgLoad();
+    }
+  }, [handleProductImgLoad]);
+
   const isInWishlist = wishlistProducts.includes(product?.id);
   const isAdmin =
     customer?.customer?.id === 'gid://shopify/Customer/7968375079049';
@@ -1243,6 +1263,15 @@ export default function Product() {
     };
   }, [location, scrollToSection]);
   return (
+    <SkeletonGate isReady={isPageReady} skeleton={<ProductPageSkeleton />}>
+    {/* Hidden preloader for featured image to trigger skeleton gate */}
+    <img
+      ref={productImgRef}
+      src={selectedVariant?.image?.url ?? featuredImage?.url ?? ''}
+      alt=""
+      style={{position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none'}}
+      onLoad={handleProductImgLoad}
+    />
     <>
       <section className="product pt-[20px]">
         {/* Link tree */}
@@ -2498,6 +2527,7 @@ export default function Product() {
         />
       </section>
     </>
+    </SkeletonGate>
   );
 }
 

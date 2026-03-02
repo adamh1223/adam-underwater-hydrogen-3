@@ -1,7 +1,9 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, Link} from '@remix-run/react';
 import {Button} from '~/components/ui/button';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import PoliciesIndexSkeleton from '~/components/skeletons/PoliciesIndexSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 export async function loader({context}: LoaderFunctionArgs) {
   const data = await context.storefront.query(POLICIES_QUERY);
@@ -16,6 +18,23 @@ export async function loader({context}: LoaderFunctionArgs) {
 
 export default function Policies() {
   const {policies} = useLoaderData<typeof loader>();
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const policiesImgRef = useRef<HTMLImageElement>(null);
+
+  const handlePoliciesImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  useEffect(() => {
+    const img = policiesImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handlePoliciesImgLoad();
+    }
+  }, [handlePoliciesImgLoad]);
+
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   useEffect(() => {
     function handleResize() {
@@ -27,9 +46,10 @@ export default function Policies() {
   });
 
   return (
+    <SkeletonGate isReady={isPageReady} skeleton={<PoliciesIndexSkeleton />}>
     <div className="policies">
       <div className="flex justify-center mt-5">
-        <img src={'https://downloads.adamunderwater.com/store-1-au/public/policies.png'} style={{height: '85px'}}></img>
+        <img ref={policiesImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/policies.png'} style={{height: '85px'}} onLoad={handlePoliciesImgLoad}></img>
       </div>
       {windowWidth != undefined && windowWidth <= 768 && (
         <div className="flex justify-center policy-container-small flex-wrap px-5">
@@ -72,6 +92,7 @@ export default function Policies() {
         </div>
       )}
     </div>
+    </SkeletonGate>
   );
 }
 

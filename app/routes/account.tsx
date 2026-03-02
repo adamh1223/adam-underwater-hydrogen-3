@@ -5,6 +5,9 @@ import {
 import {Form, NavLink, Outlet, useLoaderData} from '@remix-run/react';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import {Button} from '~/components/ui/button';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import AccountLayoutSkeleton from '~/components/skeletons/AccountLayoutSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 export function shouldRevalidate() {
   return true;
@@ -32,18 +35,35 @@ export async function loader({context}: LoaderFunctionArgs) {
 export default function AccountLayout() {
   const {customer} = useLoaderData<typeof loader>();
 
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledLoad = useRef(false);
+  const accountImgRef = useRef<HTMLImageElement>(null);
+
+  const handleAccountImgLoad = useCallback(() => {
+    if (hasCalledLoad.current) return;
+    hasCalledLoad.current = true;
+    setIsPageReady(true);
+  }, []);
+
+  useEffect(() => {
+    const img = accountImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleAccountImgLoad();
+    }
+  }, [handleAccountImgLoad]);
+
   const heading = customer ? (
     customer.firstName ? (
       // `Welcome, ${customer.firstName}`
       <>
         <div className="flex justify-center">
-          <img src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}}></img>
+          <img ref={accountImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}} onLoad={handleAccountImgLoad}></img>
         </div>
         <div className="flex justify-center">Welcome, {customer.firstName}</div>
       </>
     ) : (
       <div className="flex justify-center pt-3">
-        <img src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}} className=""></img>
+        <img ref={accountImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}} className="" onLoad={handleAccountImgLoad}></img>
       </div>
     )
   ) : (
@@ -51,6 +71,7 @@ export default function AccountLayout() {
   );
 
   return (
+    <SkeletonGate isReady={isPageReady} skeleton={<AccountLayoutSkeleton />}>
     <div className="account">
       <h1>{heading}</h1>
       <br />
@@ -58,6 +79,7 @@ export default function AccountLayout() {
       <br />
       <Outlet context={{customer}} />
     </div>
+    </SkeletonGate>
   );
 }
 

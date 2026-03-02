@@ -9,6 +9,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import '../../styles/routeStyles/product.css';
 import ThreeDViewModal from '../global/ThreeDViewModal';
 import {ImageZoom} from 'components/ui/shadcn-io/image-zoom';
+import {Skeleton} from '~/components/ui/skeleton';
 
 function IndividualProduct({
   productName,
@@ -42,6 +43,17 @@ function IndividualProduct({
   const [shortcutsItemWidth, setShortcutsItemWidth] = useState<number | null>(
     null,
   );
+
+  // Track which image URLs have finished loading (persists across variant switches)
+  const [loadedUrls, setLoadedUrls] = useState<Set<string>>(new Set());
+  const handleImageLoaded = useCallback((url: string) => {
+    setLoadedUrls((prev) => {
+      if (prev.has(url)) return prev;
+      const next = new Set(prev);
+      next.add(url);
+      return next;
+    });
+  }, []);
 
   // Sync active index when carousel changes (via chevrons or user scroll)
   useEffect(() => {
@@ -212,20 +224,27 @@ function IndividualProduct({
                     className="flex items-center justify-center"
                     key={url.url}
                   >
-                    <div className="flex items-center justify-center">
-                      {/* <img
-                        src={url.url}
-                        alt={url.altText || productName}
-                        className="max-h-full object-contain carousel-item cursor-zoom-in"
-                        onClick={() => handleImageClick(url.url)}
-                      /> */}
-                      <ImageZoom>
-                        <img
-                          className="max-h-full object-contain carousel-item cursor-zoom-in"
-                          src={url.url}
-                          alt={url.altText || productName}
-                        />
-                      </ImageZoom>
+                    <div className="flex items-center justify-center w-full">
+                      {loadedUrls.has(url.url) ? (
+                        <ImageZoom>
+                          <img
+                            className="max-h-full object-contain carousel-item cursor-zoom-in"
+                            src={url.url}
+                            alt={url.altText || productName}
+                          />
+                        </ImageZoom>
+                      ) : (
+                        <>
+                          <Skeleton className="w-full aspect-[4/3] rounded-md" />
+                          {/* Hidden img to detect when image finishes loading */}
+                          <img
+                            src={url.url}
+                            alt=""
+                            style={{position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none'}}
+                            onLoad={() => handleImageLoaded(url.url)}
+                          />
+                        </>
+                      )}
                     </div>
                   </CarouselItem>
                 ))}
@@ -247,14 +266,27 @@ function IndividualProduct({
                     className="flex items-center justify-center"
                     key={url.url}
                   >
-                    <div className="flex items-center justify-center">
-                      <ImageZoom>
-                        <img
-                          src={url.url}
-                          alt={url.altText || productName}
-                          className="max-h-full object-contain carousel-item cursor-zoom-in"
-                        />
-                      </ImageZoom>
+                    <div className="flex items-center justify-center w-full">
+                      {loadedUrls.has(url.url) ? (
+                        <ImageZoom>
+                          <img
+                            src={url.url}
+                            alt={url.altText || productName}
+                            className="max-h-full object-contain carousel-item cursor-zoom-in"
+                          />
+                        </ImageZoom>
+                      ) : (
+                        <>
+                          <Skeleton className="w-full aspect-[3/4] max-w-[70%] rounded-md" />
+                          {/* Hidden img to detect when image finishes loading */}
+                          <img
+                            src={url.url}
+                            alt=""
+                            style={{position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none'}}
+                            onLoad={() => handleImageLoaded(url.url)}
+                          />
+                        </>
+                      )}
                     </div>
                   </CarouselItem>
                 ))}
@@ -277,7 +309,7 @@ function IndividualProduct({
                   <button
                     type="button"
                     key={url.url}
-                    className={`print-detail-shortcut cursor-pointer border-2 ${
+                    className={`print-detail-shortcut relative overflow-hidden cursor-pointer border-2 ${
                       idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
                     }`}
                     style={
@@ -291,10 +323,14 @@ function IndividualProduct({
                     onClick={() => handleThumbnailClick(idx)}
                     aria-label={`Go to image ${idx + 1}`}
                   >
+                    {!loadedUrls.has(url.url) && (
+                      <Skeleton className="absolute inset-0 rounded-sm" />
+                    )}
                     <img
                       src={url.url}
                       alt={url.altText || `${productName} thumbnail ${idx + 1}`}
-                      className="print-detail-shortcut-image"
+                      className={`print-detail-shortcut-image ${!loadedUrls.has(url.url) ? 'invisible' : ''}`}
+                      onLoad={() => handleImageLoaded(url.url)}
                     />
                   </button>
                 ))}
@@ -313,7 +349,7 @@ function IndividualProduct({
                   <button
                     type="button"
                     key={url.url}
-                    className={`print-detail-shortcut print-detail-shortcut-vertical cursor-pointer border-2 ${
+                    className={`print-detail-shortcut print-detail-shortcut-vertical relative overflow-hidden cursor-pointer border-2 ${
                       idx === activeIndex ? 'border-[hsl(var(--primary))]' : ''
                     }`}
                     style={
@@ -327,10 +363,14 @@ function IndividualProduct({
                     onClick={() => handleThumbnailClick(idx)}
                     aria-label={`Go to image ${idx + 1}`}
                   >
+                    {!loadedUrls.has(url.url) && (
+                      <Skeleton className="absolute inset-0 rounded-sm" />
+                    )}
                     <img
                       src={url.url}
                       alt={url.altText || `${productName} thumbnail ${idx + 1}`}
-                      className="print-detail-shortcut-image"
+                      className={`print-detail-shortcut-image ${!loadedUrls.has(url.url) ? 'invisible' : ''}`}
+                      onLoad={() => handleImageLoaded(url.url)}
                     />
                   </button>
                 ))}

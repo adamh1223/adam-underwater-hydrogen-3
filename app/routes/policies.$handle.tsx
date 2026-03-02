@@ -3,6 +3,9 @@ import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
 import {type Shop} from '@shopify/hydrogen/storefront-api-types';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
+import {useEffect, useRef, useState} from 'react';
+import PolicyPageSkeleton from '~/components/skeletons/PolicyPageSkeleton';
+import {SkeletonGate} from '~/components/skeletons/shared';
 
 type SelectedPolicies = keyof Pick<
   Shop,
@@ -46,7 +49,19 @@ export async function loader({params, context}: LoaderFunctionArgs) {
 export default function Policy() {
   const {policy} = useLoaderData<typeof loader>();
 
+  // No heavy image on this page — trigger after first paint
+  const [isPageReady, setIsPageReady] = useState(false);
+  const hasCalledReady = useRef(false);
+  useEffect(() => {
+    if (hasCalledReady.current) return;
+    hasCalledReady.current = true;
+    requestAnimationFrame(() => {
+      setIsPageReady(true);
+    });
+  }, []);
+
   return (
+    <SkeletonGate isReady={isPageReady} skeleton={<PolicyPageSkeleton />}>
     <>
       <section>
         <div className="pt-5 ps-[60px]">
@@ -75,6 +90,7 @@ export default function Policy() {
         </div>
       </section>
     </>
+    </SkeletonGate>
   );
 }
 

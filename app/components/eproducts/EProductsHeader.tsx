@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/components/Stock.css';
 
-const EProductsHeader = () => {
+const EProductsHeader = ({onLoad}: {onLoad?: () => void}) => {
   return (
     <>
       <div className="header-container">
@@ -17,6 +17,7 @@ const EProductsHeader = () => {
             'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/stock.png'
           }
           className="stock-header"
+          onLoad={onLoad}
         />
       </div>
       <p className="subheader-stock text-center">
