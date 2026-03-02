@@ -61,11 +61,11 @@ export default function ContactPageSkeleton() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
-      <PageHeaderSkeleton windowWidth={windowWidth} titleWidth={titleW} />
+      <NavbarSkeleton />
+      <PageHeaderSkeleton titleWidth={titleW} />
       <ContactFormSkeleton />
-      <FeaturedSectionSkeleton windowWidth={windowWidth} />
-      <ProductGridSkeleton windowWidth={windowWidth} />
+      <FeaturedSectionSkeleton />
+      <ProductGridSkeleton />
     </div>
   );
 }

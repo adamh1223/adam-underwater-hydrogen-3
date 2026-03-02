@@ -57,14 +57,14 @@ export default function WorkPageSkeleton() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
-      <PageHeaderSkeleton windowWidth={windowWidth} titleWidth={titleW} />
+      <NavbarSkeleton />
+      <PageHeaderSkeleton titleWidth={titleW} />
       <SectionTitleSkeleton width="w-[260px]" />
       <ClipSkeleton windowWidth={windowWidth} />
       <SectionTitleSkeleton width="w-[280px]" />
       <ClipSkeleton windowWidth={windowWidth} />
-      <FeaturedSectionSkeleton windowWidth={windowWidth} />
-      <ProductGridSkeleton windowWidth={windowWidth} />
+      <FeaturedSectionSkeleton />
+      <ProductGridSkeleton />
     </div>
   );
 }

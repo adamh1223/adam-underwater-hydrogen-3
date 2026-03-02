@@ -554,12 +554,21 @@ export default function Collection() {
 
   const [isPageReady, setIsPageReady] = useState(false);
   const hasCalledLoad = useRef(false);
+  const headerImgRef = useRef<HTMLImageElement>(null);
 
   const handleHeaderLoad = useCallback(() => {
     if (hasCalledLoad.current) return;
     hasCalledLoad.current = true;
     setIsPageReady(true);
   }, []);
+
+  // Catch cached images whose onLoad fired before React hydrated
+  useEffect(() => {
+    const img = headerImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleHeaderLoad();
+    }
+  }, [handleHeaderLoad]);
 
   const [searchParams] = useSearchParams();
   const currentSearchTerm = searchParams.get('q') || '';
@@ -995,8 +1004,8 @@ export default function Collection() {
   return (
     <SkeletonGate isReady={isPageReady} skeleton={<CollectionPageSkeleton />}>
     <div className="overflow-x-hidden">
-      {collection?.handle === 'prints' && <ProductsHeader onLoad={handleHeaderLoad} />}
-      {collection?.handle === 'stock' && <EProductsHeader onLoad={handleHeaderLoad} />}
+      {collection?.handle === 'prints' && <ProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />}
+      {collection?.handle === 'stock' && <EProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />}
 
       {collection?.handle === 'prints' && (
         <div>

@@ -120,6 +120,7 @@ function ServicesPage() {
 
   const [isPageReady, setIsPageReady] = useState(false);
   const hasCalledPageReady = useRef(false);
+  const featuredImgRef = useRef<HTMLImageElement>(null);
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const retryTimerRef = useRef<number | null>(null);
 
@@ -128,6 +129,14 @@ function ServicesPage() {
     hasCalledPageReady.current = true;
     setIsPageReady(true);
   }, []);
+
+  // Catch cached images whose onLoad fired before React hydrated
+  useEffect(() => {
+    const img = featuredImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleFeaturedImgLoad();
+    }
+  }, [handleFeaturedImgLoad]);
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -650,6 +659,7 @@ function ServicesPage() {
       <section>
         <div className="flex justify-center me-4">
           <img
+            ref={featuredImgRef}
             src={
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
             }

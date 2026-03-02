@@ -2,7 +2,6 @@ import {Skeleton} from '~/components/ui/skeleton';
 import {Card} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
 import {
-  useWindowWidth,
   NavbarSkeleton,
 } from '~/components/skeletons/shared';
 
@@ -24,11 +23,9 @@ function AccordionItemSkeleton({isLast}: {isLast?: boolean}) {
 }
 
 export default function FaqPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <section>
         {/* FAQ header image */}
         <div className="flex justify-center">

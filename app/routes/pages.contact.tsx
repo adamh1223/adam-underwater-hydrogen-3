@@ -118,6 +118,7 @@ function ContactPage() {
       <section>
         <div className="flex justify-center pt-5 me-4">
           <img
+            ref={featuredImgRef}
             src={
               'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
             }

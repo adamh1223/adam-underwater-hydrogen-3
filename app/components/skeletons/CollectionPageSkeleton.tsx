@@ -1,7 +1,8 @@
+import {useEffect, useState} from 'react';
 import {Skeleton} from '~/components/ui/skeleton';
 import {Separator} from '~/components/ui/separator';
+import {Card, CardContent} from '~/components/ui/card';
 import {
-  useWindowWidth,
   NavbarSkeleton,
   ProductCardSkeleton,
   FeaturedSectionSkeleton,
@@ -12,7 +13,7 @@ import {
  * Collection page (Prints / Stock Footage) structure:
  *  - ProductsHeader or EProductsHeader (header image + collection title)
  *  - Search/filter bar (InputGroup search + filter popover trigger + toggle)
- *  - Product grid (dynamic columns)
+ *  - Product grid (dynamic columns) — supports grid AND list view
  *  - Featured section + recommended products
  */
 
@@ -25,9 +26,7 @@ function CollectionHeaderSkeleton() {
   );
 }
 
-function FilterBarSkeleton({windowWidth}: {windowWidth: number | undefined}) {
-  const w = windowWidth ?? 800;
-
+function FilterBarSkeleton() {
   return (
     <div className="flex justify-center items-center gap-3 px-4 py-3 flex-wrap">
       {/* Search InputGroup */}
@@ -35,40 +34,64 @@ function FilterBarSkeleton({windowWidth}: {windowWidth: number | undefined}) {
       {/* Filter button */}
       <Skeleton className="h-10 w-[40px] rounded-md" />
       {/* Toggle switch (for stock footage resolution) */}
-      {w >= 500 && <Skeleton className="h-8 w-[100px] rounded-md" />}
+      <Skeleton className="hidden min-[500px]:block h-8 w-[100px] rounded-md" />
     </div>
   );
 }
 
+/** List-view product card skeleton — 60/40 split matching list-view-large-row */
+function ListProductCardSkeleton() {
+  return (
+    <Card className="h-full overflow-hidden">
+      <CardContent className="h-full gap-y-4 grid p-0" style={{gridTemplateColumns: 'minmax(0, 60%) minmax(0, 40%)'}}>
+        {/* Left: image area */}
+        <Skeleton className="w-full h-full min-h-[180px] rounded-l-xl rounded-r-none" />
+        {/* Right: product info */}
+        <div className="flex flex-col items-center justify-center gap-2 px-4 py-3">
+          <Skeleton className="h-5 w-4/5" />
+          <Skeleton className="h-4 w-3/5" />
+          <Skeleton className="h-4 w-2/5" />
+          <Skeleton className="h-9 w-[120px] rounded-md mt-1" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function CollectionPageSkeleton() {
-  const windowWidth = useWindowWidth();
-  const gridColumnCount =
-    windowWidth != undefined
-      ? Math.max(1, Math.floor((windowWidth - 1) / 700) + 1)
-      : 1;
+  // Read list/grid preference from localStorage (matches collection route logic)
+  const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('collection-layout-mode');
+      if (stored === 'list') setLayout('list');
+    } catch {
+      // SSR or localStorage unavailable — keep default
+    }
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <CollectionHeaderSkeleton />
       <Separator />
-      <FilterBarSkeleton windowWidth={windowWidth} />
-      {/* Product grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${gridColumnCount}, minmax(0, 1fr))`,
-          columnGap: '8px',
-          rowGap: '8px',
-          padding: '10px',
-        }}
-      >
-        {Array.from({length: Math.max(4, gridColumnCount * 2)}).map((_, i) => (
-          <ProductCardSkeleton key={`coll-skel-${i}`} />
-        ))}
-      </div>
-      <FeaturedSectionSkeleton windowWidth={windowWidth} />
-      <ProductGridSkeleton windowWidth={windowWidth} />
+      <FilterBarSkeleton />
+      {/* Product grid — CSS responsive columns matching actual breakpoints */}
+      {layout === 'grid' ? (
+        <div className="grid grid-cols-1 min-[700px]:grid-cols-2 min-[1400px]:grid-cols-3 gap-2 p-[10px]">
+          {Array.from({length: 6}).map((_, i) => (
+            <ProductCardSkeleton key={`coll-skel-${i}`} />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 p-[10px]" style={{gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 367.5px), 1fr))'}}>
+          {Array.from({length: 4}).map((_, i) => (
+            <ListProductCardSkeleton key={`coll-list-skel-${i}`} />
+          ))}
+        </div>
+      )}
+      <FeaturedSectionSkeleton />
+      <ProductGridSkeleton />
     </div>
   );
 }

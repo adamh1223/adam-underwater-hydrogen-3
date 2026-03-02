@@ -1,6 +1,5 @@
 import {Skeleton} from '~/components/ui/skeleton';
 import {
-  useWindowWidth,
   NavbarSkeleton,
 } from '~/components/skeletons/shared';
 
@@ -11,11 +10,9 @@ import {
  */
 
 export default function SearchPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <div className="search">
         {/* Search header image */}
         <div className="flex justify-center pt-5">

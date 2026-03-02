@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/components/Stock.css';
 
-const EProductsHeader = ({onLoad}: {onLoad?: () => void}) => {
+const EProductsHeader = ({onLoad, imgRef}: {onLoad?: () => void; imgRef?: React.Ref<HTMLImageElement>}) => {
   return (
     <>
       <div className="header-container">
@@ -13,6 +13,7 @@ const EProductsHeader = ({onLoad}: {onLoad?: () => void}) => {
         />
 
         <img
+          ref={imgRef}
           src={
             'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/stock.png'
           }

@@ -113,16 +113,16 @@ export default function ServicesPageSkeleton() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
-      <PageHeaderSkeleton windowWidth={windowWidth} titleWidth={titleW} />
+      <NavbarSkeleton />
+      <PageHeaderSkeleton titleWidth={titleW} />
       <AnchorButtonsSkeleton />
       <HeroServicesSkeleton windowWidth={windowWidth} />
       <SectionTitleSkeleton width="w-[280px]" />
       <PhotoCarouselSkeleton windowWidth={windowWidth} />
       <SectionTitleSkeleton width="w-[250px]" />
       <DroneSectionSkeleton />
-      <FeaturedSectionSkeleton windowWidth={windowWidth} />
-      <ProductGridSkeleton windowWidth={windowWidth} />
+      <FeaturedSectionSkeleton />
+      <ProductGridSkeleton />
     </div>
   );
 }

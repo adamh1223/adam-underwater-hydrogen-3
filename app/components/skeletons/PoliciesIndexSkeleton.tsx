@@ -1,6 +1,5 @@
 import {Skeleton} from '~/components/ui/skeleton';
 import {
-  useWindowWidth,
   NavbarSkeleton,
 } from '~/components/skeletons/shared';
 
@@ -8,11 +7,9 @@ import {
  * Policies index page skeleton — navbar + header image + policy button grid.
  */
 export default function PoliciesIndexSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <div className="policies">
         {/* Header image */}
         <div className="flex justify-center mt-5">

@@ -23,7 +23,7 @@ export default function ProductPageSkeleton() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
 
       {/* Product price */}
       <div className="flex justify-center pt-4">

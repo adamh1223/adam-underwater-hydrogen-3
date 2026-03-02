@@ -2,7 +2,6 @@ import {Skeleton} from '~/components/ui/skeleton';
 import {Card, CardContent} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
 import {
-  useWindowWidth,
   NavbarSkeleton,
   AccountHeaderSkeleton,
   SectionTitleSkeleton,
@@ -12,11 +11,9 @@ import {
 // ─── Profile Page Skeleton ─────────────────────────────────────────────
 
 export function ProfilePageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       <SectionTitleSkeleton width="w-[120px]" />
       <div className="flex justify-center">
@@ -82,11 +79,9 @@ function OrderCardSkeleton() {
 }
 
 export function OrdersPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       <SectionTitleSkeleton width="w-[130px]" />
       <section className="flex justify-center pt-3">
@@ -103,11 +98,9 @@ export function OrdersPageSkeleton() {
 // ─── Order Detail Page Skeleton ────────────────────────────────────────
 
 export function OrderDetailPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       <SectionTitleSkeleton width="w-[160px]" />
       <div className="px-4 py-3">
@@ -143,14 +136,12 @@ export function OrderDetailPageSkeleton() {
 // ─── Favorites Page Skeleton ───────────────────────────────────────────
 
 export function FavoritesPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       <SectionTitleSkeleton width="w-[110px]" />
-      <ProductGridSkeleton windowWidth={windowWidth} count={4} />
+      <ProductGridSkeleton count={4} />
     </div>
   );
 }
@@ -178,11 +169,9 @@ function ReviewCardSkeleton() {
 }
 
 export function ReviewsPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       <SectionTitleSkeleton width="w-[130px]" />
       <ReviewCardSkeleton />
@@ -195,11 +184,9 @@ export function ReviewsPageSkeleton() {
 // ─── Addresses Page Skeleton ───────────────────────────────────────────
 
 export function AddressesPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       <SectionTitleSkeleton width="w-[120px]" />
       <div className="px-4 py-3">
@@ -236,11 +223,9 @@ function NotificationGroupSkeleton() {
 }
 
 export function NotificationsPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       <SectionTitleSkeleton width="w-[150px]" />
       <div className="px-4">

@@ -1,7 +1,6 @@
 import {Skeleton} from '~/components/ui/skeleton';
 import {Card, CardContent} from '~/components/ui/card';
 import {
-  useWindowWidth,
   NavbarSkeleton,
 } from '~/components/skeletons/shared';
 
@@ -9,11 +8,9 @@ import {
  * Individual policy page skeleton — navbar + back button + card with title + text lines.
  */
 export default function PolicyPageSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <section>
         {/* Back button */}
         <div className="pt-5 ps-[60px]">

@@ -1,6 +1,5 @@
 import {Skeleton} from '~/components/ui/skeleton';
 import {
-  useWindowWidth,
   NavbarSkeleton,
   AccountHeaderSkeleton,
   SectionTitleSkeleton,
@@ -12,11 +11,9 @@ import {
  * loading gate while the account header image loads.
  */
 export default function AccountLayoutSkeleton() {
-  const windowWidth = useWindowWidth();
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
+      <NavbarSkeleton />
       <AccountHeaderSkeleton />
       {/* Generic content placeholder for the sub-page area */}
       <SectionTitleSkeleton width="w-[120px]" />

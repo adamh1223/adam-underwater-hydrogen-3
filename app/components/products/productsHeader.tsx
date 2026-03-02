@@ -4,7 +4,7 @@ import Hero from '../hero/Hero';
 import Sectiontitle from '../global/Sectiontitle';
 import HeroPrints from '../hero/HeroPrints';
 
-const ProductsHeader = ({onLoad}: {onLoad?: () => void}) => {
+const ProductsHeader = ({onLoad, imgRef}: {onLoad?: () => void; imgRef?: React.Ref<HTMLImageElement>}) => {
   return (
     <>
       <div className="header-container">
@@ -16,6 +16,7 @@ const ProductsHeader = ({onLoad}: {onLoad?: () => void}) => {
         />
 
         <img
+          ref={imgRef}
           src={
             'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/prints.png'
           }

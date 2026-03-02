@@ -152,14 +152,14 @@ export default function AboutPageSkeleton() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <NavbarSkeleton windowWidth={windowWidth} />
-      <PageHeaderSkeleton windowWidth={windowWidth} titleWidth={titleW} />
+      <NavbarSkeleton />
+      <PageHeaderSkeleton titleWidth={titleW} />
       <AnchorButtonsSkeleton />
       <AboutSectionSkeleton windowWidth={windowWidth} />
       <AccordionCardSkeleton />
       <GearSectionSkeleton windowWidth={windowWidth} />
-      <FeaturedSectionSkeleton windowWidth={windowWidth} />
-      <ProductGridSkeleton windowWidth={windowWidth} />
+      <FeaturedSectionSkeleton />
+      <ProductGridSkeleton />
     </div>
   );
 }

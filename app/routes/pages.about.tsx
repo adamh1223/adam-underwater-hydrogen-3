@@ -669,6 +669,7 @@ export default function AboutPage() {
     useState<GearCategory>('Underwater Camera');
   const [isPageReady, setIsPageReady] = useState(false);
   const hasCalledPageReady = useRef(false);
+  const headshotRef = useRef<HTMLImageElement>(null);
   const retryTimerRef = useRef<number | null>(null);
   const gearCategorySwitchRequestRef = useRef(0);
   const gearCategorySwitchDelayTimerRef = useRef<number | null>(null);
@@ -678,6 +679,14 @@ export default function AboutPage() {
     hasCalledPageReady.current = true;
     setIsPageReady(true);
   }, []);
+
+  // Catch cached images whose onLoad fired before React hydrated
+  useEffect(() => {
+    const img = headshotRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handleHeadshotLoad();
+    }
+  }, [handleHeadshotLoad]);
 
   // Track window width
   useEffect(() => {
@@ -986,7 +995,7 @@ export default function AboutPage() {
         </div>
 
         <div className="about-container">
-          <img src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} className="mt-5 headshot" onLoad={handleHeadshotLoad} />
+          <img ref={headshotRef} src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} className="mt-5 headshot" onLoad={handleHeadshotLoad} />
 
           <div className="about-icon-wrapper">
             <div className="about-icon-container">
