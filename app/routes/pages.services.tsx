@@ -28,7 +28,7 @@ import {
   servicesImages23,
 } from '~/utils/constants';
 import {useLoaderData, useLocation} from '@remix-run/react';
-import {LoaderFunctionArgs, json} from '@remix-run/server-runtime';
+import {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {
   FEATURED_COLLECTION_QUERY,
@@ -41,6 +41,7 @@ import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 import ServicesPageSkeleton from '~/components/skeletons/ServicesPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+import {warmImageUrls} from '~/lib/imageWarmup';
 
 // export async function loader({context}: LoaderFunctionArgs) {
 //   const {storefront} = context;
@@ -118,16 +119,22 @@ function ServicesPage() {
 
   const location = useLocation();
 
-  const [isPageReady, setIsPageReady] = useState(false);
-  const hasCalledPageReady = useRef(false);
+  const [isFeaturedImageReady, setIsFeaturedImageReady] = useState(false);
+  const [isHeroPosterReady, setIsHeroPosterReady] = useState(false);
+  const [isPhotoCarouselReady, setIsPhotoCarouselReady] = useState(false);
   const featuredImgRef = useRef<HTMLImageElement>(null);
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
+    typeof window !== 'undefined' ? window.innerWidth : undefined,
+  );
   const retryTimerRef = useRef<number | null>(null);
+  const isPageReady =
+    isFeaturedImageReady &&
+    isHeroPosterReady &&
+    isPhotoCarouselReady &&
+    windowWidth !== undefined;
 
   const handleFeaturedImgLoad = useCallback(() => {
-    if (hasCalledPageReady.current) return;
-    hasCalledPageReady.current = true;
-    setIsPageReady(true);
+    setIsFeaturedImageReady(true);
   }, []);
 
   // Catch cached images whose onLoad fired before React hydrated
@@ -144,7 +151,7 @@ function ServicesPage() {
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
   const getYOffset = () => {
     if (windowWidth == null) return -180;
     if (windowWidth < 1024) return -110;
@@ -222,26 +229,6 @@ function ServicesPage() {
     };
   }, [location, windowWidth]);
 
-  const [isVideoReady, setIsVideoReady] = useState(false);
-
-  const handleVideoLoad = () => {
-    setTimeout(() => {
-      setIsVideoReady(true); // Switch to video only when loaded
-    }, 5000);
-  };
-
-  useEffect(() => {
-    const iframe = document.querySelector('iframe');
-    if (iframe) {
-      iframe.addEventListener('load', handleVideoLoad);
-    }
-    return () => {
-      if (iframe) {
-        iframe.removeEventListener('load', handleVideoLoad);
-      }
-    };
-  }, []);
-
   const servicesPhotoImages = useMemo(
     () =>
       Array.from(
@@ -258,6 +245,27 @@ function ServicesPage() {
       ),
     [],
   );
+
+  const initialServicesPhotoImages = useMemo(() => {
+    if (windowWidth === undefined) return [];
+    return windowWidth < 768 ? servicesImages11 : servicesImages1;
+  }, [windowWidth]);
+
+  useEffect(() => {
+    if (!initialServicesPhotoImages.length) return;
+
+    let cancelled = false;
+
+    void warmImageUrls(initialServicesPhotoImages).then(() => {
+      if (!cancelled) {
+        setIsPhotoCarouselReady(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialServicesPhotoImages]);
 
   const servicesPhotoZoomItems = useMemo(
     () => servicesPhotoImages.map((url) => ({url, type: 'image'})),
@@ -361,7 +369,7 @@ function ServicesPage() {
           <a onClick={(evt) => handleClick('coaching', evt)}>1 on 1 Coaching</a>
         </Button> */}
       </div>
-      <HeroServices />
+      <HeroServices onPosterLoad={() => setIsHeroPosterReady(true)} />
       <section id="photo" className="pt-3">
         <Sectiontitle text="Underwater 45mp Photo" />
         <div className="flex justify-center">

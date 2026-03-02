@@ -1,31 +1,35 @@
-import React, {useState, useEffect} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import '../../styles/components/Hero.css';
-import {Link} from '@remix-run/react';
-import {Button} from '../ui/button';
 import Sectiontitle from '../global/Sectiontitle';
 import {Card} from '../ui/card';
 
-function HeroServices() {
+const HERO_SERVICES_POSTER_SRC =
+  'https://downloads.adamunderwater.com/store-1-au/public/print3.jpg';
+
+function HeroServices({onPosterLoad}: {onPosterLoad?: () => void}) {
   const [isVideoReady, setIsVideoReady] = useState(false);
+  const posterImgRef = useRef<HTMLImageElement>(null);
+  const hasCalledPosterLoad = useRef(false);
+
+  const handlePosterLoad = useCallback(() => {
+    if (hasCalledPosterLoad.current) return;
+    hasCalledPosterLoad.current = true;
+    onPosterLoad?.();
+  }, [onPosterLoad]);
 
   const handleVideoLoad = () => {
     setTimeout(() => {
       setIsVideoReady(true); // Switch to video only when loaded
-    }, 5000);
+    }, 250);
   };
 
   useEffect(() => {
-    const iframe = document.querySelector('iframe');
-    if (iframe) {
-      iframe.addEventListener('load', handleVideoLoad);
+    const img = posterImgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      handlePosterLoad();
     }
-    return () => {
-      if (iframe) {
-        iframe.removeEventListener('load', handleVideoLoad);
-      }
-    };
-  }, []);
+  }, [handlePosterLoad]);
 
   return (
     <section
@@ -70,11 +74,22 @@ function HeroServices() {
           </Card>
         </div>
       </div>
-      <div className="media-container">
+      <div
+        className="media-container"
+        style={{
+          backgroundImage: `url(${HERO_SERVICES_POSTER_SRC})`,
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+        }}
+      >
         <img
-          src="https://downloads.adamunderwater.com/store-1-au/public/print3.jpg"
+          ref={posterImgRef}
+          src={HERO_SERVICES_POSTER_SRC}
           alt="Loading video..."
           className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
+          onLoad={handlePosterLoad}
+          loading="eager"
+          fetchpriority="high"
         />
         <iframe
           src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
@@ -82,6 +97,8 @@ function HeroServices() {
           allow="autoplay; fullscreen; picture-in-picture"
           className={`video ${isVideoReady ? 'visible' : ''}`}
           title="Background Video"
+          loading="eager"
+          onLoad={handleVideoLoad}
         ></iframe>
 
         {/* <div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1018553050?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="website"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script> */}

@@ -78,14 +78,15 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 function WorkPage() {
   const collection = useLoaderData<typeof loader>() || {};
-  const [isPageReady, setIsPageReady] = useState(false);
-  const hasCalledLoad = useRef(false);
+  const [isFeaturedImageReady, setIsFeaturedImageReady] = useState(false);
+  const [isSeaforestationReady, setIsSeaforestationReady] = useState(false);
+  const [isUrchinomicsReady, setIsUrchinomicsReady] = useState(false);
   const featuredImgRef = useRef<HTMLImageElement>(null);
+  const isPageReady =
+    isFeaturedImageReady && isSeaforestationReady && isUrchinomicsReady;
 
   const handleFeaturedImgLoad = useCallback(() => {
-    if (hasCalledLoad.current) return;
-    hasCalledLoad.current = true;
-    setIsPageReady(true);
+    setIsFeaturedImageReady(true);
   }, []);
 
   // Catch cached images whose onLoad fired before React hydrated
@@ -125,6 +126,8 @@ function WorkPage() {
           src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
           allow="autoplay; fullscreen; picture-in-picture;"
           title="Seaforestation Trailer"
+          loading="eager"
+          onLoad={() => setIsSeaforestationReady(true)}
         ></iframe>
       </div>
 
@@ -138,6 +141,8 @@ function WorkPage() {
           src="https://player.vimeo.com/video/795362432?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
           allow="autoplay; fullscreen; picture-in-picture;"
           title="Urchinomics"
+          loading="eager"
+          onLoad={() => setIsUrchinomicsReady(true)}
         ></iframe>
       </div>
       <script src="https://player.vimeo.com/api/player.js"></script>

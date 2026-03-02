@@ -19,23 +19,14 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
   const handleVideoLoad = () => {
     setTimeout(() => {
       setIsVideoReady(true); // Switch to video only when loaded
-    }, 5000);
+    }, 250);
   };
 
   useEffect(() => {
-    const iframe = document.querySelector('iframe');
-    if (iframe) {
-      iframe.addEventListener('load', handleVideoLoad);
-    }
     // If hero image already loaded from cache before React attached onLoad
     if (heroImgRef.current?.complete && heroImgRef.current.naturalWidth > 0) {
       handleHeroImgLoad();
     }
-    return () => {
-      if (iframe) {
-        iframe.removeEventListener('load', handleVideoLoad);
-      }
-    };
   }, [handleHeroImgLoad]);
 
   return (
@@ -61,11 +52,21 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
           </div>
         </div>
       </div>
-      <div className="media-container">
+      <div
+        className="media-container"
+        style={{
+          backgroundImage:
+            'url(https://downloads.adamunderwater.com/store-1-au/public/print1.jpg)',
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+        }}
+      >
         <img
           src="https://downloads.adamunderwater.com/store-1-au/public/print1.jpg"
           alt="Loading video..."
           className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
+          loading="eager"
+          fetchpriority="high"
         />
         <iframe
           src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
@@ -73,6 +74,8 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
           allow="autoplay; fullscreen; picture-in-picture"
           className={`video ${isVideoReady ? 'visible' : ''}`}
           title="Background Video"
+          loading="eager"
+          onLoad={handleVideoLoad}
         ></iframe>
       </div>
     </section>
