@@ -1474,7 +1474,7 @@ export default function Product() {
           </>
         )}
         {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 px-[35px]">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
           {standardCarouselImages && standardCarouselImages?.length > 1 && (
             <IndividualProduct
               productName={title}
@@ -1508,7 +1508,7 @@ export default function Product() {
           )}
           {/* <ProductImage image={selectedVariant?.image} /> */}
           {windowWidth != undefined && windowWidth < 1024 && (
-            <div className="product-main">
+            <div className="product-main px-[35px]">
               {windowWidth && windowWidth >= 1024 && (
                 <>
                   <div className="title-button-wrapper">
@@ -1676,7 +1676,7 @@ export default function Product() {
             </div>
           )}
           {windowWidth != undefined && windowWidth >= 1024 && (
-            <div className="product-main">
+            <div className="product-main px-[35px]">
               {windowWidth && windowWidth >= 1024 && (
                 <>
                   <div className="title-button-wrapper">
@@ -2099,7 +2099,7 @@ export default function Product() {
         )}
         {!isVideo && (
           <>
-            <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 extra-info">
+            <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 lg:mt-6 extra-info">
               <div className="grid grid-cols-1">
                 <div className="how-its-made">
                   {/* section title */}

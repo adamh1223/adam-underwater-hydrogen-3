@@ -1045,7 +1045,7 @@
 }
 
 .print-carousel-individual-vertical {
-  max-width: clamp(16rem, 72vw, 30rem);
+  max-width: clamp(16rem, 64vw, 25rem);
 }
 
 .print-carousel-main-stage {
@@ -1175,28 +1175,37 @@
 }
 
 .print-detail-shortcuts-outer {
-  width: min(100%, clamp(280px, 82vw, 560px));
+  width: min(100%, clamp(280px, 90vw, 680px));
   margin-left: auto;
   margin-right: auto;
   display: block;
   padding-top: 6px;
 }
 
+.print-detail-shortcuts-host {
+  width: 100%;
+}
+
 .print-detail-shortcuts-outer-vertical {
-  width: min(100%, clamp(240px, 70vw, 470px));
+  width: min(100%, clamp(240px, 90vw, 620px));
 }
 
 .print-detail-shortcuts-inner {
+  --thumb-col-width: clamp(4.5rem, 14.5vw, 7rem);
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--thumb-col-width));
+  justify-content: center;
+  align-items: start;
   gap: clamp(8px, 1.5vw, 10px);
 }
 
+.print-detail-shortcuts-outer-vertical .print-detail-shortcuts-inner {
+  --thumb-col-width: clamp(3.75rem, 11vw, 4.75rem);
+}
+
 .print-detail-shortcut {
-  --print-shortcut-base-width: clamp(5.25rem, 17vw, 8.125rem);
+  --print-shortcut-base-width: clamp(4.5rem, 14.5vw, 7rem);
   box-sizing: border-box;
   width: var(--print-shortcut-base-width);
   height: auto;
@@ -1209,7 +1218,7 @@
 }
 
 .print-detail-shortcut-vertical {
-  --print-shortcut-base-width: clamp(4.5rem, 13vw, 5.625rem);
+  --print-shortcut-base-width: clamp(3.75rem, 11vw, 4.75rem);
   aspect-ratio: 90 / 120;
 }
 
