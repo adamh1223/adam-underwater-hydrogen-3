@@ -1274,14 +1274,14 @@ span {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    column-gap: 12px;
-    padding-inline: clamp(15px, 4vw, 50px);
+    column-gap: 6px;
+    padding-inline: clamp(15px, 2vw, 50px);
   }
   .product-counter-filter-group {
     display: flex;
     align-items: center;
     justify-self: start;
-    gap: 12px;
+    gap: 6px;
     min-width: 0;
   }
   .product-counter-container {
@@ -1298,6 +1298,18 @@ span {
     align-items: center;
     justify-self: center;
     min-width: 0;
+  }
+  .desktop-search-stack {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .desktop-search-hint {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
   }
   .grid-list-toggle-container {
     display: flex;
@@ -1361,18 +1373,19 @@ span {
 
 .notched-slider-section + .notched-slider-section {
   border-top: 1px solid hsl(var(--border));
-  padding-top: 1rem;
+  padding-top: 0.5rem;
 }
 
 .notched-slider-container {
   position: relative;
   padding-bottom: 4px;
+  padding-inline: 0.5rem;
 }
 
 .notched-slider-labels {
   position: relative;
-  height: 2.5rem;
-  margin-bottom: 8px;
+  height: 1rem;
+  margin-bottom: 2px;
   overflow: visible;
 }
 
@@ -1391,7 +1404,9 @@ span {
   width: 4.75rem;
   min-width: 4.75rem;
   transform: translateX(-50%);
-  transition: color 150ms ease, font-weight 150ms ease;
+  transition:
+    color 150ms ease,
+    font-weight 150ms ease;
   overflow: visible;
 }
 

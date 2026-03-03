@@ -35,8 +35,15 @@ export default function Layout() {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1" />
-        <link rel="icon" href="https://downloads.adamunderwater.com/store-1-au/public/real-icon-2.png" type="image/png" />
+        <meta
+          name="viewport"
+          content="width=device-width,initial-scale=1, maximum-scale=1"
+        />
+        <link
+          rel="icon"
+          href="https://downloads.adamunderwater.com/store-1-au/public/real-icon-2.png"
+          type="image/png"
+        />
         <link rel="stylesheet" href={tailwindCss} />
         <link rel="stylesheet" href={appStyles} />
         <link rel="stylesheet" href={sonnerStyles} />
@@ -45,9 +52,9 @@ export default function Layout() {
       </head>
       <body className="dark">
         {/* 🔔 Sonner toaster (mount once at root) */}
-        <Toaster richColors={false} className='au-toaster' />
+        <Toaster richColors={false} className="au-toaster" />
 
-        <TooltipProvider delayDuration={200}>
+        <TooltipProvider delayDuration={0}>
           {data?.consent ? (
             <Analytics.Provider
               cart={data.cart}

@@ -58,13 +58,13 @@ import Collections from './collections._index';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import CollectionPageSkeleton from '~/components/skeletons/CollectionPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
     {title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`},
@@ -199,6 +199,9 @@ const RESOLUTION_NOTCHES = [
 const DEFAULT_DURATION_FILTER_INDEX = DURATION_NOTCHES.length - 1;
 const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
 
+type FrameRateFilter = 'all' | '24fps' | 'slowmo';
+const DEFAULT_FRAME_RATE_FILTER: FrameRateFilter = 'all';
+
 const STOCK_FILTER_ICON_BUTTON_CLASS_NAME =
   'relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-default disabled:opacity-50';
 
@@ -207,11 +210,13 @@ function NotchedSlider({
   value,
   onChange,
   label,
+  headerContent,
 }: {
   notches: {value: number; label: string}[];
   value: number;
   onChange: (index: number) => void;
   label: string;
+  headerContent?: React.ReactNode;
 }) {
   const max = notches.length - 1;
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
@@ -284,7 +289,9 @@ function NotchedSlider({
 
   return (
     <div className="notched-slider-section">
-      <p className="text-sm font-medium mb-4 text-foreground">{label}</p>
+      {headerContent ?? (
+        <p className="text-sm font-medium mb-2 text-foreground">{label}</p>
+      )}
       <div className="notched-slider-container">
         <div className="notched-slider-labels">
           {notches.map((notch, idx) => (
@@ -369,19 +376,25 @@ function StockFiltersPopover({
   setDurationFilterIndex,
   resolutionFilterIndex,
   setResolutionFilterIndex,
+  frameRateFilter,
+  setFrameRateFilter,
 }: {
   durationFilterIndex: number;
   setDurationFilterIndex: (v: number) => void;
   resolutionFilterIndex: number;
   setResolutionFilterIndex: (v: number) => void;
+  frameRateFilter: FrameRateFilter;
+  setFrameRateFilter: (v: FrameRateFilter) => void;
 }) {
   const isFiltered =
     durationFilterIndex !== DEFAULT_DURATION_FILTER_INDEX ||
-    resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX;
+    resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX ||
+    frameRateFilter !== DEFAULT_FRAME_RATE_FILTER;
 
   const handleReset = () => {
     setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
     setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
+    setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
   };
 
   return (
@@ -404,29 +417,46 @@ function StockFiltersPopover({
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" sideOffset={8} className="z-[160] w-80 p-5">
-        <div className="space-y-6">
-          <div className="flex justify-end">
-            <button
-              type="button"
-              className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
-              aria-label="Reset stock filters"
-              onClick={handleReset}
-            >
-              <img
-                src={
-                  'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
-                }
-                alt=""
-                className="w-5 h-5"
-              ></img>
-            </button>
-          </div>
+      <PopoverContent
+        align="start"
+        sideOffset={8}
+        className="z-[1000] w-80 pt-2.5 px-3.5 pb-3.5"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
+        <div className="space-y-4">
           <NotchedSlider
             label="Duration (seconds)"
             notches={DURATION_NOTCHES}
             value={durationFilterIndex}
             onChange={setDurationFilterIndex}
+            headerContent={
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-foreground">
+                  Duration (seconds)
+                </p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+                      aria-label="Reset stock filters"
+                      onClick={handleReset}
+                    >
+                      <img
+                        src={
+                          'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                        }
+                        alt=""
+                        className="w-5 h-5"
+                      ></img>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="z-[1001]">
+                    Reset Changes
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            }
           />
           <NotchedSlider
             label="Resolution"
@@ -434,6 +464,39 @@ function StockFiltersPopover({
             value={resolutionFilterIndex}
             onChange={setResolutionFilterIndex}
           />
+          <div className="border-t border-border pt-2">
+            <p className="text-sm font-medium text-foreground mb-3">
+              Frame Rate
+            </p>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={frameRateFilter}
+              onValueChange={(value) => {
+                if (value) setFrameRateFilter(value as FrameRateFilter);
+              }}
+              className="w-full cursor-pointer"
+            >
+              <ToggleGroupItem
+                value="all"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="24fps"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                24fps
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="slowmo"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Slowmo
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
@@ -602,6 +665,7 @@ export default function Collection() {
   const STOCK_FILTER_STORAGE_KEY = 'collection-stock-filter-mode';
   const STOCK_DURATION_FILTER_KEY = 'collection-stock-duration-filter';
   const STOCK_RESOLUTION_FILTER_KEY = 'collection-stock-resolution-filter';
+  const STOCK_FRAME_RATE_FILTER_KEY = 'collection-stock-frame-rate-filter';
   const [layout, setLayout] = useState('grid');
   const [durationFilterIndex, setDurationFilterIndex] = useState(
     DEFAULT_DURATION_FILTER_INDEX,
@@ -609,6 +673,9 @@ export default function Collection() {
   const [resolutionFilterIndex, setResolutionFilterIndex] = useState(
     DEFAULT_RESOLUTION_FILTER_INDEX,
   ); // default: "Has 4K+"
+  const [frameRateFilter, setFrameRateFilter] = useState<FrameRateFilter>(
+    DEFAULT_FRAME_RATE_FILTER,
+  ); // default: "all"
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
   const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
     useState(false);
@@ -768,7 +835,7 @@ export default function Collection() {
     }
   }, [collection?.handle, stockFilterState, hasInitializedStockFilter]);
 
-  // Restore duration/resolution filter from localStorage on stock pages
+  // Restore duration/resolution/frame-rate filter from localStorage on stock pages
   useEffect(() => {
     if (collection?.handle !== 'stock') return;
     try {
@@ -790,12 +857,22 @@ export default function Collection() {
           setResolutionFilterIndex(idx);
         }
       }
+      const savedFrameRate = window.localStorage.getItem(
+        STOCK_FRAME_RATE_FILTER_KEY,
+      );
+      if (
+        savedFrameRate === 'all' ||
+        savedFrameRate === '24fps' ||
+        savedFrameRate === 'slowmo'
+      ) {
+        setFrameRateFilter(savedFrameRate);
+      }
     } catch {
       // Ignore storage access errors
     }
   }, [collection?.handle]);
 
-  // Persist duration/resolution filter to localStorage
+  // Persist duration/resolution/frame-rate filter to localStorage
   useEffect(() => {
     if (collection?.handle !== 'stock') return;
     try {
@@ -807,10 +884,14 @@ export default function Collection() {
         STOCK_RESOLUTION_FILTER_KEY,
         String(resolutionFilterIndex),
       );
+      window.localStorage.setItem(
+        STOCK_FRAME_RATE_FILTER_KEY,
+        frameRateFilter,
+      );
     } catch {
       // Ignore storage access errors
     }
-  }, [collection?.handle, durationFilterIndex, resolutionFilterIndex]);
+  }, [collection?.handle, durationFilterIndex, resolutionFilterIndex, frameRateFilter]);
 
   useEffect(() => {
     const baseConnection = collection?.products;
@@ -865,6 +946,13 @@ export default function Collection() {
           if (highest < minResolution) return false;
         }
 
+        // Frame rate filter
+        if (frameRateFilter === '24fps') {
+          if (p.tags.includes('slowmo')) return false;
+        } else if (frameRateFilter === 'slowmo') {
+          if (!p.tags.includes('slowmo')) return false;
+        }
+
         return true;
       });
     }
@@ -880,6 +968,7 @@ export default function Collection() {
     stockFilterState,
     durationFilterIndex,
     resolutionFilterIndex,
+    frameRateFilter,
   ]);
 
   useEffect(() => {
@@ -1039,37 +1128,35 @@ export default function Collection() {
           </div>
         )}
         {collection?.handle === 'stock' && (
-          <div className="flex justify-center py-2">
-            <TooltipProvider>
-              <div className="toggle-container">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}
-                      onClick={() => setStockFilterState('All Clips')}
-                    >
-                      All Clips
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-sm z-1000">
-                    Keyboard shortcut: a
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={`toggle-option ${stockFilterState === 'Discounted Bundles' ? 'selected' : ''}`}
-                      onClick={() => setStockFilterState('Discounted Bundles')}
-                    >
-                      Discounted Bundles
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-sm z-1000">
-                    Keyboard shortcut: d
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
+          <div className="flex justify-center pt-2 pb-1">
+            <div className="toggle-container">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}
+                    onClick={() => setStockFilterState('All Clips')}
+                  >
+                    All Clips
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Keyboard shortcut: a
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`toggle-option ${stockFilterState === 'Discounted Bundles' ? 'selected' : ''}`}
+                    onClick={() => setStockFilterState('Discounted Bundles')}
+                  >
+                    Discounted Bundles
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Keyboard shortcut: d
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         )}
         {windowWidth != undefined && windowWidth > 600 && (
@@ -1077,7 +1164,7 @@ export default function Collection() {
             <div className="product-counter-filter-group">
               <div className="product-counter-container">
                 <div className="flex flex-col items-end">
-                  <h4 className="font-medium text-xl">
+                  <h4 className="font-medium text-md">
                     {displayedProductCount} product
                     {displayedProductCount > 1 && 's'}
                   </h4>
@@ -1089,11 +1176,13 @@ export default function Collection() {
                   setDurationFilterIndex={setDurationFilterIndex}
                   resolutionFilterIndex={resolutionFilterIndex}
                   setResolutionFilterIndex={setResolutionFilterIndex}
+                  frameRateFilter={frameRateFilter}
+                  setFrameRateFilter={setFrameRateFilter}
                 />
               )}
             </div>
             <div className="search-product-container">
-              <div className="flex flex-col items-center mt-[25px]">
+              <div className="flex flex-col items-center">
                 <SearchFormPredictive>
                   {({fetchResults, inputRef}) => {
                     const handleInput = (
@@ -1104,8 +1193,8 @@ export default function Collection() {
                     };
 
                     return (
-                      <div className="flex flex-col items-center">
-                        <InputGroup className="w-[300px]">
+                      <div className="desktop-search-stack flex flex-col items-center">
+                        <InputGroup className="w-[284px]">
                           <InputGroupAddon align="inline-start">
                             <LuSearch className="text-muted-foreground" />
                           </InputGroupAddon>
@@ -1128,7 +1217,7 @@ export default function Collection() {
                             </InputGroupAddon>
                           )}
                         </InputGroup>
-                        <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
+                        <p className="desktop-search-hint text-muted-foreground text-[11px] w-[284px] text-left pl-9">
                           Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
                         </p>
                       </div>
@@ -1139,63 +1228,59 @@ export default function Collection() {
             </div>
 
             <div className="grid-list-toggle-container flex gap-x-4">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={
-                        layout === 'list'
-                          ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                          : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={
+                      layout === 'list'
+                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                    }
+                    onClick={() => {
+                      if (layout !== 'list') {
+                        setListLayout();
                       }
-                      onClick={() => {
-                        if (layout !== 'list') {
-                          setListLayout();
-                        }
-                      }}
-                    >
-                      <LuZoomOut />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-sm z-1000">
-                    {listViewTooltip}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    }}
+                  >
+                    <LuZoomOut />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {listViewTooltip}
+                </TooltipContent>
+              </Tooltip>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={
-                        layout === 'grid'
-                          ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                          : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={
+                      layout === 'grid'
+                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                    }
+                    onClick={() => {
+                      if (layout !== 'grid') {
+                        setGridLayout();
                       }
-                      onClick={() => {
-                        if (layout !== 'grid') {
-                          setGridLayout();
-                        }
-                      }}
-                    >
-                      <LuZoomIn />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-sm z-1000">
-                    {gridViewTooltip}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    }}
+                  >
+                    <LuZoomIn />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {gridViewTooltip}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         )}
         {windowWidth != undefined && windowWidth <= 600 && (
           <>
             <div className="counter-search-toggle-container">
-              <div className="top-row">
+              <div className="top-row mb-2">
                 <div className="search-center">
                   <div className="search-product-container">
-                    <div className="flex flex-col items-center mt-[25px]">
+                    <div className="flex flex-col items-center mt-[8px]">
                       <SearchFormPredictive>
                         {({fetchResults, inputRef}) => {
                           const handleInput = (
@@ -1246,7 +1331,7 @@ export default function Collection() {
                 <div className="product-count flex items-center gap-2">
                   <div className="product-counter-container">
                     <div className="flex flex-col items-end">
-                      <h4 className="font-medium text-xl">
+                      <h4 className="font-medium text-md">
                         {displayedProductCount} product
                         {displayedProductCount > 1 && 's'}
                       </h4>
@@ -1258,58 +1343,56 @@ export default function Collection() {
                       setDurationFilterIndex={setDurationFilterIndex}
                       resolutionFilterIndex={resolutionFilterIndex}
                       setResolutionFilterIndex={setResolutionFilterIndex}
+                      frameRateFilter={frameRateFilter}
+                      setFrameRateFilter={setFrameRateFilter}
                     />
                   )}
                 </div>
                 <div className="layout-toggle">
                   <div className="grid-list-toggle-container flex gap-x-4">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            className={
-                              layout === 'list'
-                                ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                                : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className={
+                            layout === 'list'
+                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                          }
+                          onClick={() => {
+                            if (layout !== 'list') {
+                              setListLayout();
                             }
-                            onClick={() => {
-                              if (layout !== 'list') {
-                                setListLayout();
-                              }
-                            }}
-                          >
-                            <LuZoomOut />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-sm z-1000">
-                          {listViewTooltip}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                          }}
+                        >
+                          <LuZoomOut />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        {listViewTooltip}
+                      </TooltipContent>
+                    </Tooltip>
 
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            className={
-                              layout === 'grid'
-                                ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                                : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className={
+                            layout === 'grid'
+                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                          }
+                          onClick={() => {
+                            if (layout !== 'grid') {
+                              setGridLayout();
                             }
-                            onClick={() => {
-                              if (layout !== 'grid') {
-                                setGridLayout();
-                              }
-                            }}
-                          >
-                            <LuZoomIn />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-sm">
-                          {gridViewTooltip}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                          }}
+                        >
+                          <LuZoomIn />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        {gridViewTooltip}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </div>
