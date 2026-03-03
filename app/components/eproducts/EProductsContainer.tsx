@@ -499,7 +499,6 @@ function EProductsContainer({
       <article className={`group relative h-full`}>
         <Card
           className={`${cardClassName} ${listRangeCardClassName} ${eproductCardTypeClassName}`.trim()}
-          style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           onClick={handleBundleCardClick}
           {...cardTouchHighlightHandlers}

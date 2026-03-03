@@ -602,6 +602,7 @@ function uninstallGlobalTouchStartListener() {
 export function useTouchCardHighlight(
   cardId: string,
   _durationMs = 420,
+  enabled = true,
 ): {
   isTouchHighlighted: boolean;
   touchHighlightHandlers: TouchCardHighlightHandlers;
@@ -613,6 +614,10 @@ export function useTouchCardHighlight(
   }, []);
 
   useEffect(() => {
+    if (!enabled) {
+      setIsTouchHighlighted(false);
+      return;
+    }
     if (typeof window === 'undefined' || !cardId) return;
 
     const handleGlobalTouchHighlightEvent = (event: Event) => {
@@ -650,9 +655,13 @@ export function useTouchCardHighlight(
         handleGlobalTouchHighlightClearEvent as EventListener,
       );
     };
-  }, [cardId, triggerTouchHighlight]);
+  }, [cardId, enabled, triggerTouchHighlight]);
 
   useEffect(() => {
+    if (!enabled) {
+      setIsTouchHighlighted(false);
+      return;
+    }
     if (typeof window === 'undefined') return;
 
     const syncViewportRule = () => {
@@ -664,9 +673,10 @@ export function useTouchCardHighlight(
     syncViewportRule();
     window.addEventListener('resize', syncViewportRule);
     return () => window.removeEventListener('resize', syncViewportRule);
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     globalTouchListenerRefCount += 1;
     installGlobalTouchStartListener();
 
@@ -679,10 +689,11 @@ export function useTouchCardHighlight(
         uninstallGlobalTouchStartListener();
       }
     };
-  }, []);
+  }, [enabled]);
 
   const touchHighlightHandlers: TouchCardHighlightHandlers = {
     onPointerDownCapture: (event) => {
+      if (!enabled) return;
       if (event.pointerType !== 'touch') {
         dispatchTouchCardHighlightClear();
         setIsTouchHighlighted(false);
@@ -700,6 +711,7 @@ export function useTouchCardHighlight(
       triggerTouchHighlight();
     },
     onTouchStartCapture: (event) => {
+      if (!enabled) return;
       if (!cardId) return;
       if (!shouldHoldTouchCardHighlight()) {
         dispatchTouchCardHighlightClear();

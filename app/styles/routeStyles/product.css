@@ -1070,6 +1070,38 @@
   border-radius: 0.5rem;
 }
 
+.print-carousel-individual-detail {
+  --print-detail-arrow-gap: clamp(0.375rem, 1vw, 0.75rem);
+}
+
+@media (min-width: 1024px) {
+  .print-carousel-individual-detail {
+    --print-detail-arrow-gap: 0.25rem;
+  }
+}
+
+.print-carousel-individual-detail
+  .print-detail-carousel-arrow[data-slot='carousel-previous'],
+.print-carousel-individual-detail
+  .print-detail-carousel-arrow[data-slot='carousel-next'] {
+  top: 50%;
+  z-index: 30;
+}
+
+.print-carousel-individual-detail
+  .print-detail-carousel-arrow-prev[data-slot='carousel-previous'] {
+  left: 0;
+  right: auto;
+  transform: translate(calc(-100% - var(--print-detail-arrow-gap)), -50%);
+}
+
+.print-carousel-individual-detail
+  .print-detail-carousel-arrow-next[data-slot='carousel-next'] {
+  right: 0;
+  left: auto;
+  transform: translate(calc(100% + var(--print-detail-arrow-gap)), -50%);
+}
+
 /* Product detail portrait print carousel should hard-clip the viewport so
  * adjacent slides never peek through the side gutters.
  */

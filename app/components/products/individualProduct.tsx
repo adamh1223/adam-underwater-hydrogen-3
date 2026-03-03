@@ -5,7 +5,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState, type CSSProperties} from 'react';
 import '../../styles/routeStyles/product.css';
 import ThreeDViewModal from '../global/ThreeDViewModal';
 import {CarouselZoom} from 'components/ui/shadcn-io/carousel-zoom';
@@ -141,6 +141,7 @@ function IndividualProduct({
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < 700 : false,
   );
+  const [detailArrowStyle, setDetailArrowStyle] = useState<CSSProperties>({});
 
   // Track which image URLs have finished loading (persists across variant switches)
   const [loadedUrls, setLoadedUrls] = useState<Set<string>>(
@@ -158,6 +159,41 @@ function IndividualProduct({
       return next;
     });
   }, []);
+
+  const orientationImages =
+    orientation === 'Landscape' ? productImages : verticalProductImages;
+  const zoomItems = orientationImages.map((image) => ({
+    url: getOptimizedImageUrl(image.url, 2200),
+    type: 'image',
+  }));
+  const fallbackMainAspectRatio = orientation === 'Landscape' ? 4 / 3 : 3 / 4;
+  const fallbackThumbnailAspectRatio =
+    orientation === 'Landscape' ? 130 / 75 : 90 / 120;
+  const mainImageWidths =
+    orientation === 'Landscape'
+      ? LANDSCAPE_MAIN_IMAGE_WIDTHS
+      : VERTICAL_MAIN_IMAGE_WIDTHS;
+  const mainImageSizes =
+    orientation === 'Landscape'
+      ? '(max-width: 699px) 84vw, (max-width: 1023px) 62vw, 46vw'
+      : '(max-width: 699px) 72vw, (max-width: 1023px) 46vw, 32vw';
+  const thumbnailWidths = THUMBNAIL_IMAGE_WIDTHS;
+  const thumbnailSizes =
+    orientation === 'Landscape'
+      ? '(max-width: 699px) 24vw, 130px'
+      : '(max-width: 699px) 18vw, 90px';
+  const getThumbnailButtonStyle = useCallback(
+    (image: ProductImageData) => ({
+      aspectRatio: getImageAspectRatio(image, fallbackThumbnailAspectRatio),
+    }),
+    [fallbackThumbnailAspectRatio],
+  );
+  const getMainImageStageStyle = useCallback(
+    (image: ProductImageData) => ({
+      aspectRatio: getImageAspectRatio(image, fallbackMainAspectRatio),
+    }),
+    [fallbackMainAspectRatio],
+  );
 
   useEffect(() => {
     setLoadedUrls((prev) => {
@@ -203,6 +239,86 @@ function IndividualProduct({
       window.removeEventListener('resize', handleViewportResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const root = mediaContainerRef.current;
+    if (!root) return;
+
+    let frameId = 0;
+    const MIN_ARROW_CLEARANCE_PX = 44;
+
+    const updateArrowOffsets = () => {
+      const carouselRoot = root.querySelector<HTMLElement>(
+        '.print-carousel-individual-detail',
+      );
+      const mainStage = root.querySelector<HTMLElement>(
+        '.print-carousel-individual-detail .print-carousel-main-stage',
+      );
+
+      if (!carouselRoot || !mainStage) {
+        setDetailArrowStyle({});
+        return;
+      }
+
+      const carouselRect = carouselRoot.getBoundingClientRect();
+      const stageRect = mainStage.getBoundingClientRect();
+      const leftGap = Math.max(
+        MIN_ARROW_CLEARANCE_PX,
+        Math.round(stageRect.left - carouselRect.left),
+      );
+      const rightGap = Math.max(
+        MIN_ARROW_CLEARANCE_PX,
+        Math.round(carouselRect.right - stageRect.right),
+      );
+
+      setDetailArrowStyle((prev) => {
+        const nextPrevAnchor = `${leftGap}px`;
+        const nextNextAnchor = `${rightGap}px`;
+        if (
+          prev['--print-detail-arrow-prev-anchor' as keyof CSSProperties] ===
+            nextPrevAnchor &&
+          prev['--print-detail-arrow-next-anchor' as keyof CSSProperties] ===
+            nextNextAnchor
+        ) {
+          return prev;
+        }
+
+        return {
+          '--print-detail-arrow-prev-anchor': nextPrevAnchor,
+          '--print-detail-arrow-next-anchor': nextNextAnchor,
+        } as CSSProperties;
+      });
+    };
+
+    const scheduleUpdate = () => {
+      if (frameId) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(updateArrowOffsets);
+    };
+
+    scheduleUpdate();
+
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    resizeObserver.observe(root);
+
+    const carouselRoot = root.querySelector<HTMLElement>(
+      '.print-carousel-individual-detail',
+    );
+    const mainStage = root.querySelector<HTMLElement>(
+      '.print-carousel-individual-detail .print-carousel-main-stage',
+    );
+    if (carouselRoot) resizeObserver.observe(carouselRoot);
+    if (mainStage) resizeObserver.observe(mainStage);
+
+    window.addEventListener('resize', scheduleUpdate);
+
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', scheduleUpdate);
+    };
+  }, [activeIndex, loadedUrls, orientation, orientationImages]);
 
   useEffect(() => {
     if (!enableBackgroundImageWarmup) return;
@@ -305,41 +421,6 @@ function IndividualProduct({
     setActiveIndex(0); // update blue border
   }, [carouselApi]);
 
-  const orientationImages =
-    orientation === 'Landscape' ? productImages : verticalProductImages;
-  const zoomItems = orientationImages.map((image) => ({
-    url: getOptimizedImageUrl(image.url, 2200),
-    type: 'image',
-  }));
-  const fallbackMainAspectRatio = orientation === 'Landscape' ? 4 / 3 : 3 / 4;
-  const fallbackThumbnailAspectRatio =
-    orientation === 'Landscape' ? 130 / 75 : 90 / 120;
-  const mainImageWidths =
-    orientation === 'Landscape'
-      ? LANDSCAPE_MAIN_IMAGE_WIDTHS
-      : VERTICAL_MAIN_IMAGE_WIDTHS;
-  const mainImageSizes =
-    orientation === 'Landscape'
-      ? '(max-width: 699px) 84vw, (max-width: 1023px) 62vw, 46vw'
-      : '(max-width: 699px) 72vw, (max-width: 1023px) 46vw, 32vw';
-  const thumbnailWidths = THUMBNAIL_IMAGE_WIDTHS;
-  const thumbnailSizes =
-    orientation === 'Landscape'
-      ? '(max-width: 699px) 24vw, 130px'
-      : '(max-width: 699px) 18vw, 90px';
-  const getThumbnailButtonStyle = useCallback(
-    (image: ProductImageData) => ({
-      aspectRatio: getImageAspectRatio(image, fallbackThumbnailAspectRatio),
-    }),
-    [fallbackThumbnailAspectRatio],
-  );
-  const getMainImageStageStyle = useCallback(
-    (image: ProductImageData) => ({
-      aspectRatio: getImageAspectRatio(image, fallbackMainAspectRatio),
-    }),
-    [fallbackMainAspectRatio],
-  );
-
   // Reset carousel when productImages change
   useEffect(() => {
     resetCarousel();
@@ -365,9 +446,10 @@ function IndividualProduct({
                 <>
                   {orientation === 'Landscape' && (
                     <Carousel
-                      className="print-carousel-individual-horizontal mx-3 flex items-center justify-center"
+                      className="print-carousel-individual-horizontal print-carousel-individual-detail mx-3 flex items-center justify-center"
                       key={JSON.stringify(orientationImages)}
                       setApi={setCarouselApi}
+                      style={detailArrowStyle}
                     >
                       <CarouselContent className="flex">
                         {orientationImages.map((url, idx) => (
@@ -416,15 +498,16 @@ function IndividualProduct({
                         ))}
                       </CarouselContent>
 
-                      <CarouselPrevious />
-                      <CarouselNext />
+                      <CarouselPrevious className="print-detail-carousel-arrow print-detail-carousel-arrow-prev" />
+                      <CarouselNext className="print-detail-carousel-arrow print-detail-carousel-arrow-next" />
                     </Carousel>
                   )}
                   {orientation === 'Vertical' && (
                     <Carousel
-                      className="print-carousel-individual-vertical mx-3 flex items-center justify-center"
+                      className="print-carousel-individual-vertical print-carousel-individual-detail mx-3 flex items-center justify-center"
                       key={JSON.stringify(orientationImages)}
                       setApi={setCarouselApi}
+                      style={detailArrowStyle}
                     >
                       <CarouselContent className="flex">
                         {orientationImages.map((url, idx) => (
@@ -473,8 +556,8 @@ function IndividualProduct({
                         ))}
                       </CarouselContent>
 
-                      <CarouselPrevious />
-                      <CarouselNext />
+                      <CarouselPrevious className="print-detail-carousel-arrow print-detail-carousel-arrow-prev" />
+                      <CarouselNext className="print-detail-carousel-arrow print-detail-carousel-arrow-next" />
                     </Carousel>
                   )}
                 </>

@@ -392,10 +392,11 @@ async function loadCriticalData({
     const {hydrateReviewLocationsInMetafieldValue} = await import(
       '~/lib/reviews.server'
     );
-    reviews.product.metafield.value = await hydrateReviewLocationsInMetafieldValue(
-      context.env,
-      reviews.product.metafield.value,
-    );
+    reviews.product.metafield.value =
+      await hydrateReviewLocationsInMetafieldValue(
+        context.env,
+        reviews.product.metafield.value,
+      );
   }
   let customer = null;
   let wishlistProducts: string[] = [];
@@ -1026,7 +1027,8 @@ export default function Product() {
       icon: 'https://downloads.adamunderwater.com/store-1-au/public/2x-icon.png',
       title: 'Hangers and nails',
       description: 'Each print comes with 2 sets of picture hangers and nails',
-      image: 'https://downloads.adamunderwater.com/store-1-au/public/hangers-image.png',
+      image:
+        'https://downloads.adamunderwater.com/store-1-au/public/hangers-image.png',
     },
     {
       icon: 'https://downloads.adamunderwater.com/store-1-au/public/4x-icon.png',
@@ -1300,1276 +1302,1344 @@ export default function Product() {
   }, [location, scrollToSection]);
   return (
     <SkeletonGate isReady={isPageReady} skeleton={<ProductPageSkeleton />}>
-    {/* Hidden preloader for featured image to trigger skeleton gate */}
-    <img
-      ref={productImgRef}
-      src={currentGateImageUrl}
-      alt=""
-      style={{position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none'}}
-      onLoad={handleProductImgLoad}
-    />
-    <>
-      <section className="product pt-[20px]">
-        {/* Link tree */}
-        <ol className="px-[30px] mb-3 flex flex-wrap items-center gap-1.5 break-words text-lg text-muted-foreground sm:gap-2.5">
-          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-            <Link to="/">Home</Link>
-          </li>
-          <li
-            role="presentation"
-            aria-hidden="true"
-            className="[&>svg]:size-3.5"
-          >
-            {<ChevronRightIcon />}
-          </li>
-          {!isVideo && (
+      {/* Hidden preloader for featured image to trigger skeleton gate */}
+      <img
+        ref={productImgRef}
+        src={currentGateImageUrl}
+        alt=""
+        style={{
+          position: 'absolute',
+          width: 0,
+          height: 0,
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
+        onLoad={handleProductImgLoad}
+      />
+      <>
+        <section className="product pt-[20px]">
+          {/* Link tree */}
+          <ol className="px-[30px] mb-3 flex flex-wrap items-center gap-1.5 break-words text-lg text-muted-foreground sm:gap-2.5">
             <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-              <Link to="/collections/prints">Prints</Link>
+              <Link to="/">Home</Link>
             </li>
-          )}
-          {isVideo && (
+            <li
+              role="presentation"
+              aria-hidden="true"
+              className="[&>svg]:size-3.5"
+            >
+              {<ChevronRightIcon />}
+            </li>
+            {!isVideo && (
+              <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                <Link to="/collections/prints">Prints</Link>
+              </li>
+            )}
+            {isVideo && (
+              <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                <Link to="/collections/stock">Stock Footage</Link>
+              </li>
+            )}
+            <li
+              role="presentation"
+              aria-hidden="true"
+              className="[&>svg]:size-3.5"
+            >
+              {<ChevronRightIcon />}
+            </li>
             <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-              <Link to="/collections/stock">Stock Footage</Link>
+              {title}
             </li>
-          )}
-          <li
-            role="presentation"
-            aria-hidden="true"
-            className="[&>svg]:size-3.5"
-          >
-            {<ChevronRightIcon />}
-          </li>
-          <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-            {title}
-          </li>
-        </ol>
-        {windowWidth && windowWidth < 1024 && (
-          <>
-            <br />
-            <div className="individual-product-header-container px-[35px]">
-              <div className="title-button-wrapper">
-                <span className="capitalize text-3xl font-bold">{title}</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={
-                          wishlistItem ? removeFromFavorites : addToFavorites
-                        }
-                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                      >
-                        {pendingWishlistChange ? (
-                          <ReloadIcon className="animate-spin" />
-                        ) : (
-                          <>
-                            {wishlistItem ? (
-                              <FaHeart />
-                            ) : (
-                              <>
-                                {isLoggedIn ? (
-                                  <FaRegHeart />
-                                ) : (
-                                  <Link to="/account/login">
+          </ol>
+          {windowWidth && windowWidth < 1024 && (
+            <>
+              <br />
+              <div className="individual-product-header-container px-[35px]">
+                <div className="title-button-wrapper">
+                  <span className="capitalize text-3xl font-bold">{title}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        >
+                          {pendingWishlistChange ? (
+                            <ReloadIcon className="animate-spin" />
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <FaHeart />
+                              ) : (
+                                <>
+                                  {isLoggedIn ? (
                                     <FaRegHeart />
-                                  </Link>
-                                )}
-                              </>
-                            )}
-                          </>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm z-1000">
-                      {wishlistItem
-                        ? 'Remove from Favorites'
-                        : 'Save to Favorites'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <FaRegHeart />
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
 
-              {!isVideo && (
-                <p className="text-muted-foreground">Framed Canvas Print</p>
-              )}
-              {isVideo && (
-                <p className="text-muted-foreground">
-                  {isBundle
-                    ? 'Stock Footage Video Bundle'
-                    : 'Stock Footage Video'}
-                </p>
-              )}
-              <ProductPrice
-                price={selectedVariant?.price}
-                compareAtPrice={selectedVariant?.compareAtPrice}
-              />
-              {(!isVideo || isBundle) && reviewsCount >= 1 && (
-                <a
-                  href="#reviews"
-                  onClick={(evt) => handleScroll('reviews', evt)}
-                  className="no-underline text-inherit"
-                >
-                  <div className="average-product-rating">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="relative flex items-center"
-                        aria-hidden="true"
-                      >
-                        <Rating
-                          readOnly
-                          value={5}
-                          className="text-muted-foreground"
-                          aria-label={`Maximum rating of 5 stars`}
-                        >
-                          {FIVE_STAR_KEYS.map((starKey) => (
-                            <RatingButton
-                              key={`mobile-max-${starKey}`}
-                              className="h-5 w-5 p-0.5"
-                            />
-                          ))}
-                        </Rating>
+                {!isVideo && (
+                  <p className="text-muted-foreground">Framed Canvas Print</p>
+                )}
+                {isVideo && (
+                  <p className="text-muted-foreground">
+                    {isBundle
+                      ? 'Stock Footage Video Bundle'
+                      : 'Stock Footage Video'}
+                  </p>
+                )}
+                <ProductPrice
+                  price={selectedVariant?.price}
+                  compareAtPrice={selectedVariant?.compareAtPrice}
+                />
+                {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                  <a
+                    href="#reviews"
+                    onClick={(evt) => handleScroll('reviews', evt)}
+                    className="no-underline text-inherit"
+                  >
+                    <div className="average-product-rating">
+                      <div className="flex items-center gap-2">
                         <div
-                          className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                          style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                          className="relative flex items-center"
+                          aria-hidden="true"
                         >
-                          <Rating readOnly value={5} className="stars">
+                          <Rating
+                            readOnly
+                            value={5}
+                            className="text-muted-foreground"
+                            aria-label={`Maximum rating of 5 stars`}
+                          >
                             {FIVE_STAR_KEYS.map((starKey) => (
                               <RatingButton
-                                key={`mobile-fill-${starKey}`}
+                                key={`mobile-max-${starKey}`}
                                 className="h-5 w-5 p-0.5"
-                                aria-label={`Average rating ${formattedAverageRating} out of 5`}
                               />
                             ))}
                           </Rating>
+                          <div
+                            className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                            style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                          >
+                            <Rating readOnly value={5} className="stars">
+                              {FIVE_STAR_KEYS.map((starKey) => (
+                                <RatingButton
+                                  key={`mobile-fill-${starKey}`}
+                                  className="h-5 w-5 p-0.5"
+                                  aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                />
+                              ))}
+                            </Rating>
+                          </div>
                         </div>
+                        <span className="text-sm text-muted-foreground">
+                          {formattedAverageRating} (
+                          {reviewsCount === 1
+                            ? '1 review'
+                            : `${reviewsCount} reviews`}
+                          )
+                        </span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {formattedAverageRating} (
-                        {reviewsCount === 1
-                          ? '1 review'
-                          : `${reviewsCount} reviews`}
-                        )
-                      </span>
                     </div>
-                  </div>
-                </a>
-              )}
-              {isBundle ? (
-                <>
+                  </a>
+                )}
+                {isBundle ? (
+                  <>
+                    <h4 className="text-xl individual-product-location">
+                      {activeBundleClip?.clipName ??
+                        `Clip ${activeBundleClipIndex}`}
+                    </h4>
+                    {activeBundleClip?.clipLocation && (
+                      <p className="text-muted-foreground text-sm pb-2">
+                        {activeBundleClip.clipLocation}
+                      </p>
+                    )}
+                  </>
+                ) : (
                   <h4 className="text-xl individual-product-location">
-                    {activeBundleClip?.clipName ??
-                      `Clip ${activeBundleClipIndex}`}
+                    {formattedLocation}
                   </h4>
-                  {activeBundleClip?.clipLocation && (
-                    <p className="text-muted-foreground text-sm pb-2">
-                      {activeBundleClip.clipLocation}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <h4 className="text-xl individual-product-location">
-                  {formattedLocation}
-                </h4>
-              )}
-            </div>
-          </>
-        )}
-        {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
-          {standardCarouselImages && standardCarouselImages?.length > 1 && (
-            <IndividualProduct
-              productName={title}
-              productImages={standardCarouselImages}
-              verticalProductImages={standardVerticalCarouselImages}
-              orientation={orientation}
-              threeDViewImages={threeDImagesToUse}
-              allProductImages={allPrintProductImages}
-              enableBackgroundImageWarmup={isPageReady && isPrint}
-              initialLoadedImages={
-                initialLoadedGateImageUrl
-                  ? [{url: initialLoadedGateImageUrl, altText: title}]
-                  : []
-              }
-            ></IndividualProduct>
+                )}
+              </div>
+            </>
           )}
-          {isVideo && !isBundle && (
-            <IndividualVideoProduct
-              productName={title}
-              featuredImage={featuredImage?.url}
-              WMLink={parsedWMLink}
-            ></IndividualVideoProduct>
-          )}
-          {isVideo && isBundle && (
-            <IndividualVideoBundle
-              productName={title}
-              clips={bundleDetailClips}
-              activeClipIndex={activeBundleClipIndex}
-              onActiveClipChange={setActiveBundleClipIndex}
-            />
-          )}
-          {/* <ProductImage image={selectedVariant?.image} /> */}
-          {windowWidth != undefined && windowWidth < 1024 && (
-            <div className="product-main px-[35px]">
-              {windowWidth && windowWidth >= 1024 && (
-                <>
-                  <div className="title-button-wrapper">
-                    <span className="capitalize text-3xl font-bold title-text">
-                      {title}
-                    </span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={
-                              wishlistItem
-                                ? removeFromFavorites
-                                : addToFavorites
-                            }
-                            className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                          >
-                            {pendingWishlistChange ? (
-                              <ReloadIcon className="animate-spin" />
-                            ) : (
-                              <>
-                                {wishlistItem ? (
-                                  <FaHeart />
-                                ) : (
-                                  <>
-                                    {isLoggedIn ? (
-                                      <FaRegHeart />
-                                    ) : (
-                                      <Link to="/account/login">
-                                        <FaRegHeart />
-                                      </Link>
-                                    )}
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-sm z-1000">
-                          {wishlistItem
-                            ? 'Remove from Favorites'
-                            : 'Save to Favorites'}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-
-                  {!isVideo && (
-                    <p className="text-muted-foreground">Framed Canvas Print</p>
-                  )}
-                  {isVideo && (
-                    <p className="text-muted-foreground">
-                      {isBundle
-                        ? 'Stock Footage Video Bundle'
-                        : 'Stock Footage Video'}
-                    </p>
-                  )}
-                  <ProductPrice
-                    price={selectedVariant?.price}
-                    compareAtPrice={selectedVariant?.compareAtPrice}
-                  />
-                  {(!isVideo || isBundle) && reviewsCount >= 1 && (
-                    <a
-                      href="#reviews"
-                      onClick={(evt) => handleScroll('reviews', evt)}
-                      className="no-underline text-inherit"
-                    >
-                      <div className="average-product-rating">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="relative flex items-center"
-                            aria-hidden="true"
-                          >
-                            <Rating
-                              readOnly
-                              value={5}
-                              className="text-muted-foreground"
-                              aria-label={`Maximum rating of 5 stars`}
-                            >
-                              {FIVE_STAR_KEYS.map((starKey) => (
-                                <RatingButton
-                                  key={`desktop-max-${starKey}`}
-                                  className="h-5 w-5 p-0.5"
-                                />
-                              ))}
-                            </Rating>
-                            <div
-                              className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                              style={{
-                                width: `${(averageRating / 5) * 100 + 2}%`,
-                              }}
-                            >
-                              <Rating readOnly value={5} className="stars">
-                                {FIVE_STAR_KEYS.map((starKey) => (
-                                  <RatingButton
-                                    key={`desktop-fill-${starKey}`}
-                                    className="h-5 w-5 p-0.5"
-                                    aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                                  />
-                                ))}
-                              </Rating>
-                            </div>
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {formattedAverageRating} (
-                            {reviewsCount === 1
-                              ? '1 review'
-                              : `${reviewsCount} reviews`}
-                            )
-                          </span>
-                        </div>
-                      </div>
-                    </a>
-                  )}
-                  {isBundle ? (
-                    <>
-                      <h4 className="text-xl individual-product-location">
-                        {activeBundleClip?.clipName ??
-                          `Clip ${activeBundleClipIndex}`}
-                      </h4>
-                      {activeBundleClip?.clipLocation && (
-                        <p className="text-muted-foreground text-sm pb-2">
-                          {activeBundleClip.clipLocation}
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    <h4 className="text-xl individual-product-location">
-                      {formattedLocation}
-                    </h4>
-                  )}
-                </>
-              )}
-
-              {isBundle && activeBundleClip?.descriptionHtml && (
-                <Card className="mb-2">
-                  <CardContent>
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: activeBundleClip.descriptionHtml,
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-              {!isBundle && (
-                <Card className="mb-2">
-                  <CardContent>
-                    <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-                  </CardContent>
-                </Card>
-              )}
-
-              <ProductForm
-                VideoAlreadyInCart={disableButton}
-                cart={cart}
-                productId={product.id}
-                productOptions={productOptions}
-                selectedVariant={selectedVariant}
-                imagesToShow={layoutImagesToUse as SimpleProductImages[]}
-                isVideo={isVideo}
-                isPrint={isPrint}
-                isVideoBundle={isVideoBundle}
+          {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
+          <div className="lg:grid lg:grid-cols-2 lg:gap-x-2">
+            {standardCarouselImages && standardCarouselImages?.length > 1 && (
+              <IndividualProduct
+                productName={title}
+                productImages={standardCarouselImages}
+                verticalProductImages={standardVerticalCarouselImages}
+                orientation={orientation}
+                threeDViewImages={threeDImagesToUse}
+                allProductImages={allPrintProductImages}
+                enableBackgroundImageWarmup={isPageReady && isPrint}
+                initialLoadedImages={
+                  initialLoadedGateImageUrl
+                    ? [{url: initialLoadedGateImageUrl, altText: title}]
+                    : []
+                }
+              ></IndividualProduct>
+            )}
+            {isVideo && !isBundle && (
+              <IndividualVideoProduct
+                productName={title}
+                featuredImage={featuredImage?.url}
+                WMLink={parsedWMLink}
+              ></IndividualVideoProduct>
+            )}
+            {isVideo && isBundle && (
+              <IndividualVideoBundle
+                productName={title}
+                clips={bundleDetailClips}
+                activeClipIndex={activeBundleClipIndex}
+                onActiveClipChange={setActiveBundleClipIndex}
               />
-            </div>
-          )}
-          {windowWidth != undefined && windowWidth >= 1024 && (
-            <div className="product-main px-[35px]">
-              {windowWidth && windowWidth >= 1024 && (
-                <>
-                  <div className="title-button-wrapper">
-                    <span className="capitalize text-3xl font-bold title-text">
-                      {title}
-                    </span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={
-                              wishlistItem
-                                ? removeFromFavorites
-                                : addToFavorites
-                            }
-                            className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                          >
-                            {pendingWishlistChange ? (
-                              <ReloadIcon className="animate-spin" />
-                            ) : (
-                              <>
-                                {wishlistItem ? (
-                                  <FaHeart />
-                                ) : (
-                                  <>
-                                    {isLoggedIn ? (
-                                      <FaRegHeart />
-                                    ) : (
-                                      <Link to="/account/login">
-                                        <FaRegHeart />
-                                      </Link>
-                                    )}
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-sm z-1000">
-                          {wishlistItem
-                            ? 'Remove from Favorites'
-                            : 'Save to Favorites'}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-
-                  {!isVideo && (
-                    <p className="text-muted-foreground">Framed Canvas Print</p>
-                  )}
-                  {isVideo && (
-                    <p className="text-muted-foreground">
-                      {isBundle
-                        ? 'Stock Footage Video Bundle'
-                        : 'Stock Footage Video'}
-                    </p>
-                  )}
-                  <ProductPrice
-                    price={selectedVariant?.price}
-                    compareAtPrice={selectedVariant?.compareAtPrice}
-                  />
-                  {(!isVideo || isBundle) && reviewsCount >= 1 && (
-                    <a
-                      href="#reviews"
-                      onClick={(evt) => handleScroll('reviews', evt)}
-                      className="no-underline text-inherit"
-                    >
-                      <div className="average-product-rating">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="relative flex items-center"
-                            aria-hidden="true"
-                          >
-                            <Rating
-                              readOnly
-                              value={5}
-                              className="text-muted-foreground"
-                              aria-label={`Maximum rating of 5 stars`}
-                            >
-                              {FIVE_STAR_KEYS.map((starKey) => (
-                                <RatingButton
-                                  key={`desktop-max-${starKey}`}
-                                  className="h-5 w-5 p-0.5"
-                                />
-                              ))}
-                            </Rating>
-                            <div
-                              className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                              style={{
-                                width: `${(averageRating / 5) * 100 + 2}%`,
-                              }}
-                            >
-                              <Rating readOnly value={5} className="stars">
-                                {FIVE_STAR_KEYS.map((starKey) => (
-                                  <RatingButton
-                                    key={`desktop-fill-${starKey}`}
-                                    className="h-5 w-5 p-0.5"
-                                    aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                                  />
-                                ))}
-                              </Rating>
-                            </div>
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {formattedAverageRating} (
-                            {reviewsCount === 1
-                              ? '1 review'
-                              : `${reviewsCount} reviews`}
-                            )
-                          </span>
-                        </div>
-                      </div>
-                    </a>
-                  )}
-                  {isBundle ? (
-                    <>
-                      <h4 className="text-xl individual-product-location">
-                        {activeBundleClip?.clipName ??
-                          `Clip ${activeBundleClipIndex}`}
-                      </h4>
-                      {activeBundleClip?.clipLocation && (
-                        <p className="text-muted-foreground text-sm pb-2">
-                          {activeBundleClip.clipLocation}
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    <h4 className="text-xl individual-product-location">
-                      {formattedLocation}
-                    </h4>
-                  )}
-                </>
-              )}
-
-              {isBundle && activeBundleClip?.descriptionHtml && (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: activeBundleClip.descriptionHtml,
-                  }}
-                />
-              )}
-              {!isBundle && (
-                <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-              )}
-              <br />
-
-              <ProductForm
-                VideoAlreadyInCart={disableButton}
-                cart={cart}
-                productId={product.id}
-                productOptions={productOptions}
-                selectedVariant={selectedVariant}
-                imagesToShow={layoutImagesToUse as SimpleProductImages[]}
-                isVideo={isVideo}
-                isPrint={isPrint}
-                isVideoBundle={isVideoBundle}
-              />
-            </div>
-          )}
-        </div>
-        {windowWidth && windowWidth < 1024 && !isVideo && (
-          <>
-            <hr />
-            <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
-              <div className="grid grid-cols-1">
-                <div className="flex justify-center items-center">
-                  <img
-                    src={'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'}
-                    alt=""
-                    style={{height: '2.2rem'}}
-                  />
-                </div>
-                <div className="flex justify-center mt-3">
-                  <p>Made in USA</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1">
-                <div className="flex justify-center items-center">
-                  <img src={'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'} alt="" style={{height: '2.4rem'}} />
-                </div>
-                <div className="flex justify-center mt-2">
-                  <p>Premium Quality</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1">
-                <div className="flex justify-center items-center">
-                  <img
-                    src={'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'}
-                    alt=""
-                    style={{height: '2.7rem'}}
-                  />
-                </div>
-                <div className="flex justify-center">
-                  <p>14-day returns</p>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-        {windowWidth && windowWidth < 1024 && !isVideo && (
-          <div className="items-top ">
-            <div className="flex justify-end card-accordion-container">
-              <Card className="py-2 px-4 mx-[20px] mb-2 w-full">
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger className="cursor-pointer">
-                      Print Specs
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="print-specs">
-                        {/* section body */}
-                        <div className="print-specs-container-1">
-                          <div className="column-1">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              Printing Process
-                            </div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                <CardContent>
-                                  <div>
-                                    Images are printed on the Canon
-                                    ImagePro-Graf 4600 Pro and stretched over
-                                    thick wooden frames using stretcher plyers.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                          <div className="column-2">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              Anti-glare
-                            </div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                <CardContent>
-                                  <div>
-                                    The professional matte canvas that we use
-                                    does not reflect light - the print will be
-                                    viewable in any room and any wall.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="print-specs-container-2">
-                          <div className="column-1">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              Paper Quality
-                            </div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                <CardContent>
-                                  <div>
-                                    Printed on 200 GSM, polyester inkjet matte
-                                    canvas on the Canon ImagePro-graf 4600 on a
-                                    44 inch roll.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                          <div className="column-2">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/durable.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">Durable</div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                <CardContent>
-                                  <div>
-                                    Prints are professionally stretched over
-                                    heavy duty wooden frames. Staples are
-                                    methodically placed to allow even tension of
-                                    the canvas.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                    <AccordionTrigger className="cursor-pointer">
-                      Frame Specs
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="frame-specs">
-                        {/* section body */}
-                        <div className="frame-specs-container-1">
-                          <div className="column-1">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              Handcrafted
-                            </div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                <CardContent>
-                                  <div>
-                                    Each frame is assembled by hand. Canvas is
-                                    stretched over frames using stretcher
-                                    plyers, and stapled onto the back frame.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                          <div className="column-2">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              Light Weight
-                            </div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                <CardContent>
-                                  <div>
-                                    Heavy duty and high quality canvas stretcher
-                                    bars remove the need for extra wooden
-                                    braces, reducing weight.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="frame-specs-container-2">
-                          <div className="column-1">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              Interactive
-                            </div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                <CardContent>
-                                  <div>
-                                    Tap your phone on the bottom right corner of
-                                    the canvas to see the latest products at
-                                    Adam Underwater.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                          <div className="column-2">
-                            <div className="flex justify-center">
-                              <img
-                                src={'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'}
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              Ready to Hang
-                            </div>
-                            <div className="flex justify-center">
-                              <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                <CardContent>
-                                  <div>
-                                    Wire is installed on the back of each frame,
-                                    and hanging materials are included. We
-                                    recommend using 2 hangers for large prints.
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </Card>
-            </div>
-          </div>
-        )}
-        {!isVideo && (
-          <>
-            <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 lg:mt-6 extra-info">
-              <div className="grid grid-cols-1">
-                <div className="how-its-made">
-                  {/* section title */}
-                  <div className="section-title-container">
-                    <div className="flex items-center justify-center w-full">
-                      <div className="flex-1 h-px bg-muted" />
-                      <span className="px-4">
-                        <div>How it&apos;s Made</div>
+            )}
+            {/* <ProductImage image={selectedVariant?.image} /> */}
+            {windowWidth != undefined && windowWidth < 1024 && (
+              <div className="product-main px-[35px]">
+                {windowWidth && windowWidth >= 1024 && (
+                  <>
+                    <div className="title-button-wrapper">
+                      <span className="capitalize text-3xl font-bold title-text">
+                        {title}
                       </span>
-                      <div className="flex-1 h-px bg-muted" />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={
+                                wishlistItem
+                                  ? removeFromFavorites
+                                  : addToFavorites
+                              }
+                              className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                            >
+                              {pendingWishlistChange ? (
+                                <ReloadIcon className="animate-spin" />
+                              ) : (
+                                <>
+                                  {wishlistItem ? (
+                                    <FaHeart />
+                                  ) : (
+                                    <>
+                                      {isLoggedIn ? (
+                                        <FaRegHeart />
+                                      ) : (
+                                        <Link to="/account/login">
+                                          <FaRegHeart />
+                                        </Link>
+                                      )}
+                                    </>
+                                  )}
+                                </>
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-sm z-1000">
+                            {wishlistItem
+                              ? 'Remove from Favorites'
+                              : 'Save to Favorites'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
+
+                    {!isVideo && (
+                      <p className="text-muted-foreground">
+                        Framed Canvas Print
+                      </p>
+                    )}
+                    {isVideo && (
+                      <p className="text-muted-foreground">
+                        {isBundle
+                          ? 'Stock Footage Video Bundle'
+                          : 'Stock Footage Video'}
+                      </p>
+                    )}
+                    <ProductPrice
+                      price={selectedVariant?.price}
+                      compareAtPrice={selectedVariant?.compareAtPrice}
+                    />
+                    {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                      <a
+                        href="#reviews"
+                        onClick={(evt) => handleScroll('reviews', evt)}
+                        className="no-underline text-inherit"
+                      >
+                        <div className="average-product-rating">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="relative flex items-center"
+                              aria-hidden="true"
+                            >
+                              <Rating
+                                readOnly
+                                value={5}
+                                className="text-muted-foreground"
+                                aria-label={`Maximum rating of 5 stars`}
+                              >
+                                {FIVE_STAR_KEYS.map((starKey) => (
+                                  <RatingButton
+                                    key={`desktop-max-${starKey}`}
+                                    className="h-5 w-5 p-0.5"
+                                  />
+                                ))}
+                              </Rating>
+                              <div
+                                className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                                style={{
+                                  width: `${(averageRating / 5) * 100 + 2}%`,
+                                }}
+                              >
+                                <Rating readOnly value={5} className="stars">
+                                  {FIVE_STAR_KEYS.map((starKey) => (
+                                    <RatingButton
+                                      key={`desktop-fill-${starKey}`}
+                                      className="h-5 w-5 p-0.5"
+                                      aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                    />
+                                  ))}
+                                </Rating>
+                              </div>
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              {formattedAverageRating} (
+                              {reviewsCount === 1
+                                ? '1 review'
+                                : `${reviewsCount} reviews`}
+                              )
+                            </span>
+                          </div>
+                        </div>
+                      </a>
+                    )}
+                    {isBundle ? (
+                      <>
+                        <h4 className="text-xl individual-product-location">
+                          {activeBundleClip?.clipName ??
+                            `Clip ${activeBundleClipIndex}`}
+                        </h4>
+                        {activeBundleClip?.clipLocation && (
+                          <p className="text-muted-foreground text-sm pb-2">
+                            {activeBundleClip.clipLocation}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <h4 className="text-xl individual-product-location">
+                        {formattedLocation}
+                      </h4>
+                    )}
+                  </>
+                )}
+
+                {isBundle && activeBundleClip?.descriptionHtml && (
+                  <Card className="mb-2">
+                    <CardContent>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: activeBundleClip.descriptionHtml,
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+                {!isBundle && (
+                  <Card className="mb-2">
+                    <CardContent>
+                      <div
+                        dangerouslySetInnerHTML={{__html: descriptionHtml}}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+
+                <ProductForm
+                  VideoAlreadyInCart={disableButton}
+                  cart={cart}
+                  productId={product.id}
+                  productOptions={productOptions}
+                  selectedVariant={selectedVariant}
+                  imagesToShow={layoutImagesToUse as SimpleProductImages[]}
+                  isVideo={isVideo}
+                  isPrint={isPrint}
+                  isVideoBundle={isVideoBundle}
+                />
+              </div>
+            )}
+            {windowWidth != undefined && windowWidth >= 1024 && (
+              <div className="product-main px-[35px]">
+                {windowWidth && windowWidth >= 1024 && (
+                  <>
+                    <div className="title-button-wrapper">
+                      <span className="capitalize text-3xl font-bold title-text">
+                        {title}
+                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={
+                                wishlistItem
+                                  ? removeFromFavorites
+                                  : addToFavorites
+                              }
+                              className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                            >
+                              {pendingWishlistChange ? (
+                                <ReloadIcon className="animate-spin" />
+                              ) : (
+                                <>
+                                  {wishlistItem ? (
+                                    <FaHeart />
+                                  ) : (
+                                    <>
+                                      {isLoggedIn ? (
+                                        <FaRegHeart />
+                                      ) : (
+                                        <Link to="/account/login">
+                                          <FaRegHeart />
+                                        </Link>
+                                      )}
+                                    </>
+                                  )}
+                                </>
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-sm z-1000">
+                            {wishlistItem
+                              ? 'Remove from Favorites'
+                              : 'Save to Favorites'}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+
+                    {!isVideo && (
+                      <p className="text-muted-foreground">
+                        Framed Canvas Print
+                      </p>
+                    )}
+                    {isVideo && (
+                      <p className="text-muted-foreground">
+                        {isBundle
+                          ? 'Stock Footage Video Bundle'
+                          : 'Stock Footage Video'}
+                      </p>
+                    )}
+                    <ProductPrice
+                      price={selectedVariant?.price}
+                      compareAtPrice={selectedVariant?.compareAtPrice}
+                    />
+                    {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                      <a
+                        href="#reviews"
+                        onClick={(evt) => handleScroll('reviews', evt)}
+                        className="no-underline text-inherit"
+                      >
+                        <div className="average-product-rating">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="relative flex items-center"
+                              aria-hidden="true"
+                            >
+                              <Rating
+                                readOnly
+                                value={5}
+                                className="text-muted-foreground"
+                                aria-label={`Maximum rating of 5 stars`}
+                              >
+                                {FIVE_STAR_KEYS.map((starKey) => (
+                                  <RatingButton
+                                    key={`desktop-max-${starKey}`}
+                                    className="h-5 w-5 p-0.5"
+                                  />
+                                ))}
+                              </Rating>
+                              <div
+                                className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                                style={{
+                                  width: `${(averageRating / 5) * 100 + 2}%`,
+                                }}
+                              >
+                                <Rating readOnly value={5} className="stars">
+                                  {FIVE_STAR_KEYS.map((starKey) => (
+                                    <RatingButton
+                                      key={`desktop-fill-${starKey}`}
+                                      className="h-5 w-5 p-0.5"
+                                      aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                    />
+                                  ))}
+                                </Rating>
+                              </div>
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              {formattedAverageRating} (
+                              {reviewsCount === 1
+                                ? '1 review'
+                                : `${reviewsCount} reviews`}
+                              )
+                            </span>
+                          </div>
+                        </div>
+                      </a>
+                    )}
+                    {isBundle ? (
+                      <>
+                        <h4 className="text-xl individual-product-location">
+                          {activeBundleClip?.clipName ??
+                            `Clip ${activeBundleClipIndex}`}
+                        </h4>
+                        {activeBundleClip?.clipLocation && (
+                          <p className="text-muted-foreground text-sm pb-2">
+                            {activeBundleClip.clipLocation}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <h4 className="text-xl individual-product-location">
+                        {formattedLocation}
+                      </h4>
+                    )}
+                  </>
+                )}
+
+                {isBundle && activeBundleClip?.descriptionHtml && (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: activeBundleClip.descriptionHtml,
+                    }}
+                  />
+                )}
+                {!isBundle && (
+                  <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+                )}
+                <br />
+
+                <ProductForm
+                  VideoAlreadyInCart={disableButton}
+                  cart={cart}
+                  productId={product.id}
+                  productOptions={productOptions}
+                  selectedVariant={selectedVariant}
+                  imagesToShow={layoutImagesToUse as SimpleProductImages[]}
+                  isVideo={isVideo}
+                  isPrint={isPrint}
+                  isVideoBundle={isVideoBundle}
+                />
+              </div>
+            )}
+          </div>
+          {windowWidth && windowWidth < 1024 && !isVideo && (
+            <>
+              <hr />
+              <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
+                <div className="grid grid-cols-1">
+                  <div className="flex justify-center items-center">
+                    <img
+                      src={
+                        'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'
+                      }
+                      alt=""
+                      style={{height: '2.2rem'}}
+                    />
                   </div>
-                  {/* section body */}
-                  <div className="how-its-made-container">
-                    <div className="how-its-made-clip-wrapper flex justify-center position-relative">
-                      <div className="grid grid-cols-1 px-2 product-carousel-container relative w-[96%] max-w-full mx-auto">
-                        <div className="bundle-detail-carousel">
-                          <div className="bundle-detail-media-frame">
-                            <div className="bundle-detail-main-media flex items-center justify-center">
-                              <iframe
-                                className="bundle-detail-iframe"
-                                src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-                                allow="autoplay; fullscreen; picture-in-picture;"
-                                title="Seaforestation Trailer"
-                                loading="lazy"
-                              ></iframe>
+                  <div className="flex justify-center mt-3">
+                    <p>Made in USA</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1">
+                  <div className="flex justify-center items-center">
+                    <img
+                      src={
+                        'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'
+                      }
+                      alt=""
+                      style={{height: '2.4rem'}}
+                    />
+                  </div>
+                  <div className="flex justify-center mt-2">
+                    <p>Premium Quality</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1">
+                  <div className="flex justify-center items-center">
+                    <img
+                      src={
+                        'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'
+                      }
+                      alt=""
+                      style={{height: '2.7rem'}}
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <p>14-day returns</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+          {windowWidth && windowWidth < 1024 && !isVideo && (
+            <div className="items-top ">
+              <div className="flex justify-end card-accordion-container">
+                <Card className="py-2 px-4 mx-[20px] mb-2 w-full">
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="cursor-pointer">
+                        Print Specs
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="print-specs">
+                          {/* section body */}
+                          <div className="print-specs-container-1">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                Printing Process
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                  <CardContent>
+                                    <div>
+                                      Images are printed on the Canon
+                                      ImagePro-Graf 4600 Pro and stretched over
+                                      thick wooden frames using stretcher
+                                      plyers.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                Anti-glare
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                  <CardContent>
+                                    <div>
+                                      The professional matte canvas that we use
+                                      does not reflect light - the print will be
+                                      viewable in any room and any wall.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="print-specs-container-2">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                Paper Quality
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                  <CardContent>
+                                    <div>
+                                      Printed on 200 GSM, polyester inkjet matte
+                                      canvas on the Canon ImagePro-graf 4600 on
+                                      a 44 inch roll.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/durable.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">Durable</div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                  <CardContent>
+                                    <div>
+                                      Prints are professionally stretched over
+                                      heavy duty wooden frames. Staples are
+                                      methodically placed to allow even tension
+                                      of the canvas.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="item-2">
+                      <AccordionTrigger className="cursor-pointer">
+                        Frame Specs
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="frame-specs">
+                          {/* section body */}
+                          <div className="frame-specs-container-1">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                Handcrafted
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                  <CardContent>
+                                    <div>
+                                      Each frame is assembled by hand. Canvas is
+                                      stretched over frames using stretcher
+                                      plyers, and stapled onto the back frame.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                Light Weight
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                  <CardContent>
+                                    <div>
+                                      Heavy duty and high quality canvas
+                                      stretcher bars remove the need for extra
+                                      wooden braces, reducing weight.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="frame-specs-container-2">
+                            <div className="column-1">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                Interactive
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                  <CardContent>
+                                    <div>
+                                      Tap your phone on the bottom right corner
+                                      of the canvas to see the latest products
+                                      at Adam Underwater.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                            <div className="column-2">
+                              <div className="flex justify-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                Ready to Hang
+                              </div>
+                              <div className="flex justify-center">
+                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                  <CardContent>
+                                    <div>
+                                      Wire is installed on the back of each
+                                      frame, and hanging materials are included.
+                                      We recommend using 2 hangers for large
+                                      prints.
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </Card>
+              </div>
+            </div>
+          )}
+          {!isVideo && (
+            <>
+              <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 lg:mt-6 extra-info">
+                <div className="grid grid-cols-1">
+                  <div className="how-its-made">
+                    {/* section title */}
+                    <div className="section-title-container">
+                      <div className="flex items-center justify-center w-full">
+                        <div className="flex-1 h-px bg-muted" />
+                        <span className="px-4">
+                          <div>How it&apos;s Made</div>
+                        </span>
+                        <div className="flex-1 h-px bg-muted" />
+                      </div>
+                    </div>
+                    {/* section body */}
+                    <div className="how-its-made-container">
+                      <div className="how-its-made-clip-wrapper flex justify-center position-relative">
+                        <div className="grid grid-cols-1 px-2 product-carousel-container relative w-[96%] max-w-full mx-auto">
+                          <div className="bundle-detail-carousel">
+                            <div className="bundle-detail-media-frame">
+                              <div className="bundle-detail-main-media flex items-center justify-center">
+                                <iframe
+                                  className="bundle-detail-iframe"
+                                  src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+                                  allow="autoplay; fullscreen; picture-in-picture;"
+                                  title="Seaforestation Trailer"
+                                  loading="lazy"
+                                ></iframe>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
+                      <div className="flex justify-center ">
+                        <div className="how-its-made-description-container justify-start xl:mt-2">
+                          <Card className="mx-4">
+                            <CardContent>
+                              Quality matters - In this video, I break down how
+                              I make each framed canvas print by hand, using
+                              premium materials.
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-center ">
-                      <div className="how-its-made-description-container justify-start xl:mt-2">
-                        <Card className="mx-4">
-                          <CardContent>
-                            Quality matters - In this video, I break down how I
-                            make each framed canvas print by hand, using premium
-                            materials.
-                          </CardContent>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 self-start content-start">
+                  <div className="pt-[10px]">
+                    {windowWidth && windowWidth >= 1024 && !isVideo && (
+                      <>
+                        <hr />
+                        <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
+                          <div className="grid grid-cols-1">
+                            <div className="flex justify-center items-center">
+                              <img
+                                src={
+                                  'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'
+                                }
+                                alt=""
+                                style={{height: '2.2rem'}}
+                              />
+                            </div>
+                            <div className="flex justify-center mt-3">
+                              <p>Made in USA</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1">
+                            <div className="flex justify-center items-center">
+                              <img
+                                src={
+                                  'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'
+                                }
+                                alt=""
+                                style={{height: '2.4rem'}}
+                              />
+                            </div>
+                            <div className="flex justify-center mt-2">
+                              <p>Premium Quality</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1">
+                            <div className="flex justify-center items-center">
+                              <img
+                                src={
+                                  'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'
+                                }
+                                alt=""
+                                style={{height: '2.7rem'}}
+                              />
+                            </div>
+                            <div className="flex justify-center">
+                              <p>14-day returns</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {windowWidth && windowWidth >= 1024 && !isVideo && (
+                    <div className="items-top ">
+                      <div className="flex justify-end card-accordion-container me-3">
+                        <Card className="py-2 px-4 w-full">
+                          <Accordion
+                            type="single"
+                            collapsible
+                            className="w-full"
+                          >
+                            <AccordionItem value="item-1">
+                              <AccordionTrigger className="cursor-pointer">
+                                Print Specs
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                <div className="print-specs">
+                                  {/* section body */}
+                                  <div className="print-specs-container-1">
+                                    <div className="column-1">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Printing Process
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                          <CardContent>
+                                            <div>
+                                              Images are printed on the Canon
+                                              ImagePro-Graf 4600 Pro and
+                                              stretched over thick wooden frames
+                                              using stretcher plyers.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                    <div className="column-2">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Anti-glare
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                          <CardContent>
+                                            <div>
+                                              The professional matte canvas that
+                                              we use does not reflect light -
+                                              the print will be viewable in any
+                                              room and any wall.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="print-specs-container-2">
+                                    <div className="column-1">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Paper Quality
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                          <CardContent>
+                                            <div>
+                                              Printed on 200 GSM, polyester
+                                              inkjet matte canvas on the Canon
+                                              ImagePro-graf 4600 on a 44 inch
+                                              roll.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                    <div className="column-2">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/durable.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Durable
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                          <CardContent>
+                                            <div>
+                                              Prints are professionally
+                                              stretched over heavy duty wooden
+                                              frames. Staples are methodically
+                                              placed to allow even tension of
+                                              the canvas.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                            <AccordionItem value="item-2">
+                              <AccordionTrigger className="cursor-pointer">
+                                Frame Specs
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                <div className="frame-specs">
+                                  {/* section body */}
+                                  <div className="frame-specs-container-1">
+                                    <div className="column-1">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Handcrafted
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                          <CardContent>
+                                            <div>
+                                              Each frame is assembled by hand.
+                                              Canvas is stretched over frames
+                                              using stretcher plyers, and
+                                              stapled onto the back frame.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                    <div className="column-2">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Light Weight
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
+                                          <CardContent>
+                                            <div>
+                                              Heavy duty and high quality canvas
+                                              stretcher bars remove the need for
+                                              extra wooden braces, reducing
+                                              weight.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="frame-specs-container-2">
+                                    <div className="column-1">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Interactive
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                          <CardContent>
+                                            <div>
+                                              Tap your phone on the bottom right
+                                              corner of the canvas to see the
+                                              latest products at Adam
+                                              Underwater.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                    <div className="column-2">
+                                      <div className="flex justify-center">
+                                        <img
+                                          src={
+                                            'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'
+                                          }
+                                          alt=""
+                                          style={{height: '2.7rem'}}
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        Ready to Hang
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
+                                          <CardContent>
+                                            <div>
+                                              Wire is installed on the back of
+                                              each frame, and hanging materials
+                                              are included. We recommend using 2
+                                              hangers for large prints.
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
                         </Card>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 self-start content-start">
-                <div className="pt-[10px]">
-                  {windowWidth && windowWidth >= 1024 && !isVideo && (
-                    <>
-                      <hr />
-                      <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
-                        <div className="grid grid-cols-1">
-                          <div className="flex justify-center items-center">
-                            <img
-                              src={'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'}
-                              alt=""
-                              style={{height: '2.2rem'}}
-                            />
-                          </div>
-                          <div className="flex justify-center mt-3">
-                            <p>Made in USA</p>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1">
-                          <div className="flex justify-center items-center">
-                            <img
-                              src={'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'}
-                              alt=""
-                              style={{height: '2.4rem'}}
-                            />
-                          </div>
-                          <div className="flex justify-center mt-2">
-                            <p>Premium Quality</p>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1">
-                          <div className="flex justify-center items-center">
-                            <img
-                              src={'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'}
-                              alt=""
-                              style={{height: '2.7rem'}}
-                            />
-                          </div>
-                          <div className="flex justify-center">
-                            <p>14-day returns</p>
-                          </div>
-                        </div>
-                      </div>
-                    </>
                   )}
                 </div>
-                {windowWidth && windowWidth >= 1024 && !isVideo && (
-                  <div className="items-top ">
-                    <div className="flex justify-end card-accordion-container me-3">
-                      <Card className="py-2 px-4 w-full">
-                        <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem value="item-1">
-                            <AccordionTrigger className="cursor-pointer">
-                              Print Specs
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <div className="print-specs">
-                                {/* section body */}
-                                <div className="print-specs-container-1">
-                                  <div className="column-1">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Printing Process
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                        <CardContent>
-                                          <div>
-                                            Images are printed on the Canon
-                                            ImagePro-Graf 4600 Pro and stretched
-                                            over thick wooden frames using
-                                            stretcher plyers.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                  <div className="column-2">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Anti-glare
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                        <CardContent>
-                                          <div>
-                                            The professional matte canvas that
-                                            we use does not reflect light - the
-                                            print will be viewable in any room
-                                            and any wall.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="print-specs-container-2">
-                                  <div className="column-1">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Paper Quality
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                        <CardContent>
-                                          <div>
-                                            Printed on 200 GSM, polyester inkjet
-                                            matte canvas on the Canon
-                                            ImagePro-graf 4600 on a 44 inch
-                                            roll.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                  <div className="column-2">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/durable.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Durable
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                        <CardContent>
-                                          <div>
-                                            Prints are professionally stretched
-                                            over heavy duty wooden frames.
-                                            Staples are methodically placed to
-                                            allow even tension of the canvas.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                          <AccordionItem value="item-2">
-                            <AccordionTrigger className="cursor-pointer">
-                              Frame Specs
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <div className="frame-specs">
-                                {/* section body */}
-                                <div className="frame-specs-container-1">
-                                  <div className="column-1">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Handcrafted
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                        <CardContent>
-                                          <div>
-                                            Each frame is assembled by hand.
-                                            Canvas is stretched over frames
-                                            using stretcher plyers, and stapled
-                                            onto the back frame.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                  <div className="column-2">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Light Weight
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                        <CardContent>
-                                          <div>
-                                            Heavy duty and high quality canvas
-                                            stretcher bars remove the need for
-                                            extra wooden braces, reducing
-                                            weight.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="frame-specs-container-2">
-                                  <div className="column-1">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Interactive
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                        <CardContent>
-                                          <div>
-                                            Tap your phone on the bottom right
-                                            corner of the canvas to see the
-                                            latest products at Adam Underwater.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                  <div className="column-2">
-                                    <div className="flex justify-center">
-                                      <img
-                                        src={'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'}
-                                        alt=""
-                                        style={{height: '2.7rem'}}
-                                      />
-                                    </div>
-                                    <div className="flex justify-center">
-                                      Ready to Hang
-                                    </div>
-                                    <div className="flex justify-center">
-                                      <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                        <CardContent>
-                                          <div>
-                                            Wire is installed on the back of
-                                            each frame, and hanging materials
-                                            are included. We recommend using 2
-                                            hangers for large prints.
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-                      </Card>
-                    </div>
-                  </div>
-                )}
               </div>
-            </div>
-          </>
-        )}
-        {!isVideo && (
-          <section className="in-the-box-section mt-3">
-            {/* section title */}
-            <div className="section-title-container">
-              <div className="flex items-center justify-center w-full">
-                <div className="flex-1 h-px bg-muted" />
-                <span className="px-4">
-                  <p className="text-xl">In the Box</p>
-                </span>
-                <div className="flex-1 h-px bg-muted" />
+            </>
+          )}
+          {!isVideo && (
+            <section className="in-the-box-section mt-3">
+              {/* section title */}
+              <div className="section-title-container">
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex-1 h-px bg-muted" />
+                  <span className="px-4">
+                    <p className="text-xl">In the Box</p>
+                  </span>
+                  <div className="flex-1 h-px bg-muted" />
+                </div>
               </div>
-            </div>
 
-            <div className="gap-x-5 py-5">
-              <ThreeUpCarouselBox cards={cards} />
-            </div>
-          </section>
-        )}
-        {!isVideo && (
-          <section className="reviews mt-3">
-            {/* section title */}
-            <div className="section-title-container">
-              <div className="flex items-center justify-center w-full">
-                <div className="flex-1 h-px bg-muted" />
-                <span className="px-4">
-                  <p className="text-xl">Reviews for this Product</p>
-                </span>
-                <div className="flex-1 h-px bg-muted" />
+              <div className="gap-x-5 py-5">
+                <ThreeUpCarouselBox cards={cards} />
               </div>
-            </div>
-            <div className="flex justify-center pt-2">
-              <div className="average-product-rating">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="relative flex items-center"
-                    aria-hidden="true"
-                  >
-                    <Rating
-                      readOnly
-                      value={5}
-                      className="text-muted-foreground"
-                      aria-label={`Maximum rating of 5 stars`}
-                    >
-                      {FIVE_STAR_KEYS.map((starKey) => (
-                        <RatingButton
-                          key={`reviews-max-${starKey}`}
-                          className="h-5 w-5 p-0.5"
-                        />
-                      ))}
-                    </Rating>
+            </section>
+          )}
+          {!isVideo && (
+            <section className="reviews mt-3">
+              {/* section title */}
+              <div className="section-title-container">
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex-1 h-px bg-muted" />
+                  <span className="px-4">
+                    <p className="text-xl">Reviews for this Product</p>
+                  </span>
+                  <div className="flex-1 h-px bg-muted" />
+                </div>
+              </div>
+              <div className="flex justify-center pt-2">
+                <div className="average-product-rating">
+                  <div className="flex items-center gap-2">
                     <div
-                      className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                      style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                      className="relative flex items-center"
+                      aria-hidden="true"
                     >
-                      <Rating readOnly value={5} className="stars">
+                      <Rating
+                        readOnly
+                        value={5}
+                        className="text-muted-foreground"
+                        aria-label={`Maximum rating of 5 stars`}
+                      >
                         {FIVE_STAR_KEYS.map((starKey) => (
                           <RatingButton
-                            key={`reviews-fill-${starKey}`}
+                            key={`reviews-max-${starKey}`}
                             className="h-5 w-5 p-0.5"
-                            aria-label={`Average rating ${formattedAverageRating} out of 5`}
                           />
                         ))}
                       </Rating>
+                      <div
+                        className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                        style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                      >
+                        <Rating readOnly value={5} className="stars">
+                          {FIVE_STAR_KEYS.map((starKey) => (
+                            <RatingButton
+                              key={`reviews-fill-${starKey}`}
+                              className="h-5 w-5 p-0.5"
+                              aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                            />
+                          ))}
+                        </Rating>
+                      </div>
                     </div>
+                    <span className="text-sm text-muted-foreground">
+                      {formattedAverageRating} (
+                      {reviewsCount === 1
+                        ? '1 review'
+                        : `${reviewsCount} reviews`}
+                      )
+                    </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    {formattedAverageRating} (
-                    {reviewsCount === 1
-                      ? '1 review'
-                      : `${reviewsCount} reviews`}
-                    )
-                  </span>
                 </div>
               </div>
+              <div className="my-5" id="reviews">
+                <ProductReviewsCarousel
+                  reviews={reviewsList}
+                  currentCustomerId={customerId}
+                  currentCustomerState={customerState}
+                  currentCustomerCountry={customerCountry}
+                  onRemove={handleRemoveReview}
+                  onEdit={handleEditReview}
+                  isAdmin={isAdmin}
+                />
+                <ReviewForm
+                  productId={product.id}
+                  productName={product.title}
+                  customerId={customerId}
+                  customerName={customerName}
+                  customerState={customerState}
+                  customerCountry={customerCountry}
+                  updateExistingReviews={updateExistingReviews}
+                  userReviewExists={userReviewExists}
+                  isBlocked={isBlocked}
+                />
+              </div>
+            </section>
+          )}
+          <section className="you-may-also-like mt-3">
+            {/* section title */}
+            <div className="section-title-container">
+              <div className="flex items-center justify-center w-full">
+                <div className="flex-1 h-px bg-muted" />
+                <span className="px-4">
+                  <p className="text-xl">You may also like</p>
+                </span>
+                <div className="flex-1 h-px bg-muted" />
+              </div>
             </div>
-            <div className="my-5" id="reviews">
-              <ProductReviewsCarousel
-                reviews={reviewsList}
-                currentCustomerId={customerId}
-                currentCustomerState={customerState}
-                currentCustomerCountry={customerCountry}
-                onRemove={handleRemoveReview}
-                onEdit={handleEditReview}
-                isAdmin={isAdmin}
-              />
-              <ReviewForm
-                productId={product.id}
-                productName={product.title}
-                customerId={customerId}
-                customerName={customerName}
-                customerState={customerState}
-                customerCountry={customerCountry}
-                updateExistingReviews={updateExistingReviews}
-                userReviewExists={userReviewExists}
-                isBlocked={isBlocked}
-              />
-            </div>
-          </section>
-        )}
-        <section className="you-may-also-like mt-3">
-          {/* section title */}
-          <div className="section-title-container">
-            <div className="flex items-center justify-center w-full">
-              <div className="flex-1 h-px bg-muted" />
-              <span className="px-4">
-                <p className="text-xl">You may also like</p>
-              </span>
-              <div className="flex-1 h-px bg-muted" />
-            </div>
-          </div>
-          <div className="you-may-also-like-container flex justify-center mt-3">
-            {/* {!isVideo && (
+            <div className="you-may-also-like-container flex justify-center mt-3">
+              {/* {!isVideo && (
               <SimpleRecommendedProducts
                 products={recommendedProducts}
                 isVideo={!isVideo}
               />
             )} */}
 
-            <SimpleRecommendedProducts
-              products={recommendedProducts}
-              isVideo={isVideo}
-              currentProductID={product.id}
-              cart={cart}
-              isLoggedIn={isLoggedIn}
-              wishlistProducts={wishlistProducts}
-            />
-          </div>
-        </section>
+              <SimpleRecommendedProducts
+                products={recommendedProducts}
+                isVideo={isVideo}
+                currentProductID={product.id}
+                cart={cart}
+                isLoggedIn={isLoggedIn}
+                wishlistProducts={wishlistProducts}
+              />
+            </div>
+          </section>
 
-        <Analytics.ProductView
-          data={{
-            products: [
-              {
-                id: product.id,
-                title: product.title,
-                price: selectedVariant?.price.amount || '0',
-                vendor: product.vendor,
-                variantId: selectedVariant?.id || '',
-                variantTitle: selectedVariant?.title || '',
-                quantity: 1,
-              },
-            ],
-          }}
-        />
-      </section>
-    </>
+          <Analytics.ProductView
+            data={{
+              products: [
+                {
+                  id: product.id,
+                  title: product.title,
+                  price: selectedVariant?.price.amount || '0',
+                  vendor: product.vendor,
+                  variantId: selectedVariant?.id || '',
+                  variantTitle: selectedVariant?.title || '',
+                  quantity: 1,
+                },
+              ],
+            }}
+          />
+        </section>
+      </>
     </SkeletonGate>
   );
 }

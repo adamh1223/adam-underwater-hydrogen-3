@@ -1328,7 +1328,10 @@ export default function Collection() {
               />
             </div>
           ) : (
-            <div className={layoutClassName} style={productsContainerStyle}>
+            <div
+              className={`${layoutClassName} collection-results-surface`.trim()}
+              style={productsContainerStyle}
+            >
               <SearchResultsPredictive.Products
                 products={displayedSearchProducts}
                 layout={layout}
@@ -1343,7 +1346,10 @@ export default function Collection() {
         </>
       )}
       {!searchText && (
-        <div className={layoutClassName} style={productsContainerStyle}>
+        <div
+          className={`${layoutClassName} collection-results-surface`.trim()}
+          style={productsContainerStyle}
+        >
           <PaginatedResourceSection
             connection={productState}
             resourcesClassName="products-grid"

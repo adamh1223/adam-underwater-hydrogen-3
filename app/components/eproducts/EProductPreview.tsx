@@ -2,6 +2,7 @@ import {useState, useRef, useEffect} from 'react';
 import '../../styles/components/EProductPreview.css';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {useLocation} from '@remix-run/react';
+import {getOptimizedImageUrl} from '~/lib/imageWarmup';
 
 type ShopifyImage = {url: string; altText: string};
 
@@ -97,6 +98,8 @@ function EProductPreview({
   const isVideoActive = shouldEnableViewportAutoplay
     ? isAutoplayActive
     : isHovered;
+  const preferredPreviewImageWidth =
+    viewportWidth != undefined && viewportWidth < 700 ? 960 : 1440;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -255,7 +258,21 @@ function EProductPreview({
       {/* Base Image */}
       {featuredImage && (
         <img
-          src={featuredImage.url}
+          src={getOptimizedImageUrl(
+            featuredImage.url,
+            preferredPreviewImageWidth,
+          )}
+          srcSet={[480, 720, 960, 1280, 1600]
+            .map(
+              (width) =>
+                `${getOptimizedImageUrl(featuredImage.url, width)} ${width}w`,
+            )
+            .join(', ')}
+          sizes={
+            layout === 'grid'
+              ? '(max-width: 700px) 82vw, (max-width: 1200px) 42vw, 30vw'
+              : '(max-width: 900px) 92vw, 52vw'
+          }
           alt={featuredImage.altText || 'Product image'}
           className="EProductImage"
           width={featuredImage.width ?? undefined}

@@ -17,6 +17,7 @@ import {
 import {Button} from '../ui/button';
 import {ChevronLeftIcon, ChevronRightIcon} from 'lucide-react';
 import '../../styles/components/EProductPreview.css';
+import {getOptimizedImageUrl} from '~/lib/imageWarmup';
 
 type ShopifyImage = {url: string; altText?: string | null};
 
@@ -172,7 +173,13 @@ function BundleClipPreview({
     <div className="EProductPreviewContainer EProductPreviewContainer-autoplay">
       {clip.image && (
         <img
-          src={clip.image.url}
+          src={getOptimizedImageUrl(clip.image.url, 1280)}
+          srcSet={[480, 720, 960, 1280, 1600]
+            .map(
+              (width) => `${getOptimizedImageUrl(clip.image.url, width)} ${width}w`,
+            )
+            .join(', ')}
+          sizes="(max-width: 700px) 82vw, (max-width: 1200px) 42vw, 30vw"
           alt={clip.image.altText || 'Bundle preview'}
           className="EProductImage"
           draggable={false}

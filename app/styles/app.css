@@ -623,6 +623,14 @@ button.reset:hover:not(:has(> *)) {
     row-gap: 8px;
     padding: 0 10px 0 10px;
   }
+
+  .collection-results-surface {
+    overflow: visible;
+    overflow-y: visible;
+    touch-action: auto;
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: auto;
+  }
 }
 
 /*

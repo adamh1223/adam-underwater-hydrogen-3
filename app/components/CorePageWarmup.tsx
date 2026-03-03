@@ -33,10 +33,36 @@ function scheduleIdleWarmup(callback: () => void) {
   return () => window.clearTimeout(timeoutHandle);
 }
 
+function shouldConserveMobileBandwidth() {
+  if (typeof window === 'undefined') return false;
+
+  const coarsePointer =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  const nav = navigator as Navigator & {
+    connection?: {
+      saveData?: boolean;
+      effectiveType?: string;
+    };
+  };
+  const connection = nav.connection;
+  const saveData = connection?.saveData === true;
+  const constrainedNetwork = ['slow-2g', '2g', '3g'].includes(
+    connection?.effectiveType ?? '',
+  );
+
+  return coarsePointer || saveData || constrainedNetwork;
+}
+
 export function CorePageWarmup() {
   const location = useLocation();
   const navigate = useNavigate();
   const [shouldWarmPages, setShouldWarmPages] = useState(false);
+  const shouldConserveWarmupBandwidth = useMemo(
+    () => shouldConserveMobileBandwidth(),
+    [],
+  );
 
   const prefetchPaths = useMemo(
     () => getCorePagePrefetchPaths(location.pathname),
@@ -44,10 +70,11 @@ export function CorePageWarmup() {
   );
 
   useEffect(() => {
+    if (shouldConserveWarmupBandwidth) return;
     return scheduleIdleWarmup(() => {
       setShouldWarmPages(true);
     });
-  }, []);
+  }, [shouldConserveWarmupBandwidth]);
 
   useEffect(() => {
     if (!shouldWarmPages) return;
@@ -58,6 +85,8 @@ export function CorePageWarmup() {
   }, [prefetchPaths, shouldWarmPages]);
 
   useEffect(() => {
+    if (shouldConserveWarmupBandwidth) return;
+
     const handleCorePageClick = (event: MouseEvent) => {
       if (
         event.defaultPrevented ||
@@ -108,9 +137,9 @@ export function CorePageWarmup() {
     return () => {
       document.removeEventListener('click', handleCorePageClick, true);
     };
-  }, [navigate]);
+  }, [navigate, shouldConserveWarmupBandwidth]);
 
-  if (!shouldWarmPages) return null;
+  if (shouldConserveWarmupBandwidth || !shouldWarmPages) return null;
 
   return (
     <>

@@ -7,6 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel';
+import {getOptimizedImageUrl} from '~/lib/imageWarmup';
 import '../../styles/routeStyles/product.css';
 
 type BundleClipImage = {url: string; altText?: string | null};
@@ -221,7 +222,14 @@ function IndividualVideoBundle({
                       ></iframe>
                     ) : clip.image?.url ? (
                       <img
-                        src={clip.image.url}
+                        src={getOptimizedImageUrl(clip.image.url, 1600)}
+                        srcSet={[480, 720, 960, 1280, 1600]
+                          .map(
+                            (width) =>
+                              `${getOptimizedImageUrl(clip.image?.url ?? '', width)} ${width}w`,
+                          )
+                          .join(', ')}
+                        sizes="(max-width: 700px) 92vw, 70vw"
                         alt={
                           clip.image.altText ??
                           `${productName} preview ${clip.index}`
@@ -281,7 +289,14 @@ function IndividualVideoBundle({
                 >
                   {clip.image?.url ? (
                     <img
-                      src={clip.image.url}
+                      src={getOptimizedImageUrl(clip.image.url, 360)}
+                      srcSet={[180, 240, 320, 420]
+                        .map(
+                          (width) =>
+                            `${getOptimizedImageUrl(clip.image?.url ?? '', width)} ${width}w`,
+                        )
+                        .join(', ')}
+                      sizes="(max-width: 700px) 22vw, 12vw"
                       alt={clip.image.altText ?? `Clip ${clip.index} thumbnail`}
                       className="bundle-detail-shortcut-image"
                     />

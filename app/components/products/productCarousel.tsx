@@ -32,6 +32,7 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip';
 import {useIsLoggedIn} from '~/lib/hooks';
+import {getOptimizedImageUrl} from '~/lib/imageWarmup';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 import {toast} from 'sonner';
 
@@ -118,6 +119,9 @@ export const ProductCarousel = ({
     ? 'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.45),0_0_14px_hsl(var(--primary)/0.28)]'
     : 'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
   const touchCardId = `print-card:${String(id ?? handle)}`;
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
+    typeof window === 'undefined' ? undefined : window.innerWidth,
+  );
   const {isTouchHighlighted, touchHighlightHandlers} =
     useTouchCardHighlight(touchCardId);
 
@@ -146,9 +150,6 @@ export const ProductCarousel = ({
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
-    typeof window === 'undefined' ? undefined : window.innerWidth,
-  );
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
 
@@ -285,6 +286,15 @@ export const ProductCarousel = ({
 
   const isHorizontal = orientation === 'Landscape';
   const isVertical = orientation === 'Vertical';
+  const printCardImageWidths = [360, 540, 720, 960, 1280];
+  const printCardImageSizes =
+    layout === 'grid'
+      ? '(max-width: 700px) 82vw, (max-width: 1200px) 42vw, 30vw'
+      : isVertical
+        ? '(max-width: 900px) 62vw, 36vw'
+        : '(max-width: 900px) 92vw, 52vw';
+  const preferredPrintCardImageWidth =
+    windowWidth != undefined && windowWidth < 700 ? 960 : 1280;
   // const carouselHeight = isHorOnly || isHorPrimary ? 'w-88' : 'w-4';
   let carouselHeight = '';
   const getVerticalGridCarouselWidth = (viewportWidth: number) => {
@@ -424,7 +434,6 @@ export const ProductCarousel = ({
     <article className={articleClassName}>
       <Card
         className={cardClassName}
-        style={{touchAction: 'pan-y'}}
         data-touch-highlight-card-id={touchCardId}
         {...touchHighlightHandlers}
       >
@@ -571,16 +580,34 @@ export const ProductCarousel = ({
                       className="flex items-center justify-center"
                       key={idx}
                     >
+                      {(() => {
+                        const imageUrl = img?.url ?? '';
+                        const imageAlt = img?.altText ?? title ?? 'Product image';
+
+                        return (
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid' && 'pt-2'
                         } ${layout === 'list' && 'px-3 py-2'}`}
                       >
                         <img
-                          src={img?.url}
+                          src={getOptimizedImageUrl(
+                            imageUrl,
+                            preferredPrintCardImageWidth,
+                          )}
+                          srcSet={printCardImageWidths
+                            .map(
+                              (width) =>
+                                `${getOptimizedImageUrl(imageUrl, width)} ${width}w`,
+                            )
+                            .join(', ')}
+                          sizes={printCardImageSizes}
+                          alt={imageAlt}
                           className={`rounded max-w-full ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
                         />
                       </div>
+                        );
+                      })()}
                     </CarouselItem>
                   ))}
                 </CarouselContent>
