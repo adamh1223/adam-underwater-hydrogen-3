@@ -7,7 +7,7 @@ const EProductsHeader = ({onLoad, imgRef}: {onLoad?: () => void; imgRef?: React.
       <div className="header-container">
         <img
           src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
+            'https://downloads.adamunderwater.com/store-1-au/public/icon.png'
           }
           className="icon-header"
         />
@@ -15,7 +15,7 @@ const EProductsHeader = ({onLoad, imgRef}: {onLoad?: () => void; imgRef?: React.
         <img
           ref={imgRef}
           src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/stock.png'
+            'https://downloads.adamunderwater.com/store-1-au/public/stock.png'
           }
           className="stock-header"
           onLoad={onLoad}

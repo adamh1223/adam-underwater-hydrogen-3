@@ -1301,7 +1301,15 @@ export default function Product() {
     };
   }, [location, scrollToSection]);
   return (
-    <SkeletonGate isReady={isPageReady} skeleton={<ProductPageSkeleton />}>
+    <SkeletonGate
+      isReady={isPageReady}
+      skeleton={
+        <ProductPageSkeleton
+          isVideo={isVideo}
+          orientation={!isVideo ? orientation : 'Landscape'}
+        />
+      }
+    >
       {/* Hidden preloader for featured image to trigger skeleton gate */}
       <img
         ref={productImgRef}

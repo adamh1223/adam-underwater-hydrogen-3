@@ -447,7 +447,7 @@ export default function AboutPage() {
         <div className="flex justify-center pt-5">
           <img
             src={
-              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+              'https://downloads.adamunderwater.com/store-1-au/public/featured6.png'
             }
             className="featured-img"
           />

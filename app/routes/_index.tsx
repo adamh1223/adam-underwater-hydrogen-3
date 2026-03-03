@@ -228,7 +228,7 @@ export default function Homepage() {
           <div className="flex justify-center pt-5 me-4">
             <img
               src={
-                'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+                'https://downloads.adamunderwater.com/store-1-au/public/featured6.png'
               }
               alt="Framed Canvas Wall Art"
               className="featured-img"

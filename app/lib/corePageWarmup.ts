@@ -52,40 +52,40 @@ const CORE_PAGE_CRITICAL_ASSETS = {
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/vp3.png'),
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/print1.jpg'),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/featured6.png',
     ),
     iframeAsset(HERO_BACKGROUND_IFRAME_SRC),
   ],
   '/pages/work': [
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/work.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/work.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/featured6.png',
     ),
     ...WORK_IFRAME_SRCS.map((src) => iframeAsset(src)),
   ],
   '/pages/about': [
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/about.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/about.png',
     ),
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'),
   ],
   '/pages/services': [
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/services.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/services.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/featured6.png',
     ),
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/print3.jpg'),
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/dji-inspire-3.jpg'),
@@ -96,31 +96,31 @@ const CORE_PAGE_CRITICAL_ASSETS = {
   ],
   '/collections/prints': [
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/prints.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/prints.png',
     ),
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/print1.jpg'),
     iframeAsset(HERO_BACKGROUND_IFRAME_SRC),
   ],
   '/collections/stock': [
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/stock.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/stock.png',
     ),
   ],
   '/pages/contact': [
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/contact.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/contact.png',
     ),
     imageAsset(
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png',
+      'https://downloads.adamunderwater.com/store-1-au/public/featured6.png',
     ),
   ],
 } as const;

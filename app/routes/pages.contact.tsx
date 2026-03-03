@@ -100,14 +100,14 @@ function ContactPage() {
       <div className="contact-header-container">
         <img
           src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
+            'https://downloads.adamunderwater.com/store-1-au/public/icon.png'
           }
           className="icon-header"
         />
 
         <img
           src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/contact.png'
+            'https://downloads.adamunderwater.com/store-1-au/public/contact.png'
           }
           className="contact-header"
         />
@@ -120,7 +120,7 @@ function ContactPage() {
           <img
             ref={featuredImgRef}
             src={
-              'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/featured6.png'
+              'https://downloads.adamunderwater.com/store-1-au/public/featured6.png'
             }
             className="featured-img"
             onLoad={handleFeaturedImgLoad}

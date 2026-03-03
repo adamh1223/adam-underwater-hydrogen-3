@@ -10,7 +10,7 @@ const ProductsHeader = ({onLoad, imgRef}: {onLoad?: () => void; imgRef?: React.R
       <div className="header-container">
         <img
           src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/icon.png'
+            'https://downloads.adamunderwater.com/store-1-au/public/icon.png'
           }
           className="icon-header"
         />
@@ -18,7 +18,7 @@ const ProductsHeader = ({onLoad, imgRef}: {onLoad?: () => void; imgRef?: React.R
         <img
           ref={imgRef}
           src={
-            'https://fpoxvfuxgtlyphowqdgf.supabase.co/storage/v1/object/public/main-bucket/headers/prints.png'
+            'https://downloads.adamunderwater.com/store-1-au/public/prints.png'
           }
           className="prints-header"
           onLoad={onLoad}
