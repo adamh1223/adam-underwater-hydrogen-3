@@ -671,10 +671,9 @@ export default function Collection() {
   const predictiveProducts = useMemo(
     () =>
       getFilteredCollectionSearchProducts({
-        products:
-          (searchFetcher.data?.type === 'predictive'
-            ? searchFetcher.data.result.items.products
-            : []) as EnhancedPartialSearchResult[],
+        products: (searchFetcher.data?.type === 'predictive'
+          ? searchFetcher.data.result.items.products
+          : []) as EnhancedPartialSearchResult[],
         collectionHandle: collection?.handle,
         collectionTitle: collection?.title,
         stockFilterState,
@@ -694,9 +693,10 @@ export default function Collection() {
   const displayedSearchProducts =
     hasActiveSearchText && committedSearchProducts
       ? committedSearchProducts
-      : ((productState?.nodes ?? []) as unknown as EnhancedPartialSearchResult[]);
+      : ((productState?.nodes ??
+          []) as unknown as EnhancedPartialSearchResult[]);
   const displayedProductCount = hasActiveSearchText
-    ? committedSearchProducts?.length ?? baseProductCount
+    ? (committedSearchProducts?.length ?? baseProductCount)
     : baseProductCount;
 
   useEffect(() => {
@@ -1003,27 +1003,31 @@ export default function Collection() {
 
   return (
     <SkeletonGate isReady={isPageReady} skeleton={<CollectionPageSkeleton />}>
-    <div className="overflow-x-hidden">
-      {collection?.handle === 'prints' && <ProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />}
-      {collection?.handle === 'stock' && <EProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />}
+      <div className="overflow-x-hidden">
+        {collection?.handle === 'prints' && (
+          <ProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />
+        )}
+        {collection?.handle === 'stock' && (
+          <EProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />
+        )}
 
-      {collection?.handle === 'prints' && (
-        <div>
-          <p className="text-lg flex justify-center py-3">
-            Filter By Orientation:
-          </p>
-          <div className="flex justify-center pb-3">
-            <ToggleSwitch selected={filterState} onChange={setFilterState} />
-          </div>
-          <div className="flex justify-center">
-            <div className="flex justify-center w-100 md:w-132 lg:w-148 px-3">
-              <p>
-                Many horizontal prints <strong>are also available</strong> in
-                vertical on the product page
-              </p>
+        {collection?.handle === 'prints' && (
+          <div>
+            <p className="text-lg flex justify-center py-3">
+              Filter By Orientation:
+            </p>
+            <div className="flex justify-center pb-3">
+              <ToggleSwitch selected={filterState} onChange={setFilterState} />
             </div>
-          </div>
-          {/* <div className="flex justify-start items-center">
+            <div className="flex justify-center">
+              <div className="flex justify-center w-100 md:w-132 lg:w-148 px-3">
+                <p>
+                  Many horizontal prints <strong>are also available</strong> in
+                  vertical on the product page
+                </p>
+              </div>
+            </div>
+            {/* <div className="flex justify-start items-center">
               <Checkbox />
 
               <p className="ms-1">Horizontal</p>
@@ -1032,368 +1036,367 @@ export default function Collection() {
               <Checkbox />
               <p className="ms-1">Vertical</p>
             </div> */}
-        </div>
-      )}
-      {collection?.handle === 'stock' && (
-        <div className="flex justify-center py-2">
-          <TooltipProvider>
-            <div className="toggle-container">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}
-                    onClick={() => setStockFilterState('All Clips')}
-                  >
-                    All Clips
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-sm z-1000">
-                  Keyboard shortcut: a
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={`toggle-option ${stockFilterState === 'Discounted Bundles' ? 'selected' : ''}`}
-                    onClick={() => setStockFilterState('Discounted Bundles')}
-                  >
-                    Discounted Bundles
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-sm z-1000">
-                  Keyboard shortcut: d
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
-        </div>
-      )}
-      {windowWidth != undefined && windowWidth > 600 && (
-        <div className="counter-search-toggle-container ">
-          <div className="product-counter-filter-group">
-            <div className="product-counter-container">
-              <div className="flex flex-col items-end">
-                <h4 className="font-medium text-xl">
-                  {displayedProductCount} product
-                  {displayedProductCount > 1 && 's'}
-                </h4>
-              </div>
-            </div>
-            {collection?.handle === 'stock' && (
-              <StockFiltersPopover
-                durationFilterIndex={durationFilterIndex}
-                setDurationFilterIndex={setDurationFilterIndex}
-                resolutionFilterIndex={resolutionFilterIndex}
-                setResolutionFilterIndex={setResolutionFilterIndex}
-              />
-            )}
           </div>
-          <div className="search-product-container">
-            <div className="flex flex-col items-center mt-[25px]">
-              <SearchFormPredictive>
-                {({fetchResults, inputRef}) => {
-                  const handleInput = (
-                    e: React.ChangeEvent<HTMLInputElement>,
-                  ) => {
-                    setSearchText(e.target.value);
-                    fetchResults(e);
-                  };
+        )}
+        {collection?.handle === 'stock' && (
+          <div className="flex justify-center py-2">
+            <TooltipProvider>
+              <div className="toggle-container">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={`toggle-option ${stockFilterState === 'All Clips' ? 'selected' : ''}`}
+                      onClick={() => setStockFilterState('All Clips')}
+                    >
+                      All Clips
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-sm z-1000">
+                    Keyboard shortcut: a
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={`toggle-option ${stockFilterState === 'Discounted Bundles' ? 'selected' : ''}`}
+                      onClick={() => setStockFilterState('Discounted Bundles')}
+                    >
+                      Discounted Bundles
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-sm z-1000">
+                    Keyboard shortcut: d
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+          </div>
+        )}
+        {windowWidth != undefined && windowWidth > 600 && (
+          <div className="counter-search-toggle-container ">
+            <div className="product-counter-filter-group">
+              <div className="product-counter-container">
+                <div className="flex flex-col items-end">
+                  <h4 className="font-medium text-xl">
+                    {displayedProductCount} product
+                    {displayedProductCount > 1 && 's'}
+                  </h4>
+                </div>
+              </div>
+              {collection?.handle === 'stock' && (
+                <StockFiltersPopover
+                  durationFilterIndex={durationFilterIndex}
+                  setDurationFilterIndex={setDurationFilterIndex}
+                  resolutionFilterIndex={resolutionFilterIndex}
+                  setResolutionFilterIndex={setResolutionFilterIndex}
+                />
+              )}
+            </div>
+            <div className="search-product-container">
+              <div className="flex flex-col items-center mt-[25px]">
+                <SearchFormPredictive>
+                  {({fetchResults, inputRef}) => {
+                    const handleInput = (
+                      e: React.ChangeEvent<HTMLInputElement>,
+                    ) => {
+                      setSearchText(e.target.value);
+                      fetchResults(e);
+                    };
 
-                  return (
-                    <div className="flex flex-col items-center">
-                      <InputGroup className="w-[300px]">
-                        <InputGroupAddon align="inline-start">
-                          <LuSearch className="text-muted-foreground" />
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          name="q"
-                          onChange={handleInput}
-                          onFocus={handleInput}
-                          placeholder="Search..."
-                          ref={inputRef}
-                          type="search"
-                          value={searchText ?? ''}
-                          list={queriesDatalistId}
-                        />
-                        {searchText && (
-                          <InputGroupAddon align="inline-end">
-                            <span className="text-muted-foreground text-xs whitespace-nowrap">
-                              {displayedProductCount} result
-                              {displayedProductCount !== 1 ? 's' : ''}
-                            </span>
+                    return (
+                      <div className="flex flex-col items-center">
+                        <InputGroup className="w-[300px]">
+                          <InputGroupAddon align="inline-start">
+                            <LuSearch className="text-muted-foreground" />
                           </InputGroupAddon>
-                        )}
-                      </InputGroup>
-                      <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
-                        Try &ldquo;Sea Lion&rdquo; or &ldquo;Night&rdquo;
-                      </p>
-                    </div>
-                  );
-                }}
-              </SearchFormPredictive>
+                          <InputGroupInput
+                            name="q"
+                            onChange={handleInput}
+                            onFocus={handleInput}
+                            placeholder="Search..."
+                            ref={inputRef}
+                            type="search"
+                            value={searchText ?? ''}
+                            list={queriesDatalistId}
+                          />
+                          {searchText && (
+                            <InputGroupAddon align="inline-end">
+                              <span className="text-muted-foreground text-xs whitespace-nowrap">
+                                {displayedProductCount} result
+                                {displayedProductCount !== 1 ? 's' : ''}
+                              </span>
+                            </InputGroupAddon>
+                          )}
+                        </InputGroup>
+                        <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
+                          Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+                        </p>
+                      </div>
+                    );
+                  }}
+                </SearchFormPredictive>
+              </div>
             </div>
-          </div>
 
-          <div className="grid-list-toggle-container flex gap-x-4">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={
-                      layout === 'list'
-                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
-                    }
-                    onClick={() => {
-                      if (layout !== 'list') {
-                        setListLayout();
+            <div className="grid-list-toggle-container flex gap-x-4">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={
+                        layout === 'list'
+                          ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                          : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
                       }
-                    }}
-                  >
-                    <LuZoomOut />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-sm z-1000">
-                  {listViewTooltip}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={
-                      layout === 'grid'
-                        ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                        : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
-                    }
-                    onClick={() => {
-                      if (layout !== 'grid') {
-                        setGridLayout();
-                      }
-                    }}
-                  >
-                    <LuZoomIn />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-sm z-1000">
-                  {gridViewTooltip}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-      )}
-      {windowWidth != undefined && windowWidth <= 600 && (
-        <>
-          <div className="counter-search-toggle-container">
-            <div className="top-row">
-              <div className="search-center">
-                <div className="search-product-container">
-                  <div className="flex flex-col items-center mt-[25px]">
-                    <SearchFormPredictive>
-                      {({fetchResults, inputRef}) => {
-                        const handleInput = (
-                          e: React.ChangeEvent<HTMLInputElement>,
-                        ) => {
-                          setSearchText(e.target.value);
-                          fetchResults(e);
-                        };
-
-                        return (
-                          <div className="flex flex-col items-center">
-                            <InputGroup className="w-[300px]">
-                              <InputGroupAddon align="inline-start">
-                                <LuSearch className="text-muted-foreground" />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                name="q"
-                                onChange={handleInput}
-                                onFocus={handleInput}
-                                placeholder="Search..."
-                                ref={inputRef}
-                                type="search"
-                                value={searchText ?? ''}
-                                list={queriesDatalistId}
-                              />
-                              {searchText && (
-                                <InputGroupAddon align="inline-end">
-                                  <span className="text-muted-foreground text-xs whitespace-nowrap">
-                                    {displayedProductCount} result
-                                    {displayedProductCount !== 1 ? 's' : ''}
-                                  </span>
-                                </InputGroupAddon>
-                              )}
-                            </InputGroup>
-                            <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
-                              Try &ldquo;Sea Lion&rdquo; or
-                              &ldquo;Night&rdquo;
-                            </p>
-                          </div>
-                        );
+                      onClick={() => {
+                        if (layout !== 'list') {
+                          setListLayout();
+                        }
                       }}
-                    </SearchFormPredictive>
-                  </div>
-                </div>
-              </div>
-            </div>
+                    >
+                      <LuZoomOut />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-sm z-1000">
+                    {listViewTooltip}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
-            <div className="bottom-row">
-              <div className="product-count flex items-center gap-2">
-                <div className="product-counter-container">
-                  <div className="flex flex-col items-end">
-                    <h4 className="font-medium text-xl">
-                      {displayedProductCount} product
-                      {displayedProductCount > 1 && 's'}
-                    </h4>
-                  </div>
-                </div>
-                {collection?.handle === 'stock' && (
-                  <StockFiltersPopover
-                    durationFilterIndex={durationFilterIndex}
-                    setDurationFilterIndex={setDurationFilterIndex}
-                    resolutionFilterIndex={resolutionFilterIndex}
-                    setResolutionFilterIndex={setResolutionFilterIndex}
-                  />
-                )}
-              </div>
-              <div className="layout-toggle">
-                <div className="grid-list-toggle-container flex gap-x-4">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          className={
-                            layout === 'list'
-                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
-                          }
-                          onClick={() => {
-                            if (layout !== 'list') {
-                              setListLayout();
-                            }
-                          }}
-                        >
-                          <LuZoomOut />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-sm z-1000">
-                        {listViewTooltip}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          className={
-                            layout === 'grid'
-                              ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
-                              : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
-                          }
-                          onClick={() => {
-                            if (layout !== 'grid') {
-                              setGridLayout();
-                            }
-                          }}
-                        >
-                          <LuZoomIn />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-sm">
-                        {gridViewTooltip}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className={
+                        layout === 'grid'
+                          ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                          : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                      }
+                      onClick={() => {
+                        if (layout !== 'grid') {
+                          setGridLayout();
+                        }
+                      }}
+                    >
+                      <LuZoomIn />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-sm z-1000">
+                    {gridViewTooltip}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
-        </>
-      )}
+        )}
+        {windowWidth != undefined && windowWidth <= 600 && (
+          <>
+            <div className="counter-search-toggle-container">
+              <div className="top-row">
+                <div className="search-center">
+                  <div className="search-product-container">
+                    <div className="flex flex-col items-center mt-[25px]">
+                      <SearchFormPredictive>
+                        {({fetchResults, inputRef}) => {
+                          const handleInput = (
+                            e: React.ChangeEvent<HTMLInputElement>,
+                          ) => {
+                            setSearchText(e.target.value);
+                            fetchResults(e);
+                          };
 
-      <Separator className="mt-4" />
-      {searchText && (
-        <>
-          <SearchResultsPredictive.Queries
-            queries={predictiveQueries}
-            queriesDatalistId={queriesDatalistId}
-          />
-          {committedSearchProducts && committedSearchProducts.length === 0 ? (
-            <div className="flex justify-center px-4 py-6 text-center">
-              <SearchResultsPredictive.Empty
-                term={{current: activeSearchText}}
-              />
-            </div>
-          ) : (
-            <div
-              className={`${layoutClassName} collection-results-surface`.trim()}
-              style={productsContainerStyle}
-            >
-              <SearchResultsPredictive.Products
-                products={displayedSearchProducts}
-                layout={layout}
-                term={{current: activeSearchText}}
-                collectionHandle={collection?.handle}
-                cart={cart}
-                wishlistProducts={wishlistProducts as string[]}
-                isLoggedIn={isLoggedIn}
-              />
-            </div>
-          )}
-        </>
-      )}
-      {!searchText && (
-        <div
-          className={`${layoutClassName} collection-results-surface`.trim()}
-          style={productsContainerStyle}
-        >
-          <PaginatedResourceSection
-            connection={productState}
-            resourcesClassName="products-grid"
-          >
-            {({
-              node: product,
-              index,
-            }: {
-              node: ProductItemFragment & {
-                images: {nodes: ShopifyImage[]};
-                descriptionHtml?: string;
-              };
-              index: number;
-            }) => {
-              const isInWishlist = wishlistProducts?.includes(
-                product?.id,
-              ) as boolean;
+                          return (
+                            <div className="flex flex-col items-center">
+                              <InputGroup className="w-[300px]">
+                                <InputGroupAddon align="inline-start">
+                                  <LuSearch className="text-muted-foreground" />
+                                </InputGroupAddon>
+                                <InputGroupInput
+                                  name="q"
+                                  onChange={handleInput}
+                                  onFocus={handleInput}
+                                  placeholder="Search..."
+                                  ref={inputRef}
+                                  type="search"
+                                  value={searchText ?? ''}
+                                  list={queriesDatalistId}
+                                />
+                                {searchText && (
+                                  <InputGroupAddon align="inline-end">
+                                    <span className="text-muted-foreground text-xs whitespace-nowrap">
+                                      {displayedProductCount} result
+                                      {displayedProductCount !== 1 ? 's' : ''}
+                                    </span>
+                                  </InputGroupAddon>
+                                )}
+                              </InputGroup>
+                              <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
+                                Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+                              </p>
+                            </div>
+                          );
+                        }}
+                      </SearchFormPredictive>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              return (
-                <>
-                  {collection?.handle === 'prints' && (
-                    <ProductCarousel
-                      key={product.id}
-                      product={product}
-                      layout={layout}
-                      isInWishlist={isInWishlist}
-                      isLoggedIn={isLoggedIn}
-                    />
-                  )}
+              <div className="bottom-row">
+                <div className="product-count flex items-center gap-2">
+                  <div className="product-counter-container">
+                    <div className="flex flex-col items-end">
+                      <h4 className="font-medium text-xl">
+                        {displayedProductCount} product
+                        {displayedProductCount > 1 && 's'}
+                      </h4>
+                    </div>
+                  </div>
                   {collection?.handle === 'stock' && (
-                    <EProductsContainer
-                      key={product.id}
-                      product={product}
-                      layout={layout}
-                      cart={cart}
-                      isInWishlist={isInWishlist}
-                      isLoggedIn={isLoggedIn}
+                    <StockFiltersPopover
+                      durationFilterIndex={durationFilterIndex}
+                      setDurationFilterIndex={setDurationFilterIndex}
+                      resolutionFilterIndex={resolutionFilterIndex}
+                      setResolutionFilterIndex={setResolutionFilterIndex}
                     />
                   )}
-                </>
-              );
-            }}
-          </PaginatedResourceSection>
-        </div>
+                </div>
+                <div className="layout-toggle">
+                  <div className="grid-list-toggle-container flex gap-x-4">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className={
+                              layout === 'list'
+                                ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                                : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                            }
+                            onClick={() => {
+                              if (layout !== 'list') {
+                                setListLayout();
+                              }
+                            }}
+                          >
+                            <LuZoomOut />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm z-1000">
+                          {listViewTooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className={
+                              layout === 'grid'
+                                ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 rounded-md'
+                                : 'hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 rounded-md cursor-pointer'
+                            }
+                            onClick={() => {
+                              if (layout !== 'grid') {
+                                setGridLayout();
+                              }
+                            }}
+                          >
+                            <LuZoomIn />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm">
+                          {gridViewTooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        <Separator className="mt-4" />
+        {searchText && (
+          <>
+            <SearchResultsPredictive.Queries
+              queries={predictiveQueries}
+              queriesDatalistId={queriesDatalistId}
+            />
+            {committedSearchProducts && committedSearchProducts.length === 0 ? (
+              <div className="flex justify-center px-4 py-6 text-center">
+                <SearchResultsPredictive.Empty
+                  term={{current: activeSearchText}}
+                />
+              </div>
+            ) : (
+              <div
+                className={`${layoutClassName} collection-results-surface`.trim()}
+                style={productsContainerStyle}
+              >
+                <SearchResultsPredictive.Products
+                  products={displayedSearchProducts}
+                  layout={layout}
+                  term={{current: activeSearchText}}
+                  collectionHandle={collection?.handle}
+                  cart={cart}
+                  wishlistProducts={wishlistProducts as string[]}
+                  isLoggedIn={isLoggedIn}
+                />
+              </div>
+            )}
+          </>
+        )}
+        {!searchText && (
+          <div
+            className={`${layoutClassName} collection-results-surface`.trim()}
+            style={productsContainerStyle}
+          >
+            <PaginatedResourceSection
+              connection={productState}
+              resourcesClassName="products-grid"
+            >
+              {({
+                node: product,
+                index,
+              }: {
+                node: ProductItemFragment & {
+                  images: {nodes: ShopifyImage[]};
+                  descriptionHtml?: string;
+                };
+                index: number;
+              }) => {
+                const isInWishlist = wishlistProducts?.includes(
+                  product?.id,
+                ) as boolean;
+
+                return (
+                  <>
+                    {collection?.handle === 'prints' && (
+                      <ProductCarousel
+                        key={product.id}
+                        product={product}
+                        layout={layout}
+                        isInWishlist={isInWishlist}
+                        isLoggedIn={isLoggedIn}
+                      />
+                    )}
+                    {collection?.handle === 'stock' && (
+                      <EProductsContainer
+                        key={product.id}
+                        product={product}
+                        layout={layout}
+                        cart={cart}
+                        isInWishlist={isInWishlist}
+                        isLoggedIn={isLoggedIn}
+                      />
+                    )}
+                  </>
+                );
+              }}
+            </PaginatedResourceSection>
+          </div>
         )}
         <Analytics.CollectionView
           data={{
@@ -1403,12 +1406,12 @@ export default function Collection() {
             },
           }}
         />
-      {/* {collection?.handle === 'stock' && <RecommendedProducts
+        {/* {collection?.handle === 'stock' && <RecommendedProducts
         products={data?.recommendedProducts}
         isLoggedIn={data.isLoggedIn}
       />} */}
-      {/* add recommendedproducts to bottom of stock footage page */}
-    </div>
+        {/* add recommendedproducts to bottom of stock footage page */}
+      </div>
     </SkeletonGate>
   );
 }

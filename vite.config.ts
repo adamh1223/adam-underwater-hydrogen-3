@@ -65,10 +65,6 @@ export default defineConfig({
        */
       include: [
         'react-image-zooom',
-        '@supabase/supabase-js',
-        '@supabase/postgrest-js',
-        '@supabase/gotrue-js',
-        '@supabase/storage-js',
       ],
     },
   },

@@ -23,8 +23,6 @@ declare global {
     SHOPIFY_ADMIN_TOKEN: string;
     SHOPIFY_ADMIN_DOMAIN: string;
     SHOPIFY_WEBHOOK_SECRET: string;
-    SUPABASE_KEY: string;
-    SUPABASE_URL: string;
     R2_ACCOUNT_ID: string;
     R2_BUCKET: string;
     R2_ACCESS_KEY_ID: string;

@@ -35,20 +35,10 @@ export default async function handleRequest(
       "'self'",
       'blob:',
       'data:',
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co',
-      'https://aethtsbnwylikosxhnkh.supabase.co',
-      'https://uctqtajkpjsifdxtmjwo.supabase.co',
-      'https://wamcrxkfsfulpobimumc.supabase.co',
-      // supabase buckets 1,2,3,4 ^
       ...additionalMediaOrigins,
     ],
     connectSrc: [
       "'self'",
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co',
-      'https://aethtsbnwylikosxhnkh.supabase.co',
-      'https://uctqtajkpjsifdxtmjwo.supabase.co',
-      'https://wamcrxkfsfulpobimumc.supabase.co',
-      // supabase buckets 1,2,3,4 ^
       'wss://patient-mite-notably.ngrok-free.app:3000',
       'https://cdn.shopify.com',
       r2PublicOrigin,
@@ -58,11 +48,6 @@ export default async function handleRequest(
       'data:',
       'blob:',
       'https://cdn.shopify.com',
-      'https://fpoxvfuxgtlyphowqdgf.supabase.co',
-      'https://aethtsbnwylikosxhnkh.supabase.co',
-      'https://uctqtajkpjsifdxtmjwo.supabase.co',
-      'https://wamcrxkfsfulpobimumc.supabase.co',
-      // supabase buckets 1,2,3,4 ^
       ...additionalMediaOrigins,
     ],
     fontSrc: [
