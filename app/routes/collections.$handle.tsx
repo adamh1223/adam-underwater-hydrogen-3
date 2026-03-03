@@ -4,7 +4,6 @@ import {
   Link,
   type MetaFunction,
   useSearchParams,
-  Form,
   useFetcher,
 } from '@remix-run/react';
 import {
@@ -25,21 +24,21 @@ import ProductsHeader from '~/components/products/productsHeader';
 import EProductsHeader from '~/components/eproducts/EProductsHeader';
 import ProductCarousel from '~/components/products/productCarousel';
 import {Separator} from '~/components/ui/separator';
-import {useCallback, useEffect, useId, useMemo, useRef, useState} from 'react';
-import {
-  LuFilter,
-  LuFilterX,
-  LuSearch,
-  LuZoomIn,
-  LuZoomOut,
-} from 'react-icons/lu';
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {LuSearch, LuZoomIn, LuZoomOut} from 'react-icons/lu';
 import {Popover, PopoverTrigger, PopoverContent} from '~/components/ui/popover';
 import {
   applyHighestResolutionVariantToProducts,
   parseResolutionValue,
 } from '~/lib/resolution';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
-import {Input} from '~/components/ui/input';
 import {
   InputGroup,
   InputGroupAddon,
@@ -52,8 +51,6 @@ import {capitalizeFirstLetter} from '~/utils/grammer';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import {type PredictiveSearchReturn} from '~/lib/search';
 import Product from './products.$handle';
-import {Checkbox} from '~/components/ui/checkbox';
-import ToggleSwitch from '~/components/global/ToggleSwitch';
 import Collections from './collections._index';
 import {
   Tooltip,
@@ -198,12 +195,99 @@ const RESOLUTION_NOTCHES = [
 
 const DEFAULT_DURATION_FILTER_INDEX = DURATION_NOTCHES.length - 1;
 const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
+const bundleDurationRegex = /^d(\d+)-(.+)$/i;
+const bundleResolutionRegex = /^res(\d+)-(.+)$/i;
+const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
 
 type FrameRateFilter = 'all' | '24fps' | 'slowmo';
 const DEFAULT_FRAME_RATE_FILTER: FrameRateFilter = 'all';
 
 const STOCK_FILTER_ICON_BUTTON_CLASS_NAME =
   'relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-default disabled:opacity-50';
+
+function chainMouseHandler<EventType>(
+  originalHandler: ((event: EventType) => void) | undefined,
+  nextHandler: (event: EventType) => void,
+) {
+  return (event: EventType) => {
+    originalHandler?.(event);
+    nextHandler(event);
+  };
+}
+
+function HoverOnlyTooltip({
+  content,
+  children,
+  side = 'top',
+}: {
+  content: React.ReactNode;
+  children: React.ReactElement<{
+    onMouseEnter?: (event: React.MouseEvent) => void;
+    onMouseLeave?: (event: React.MouseEvent) => void;
+    onPointerDown?: (event: React.PointerEvent) => void;
+    onClick?: (event: React.MouseEvent) => void;
+    onBlur?: (event: React.FocusEvent) => void;
+  }>;
+  side?: 'top' | 'right' | 'bottom' | 'left';
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Tooltip open={open}>
+      <TooltipTrigger asChild>
+        {React.cloneElement(children, {
+          onMouseEnter: chainMouseHandler(
+            children.props.onMouseEnter,
+            () => setOpen(true),
+          ),
+          onMouseLeave: chainMouseHandler(
+            children.props.onMouseLeave,
+            () => setOpen(false),
+          ),
+          onPointerDown: chainMouseHandler(
+            children.props.onPointerDown,
+            () => setOpen(false),
+          ),
+          onClick: chainMouseHandler(children.props.onClick, () => setOpen(false)),
+          onBlur: chainMouseHandler(children.props.onBlur, () => setOpen(false)),
+        })}
+      </TooltipTrigger>
+      <TooltipContent side={side} className="z-[1001]">
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+const CollectionFilterIconButton = React.forwardRef<
+  HTMLButtonElement,
+  {
+    isFiltered: boolean;
+    ariaLabel: string;
+  } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(function CollectionFilterIconButton(
+  {isFiltered, ariaLabel, className, type = 'button', ...props},
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      type={type}
+      className={`${STOCK_FILTER_ICON_BUTTON_CLASS_NAME} ${className ?? ''}`.trim()}
+      aria-label={ariaLabel}
+      {...props}
+    >
+      <img
+        src={'https://downloads.adamunderwater.com/store-1-au/public/filter.png'}
+        alt=""
+        className="w-5 h-5"
+      ></img>
+      {isFiltered && (
+        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
+      )}
+    </button>
+  );
+});
 
 function NotchedSlider({
   notches,
@@ -371,6 +455,95 @@ function NotchedSlider({
   );
 }
 
+function PrintsFiltersPopover({
+  filterState,
+  setFilterState,
+}: {
+  filterState: 'All' | 'Horizontal' | 'Vertical';
+  setFilterState: (value: 'All' | 'Horizontal' | 'Vertical') => void;
+}) {
+  const isFiltered = filterState !== 'All';
+  const handleReset = () => setFilterState('All');
+
+  return (
+    <Tooltip>
+      <Popover>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <CollectionFilterIconButton
+              isFiltered={isFiltered}
+              ariaLabel="Filter print products"
+            />
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="z-[1001]">
+          Filter Products
+        </TooltipContent>
+        <PopoverContent
+          align="start"
+          sideOffset={8}
+          className="z-[1000] w-80 p-4"
+          onOpenAutoFocus={(event) => event.preventDefault()}
+        >
+          <div className="space-y-4">
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-foreground">
+                  Orientation
+                </p>
+                <HoverOnlyTooltip content="Reset Filters - shortcut: r">
+                  <button
+                    type="button"
+                    className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+                    aria-label="Reset print filters"
+                    onClick={handleReset}
+                  >
+                    <img
+                      src={
+                        'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                      }
+                      alt=""
+                      className="w-5 h-5"
+                    ></img>
+                  </button>
+                </HoverOnlyTooltip>
+              </div>
+              <InputGroup className="overflow-hidden">
+                {(['All', 'Horizontal', 'Vertical'] as const).map(
+                  (value, index) => (
+                    <HoverOnlyTooltip
+                      key={value}
+                      content={`Keyboard shortcut: ${value === 'All' ? 'a' : value === 'Horizontal' ? 'h' : 'v'}`}
+                    >
+                      <button
+                        type="button"
+                        className={`h-9 flex-1 cursor-pointer px-3 text-sm transition-colors ${
+                          index > 0 ? 'border-l border-input' : ''
+                        } ${
+                          filterState === value
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground'
+                        }`}
+                        onClick={() => setFilterState(value)}
+                      >
+                        {value}
+                      </button>
+                    </HoverOnlyTooltip>
+                  ),
+                )}
+              </InputGroup>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Many horizontal prints <strong>are also available</strong> in
+              vertical on the product page
+            </p>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </Tooltip>
+  );
+}
+
 function StockFiltersPopover({
   durationFilterIndex,
   setDurationFilterIndex,
@@ -398,32 +571,26 @@ function StockFiltersPopover({
   };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
-          aria-label="Filter stock footage"
+    <Tooltip>
+      <Popover>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <CollectionFilterIconButton
+              isFiltered={isFiltered}
+              ariaLabel="Filter stock footage"
+            />
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="z-[1001]">
+          Filter Products
+        </TooltipContent>
+        <PopoverContent
+          align="start"
+          sideOffset={8}
+          className="z-[1000] w-80 pt-2.5 px-3.5 pb-3.5"
+          onOpenAutoFocus={(event) => event.preventDefault()}
         >
-          <img
-            src={
-              'https://downloads.adamunderwater.com/store-1-au/public/filter.png'
-            }
-            alt=""
-            className="w-5 h-5"
-          ></img>
-          {isFiltered && (
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
-          )}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        sideOffset={8}
-        className="z-[1000] w-80 pt-2.5 px-3.5 pb-3.5"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
-        <div className="space-y-4">
+          <div className="space-y-4">
           <NotchedSlider
             label="Duration (seconds)"
             notches={DURATION_NOTCHES}
@@ -434,27 +601,22 @@ function StockFiltersPopover({
                 <p className="text-sm font-medium text-foreground">
                   Duration (seconds)
                 </p>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
-                      aria-label="Reset stock filters"
-                      onClick={handleReset}
-                    >
-                      <img
-                        src={
-                          'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
-                        }
-                        alt=""
-                        className="w-5 h-5"
-                      ></img>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="z-[1001]">
-                    Reset Changes
-                  </TooltipContent>
-                </Tooltip>
+                <HoverOnlyTooltip content="Reset Filters - shortcut: r">
+                  <button
+                    type="button"
+                    className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+                    aria-label="Reset stock filters"
+                    onClick={handleReset}
+                  >
+                    <img
+                      src={
+                        'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                      }
+                      alt=""
+                      className="w-5 h-5"
+                    ></img>
+                  </button>
+                </HoverOnlyTooltip>
               </div>
             }
           />
@@ -497,21 +659,20 @@ function StockFiltersPopover({
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </Tooltip>
   );
 }
 
 /** Parse the numeric seconds from a product's duration tag (e.g. "10s" → 10). */
-function parseDurationSeconds(product: {tags: string[]}): number | null {
-  const tag = product.tags.find((t) => t?.startsWith?.('duration-'));
-  if (!tag) return null;
-  const rawValue = tag.slice('duration-'.length).trim();
-  if (!rawValue) return null;
+function parseDurationSecondsValue(rawValue: string): number | null {
+  const trimmedValue = rawValue.trim();
+  if (!trimmedValue) return null;
 
   // Supports formats like "9", "9s", "0:09", or "1:02:03".
-  const colonParts = rawValue.split(':').map((part) => part.trim());
+  const colonParts = trimmedValue.split(':').map((part) => part.trim());
   if (
     colonParts.length > 1 &&
     colonParts.every((part) => /^\d+(?:\.\d+)?$/.test(part))
@@ -522,7 +683,7 @@ function parseDurationSeconds(product: {tags: string[]}): number | null {
     return Number.isFinite(totalSeconds) ? totalSeconds : null;
   }
 
-  const normalizedValue = rawValue
+  const normalizedValue = trimmedValue
     .replace(/\b(seconds?|secs?)\b/gi, '')
     .replace(/s$/i, '')
     .trim();
@@ -530,6 +691,86 @@ function parseDurationSeconds(product: {tags: string[]}): number | null {
 
   const parsed = Number(normalizedValue);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseDurationSeconds(product: {tags: string[]}): number | null {
+  const tag = product.tags.find((t) => t?.startsWith?.('duration-'));
+  if (!tag) return null;
+  const rawValue = tag.slice('duration-'.length).trim();
+  return parseDurationSecondsValue(rawValue);
+}
+
+function getBundleClipDurations(tags: string[]): number[] {
+  return tags.flatMap((tag) => {
+    const match = tag.match(bundleDurationRegex);
+    if (!match?.[2]) return [];
+    const seconds = parseDurationSecondsValue(match[2]);
+    return seconds === null ? [] : [seconds];
+  });
+}
+
+function getBundleClipResolutions(tags: string[]): number[] {
+  return tags.flatMap((tag) => {
+    const match = tag.match(bundleResolutionRegex);
+    if (!match?.[2]) return [];
+    const resolution = parseResolutionValue(match[2]);
+    return resolution === null ? [] : [resolution];
+  });
+}
+
+function normalizeBundleFrameFilterValue(
+  value: string,
+): FrameRateFilter | string {
+  const normalized = value.trim().toLowerCase();
+  if (normalized.includes('slow')) return 'slowmo';
+  if (normalized === '24' || normalized === '24fps') return '24fps';
+  return normalized;
+}
+
+function getBundleClipFrameRates(tags: string[]): string[] {
+  return tags.flatMap((tag) => {
+    const match = tag.match(bundleFrameRegex);
+    if (!match?.[2]) return [];
+    return [normalizeBundleFrameFilterValue(match[2])];
+  });
+}
+
+function bundleMatchesDuration(tags: string[], maxDuration: number): boolean {
+  const durations = getBundleClipDurations(tags);
+  if (durations.length === 0) return true;
+  return durations.some((seconds) => seconds <= maxDuration);
+}
+
+function bundleMatchesResolution(
+  product: {
+    tags: string[];
+    options?: {name?: string; optionValues?: {name?: string}[]}[];
+  },
+  minResolution: number,
+): boolean {
+  const resolutions = getBundleClipResolutions(product.tags);
+  if (resolutions.length === 0) {
+    return getHighestResolutionNumber(product) >= minResolution;
+  }
+  return resolutions.some((resolution) => resolution >= minResolution);
+}
+
+function bundleMatchesFrameRate(
+  tags: string[],
+  frameRateFilter: FrameRateFilter,
+): boolean {
+  const frames = getBundleClipFrameRates(tags);
+  if (frames.length === 0) {
+    if (frameRateFilter === '24fps') {
+      return !tags.includes('slowmo');
+    }
+    if (frameRateFilter === 'slowmo') {
+      return tags.includes('slowmo');
+    }
+    return true;
+  }
+
+  return frames.some((frame) => frame === frameRateFilter);
 }
 
 /** Get the highest resolution number from a product's option values (e.g. 5 for "5K"). */
@@ -925,32 +1166,46 @@ export default function Collection() {
         RESOLUTION_NOTCHES[resolutionFilterIndex]?.value ?? 4;
 
       filteredCollection = baseConnection.nodes?.filter((p: any) => {
+        const isBundleProduct = p.tags.includes('Bundle');
+
         // Existing clip-type filter
         if (stockFilterState === 'All Clips') {
-          if (!(p.tags.includes('Video') && !p.tags.includes('Bundle')))
+          if (!(p.tags.includes('Video') && !isBundleProduct))
             return false;
         } else if (stockFilterState === 'Discounted Bundles') {
-          if (!p.tags.includes('Bundle')) return false;
+          if (!isBundleProduct) return false;
         }
 
         // Duration filter
         if (maxDuration !== Infinity) {
-          const seconds = parseDurationSeconds(p);
-          // If no duration tag, include the product (don't exclude unknown durations)
-          if (seconds !== null && seconds > maxDuration) return false;
+          if (isBundleProduct) {
+            if (!bundleMatchesDuration(p.tags, maxDuration)) return false;
+          } else {
+            const seconds = parseDurationSeconds(p);
+            // If no duration tag, include the product (don't exclude unknown durations)
+            if (seconds !== null && seconds > maxDuration) return false;
+          }
         }
 
         // Resolution filter
         if (minResolution > 4) {
-          const highest = getHighestResolutionNumber(p);
-          if (highest < minResolution) return false;
+          if (isBundleProduct) {
+            if (!bundleMatchesResolution(p, minResolution)) return false;
+          } else {
+            const highest = getHighestResolutionNumber(p);
+            if (highest < minResolution) return false;
+          }
         }
 
         // Frame rate filter
-        if (frameRateFilter === '24fps') {
-          if (p.tags.includes('slowmo')) return false;
-        } else if (frameRateFilter === 'slowmo') {
-          if (!p.tags.includes('slowmo')) return false;
+        if (frameRateFilter !== 'all') {
+          if (isBundleProduct) {
+            if (!bundleMatchesFrameRate(p.tags, frameRateFilter)) return false;
+          } else if (frameRateFilter === '24fps') {
+            if (p.tags.includes('slowmo')) return false;
+          } else if (frameRateFilter === 'slowmo') {
+            if (!p.tags.includes('slowmo')) return false;
+          }
         }
 
         return true;
@@ -1064,6 +1319,14 @@ export default function Collection() {
           setStockFilterState('Discounted Bundles');
           return;
         }
+
+        if (key === 'r') {
+          event.preventDefault();
+          setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
+          setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
+          setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
+          return;
+        }
       }
 
       if (collection?.handle === 'prints') {
@@ -1082,6 +1345,12 @@ export default function Collection() {
         if (key === 'v') {
           event.preventDefault();
           setFilterState('Vertical');
+          return;
+        }
+
+        if (key === 'r') {
+          event.preventDefault();
+          setFilterState('All');
         }
       }
     };
@@ -1100,33 +1369,6 @@ export default function Collection() {
           <EProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />
         )}
 
-        {collection?.handle === 'prints' && (
-          <div>
-            <p className="text-lg flex justify-center py-3">
-              Filter By Orientation:
-            </p>
-            <div className="flex justify-center pb-3">
-              <ToggleSwitch selected={filterState} onChange={setFilterState} />
-            </div>
-            <div className="flex justify-center">
-              <div className="flex justify-center w-100 md:w-132 lg:w-148 px-3">
-                <p>
-                  Many horizontal prints <strong>are also available</strong> in
-                  vertical on the product page
-                </p>
-              </div>
-            </div>
-            {/* <div className="flex justify-start items-center">
-              <Checkbox />
-
-              <p className="ms-1">Horizontal</p>
-            </div>
-            <div className="flex justify-start items-center">
-              <Checkbox />
-              <p className="ms-1">Vertical</p>
-            </div> */}
-          </div>
-        )}
         {collection?.handle === 'stock' && (
           <div className="flex justify-center pt-2 pb-1">
             <div className="toggle-container">
@@ -1178,6 +1420,12 @@ export default function Collection() {
                   setResolutionFilterIndex={setResolutionFilterIndex}
                   frameRateFilter={frameRateFilter}
                   setFrameRateFilter={setFrameRateFilter}
+                />
+              )}
+              {collection?.handle === 'prints' && (
+                <PrintsFiltersPopover
+                  filterState={filterState}
+                  setFilterState={setFilterState}
                 />
               )}
             </div>
@@ -1345,6 +1593,12 @@ export default function Collection() {
                       setResolutionFilterIndex={setResolutionFilterIndex}
                       frameRateFilter={frameRateFilter}
                       setFrameRateFilter={setFrameRateFilter}
+                    />
+                  )}
+                  {collection?.handle === 'prints' && (
+                    <PrintsFiltersPopover
+                      filterState={filterState}
+                      setFilterState={setFilterState}
                     />
                   )}
                 </div>
