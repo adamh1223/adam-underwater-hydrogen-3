@@ -13,6 +13,7 @@ const STOCK_SWIPE_IMAGE_EXTENSIONS = [
   'JPEG',
   'WEBP',
 ];
+const DEFAULT_HIGHER_RESOLUTION_LABELS = ['8K', '6K', '5K', '10K', '12K'];
 
 function buildSwipeImageCandidates(resolutionLabel: string, vidKey: string) {
   const normalizedResolution = resolutionLabel.toLowerCase();
@@ -63,10 +64,12 @@ export default function VideoResolutionSwipeSection({
   higherResolutionLabel,
 }: {
   vidKey: string;
-  higherResolutionLabel: string;
+  higherResolutionLabel?: string;
 }) {
   const [leftImageUrl, setLeftImageUrl] = useState<string | null>(null);
   const [rightImageUrl, setRightImageUrl] = useState<string | null>(null);
+  const [resolvedHigherResolutionLabel, setResolvedHigherResolutionLabel] =
+    useState<string | null>(null);
   const [dividerPercentage, setDividerPercentage] = useState(50);
   const compareRef = useRef<HTMLDivElement | null>(null);
 
@@ -74,9 +77,17 @@ export default function VideoResolutionSwipeSection({
     () => buildSwipeImageCandidates('4k', vidKey),
     [vidKey],
   );
-  const rightCandidates = useMemo(
-    () => buildSwipeImageCandidates(higherResolutionLabel, vidKey),
-    [higherResolutionLabel, vidKey],
+  const higherResolutionCandidates = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          [
+            higherResolutionLabel?.toUpperCase()?.trim(),
+            ...DEFAULT_HIGHER_RESOLUTION_LABELS,
+          ].filter((label): label is string => Boolean(label)),
+        ),
+      ),
+    [higherResolutionLabel],
   );
 
   useEffect(() => {
@@ -84,22 +95,35 @@ export default function VideoResolutionSwipeSection({
 
     setLeftImageUrl(null);
     setRightImageUrl(null);
+    setResolvedHigherResolutionLabel(null);
 
-    Promise.all([
-      preloadFirstAvailableImage(leftCandidates),
-      preloadFirstAvailableImage(rightCandidates),
-    ]).then(([resolvedLeftUrl, resolvedRightUrl]) => {
-      if (cancelled) return;
-      if (!resolvedLeftUrl || !resolvedRightUrl) return;
+    const load = async () => {
+      const resolvedLeftUrl = await preloadFirstAvailableImage(leftCandidates);
+      if (cancelled || !resolvedLeftUrl) return;
 
-      setLeftImageUrl(resolvedLeftUrl);
-      setRightImageUrl(resolvedRightUrl);
-    });
+      for (const resolutionLabel of higherResolutionCandidates) {
+        const rightCandidates = buildSwipeImageCandidates(
+          resolutionLabel,
+          vidKey,
+        );
+        const resolvedRightUrl =
+          await preloadFirstAvailableImage(rightCandidates);
+        if (cancelled) return;
+        if (!resolvedRightUrl) continue;
+
+        setLeftImageUrl(resolvedLeftUrl);
+        setRightImageUrl(resolvedRightUrl);
+        setResolvedHigherResolutionLabel(resolutionLabel);
+        return;
+      }
+    };
+
+    load();
 
     return () => {
       cancelled = true;
     };
-  }, [leftCandidates, rightCandidates]);
+  }, [higherResolutionCandidates, leftCandidates, vidKey]);
 
   const updateDividerFromClientX = useCallback((clientX: number) => {
     const container = compareRef.current;
@@ -140,8 +164,9 @@ export default function VideoResolutionSwipeSection({
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
-  if (!leftImageUrl || !rightImageUrl) return null;
+  }, []);
+  if (!leftImageUrl || !rightImageUrl || !resolvedHigherResolutionLabel)
+    return null;
 
   return (
     <>
@@ -151,7 +176,7 @@ export default function VideoResolutionSwipeSection({
             <div className="flex-1 h-px bg-muted" />
             <span className="px-4 text-center">
               <p className="text-xl">
-                4K or {higherResolutionLabel}? Swipe to see the difference
+                4K or {resolvedHigherResolutionLabel}? Swipe to see the difference
               </p>
             </span>
             <div className="flex-1 h-px bg-muted" />
@@ -184,7 +209,7 @@ export default function VideoResolutionSwipeSection({
                 >
                   <img
                     src={rightImageUrl}
-                    alt={`${higherResolutionLabel} comparison preview`}
+                    alt={`${resolvedHigherResolutionLabel} comparison preview`}
                     className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                     style={{
@@ -199,7 +224,7 @@ export default function VideoResolutionSwipeSection({
                     4K
                   </span>
                   <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
-                    {higherResolutionLabel}
+                    {resolvedHigherResolutionLabel}
                   </span>
                 </div>
 
@@ -234,7 +259,7 @@ export default function VideoResolutionSwipeSection({
               <div className="flex justify-center">
                 <div className="nk-list-container">
                   <div className="flex justify-center k-title">
-                    {higherResolutionLabel} is best for:
+                    {resolvedHigherResolutionLabel} is best for:
                   </div>
                   <li>Editing flexibility</li>
                   <li>Maintain resolution at zoom</li>
@@ -283,7 +308,7 @@ export default function VideoResolutionSwipeSection({
                 >
                   <img
                     src={rightImageUrl}
-                    alt={`${higherResolutionLabel} comparison preview`}
+                    alt={`${resolvedHigherResolutionLabel} comparison preview`}
                     className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                     style={{
@@ -298,7 +323,7 @@ export default function VideoResolutionSwipeSection({
                     4K
                   </span>
                   <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
-                    {higherResolutionLabel}
+                    {resolvedHigherResolutionLabel}
                   </span>
                 </div>
 
@@ -320,7 +345,7 @@ export default function VideoResolutionSwipeSection({
               </div>
               <div className="nk-list-container shrink-0">
                 <div className="flex justify-center k-title">
-                  {higherResolutionLabel} is best for:
+                  {resolvedHigherResolutionLabel} is best for:
                 </div>
                 <li>Editing flexibility</li>
                 <li>Maintain resolution at zoom</li>

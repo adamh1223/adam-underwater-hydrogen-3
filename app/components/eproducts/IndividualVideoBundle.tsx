@@ -15,6 +15,7 @@ type BundleClipImage = {url: string; altText?: string | null};
 export type BundleDetailClip = {
   index: number;
   wmlinkId?: string;
+  vidKey?: string;
   image?: BundleClipImage;
   clipName: string;
   clipLocation?: string;

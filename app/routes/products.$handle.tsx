@@ -219,13 +219,15 @@ function getVideoSwipeComparisonConfig(product: any): {
   higherResolutionLabel: string;
 } | null {
   const tags = Array.isArray(product?.tags) ? product.tags : [];
-  const vidTag = tags.find(
-    (tag: unknown) => typeof tag === 'string' && /^vid-\d+$/i.test(tag),
+  const vidIdentifierTag = tags.find(
+    (tag: unknown) =>
+      typeof tag === 'string' && /^(?:vid|bundle)[-_]\d+$/i.test(tag.trim()),
   );
-  if (typeof vidTag !== 'string') return null;
-
-  const vidMatch = vidTag.match(/^vid-(\d+)$/i);
-  if (!vidMatch?.[1]) return null;
+  const vidKey =
+    typeof vidIdentifierTag === 'string'
+      ? toVidKey(vidIdentifierTag.match(/^(?:vid|bundle)[-_](\d+)$/i)?.[1])
+      : undefined;
+  if (!vidKey) return null;
 
   const options = Array.isArray(product?.options) ? product.options : [];
   const resolutionOption = options.find(
@@ -238,7 +240,7 @@ function getVideoSwipeComparisonConfig(product: any): {
   const optionValues = Array.isArray(resolutionOption.optionValues)
     ? resolutionOption.optionValues
     : [];
-  const resolutions = optionValues
+  const resolutions: number[] = optionValues
     .map((optionValue: any) => parseResolutionValue(optionValue?.name))
     .filter(
       (resolution: number | null): resolution is number => resolution !== null,
@@ -252,7 +254,7 @@ function getVideoSwipeComparisonConfig(product: any): {
   if (!Number.isFinite(higherResolution) || higherResolution <= 4) return null;
 
   return {
-    vidKey: `vid${vidMatch[1]}`,
+    vidKey,
     higherResolutionLabel: `${higherResolution}K`,
   };
 }
@@ -261,7 +263,13 @@ type BundleClipImage = {url: string; altText?: string | null};
 
 const bundleWmlinkRegex = /^wmlink(\d+)_/i;
 const bundleClipNameRegex = /^cn(\d+)_+(.+)$/i;
-const bundleAltRegex = /bundle(\d+)-/i;
+const bundleAltRegex = /bundle(\d+)(?:[-_](\d+))?/i;
+const bundleVidTokenRegex =
+  /(?:^|[^a-z0-9])(?:vid|bundle)[-_]?(\d+)(?=[^a-z0-9]|$)/i;
+const indexedVidTagRegex = /^vid(\d+)[-_](\d+)$/i;
+const indexedBundleVidTagRegex = /^bundle(\d+)[-_](\d+)$/i;
+const standaloneBundleVidTagRegex = /^bundle[-_](\d+)$/i;
+const standaloneVidTagRegex = /^vid[-_](\d+)$/i;
 const bundleClipDivRegex =
   /<div[^>]*class=(["'])[^"']*\bclip-(\d+)\b[^"']*\1[^>]*>([\s\S]*?)<\/div>/gi;
 const bundleDescriptionTitleBlacklist = new Set([
@@ -295,6 +303,13 @@ function stripHtml(value: string): string {
 
 function normalizeClipName(value: string): string {
   return value.trim().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ');
+}
+
+function toVidKey(value: unknown): string | undefined {
+  if (typeof value !== 'string' && typeof value !== 'number') return undefined;
+  const parsed = Number.parseInt(String(value), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
+  return `vid${parsed}`;
 }
 
 function extractClipLocationFromDescription(html: string): string | undefined {
@@ -373,8 +388,13 @@ function buildBundleDetailClips({
 }): BundleDetailClip[] {
   const wmlinkByClip = new Map<number, string>();
   const clipNameByClip = new Map<number, string>();
+  const vidByClip = new Map<number, string>();
   const descriptionByClip = parseBundleDescriptionsByClip(descriptionHtml);
   const imageByClip = new Map<number, BundleClipImage>();
+  const bundleVidKeysFromTagsInOrder: string[] = [];
+  const vidKeysFromTagsInOrder: string[] = [];
+  const seenBundleVidKeys = new Set<string>();
+  const seenVidKeys = new Set<string>();
 
   tags.forEach((tag) => {
     const wmlinkMatch = tag.match(bundleWmlinkRegex);
@@ -394,6 +414,37 @@ function buildBundleDetailClips({
       if (clipIndex > 0 && clipName) {
         clipNameByClip.set(clipIndex, normalizeClipName(clipName));
       }
+      return;
+    }
+
+    const indexedVidMatch =
+      tag.match(indexedVidTagRegex) ?? tag.match(indexedBundleVidTagRegex);
+    if (indexedVidMatch?.[1] && indexedVidMatch?.[2]) {
+      const clipIndex = Number(indexedVidMatch[1]);
+      const vidKey = toVidKey(indexedVidMatch[2]);
+      if (clipIndex > 0 && vidKey) {
+        vidByClip.set(clipIndex, vidKey);
+      }
+      return;
+    }
+
+    const standaloneBundleVidMatch = tag.match(standaloneBundleVidTagRegex);
+    if (standaloneBundleVidMatch?.[1]) {
+      const vidKey = toVidKey(standaloneBundleVidMatch[1]);
+      if (vidKey && !seenBundleVidKeys.has(vidKey)) {
+        seenBundleVidKeys.add(vidKey);
+        bundleVidKeysFromTagsInOrder.push(vidKey);
+      }
+      return;
+    }
+
+    const standaloneVidMatch = tag.match(standaloneVidTagRegex);
+    if (standaloneVidMatch?.[1]) {
+      const vidKey = toVidKey(standaloneVidMatch[1]);
+      if (vidKey && !seenVidKeys.has(vidKey)) {
+        seenVidKeys.add(vidKey);
+        vidKeysFromTagsInOrder.push(vidKey);
+      }
     }
   });
 
@@ -401,21 +452,52 @@ function buildBundleDetailClips({
     const altText = image.altText ?? '';
     const matchedIndex = altText.match(bundleAltRegex);
     if (matchedIndex?.[1]) {
-      imageByClip.set(Number(matchedIndex[1]), image);
+      const clipIndex = Number(matchedIndex[1]);
+      const vidFromAlt =
+        toVidKey(matchedIndex[2]) ?? toVidKey(altText.match(bundleVidTokenRegex)?.[1]);
+
+      if (clipIndex > 0) {
+        imageByClip.set(clipIndex, image);
+        if (vidFromAlt) {
+          vidByClip.set(clipIndex, vidFromAlt);
+        }
+      }
       return;
     }
+
+    const orderedClipIndex = imageIndex + 1;
+    const fallbackVidFromAlt = toVidKey(altText.match(bundleVidTokenRegex)?.[1]);
+    if (fallbackVidFromAlt && !vidByClip.has(orderedClipIndex)) {
+      vidByClip.set(orderedClipIndex, fallbackVidFromAlt);
+    }
+
     if (!imageByClip.has(imageIndex + 1)) {
       imageByClip.set(imageIndex + 1, image);
     }
   });
+
+  const fallbackVidKeysInOrder =
+    bundleVidKeysFromTagsInOrder.length > 0
+      ? bundleVidKeysFromTagsInOrder
+      : vidKeysFromTagsInOrder;
 
   const clipCount = Math.max(
     wmlinkByClip.size,
     clipNameByClip.size,
     descriptionByClip.size,
     imageByClip.size,
+    vidByClip.size,
+    fallbackVidKeysInOrder.length,
     images.length,
   );
+
+  for (let clipIndex = 1; clipIndex <= clipCount; clipIndex += 1) {
+    if (vidByClip.has(clipIndex)) continue;
+    const fallbackVidKey = fallbackVidKeysInOrder[clipIndex - 1];
+    if (fallbackVidKey) {
+      vidByClip.set(clipIndex, fallbackVidKey);
+    }
+  }
 
   const clips: BundleDetailClip[] = [];
 
@@ -445,6 +527,7 @@ function buildBundleDetailClips({
     clips.push({
       index: clipIndex,
       wmlinkId,
+      vidKey: vidByClip.get(clipIndex),
       image,
       clipName,
       clipLocation,
@@ -951,9 +1034,8 @@ export default function Product() {
   const isBundle = product.tags.includes('Bundle');
   const isPrint = !isVideo;
   const isVideoBundle = isVideo && isBundle;
-  const videoSwipeComparison = useMemo(
-    () =>
-      isVideo && !isBundle ? getVideoSwipeComparisonConfig(product) : null,
+  const standaloneVideoSwipeComparison = useMemo(
+    () => (isVideo && !isBundle ? getVideoSwipeComparisonConfig(product) : null),
     [isBundle, isVideo, product],
   );
 
@@ -984,6 +1066,18 @@ export default function Product() {
   const activeBundleClip =
     bundleDetailClips.find((clip) => clip.index === activeBundleClipIndex) ??
     bundleDetailClips[0];
+  const activeVideoSwipeComparison: {
+    vidKey: string;
+    higherResolutionLabel?: string;
+  } | null = useMemo(
+    () =>
+      isBundle
+        ? activeBundleClip?.vidKey
+          ? {vidKey: activeBundleClip.vidKey}
+          : null
+        : standaloneVideoSwipeComparison,
+    [activeBundleClip?.vidKey, isBundle, standaloneVideoSwipeComparison],
+  );
 
   let isHorOnly = product.tags
     .map((tag: any) => {
@@ -2743,10 +2837,10 @@ export default function Product() {
               </div>
             </section>
           )}
-          {isVideo && !isBundle && videoSwipeComparison && (
+          {isVideo && activeVideoSwipeComparison && (
             <VideoResolutionSwipeSection
-              vidKey={videoSwipeComparison.vidKey}
-              higherResolutionLabel={videoSwipeComparison.higherResolutionLabel}
+              vidKey={activeVideoSwipeComparison.vidKey}
+              higherResolutionLabel={activeVideoSwipeComparison.higherResolutionLabel}
             />
           )}
           <section className="you-may-also-like mt-3">
