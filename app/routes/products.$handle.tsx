@@ -168,8 +168,8 @@ function getVideoSwipeComparisonConfig(product: any): {
     : [];
   const resolutions = optionValues
     .map((optionValue: any) => parseResolutionValue(optionValue?.name))
-    .filter((resolution: number | null): resolution is number =>
-      resolution !== null,
+    .filter(
+      (resolution: number | null): resolution is number => resolution !== null,
     );
 
   if (!resolutions.includes(4)) return null;
@@ -1557,7 +1557,7 @@ export default function Product() {
           )}
           {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
           <div
-            className="lg:grid lg:grid-cols-[60%_40%] min-[1600px]:grid-cols-2 lg:gap-x-2"
+            className="lg:grid lg:grid-cols-[60%_40%] min-[1600px]:grid-cols-2 lg:gap-x-1"
             style={productDetailGridStyle}
           >
             {standardCarouselImages && standardCarouselImages?.length > 1 && (
