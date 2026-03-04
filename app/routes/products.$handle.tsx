@@ -76,11 +76,53 @@ import ProductPageSkeleton from '~/components/skeletons/ProductPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
+  const siteUrl = (data?.siteUrl ?? 'https://adamunderwater.com').replace(
+    /\/$/,
+    '',
+  );
+  const product = data?.product;
+  const title = `Adam Underwater | ${product?.seo?.title ?? product?.title ?? ''}`;
+  const description =
+    product?.seo?.description ||
+    product?.description ||
+    'Premium underwater wall art and stock footage by Adam Hussain.';
+  const canonicalUrl = product?.handle
+    ? `${siteUrl}/products/${product.handle}`
+    : `${siteUrl}/products`;
+  const shareImageSource =
+    product?.selectedOrFirstAvailableVariant?.image?.url ??
+    product?.featuredImage?.url;
+  const shareImage = shareImageSource
+    ? `${siteUrl}/api/social-image?src=${encodeURIComponent(shareImageSource)}`
+    : 'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
+
   return [
-    {title: `Adam Underwater | ${data?.product.title ?? ''}`},
+    {title},
+    {name: 'description', content: description},
     {
       rel: 'canonical',
-      href: `/products/${data?.product.handle}`,
+      href: canonicalUrl,
+    },
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:type', content: 'product'},
+    {property: 'og:url', content: canonicalUrl},
+    {property: 'og:image', content: shareImage},
+    {property: 'og:image:secure_url', content: shareImage},
+    {property: 'og:image:type', content: 'image/png'},
+    {property: 'og:image:width', content: '1200'},
+    {property: 'og:image:height', content: '630'},
+    {
+      property: 'og:image:alt',
+      content: `${product?.title ?? 'Adam Underwater'} product preview`,
+    },
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+    {name: 'twitter:image', content: shareImage},
+    {
+      name: 'twitter:image:alt',
+      content: `${product?.title ?? 'Adam Underwater'} product preview`,
     },
   ];
 };
@@ -469,6 +511,7 @@ async function loadCriticalData({
     isLoggedIn,
     wishlistProducts,
     cart: cart.get(),
+    siteUrl: context.env.PUBLIC_SITE_URL || 'https://adamunderwater.com',
   };
 }
 
