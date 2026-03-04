@@ -132,83 +132,209 @@ export default function VideoResolutionSwipeSection({
     },
     [updateDividerFromClientX],
   );
-
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  });
   if (!leftImageUrl || !rightImageUrl) return null;
 
   return (
-    <section className="mt-6">
-      <div className="section-title-container">
-        <div className="flex items-center justify-center w-full">
-          <div className="flex-1 h-px bg-muted" />
-          <span className="px-4 text-center">
-            <p className="text-xl">
-              4K or {higherResolutionLabel}? Swipe to see the difference
-            </p>
-          </span>
-          <div className="flex-1 h-px bg-muted" />
-        </div>
-      </div>
-
-      <div className="mx-auto mt-5 w-full max-w-6xl px-[20px] lg:px-[35px]">
-        <div
-          ref={compareRef}
-          className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none cursor-col-resize"
-          onPointerDown={handlePointerDown}
-        >
-          <div className="absolute inset-0 overflow-hidden">
-            <img
-              src={leftImageUrl}
-              alt="4K comparison preview"
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-              draggable={false}
-              style={{
-                transform: 'scale(1.5)',
-                transformOrigin: 'center center',
-              }}
-            />
-          </div>
-          <div
-            className="absolute inset-0 overflow-hidden"
-            style={{clipPath: `inset(0 0 0 ${dividerPercentage}%)`}}
-          >
-            <img
-              src={rightImageUrl}
-              alt={`${higherResolutionLabel} comparison preview`}
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-              draggable={false}
-              style={{
-                transform: 'scale(1.5)',
-                transformOrigin: 'center center',
-              }}
-            />
-          </div>
-
-          <div className="absolute inset-x-0 top-4 z-20 flex items-center justify-between px-4 sm:px-5 text-white">
-            <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
-              4K
+    <>
+      <section className="mt-6">
+        <div className="section-title-container">
+          <div className="flex items-center justify-center w-full">
+            <div className="flex-1 h-px bg-muted" />
+            <span className="px-4 text-center">
+              <p className="text-xl">
+                4K or {higherResolutionLabel}? Swipe to see the difference
+              </p>
             </span>
-            <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
-              {higherResolutionLabel}
-            </span>
-          </div>
-
-          <div
-            className="absolute inset-y-0 z-20 w-[3px] bg-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)]"
-            style={{
-              left: `${dividerPercentage}%`,
-              transform: 'translateX(-50%)',
-            }}
-          />
-          <div
-            className="absolute top-4 z-30 -translate-x-1/2"
-            style={{left: `${dividerPercentage}%`}}
-          >
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-black">
-              Swipe
-            </span>
+            <div className="flex-1 h-px bg-muted" />
           </div>
         </div>
-      </div>
-    </section>
+
+        {windowWidth != undefined && windowWidth <= 1250 && (
+          <>
+            <div className="mx-auto mt-5 w-full max-w-6xl px-[20px] lg:px-[35px]">
+              <div
+                ref={compareRef}
+                className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none cursor-col-resize"
+                onPointerDown={handlePointerDown}
+              >
+                <div className="absolute inset-0 overflow-hidden">
+                  <img
+                    src={leftImageUrl}
+                    alt="4K comparison preview"
+                    className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                    draggable={false}
+                    style={{
+                      transform: 'scale(1.5)',
+                      transformOrigin: 'center center',
+                    }}
+                  />
+                </div>
+                <div
+                  className="absolute inset-0 overflow-hidden"
+                  style={{clipPath: `inset(0 0 0 ${dividerPercentage}%)`}}
+                >
+                  <img
+                    src={rightImageUrl}
+                    alt={`${higherResolutionLabel} comparison preview`}
+                    className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                    draggable={false}
+                    style={{
+                      transform: 'scale(1.5)',
+                      transformOrigin: 'center center',
+                    }}
+                  />
+                </div>
+
+                <div className="absolute inset-x-0 top-4 z-20 flex items-center justify-between px-4 sm:px-5 text-white">
+                  <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
+                    4K
+                  </span>
+                  <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
+                    {higherResolutionLabel}
+                  </span>
+                </div>
+
+                <div
+                  className="absolute inset-y-0 z-20 w-[3px] bg-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)]"
+                  style={{
+                    left: `${dividerPercentage}%`,
+                    transform: 'translateX(-50%)',
+                  }}
+                />
+                <div
+                  className="absolute top-4 z-30 -translate-x-1/2"
+                  style={{left: `${dividerPercentage}%`}}
+                >
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-black">
+                    Swipe
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 pt-3">
+              <div className="flex justify-center">
+                <div className="four-k-list-container">
+                  <div className="flex justify-center k-title">4k is best for:</div>
+                  <li>Quick edits</li>
+                  <li>Smaller screens</li>
+                  <li>Presentations</li>
+                  <li>Smaller file size</li>
+                  <li>Lower price</li>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <div className="nk-list-container">
+                  <div className="flex justify-center k-title">
+                    {higherResolutionLabel} is best for:
+                  </div>
+                  <li>Editing flexibility</li>
+                  <li>Maintain resolution at zoom</li>
+                  <li>Professional Videos</li>
+                  <li>Keyframing & Transitions</li>
+                  <li>Elite quality</li>
+                  <li>Large screens</li>
+                  <li>Documentaries</li>
+                  <li>Theatres</li>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        {windowWidth != undefined && windowWidth > 1250 && (
+          <>
+            <div className="mx-auto mt-5 flex w-full max-w-7xl items-center justify-center gap-8 px-[20px] lg:px-[35px]">
+              <div className="four-k-list-container shrink-0">
+                <div className="flex justify-center k-title">4k is best for:</div>
+                <li>Quick edits</li>
+                <li>Smaller screens</li>
+                <li>Presentations</li>
+                <li>Smaller file size</li>
+                <li>Lower price</li>
+              </div>
+              <div
+                ref={compareRef}
+                className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none cursor-col-resize"
+                onPointerDown={handlePointerDown}
+              >
+                <div className="absolute inset-0 overflow-hidden">
+                  <img
+                    src={leftImageUrl}
+                    alt="4K comparison preview"
+                    className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                    draggable={false}
+                    style={{
+                      transform: 'scale(1.5)',
+                      transformOrigin: 'center center',
+                    }}
+                  />
+                </div>
+                <div
+                  className="absolute inset-0 overflow-hidden"
+                  style={{clipPath: `inset(0 0 0 ${dividerPercentage}%)`}}
+                >
+                  <img
+                    src={rightImageUrl}
+                    alt={`${higherResolutionLabel} comparison preview`}
+                    className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                    draggable={false}
+                    style={{
+                      transform: 'scale(1.5)',
+                      transformOrigin: 'center center',
+                    }}
+                  />
+                </div>
+
+                <div className="absolute inset-x-0 top-4 z-20 flex items-center justify-between px-4 sm:px-5 text-white">
+                  <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
+                    4K
+                  </span>
+                  <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
+                    {higherResolutionLabel}
+                  </span>
+                </div>
+
+                <div
+                  className="absolute inset-y-0 z-20 w-[3px] bg-white shadow-[0_0_0_1px_rgba(255,255,255,0.25)]"
+                  style={{
+                    left: `${dividerPercentage}%`,
+                    transform: 'translateX(-50%)',
+                  }}
+                />
+                <div
+                  className="absolute top-4 z-30 -translate-x-1/2"
+                  style={{left: `${dividerPercentage}%`}}
+                >
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-black">
+                    Swipe
+                  </span>
+                </div>
+              </div>
+              <div className="nk-list-container shrink-0">
+                <div className="flex justify-center k-title">
+                  {higherResolutionLabel} is best for:
+                </div>
+                <li>Editing flexibility</li>
+                <li>Maintain resolution at zoom</li>
+                <li>Professional Videos</li>
+                <li>Keyframing & Transitions</li>
+                <li>Elite quality</li>
+                <li>Large screens</li>
+                <li>Documentaries</li>
+                <li>Theatres</li>
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+    </>
   );
 }

@@ -2542,3 +2542,48 @@ span {
     padding-bottom: 6px;
   }
 }
+
+@media (max-width: 599px) {
+  .four-k-list-container {
+    font-size: 14px;
+  }
+  .nk-list-container {
+    font-size: 14px;
+  }
+}
+@media (min-width: 600px) and (max-width: 799px) {
+  .four-k-list-container {
+    font-size: 15px;
+  }
+  .nk-list-container {
+    font-size: 15px;
+  }
+}
+@media (min-width: 800px) and (max-width: 1023px) {
+  .four-k-list-container {
+    font-size: 16px;
+  }
+  .nk-list-container {
+    font-size: 16px;
+  }
+}
+@media (min-width: 1024px) and (max-width: 1250px) {
+  .four-k-list-container {
+    font-size: 18px;
+  }
+  .nk-list-container {
+    font-size: 18px;
+  }
+}
+@media (min-width: 1251px) {
+  .four-k-list-container {
+    font-size: 20px;
+  }
+  .nk-list-container {
+    font-size: 20px;
+  }
+}
+
+.k-title {
+  text-decoration: underline;
+}
