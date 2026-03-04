@@ -31,6 +31,7 @@ import IndividualVideoProduct from '~/components/eproducts/IndividualVideoProduc
 import IndividualVideoBundle, {
   type BundleDetailClip,
 } from '~/components/eproducts/IndividualVideoBundle';
+import VideoResolutionSwipeSection from '~/components/eproducts/VideoResolutionSwipeSection';
 import {markWarmedImageUrl} from '~/lib/imageWarmup';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -139,6 +140,49 @@ function getHighestResolutionVariant(
   }
 
   return highestResolutionVariant;
+}
+
+function getVideoSwipeComparisonConfig(product: any): {
+  vidKey: string;
+  higherResolutionLabel: string;
+} | null {
+  const tags = Array.isArray(product?.tags) ? product.tags : [];
+  const vidTag = tags.find(
+    (tag: unknown) => typeof tag === 'string' && /^vid-\d+$/i.test(tag),
+  );
+  if (typeof vidTag !== 'string') return null;
+
+  const vidMatch = vidTag.match(/^vid-(\d+)$/i);
+  if (!vidMatch?.[1]) return null;
+
+  const options = Array.isArray(product?.options) ? product.options : [];
+  const resolutionOption = options.find(
+    (option: any) =>
+      typeof option?.name === 'string' &&
+      option.name.trim().toLowerCase() === 'resolution',
+  );
+  if (!resolutionOption) return null;
+
+  const optionValues = Array.isArray(resolutionOption.optionValues)
+    ? resolutionOption.optionValues
+    : [];
+  const resolutions = optionValues
+    .map((optionValue: any) => parseResolutionValue(optionValue?.name))
+    .filter((resolution: number | null): resolution is number =>
+      resolution !== null,
+    );
+
+  if (!resolutions.includes(4)) return null;
+
+  const higherResolution = Math.max(
+    ...resolutions.filter((resolution) => resolution > 4),
+  );
+  if (!Number.isFinite(higherResolution) || higherResolution <= 4) return null;
+
+  return {
+    vidKey: `vid${vidMatch[1]}`,
+    higherResolutionLabel: `${higherResolution}K`,
+  };
 }
 
 type BundleClipImage = {url: string; altText?: string | null};
@@ -834,6 +878,11 @@ export default function Product() {
   const isBundle = product.tags.includes('Bundle');
   const isPrint = !isVideo;
   const isVideoBundle = isVideo && isBundle;
+  const videoSwipeComparison = useMemo(
+    () =>
+      isVideo && !isBundle ? getVideoSwipeComparisonConfig(product) : null,
+    [isBundle, isVideo, product],
+  );
 
   useEffect(() => {
     if (!isPageReady || !currentGateImageUrl || initialLoadedGateImageUrl)
@@ -2600,6 +2649,12 @@ export default function Product() {
                 />
               </div>
             </section>
+          )}
+          {isVideo && !isBundle && videoSwipeComparison && (
+            <VideoResolutionSwipeSection
+              vidKey={videoSwipeComparison.vidKey}
+              higherResolutionLabel={videoSwipeComparison.higherResolutionLabel}
+            />
           )}
           <section className="you-may-also-like mt-3">
             {/* section title */}
