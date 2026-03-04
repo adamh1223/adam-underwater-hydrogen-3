@@ -665,6 +665,34 @@ button.reset:hover:not(:has(> *)) {
   grid-gap: 0.5rem;
 }
 
+.product-options-inline-cart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.product-options-inline-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.product-options-inline-selector .product-options-label {
+  margin-bottom: 0;
+}
+
+.product-options-inline-cart-cta {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.product-options-inline-cart-cta > .add-to-cart-btn {
+  width: 100%;
+}
+
 .product-options-item,
 .product-options-item:disabled {
   padding: 0.25rem 0.5rem;
@@ -2532,6 +2560,22 @@ span {
 @media (min-width: 1024px) {
   .product-main {
     margin-top: 0px;
+  }
+  .product-form-has-inline-cart {
+    margin-top: -0.25rem;
+  }
+  .product-options-inline-cart {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .product-options-inline-selector {
+    flex: 0 1 auto;
+  }
+  .product-options-inline-cart-cta {
+    flex: 1 1 0;
+    width: auto;
+    max-width: none;
   }
   .individual-a-t-c {
     justify-content: start;

@@ -54,6 +54,20 @@ export function ProductForm({
   const showSelectedVariantTitle = Boolean(
     selectedVariant?.title && selectedVariant.title !== 'Default Title',
   );
+  const hasResolutionOption = productOptions.some(
+    (option) =>
+      option.optionValues.length > 1 &&
+      option.name.trim().toLowerCase() === 'resolution',
+  );
+  const addToCartLines = selectedVariant
+    ? [
+        {
+          merchandiseId: selectedVariant.id,
+          quantity: 1,
+          selectedVariant,
+        },
+      ]
+    : [];
 
   // ✅ Function to add business days
   const addBusinessDays = (date: Date, days: number): Date => {
@@ -80,93 +94,157 @@ export function ProductForm({
     });
   }, []);
 
+  const addToCartButton = (
+    <AddToCartButton
+      cart={cart}
+      disabled={
+        !selectedVariant ||
+        !selectedVariant.availableForSale ||
+        VideoAlreadyInCart
+      }
+      onClick={() => {
+        open('cart');
+      }}
+      lines={addToCartLines}
+      replaceExistingLineProductId={isVideo ? productId : undefined}
+    >
+      <div>
+        <div className="add-to-cart-btn-product-name">
+          {selectedVariant?.product?.title}
+        </div>
+        <div className="add-to-cart-btn-variant">
+          {showSelectedVariantTitle ? selectedVariant?.title : ''}
+        </div>
+        {selectedVariant?.availableForSale ? (
+          <div className="add-to-cart-btn-text">
+            Add to cart: ${formattedPrice} &nbsp;
+            {formattedCompareAtPrice != null && (
+              <span className="add-to-cart-btn-compare-at-price">
+                ${formattedCompareAtPrice}
+              </span>
+            )}
+          </div>
+        ) : (
+          'Sold out'
+        )}
+      </div>
+    </AddToCartButton>
+  );
+
   return (
-    <div className="product-form">
+    <div
+      className={`product-form${
+        hasResolutionOption ? ' product-form-has-inline-cart' : ''
+      }`}
+    >
       {productOptions.map((option) => {
         if (option.optionValues.length === 1) return null;
+        const isResolutionOption =
+          option.name.trim().toLowerCase() === 'resolution';
+        const shouldInlineAddToCart = isResolutionOption && hasResolutionOption;
 
         return (
-          <div className="product-options" key={option.name}>
-            <p className="mb-2">
-              <strong>{option.name}:</strong>
-            </p>
-            <div className="product-options-grid">
-              {option.optionValues.map((value) => {
-                const {
-                  name,
-                  handle,
-                  variantUriQuery,
-                  selected,
-                  available,
-                  exists,
-                  isDifferentProduct,
-                  swatch,
-                } = value;
+          <div
+            className={`product-options${
+              shouldInlineAddToCart ? ' product-options-inline-cart' : ''
+            }`}
+            key={option.name}
+          >
+            <div
+              className={
+                shouldInlineAddToCart ? 'product-options-inline-selector' : ''
+              }
+            >
+              <p className="mb-2 product-options-label">
+                <strong>{option.name}:</strong>
+              </p>
+              <div className="product-options-grid">
+                {option.optionValues.map((value) => {
+                  const {
+                    name,
+                    handle,
+                    variantUriQuery,
+                    selected,
+                    available,
+                    exists,
+                    isDifferentProduct,
+                    swatch,
+                  } = value;
 
-                const determineLayout = (name: string) => {
-                  if (name === 'three columns') return '3';
-                  if (name === 'two columns') return '2';
-                  return '';
-                };
+                  const determineLayout = (name: string) => {
+                    if (name === 'three columns') return '3';
+                    if (name === 'two columns') return '2';
+                    return '';
+                  };
 
-                const layoutToCheck = determineLayout(name);
-                const variantImagesToShow = imagesToShow?.filter((image) =>
-                  image?.url?.includes(layoutToCheck),
-                );
-
-                if (isDifferentProduct) {
-                  return (
-                    <Link
-                      className="product-options-item"
-                      key={option.name + name}
-                      prefetch={isPrint ? 'render' : 'intent'}
-                      preventScrollReset
-                      replace
-                      to={`/products/${handle}?${variantUriQuery}`}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </Link>
+                  const layoutToCheck = determineLayout(name);
+                  const variantImagesToShow = imagesToShow?.filter((image) =>
+                    image?.url?.includes(layoutToCheck),
                   );
-                } else {
-                  return (
-                    <button
-                      type="button"
-                      className={`product-options-item${
-                        exists && !selected ? ' link' : ''
-                      }`}
-                      key={option.name + name}
-                      style={{
-                        border: selected
-                          ? '1px solid #0EA5E9'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                      disabled={!exists}
-                      onClick={() => {
-                        if (!selected) {
-                          navigate(`?${variantUriQuery}`, {
-                            replace: true,
-                            preventScrollReset: true,
-                          });
-                        }
-                      }}
-                    >
-                      <ProductOptionSwatch
-                        swatch={swatch}
-                        name={name}
-                        variantImagesToShow={variantImagesToShow}
-                      />
-                    </button>
-                  );
-                }
-              })}
+
+                  if (isDifferentProduct) {
+                    return (
+                      <Link
+                        className="product-options-item"
+                        key={option.name + name}
+                        prefetch={isPrint ? 'render' : 'intent'}
+                        preventScrollReset
+                        replace
+                        to={`/products/${handle}?${variantUriQuery}`}
+                        style={{
+                          border: selected
+                            ? '1px solid black'
+                            : '1px solid transparent',
+                          opacity: available ? 1 : 0.3,
+                        }}
+                      >
+                        <ProductOptionSwatch swatch={swatch} name={name} />
+                      </Link>
+                    );
+                  } else {
+                    return (
+                      <button
+                        type="button"
+                        className={`product-options-item${
+                          exists && !selected ? ' link' : ''
+                        }`}
+                        key={option.name + name}
+                        style={{
+                          border: selected
+                            ? '1px solid #0EA5E9'
+                            : '1px solid transparent',
+                          opacity: available ? 1 : 0.3,
+                        }}
+                        disabled={!exists}
+                        onClick={() => {
+                          if (!selected) {
+                            navigate(`?${variantUriQuery}`, {
+                              replace: true,
+                              preventScrollReset: true,
+                            });
+                          }
+                        }}
+                      >
+                        <ProductOptionSwatch
+                          swatch={swatch}
+                          name={name}
+                          variantImagesToShow={variantImagesToShow}
+                        />
+                      </button>
+                    );
+                  }
+                })}
+              </div>
             </div>
+            {shouldInlineAddToCart && (
+              <div
+                className={`product-options-inline-cart-cta ${
+                  isPrint ? 'individual-a-t-c-print' : 'individual-a-t-c'
+                }`}
+              >
+                {addToCartButton}
+              </div>
+            )}
           </div>
         );
       })}
@@ -179,106 +257,20 @@ export function ProductForm({
               Framing Service - FREE
             </h3>
             <p className="text-center">
-              All prints come professionally stretched over a 1.5" thick wooden
+              All prints come professionally stretched over a 1.5&quot; thick wooden
               frame
             </p>
           </div>
-          <div className="flex individual-a-t-c-print">
-            <AddToCartButton
-              cart={cart}
-              disabled={
-                !selectedVariant ||
-                !selectedVariant.availableForSale ||
-                VideoAlreadyInCart
-              }
-              onClick={() => {
-                open('cart');
-              }}
-              lines={
-                selectedVariant
-                  ? [
-                      {
-                        merchandiseId: selectedVariant.id,
-                        quantity: 1,
-                        selectedVariant,
-                      },
-                    ]
-                  : []
-              }
-            >
-              <div>
-                <div className="add-to-cart-btn-product-name">
-                  {selectedVariant?.product?.title}
-                </div>
-                <div className="add-to-cart-btn-variant">
-                  {showSelectedVariantTitle ? selectedVariant?.title : ''}
-                </div>
-                {selectedVariant?.availableForSale ? (
-                  <div className="add-to-cart-btn-text">
-                    Add to cart: ${formattedPrice} &nbsp;
-                    {formattedCompareAtPrice != null && (
-                      <span className="add-to-cart-btn-compare-at-price">
-                        ${formattedCompareAtPrice}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  'Sold out'
-                )}
-              </div>
-            </AddToCartButton>
-          </div>
+          {!hasResolutionOption && (
+            <div className="flex individual-a-t-c-print">{addToCartButton}</div>
+          )}
         </>
       )}
 
-      {!isPrint && (
-        <div className="flex individual-a-t-c py-3">
-          <AddToCartButton
-            cart={cart}
-            disabled={
-              !selectedVariant ||
-              !selectedVariant.availableForSale ||
-              VideoAlreadyInCart
-            }
-            onClick={() => {
-              open('cart');
-            }}
-            lines={
-              selectedVariant
-                ? [
-                    {
-                      merchandiseId: selectedVariant.id,
-                      quantity: 1,
-                      selectedVariant,
-                    },
-                  ]
-                : []
-            }
-            replaceExistingLineProductId={isVideo ? productId : undefined}
-          >
-            <div>
-              <div className="add-to-cart-btn-product-name">
-                {selectedVariant?.product?.title}
-              </div>
-              <div className="add-to-cart-btn-variant">
-                {showSelectedVariantTitle ? selectedVariant?.title : ''}
-              </div>
-              {selectedVariant?.availableForSale ? (
-                <div className="add-to-cart-btn-text">
-                  Add to cart: ${formattedPrice} &nbsp;
-                  {formattedCompareAtPrice != null && (
-                    <span className="add-to-cart-btn-compare-at-price">
-                      ${formattedCompareAtPrice}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                'Sold out'
-              )}
-            </div>
-          </AddToCartButton>
-        </div>
-      )}
+      {!isPrint &&
+        !hasResolutionOption && (
+          <div className="flex individual-a-t-c py-3">{addToCartButton}</div>
+        )}
 
       {isPrint && (
         <div className="flex justify-center py-2 expected-delivery">
