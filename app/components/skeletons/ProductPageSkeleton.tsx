@@ -277,7 +277,7 @@ export default function ProductPageSkeleton({
           <ProductHeaderSkeleton />
         </div>
 
-        <div className="lg:grid lg:grid-cols-2 lg:gap-x-2">
+        <div className="lg:grid lg:grid-cols-[60%_40%] min-[1600px]:grid-cols-2 lg:gap-x-2">
           <ProductMediaSkeleton isLandscape={isLandscape} />
 
           <div className="hidden lg:block">

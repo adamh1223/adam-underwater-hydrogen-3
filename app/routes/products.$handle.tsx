@@ -1016,6 +1016,23 @@ export default function Product() {
     return () => window.removeEventListener('resize', handleResize);
   });
 
+  const productDetailGridStyle = useMemo(() => {
+    if (windowWidth == null || windowWidth < 1024) return undefined;
+    if (windowWidth >= 1600) {
+      return {
+        gridTemplateColumns: 'minmax(0, 50%) minmax(0, 50%)',
+      };
+    }
+
+    const interpolationProgress = (windowWidth - 1024) / (1600 - 1024);
+    const mediaColumnWidth = 60 - 10 * interpolationProgress;
+    const detailsColumnWidth = 100 - mediaColumnWidth;
+
+    return {
+      gridTemplateColumns: `minmax(0, ${mediaColumnWidth}%) minmax(0, ${detailsColumnWidth}%)`,
+    };
+  }, [windowWidth]);
+
   const data = useRouteLoaderData<RootLoader>('root');
 
   const disableButton = useIsVideoInCart(
@@ -1539,7 +1556,10 @@ export default function Product() {
             </>
           )}
           {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
-          <div className="lg:grid lg:grid-cols-2 lg:gap-x-2">
+          <div
+            className="lg:grid lg:grid-cols-[60%_40%] min-[1600px]:grid-cols-2 lg:gap-x-2"
+            style={productDetailGridStyle}
+          >
             {standardCarouselImages && standardCarouselImages?.length > 1 && (
               <IndividualProduct
                 productName={title}
@@ -1745,7 +1765,7 @@ export default function Product() {
               </div>
             )}
             {windowWidth != undefined && windowWidth >= 1024 && (
-              <div className="product-main px-[35px]">
+              <div className="product-main px-[12px]">
                 {windowWidth && windowWidth >= 1024 && (
                   <>
                     <div className="title-button-wrapper">
