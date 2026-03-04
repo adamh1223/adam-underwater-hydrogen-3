@@ -75,12 +75,35 @@ import {getCustomerReviewLocation} from '~/lib/reviews';
 import ProductPageSkeleton from '~/components/skeletons/ProductPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 
+const DEFAULT_SHARE_IMAGE =
+  'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
+
+function withShopifyCroppedShareImage(
+  imageUrl: string,
+  width: number,
+  height: number,
+): string {
+  try {
+    const url = new URL(imageUrl);
+    if (url.hostname !== 'cdn.shopify.com') return imageUrl;
+
+    url.searchParams.set('width', String(width));
+    url.searchParams.set('height', String(height));
+    url.searchParams.set('crop', 'center');
+    return url.toString();
+  } catch {
+    return imageUrl;
+  }
+}
+
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const siteUrl = (data?.siteUrl ?? 'https://adamunderwater.com').replace(
     /\/$/,
     '',
   );
   const product = data?.product;
+  const productTags = Array.isArray(product?.tags) ? product.tags : [];
+  const isEProduct = productTags.includes('Video');
   const title = `Adam Underwater | ${product?.seo?.title ?? product?.title ?? ''}`;
   const description =
     product?.seo?.description ||
@@ -89,17 +112,21 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   const canonicalUrl = product?.handle
     ? `${siteUrl}/products/${product.handle}`
     : `${siteUrl}/products`;
-  const shareImageSource =
+  const productMainImage =
+    product?.featuredImage?.url ??
     product?.selectedOrFirstAvailableVariant?.image?.url ??
-    product?.featuredImage?.url;
-  const shareImage = shareImageSource
-    ? `${siteUrl}/api/social-image?src=${encodeURIComponent(shareImageSource)}`
-    : 'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
+    '';
+  const shareImage = productMainImage
+    ? isEProduct
+      ? withShopifyCroppedShareImage(productMainImage, 1200, 630)
+      : productMainImage
+    : DEFAULT_SHARE_IMAGE;
 
   return [
     {title},
     {name: 'description', content: description},
     {
+      tagName: 'link',
       rel: 'canonical',
       href: canonicalUrl,
     },
@@ -109,9 +136,12 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     {property: 'og:url', content: canonicalUrl},
     {property: 'og:image', content: shareImage},
     {property: 'og:image:secure_url', content: shareImage},
-    {property: 'og:image:type', content: 'image/png'},
-    {property: 'og:image:width', content: '1200'},
-    {property: 'og:image:height', content: '630'},
+    ...(isEProduct
+      ? [
+          {property: 'og:image:width', content: '1200'},
+          {property: 'og:image:height', content: '630'},
+        ]
+      : []),
     {
       property: 'og:image:alt',
       content: `${product?.title ?? 'Adam Underwater'} product preview`,
