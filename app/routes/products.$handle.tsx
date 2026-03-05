@@ -77,6 +77,103 @@ import {SkeletonGate} from '~/components/skeletons/shared';
 
 const DEFAULT_SHARE_IMAGE =
   'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
+const DEFAULT_R2_PUBLIC_BASE_URL = 'https://downloads.adamunderwater.com';
+const PRINT_TEXT_IMAGE_ASSET_PATH = 'global-assets/shared/prints';
+const PRINT_TEXT_IMAGE_EXTENSIONS = [
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'JPG',
+  'JPEG',
+  'PNG',
+  'WEBP',
+] as const;
+const printTextImageUrlCache = new Map<string, string | null>();
+
+function getR2PublicBaseUrl(env: Env | undefined) {
+  const candidate =
+    env?.R2_PUBLIC_BASE_URL?.trim() || DEFAULT_R2_PUBLIC_BASE_URL;
+  return candidate.replace(/\/+$/, '');
+}
+
+function getPrintProductNumberFromTags(tags: unknown): number | null {
+  if (!Array.isArray(tags)) return null;
+
+  for (const tag of tags) {
+    if (typeof tag !== 'string') continue;
+    const match = tag.trim().match(/^print[-_](\d+)$/i);
+    if (!match?.[1]) continue;
+
+    const parsed = Number.parseInt(match[1], 10);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function buildPrintTextImageUrl(
+  baseUrl: string,
+  productNumber: number,
+  extension: string,
+) {
+  return `${baseUrl}/${PRINT_TEXT_IMAGE_ASSET_PATH}/print${productNumber}-text-image.${extension}`;
+}
+
+async function urlExists(url: string) {
+  try {
+    const response = await fetch(url, {method: 'HEAD'});
+    if (response.ok) return true;
+
+    if (response.status === 405) {
+      const fallbackResponse = await fetch(url, {
+        method: 'GET',
+        headers: {'Range': 'bytes=0-0'},
+      });
+      return fallbackResponse.ok || fallbackResponse.status === 206;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+async function resolvePrintTextImageFromTags(
+  tags: unknown,
+  env: Env | undefined,
+) {
+  if (!Array.isArray(tags)) return null;
+
+  const normalizedTags = tags
+    .filter((tag): tag is string => typeof tag === 'string')
+    .map((tag) => tag.trim());
+  const isPrintProduct =
+    normalizedTags.includes('Prints') && !normalizedTags.includes('Video');
+  if (!isPrintProduct) return null;
+
+  const productNumber = getPrintProductNumberFromTags(normalizedTags);
+  if (!productNumber) return null;
+
+  const baseUrl = getR2PublicBaseUrl(env);
+  const cacheKey = `${baseUrl}|${productNumber}`;
+  if (printTextImageUrlCache.has(cacheKey)) {
+    return printTextImageUrlCache.get(cacheKey) ?? null;
+  }
+
+  for (const extension of PRINT_TEXT_IMAGE_EXTENSIONS) {
+    const candidateUrl = buildPrintTextImageUrl(baseUrl, productNumber, extension);
+    if (await urlExists(candidateUrl)) {
+      printTextImageUrlCache.set(cacheKey, candidateUrl);
+      return candidateUrl;
+    }
+  }
+
+  printTextImageUrlCache.set(cacheKey, null);
+  return null;
+}
 
 function withShopifyCroppedShareImage(
   imageUrl: string,
@@ -116,11 +213,13 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     product?.featuredImage?.url ??
     product?.selectedOrFirstAvailableVariant?.image?.url ??
     '';
-  const shareImage = productMainImage
-    ? isEProduct
-      ? withShopifyCroppedShareImage(productMainImage, 1200, 630)
-      : productMainImage
-    : DEFAULT_SHARE_IMAGE;
+  const shareImage =
+    data?.printTextImageShareImage ??
+    (productMainImage
+      ? isEProduct
+        ? withShopifyCroppedShareImage(productMainImage, 1200, 630)
+        : productMainImage
+      : DEFAULT_SHARE_IMAGE);
 
   return [
     {title},
@@ -584,6 +683,11 @@ async function loadCriticalData({
     }
   }
 
+  const printTextImageShareImage = await resolvePrintTextImageFromTags(
+    product.tags,
+    context.env,
+  );
+
   const reviews = await context.storefront.query(GET_REVIEW_QUERY, {
     variables: {productId: product.id},
   });
@@ -624,6 +728,7 @@ async function loadCriticalData({
     isLoggedIn,
     wishlistProducts,
     cart: cart.get(),
+    printTextImageShareImage,
     siteUrl: context.env.PUBLIC_SITE_URL || 'https://adamunderwater.com',
   };
 }
