@@ -41,17 +41,20 @@ import ProductCarousel from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {useEffect} from 'react';
 import Sectiontitle from '~/components/global/Sectiontitle';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Favorites'}];
+  return buildIconLinkPreviewMeta('Adam Underwater | My Favorites');
 };
 
 export async function loader(args: LoaderFunctionArgs) {
   const {context} = args;
-  await context.customerAccount.handleAuthStatus();
-  // const token = await loadCriticalData(args);
+  const isLoggedIn = await context.customerAccount.isLoggedIn();
+  if (!isLoggedIn) {
+    return {products: [], isLoggedIn};
+  }
+
   const customer = await context.customerAccount.query(CUSTOMER_WISHLIST);
-  const isLoggedIn = context.customerAccount.isLoggedIn();
 
   let wishlistProducts: string[] = [];
   const wishlistValue = customer.data.customer.metafield?.value;
@@ -96,8 +99,16 @@ export async function action({request, context}: ActionFunctionArgs) {
 }
 
 export default function Favorites() {
-  const {customer} = useOutletContext<{customer: CustomerFragment}>();
   const {products, isLoggedIn} = useLoaderData<typeof loader>();
+
+  if (!isLoggedIn) {
+    return (
+      <>
+        <Sectiontitle text="My Favorites" />
+        <p className="text-center mt-3">Sign in to view your favorites.</p>
+      </>
+    );
+  }
 
   return (
     <>
@@ -105,19 +116,6 @@ export default function Favorites() {
       {products?.length ? (
         <div className="prods-grid gap-x-5 favorites-product-grid">
           {products.map((product) => {
-            {
-              product.tags.includes('prints') ? (
-                <div className="flex justify-center pb-2">
-                  Framed Canvas Print:
-                </div>
-              ) : (
-                <div className="flex justify-center pb-2">
-                  {product.tags.includes('Bundle')
-                    ? 'Stock Footage Video Bundle:'
-                    : 'Stock Footage Clip:'}
-                </div>
-              );
-            }
             if (product.tags.includes('Prints')) {
               return (
                 <>

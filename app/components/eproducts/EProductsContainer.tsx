@@ -148,7 +148,7 @@ function EProductsContainer({
   loading?: 'eager' | 'lazy';
   layout: string;
   cart?: Promise<CartReturn | null>;
-  isLoggedIn: Promise<boolean> | undefined;
+  isLoggedIn: Promise<boolean> | boolean | undefined;
   isInWishlist: boolean;
   compactListMaxViewportWidth?: number;
   compactHighlightGlow?: boolean;

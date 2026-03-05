@@ -2,28 +2,55 @@ import {
   data as remixData,
   type LoaderFunctionArgs,
 } from '@shopify/remix-oxygen';
-import {Form, NavLink, Outlet, useLoaderData} from '@remix-run/react';
+import {
+  Form,
+  NavLink,
+  Outlet,
+  useLoaderData,
+  type MetaFunction,
+} from '@remix-run/react';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import {Button} from '~/components/ui/button';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import AccountLayoutSkeleton from '~/components/skeletons/AccountLayoutSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 export function shouldRevalidate() {
   return true;
 }
 
-export async function loader({context}: LoaderFunctionArgs) {
-  const {data, errors} = await context.customerAccount.query(
-    CUSTOMER_DETAILS_QUERY,
-  );
+export const meta: MetaFunction = () => {
+  return buildIconLinkPreviewMeta('Adam Underwater | My Account');
+};
 
-  if (errors?.length || !data?.customer) {
-    throw new Error('Customer not found');
+export async function loader({context}: LoaderFunctionArgs) {
+  const isLoggedIn = await context.customerAccount.isLoggedIn();
+  if (!isLoggedIn) {
+    return remixData(
+      {customer: null},
+      {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      },
+    );
+  }
+
+  let customer = null;
+  try {
+    const {data, errors} = await context.customerAccount.query(
+      CUSTOMER_DETAILS_QUERY,
+    );
+    if (!errors?.length && data?.customer) {
+      customer = data.customer;
+    }
+  } catch {
+    customer = null;
   }
 
   return remixData(
-    {customer: data.customer},
+    {customer},
     {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -57,13 +84,26 @@ export default function AccountLayout() {
       // `Welcome, ${customer.firstName}`
       <>
         <div className="flex justify-center">
-          <img ref={accountImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}} onLoad={handleAccountImgLoad}></img>
+          <img
+            ref={accountImgRef}
+            src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'}
+            alt=""
+            style={{height: '80px'}}
+            onLoad={handleAccountImgLoad}
+          ></img>
         </div>
         <div className="flex justify-center">Welcome, {customer.firstName}</div>
       </>
     ) : (
       <div className="flex justify-center pt-3">
-        <img ref={accountImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'} style={{height: '80px'}} className="" onLoad={handleAccountImgLoad}></img>
+        <img
+          ref={accountImgRef}
+          src={'https://downloads.adamunderwater.com/store-1-au/public/account.png'}
+          alt=""
+          style={{height: '80px'}}
+          className=""
+          onLoad={handleAccountImgLoad}
+        ></img>
       </div>
     )
   ) : (

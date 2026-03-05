@@ -85,6 +85,8 @@ import {SkeletonGate} from '~/components/skeletons/shared';
 
 const DEFAULT_SHARE_IMAGE =
   'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
+const SHARE_CACHE_BUST_VERSION = '2';
+const INTERNAL_SHARE_QUERY_PARAMS = new Set(['_au_meta', '_au_variant']);
 
 function withShopifyCroppedShareImage(
   imageUrl: string,
@@ -104,6 +106,32 @@ function withShopifyCroppedShareImage(
   }
 }
 
+type ShareSelectedOption = {
+  name?: string | null;
+  value?: string | null;
+};
+
+function buildShareProductLabel(
+  productTitle: string | null | undefined,
+  selectedOptions: Array<ShareSelectedOption> | null | undefined,
+): string {
+  const baseTitle =
+    typeof productTitle === 'string' && productTitle.trim().length > 0
+      ? productTitle.trim()
+      : 'Product';
+
+  const variantValues = Array.isArray(selectedOptions)
+    ? selectedOptions
+        .map((option) =>
+          typeof option?.value === 'string' ? option.value.trim() : '',
+        )
+        .filter((value) => value.length > 0)
+        .filter((value) => value.toLowerCase() !== 'default title')
+    : [];
+
+  return [baseTitle, ...variantValues].join(' / ');
+}
+
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const siteUrl = (data?.siteUrl ?? 'https://adamunderwater.com').replace(
     /\/$/,
@@ -112,7 +140,16 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   const product = data?.product;
   const productTags = Array.isArray(product?.tags) ? product.tags : [];
   const isEProduct = productTags.includes('Video');
-  const title = `Adam Underwater | ${product?.seo?.title ?? product?.title ?? ''}`;
+  const selectedOptionsForMeta = (data?.selectedOptions ??
+    product?.selectedOrFirstAvailableVariant?.selectedOptions) as
+    | Array<ShareSelectedOption>
+    | null
+    | undefined;
+  const shareProductLabel = buildShareProductLabel(
+    product?.title,
+    selectedOptionsForMeta,
+  );
+  const title = shareProductLabel;
   const description =
     product?.seo?.description ||
     product?.description ||
@@ -121,6 +158,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     ? `${siteUrl}/products/${product.handle}`
     : `${siteUrl}/products`;
   const ogUrl = data?.currentShareUrl ?? canonicalUrl;
+  const canonicalShareUrl = ogUrl;
   const productMainImage =
     product?.selectedOrFirstAvailableVariant?.image?.url ??
     product?.featuredImage?.url ??
@@ -133,13 +171,14 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
 
   return [
     {title},
+    {name: 'title', content: title},
     {name: 'description', content: description},
     {
       tagName: 'link',
       rel: 'canonical',
-      href: canonicalUrl,
+      href: canonicalShareUrl,
     },
-    {property: 'og:title', content: title},
+    {property: 'og:title', content: shareProductLabel},
     {property: 'og:description', content: description},
     {property: 'og:type', content: 'product'},
     {property: 'og:url', content: ogUrl},
@@ -156,7 +195,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
       content: `${product?.title ?? 'Adam Underwater'} product preview`,
     },
     {name: 'twitter:card', content: 'summary_large_image'},
-    {name: 'twitter:title', content: title},
+    {name: 'twitter:title', content: shareProductLabel},
     {name: 'twitter:description', content: description},
     {name: 'twitter:image', content: shareImage},
     {
@@ -575,10 +614,13 @@ async function loadCriticalData({
 
   const handle = handleParam.toLowerCase();
   const requestUrl = new URL(request.url);
-  const resolvedSiteUrl = (
-    context.env.PUBLIC_SITE_URL || requestUrl.origin
-  ).replace(/\/$/, '');
-  const selectedOptions = getSelectedProductOptions(request);
+  const resolvedSiteUrl = requestUrl.origin.replace(/\/$/, '');
+  const selectedOptions = getSelectedProductOptions(request).filter(
+    (option) =>
+      !INTERNAL_SHARE_QUERY_PARAMS.has(
+        (typeof option?.name === 'string' ? option.name : '').trim(),
+      ),
+  );
   const [{product}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions},
@@ -638,6 +680,7 @@ async function loadCriticalData({
     wishlistProducts,
     cart: cart.get(),
     siteUrl: resolvedSiteUrl,
+    selectedOptions,
     currentShareUrl: `${resolvedSiteUrl}${requestUrl.pathname}${requestUrl.search}`,
   };
 }
@@ -1412,6 +1455,10 @@ export default function Product() {
     /\/$/,
     '',
   );
+  const runtimeShareBaseUrl =
+    typeof window !== 'undefined'
+      ? window.location.origin.replace(/\/$/, '')
+      : normalizedSiteUrl;
   const shareUrl = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const selectedOptions = Array.isArray(selectedVariant?.selectedOptions)
@@ -1425,16 +1472,28 @@ export default function Product() {
       params.set(name, value);
     }
 
+    params.set('_au_meta', SHARE_CACHE_BUST_VERSION);
+    if (typeof selectedVariant?.id === 'string' && selectedVariant.id.length > 0) {
+      params.set('_au_variant', selectedVariant.id);
+    } else {
+      params.delete('_au_variant');
+    }
+
     const query = params.toString();
-    return `${normalizedSiteUrl}${location.pathname}${query ? `?${query}` : ''}`;
+    return `${runtimeShareBaseUrl}${location.pathname}${query ? `?${query}` : ''}`;
   }, [
     location.pathname,
     location.search,
-    normalizedSiteUrl,
+    runtimeShareBaseUrl,
+    selectedVariant?.id,
     selectedVariant?.selectedOptions,
   ]);
-  const shareTitle = `Adam Underwater | ${title}`;
-  const shareText = `Check out "${title}" on Adam Underwater.`;
+  const shareProductLabel = useMemo(
+    () => buildShareProductLabel(title, selectedVariant?.selectedOptions),
+    [title, selectedVariant?.selectedOptions],
+  );
+  const shareTitle = `Adam Underwater | ${shareProductLabel}`;
+  const shareText = `Check out "${shareProductLabel}" on Adam Underwater.`;
 
   const addToFavorites = async () => {
     try {
@@ -1865,7 +1924,7 @@ export default function Product() {
                             </Rating>
                           </div>
                         </div>
-                        <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                        <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                           {formattedAverageRating} (
                           {reviewsCount === 1
                             ? '1 review'
@@ -2002,7 +2061,7 @@ export default function Product() {
                                 </Rating>
                               </div>
                             </div>
-                            <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                            <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                               {formattedAverageRating} (
                               {reviewsCount === 1
                                 ? '1 review'
@@ -2136,7 +2195,7 @@ export default function Product() {
                                 </Rating>
                               </div>
                             </div>
-                            <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                            <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                               {formattedAverageRating} (
                               {reviewsCount === 1
                                 ? '1 review'
@@ -2901,7 +2960,7 @@ export default function Product() {
                         </Rating>
                       </div>
                     </div>
-                    <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                    <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                       {formattedAverageRating} (
                       {reviewsCount === 1
                         ? '1 review'

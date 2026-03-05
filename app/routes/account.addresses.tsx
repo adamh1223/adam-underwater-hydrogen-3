@@ -30,6 +30,7 @@ import {
 import '../styles/routeStyles/addresses.css';
 import {Button} from '~/components/ui/button';
 import Sectiontitle from '~/components/global/Sectiontitle';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 export type ActionResponse = {
   addressId?: string | null;
@@ -41,12 +42,10 @@ export type ActionResponse = {
 };
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Addresses'}];
+  return buildIconLinkPreviewMeta('Adam Underwater | My Addresses');
 };
 
 export async function loader({context}: LoaderFunctionArgs) {
-  await context.customerAccount.handleAuthStatus();
-
   return {};
 }
 
@@ -262,7 +261,17 @@ export async function action({request, context}: ActionFunctionArgs) {
 }
 
 export default function Addresses() {
-  const {customer} = useOutletContext<{customer: CustomerFragment}>();
+  const {customer} = useOutletContext<{customer: CustomerFragment | null}>();
+
+  if (!customer) {
+    return (
+      <>
+        <Sectiontitle text="My Addresses" />
+        <p className="text-center mt-3">Sign in to view your saved addresses.</p>
+      </>
+    );
+  }
+
   const {defaultAddress, addresses} = customer;
 
   return (

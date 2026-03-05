@@ -29,6 +29,7 @@ import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
 import Sectiontitle from '~/components/global/Sectiontitle';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 export type ActionResponse = {
   error: string | null;
@@ -71,12 +72,10 @@ const CUSTOMER_PHONE_UPDATE = `
 ` as const;
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Profile'}];
+  return buildIconLinkPreviewMeta('Adam Underwater | My Profile');
 };
 
 export async function loader({context}: LoaderFunctionArgs) {
-  await context.customerAccount.handleAuthStatus();
-
   return {};
 }
 
@@ -328,7 +327,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 }
 
 export default function AccountProfile() {
-  const {customer} = useOutletContext<{customer: CustomerFragment}>();
+  const {customer} = useOutletContext<{customer: CustomerFragment | null}>();
   const navigation = useNavigation();
   const {state} = navigation;
   const action = useActionData<ActionResponse>();
@@ -424,6 +423,15 @@ export default function AccountProfile() {
       shouldToastOnSuccessRef.current = false;
     }
   }, [action, navigation.state]);
+
+  if (!customer) {
+    return (
+      <>
+        <Sectiontitle text="My Profile" />
+        <p className="text-center mt-3">Sign in to view your profile details.</p>
+      </>
+    );
+  }
 
   return (
     <>

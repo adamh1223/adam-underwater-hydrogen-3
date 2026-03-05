@@ -10,6 +10,7 @@ import Sectiontitle from '~/components/global/Sectiontitle';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {ProductCarousel} from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 const ORDER_LINE_ITEM_VARIANT_DETAILS_QUERY = `#graphql
   query OrderLineItemVariantDetails($id: ID!) {
@@ -92,7 +93,13 @@ const ACCOUNT_LOGGED_IN_PROMISE = Promise.resolve(true);
 type LineItemSelectedOption = {name: string; value: string};
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Order ${data?.order?.name}`}];
+  const orderName =
+    typeof data?.order?.name === 'string' ? data.order.name.trim() : '';
+  return buildIconLinkPreviewMeta(
+    orderName
+      ? `Adam Underwater | Order ${orderName}`
+      : 'Adam Underwater | My Orders',
+  );
 };
 
 export async function loader({params, context}: LoaderFunctionArgs) {

@@ -11,6 +11,7 @@ import Sectiontitle from '~/components/global/Sectiontitle';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {getCustomerReviewLocation} from '~/lib/reviews';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 const CUSTOMER_REVIEWS_QUERY = `#graphql
   query CustomerReviews($country: CountryCode, $language: LanguageCode)
@@ -46,11 +47,14 @@ const CUSTOMER_REVIEWS_QUERY = `#graphql
 `;
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Reviews'}];
+  return buildIconLinkPreviewMeta('Adam Underwater | My Reviews');
 };
 
 export async function loader({context}: LoaderFunctionArgs) {
-  await context.customerAccount.handleAuthStatus();
+  const isLoggedIn = await context.customerAccount.isLoggedIn();
+  if (!isLoggedIn) {
+    return {products: [], customer: null, wishlistProducts: [], isLoggedIn};
+  }
 
   const [productsResponse, customerResponse, wishlistResponse] =
     await Promise.all([
@@ -71,15 +75,22 @@ export async function loader({context}: LoaderFunctionArgs) {
   } catch (error) {
     console.error('Unable to parse wishlist', error);
   }
-  const isLoggedIn = context.customerAccount.isLoggedIn();
-
   return {products, customer, wishlistProducts, isLoggedIn};
 }
 
 export default function AccountReviewsRoute() {
   const {products, customer, wishlistProducts, isLoggedIn} =
     useLoaderData<typeof loader>();
-  const outletContext = useOutletContext<{customer: CustomerFragment}>();
+  const outletContext = useOutletContext<{customer: CustomerFragment | null}>();
+
+  if (!isLoggedIn) {
+    return (
+      <div className="account-reviews space-y-3">
+        <Sectiontitle text="My Reviews" />
+        <p className="text-center mt-3">Sign in to view your reviews.</p>
+      </div>
+    );
+  }
 
   const resolvedCustomer = customer ?? outletContext.customer;
   

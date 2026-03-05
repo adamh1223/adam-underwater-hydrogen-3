@@ -6,6 +6,7 @@ import {Button} from '~/components/ui/button';
 import {useEffect, useRef, useState} from 'react';
 import PolicyPageSkeleton from '~/components/skeletons/PolicyPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 type SelectedPolicies = keyof Pick<
   Shop,
@@ -13,7 +14,13 @@ type SelectedPolicies = keyof Pick<
 >;
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Adam Underwater | ${data?.policy.title ?? ''}`}];
+  const policyTitle =
+    typeof data?.policy?.title === 'string' ? data.policy.title.trim() : '';
+  return buildIconLinkPreviewMeta(
+    policyTitle
+      ? `Adam Underwater | ${policyTitle}`
+      : 'Adam Underwater | Policies',
+  );
 };
 
 export async function loader({params, context}: LoaderFunctionArgs) {

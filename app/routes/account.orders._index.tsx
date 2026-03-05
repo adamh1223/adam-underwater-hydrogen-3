@@ -26,12 +26,18 @@ import {
 } from '~/components/ui/card';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Orders'}];
+  return buildIconLinkPreviewMeta('Adam Underwater | My Orders');
 };
 
 export async function loader({request, context}: LoaderFunctionArgs) {
+  const isLoggedIn = await context.customerAccount.isLoggedIn();
+  if (!isLoggedIn) {
+    return {customer: null, isLoggedIn};
+  }
+
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 20,
   });
@@ -47,15 +53,30 @@ export async function loader({request, context}: LoaderFunctionArgs) {
   
 
   if (errors?.length || !data?.customer) {
-    throw Error('Customer orders not found');
+    return {customer: null, isLoggedIn};
   }
 
-  return {customer: data.customer};
+  return {customer: data.customer, isLoggedIn};
 }
 
 export default function Orders() {
-  const {customer} = useLoaderData<{customer: CustomerOrdersFragment}>();
-  const {orders} = customer;
+  const {customer, isLoggedIn} = useLoaderData<{
+    customer: CustomerOrdersFragment | null;
+    isLoggedIn: boolean;
+  }>();
+  const orders = customer?.orders;
+
+  if (!isLoggedIn || !orders) {
+    return (
+      <>
+        <Sectiontitle text="My Orders" />
+        <section className="orders flex justify-center pt-3">
+          <p className="text-center">Sign in to view your orders.</p>
+        </section>
+      </>
+    );
+  }
+
   return (
     <>
     <Sectiontitle text="My Orders" />

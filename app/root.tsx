@@ -4,6 +4,7 @@ import {
   Outlet,
   useRouteError,
   isRouteErrorResponse,
+  type MetaFunction,
   type ShouldRevalidateFunction,
 } from '@remix-run/react';
 
@@ -12,6 +13,86 @@ import {CUSTOMER_WISHLIST} from './lib/customerQueries';
 import {ADMIN_CUSTOMER_ID} from '~/lib/admin';
 
 export type RootLoader = typeof loader;
+
+const DEFAULT_LINK_PREVIEW_ICON =
+  'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
+
+function humanizePathname(pathname: string): string {
+  if (pathname === '/') return 'Home';
+  const segments = pathname
+    .split('/')
+    .filter(Boolean)
+    .map((segment) =>
+      segment
+        .replace(/[-_]+/g, ' ')
+        .replace(/\$/g, '')
+        .replace(/\b\w/g, (char) => char.toUpperCase()),
+    );
+
+  if ((segments[0] ?? '').toLowerCase() === 'pages') {
+    segments.shift();
+  }
+
+  return segments.length ? segments.join(' / ') : 'Home';
+}
+
+function getLastMetaString(
+  matches: Array<{meta?: Array<Record<string, unknown>>}>,
+  extractor: (descriptor: Record<string, unknown>) => unknown,
+): string | undefined {
+  for (let i = matches.length - 1; i >= 0; i -= 1) {
+    const descriptors = Array.isArray(matches[i]?.meta) ? matches[i].meta : [];
+    for (let j = descriptors.length - 1; j >= 0; j -= 1) {
+      const candidate = extractor(descriptors[j] ?? {});
+      if (typeof candidate === 'string' && candidate.trim().length > 0) {
+        return candidate.trim();
+      }
+    }
+  }
+  return undefined;
+}
+
+export const meta: MetaFunction = ({matches, location}) => {
+  const isProductDetailPath = /^\/products\/[^/]+\/?$/.test(location.pathname);
+  if (isProductDetailPath) {
+    return [];
+  }
+
+  const pageTitle =
+    getLastMetaString(
+      matches as Array<{meta?: Array<Record<string, unknown>>}>,
+      (descriptor) => descriptor.title,
+    ) ?? `Adam Underwater | ${humanizePathname(location.pathname)}`;
+
+  const description =
+    getLastMetaString(
+      matches as Array<{meta?: Array<Record<string, unknown>>}>,
+      (descriptor) =>
+        descriptor.name === 'description' ? descriptor.content : undefined,
+    ) ??
+    getLastMetaString(
+      matches as Array<{meta?: Array<Record<string, unknown>>}>,
+      (descriptor) =>
+        descriptor.property === 'og:description'
+          ? descriptor.content
+          : undefined,
+    );
+
+  return [
+    {name: 'title', content: pageTitle},
+    {property: 'og:type', content: 'website'},
+    {property: 'og:title', content: pageTitle},
+    ...(description ? [{property: 'og:description', content: description}] : []),
+    {property: 'og:image', content: DEFAULT_LINK_PREVIEW_ICON},
+    {property: 'og:image:secure_url', content: DEFAULT_LINK_PREVIEW_ICON},
+    {property: 'og:image:alt', content: 'Adam Underwater icon preview'},
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: pageTitle},
+    ...(description ? [{name: 'twitter:description', content: description}] : []),
+    {name: 'twitter:image', content: DEFAULT_LINK_PREVIEW_ICON},
+    {name: 'twitter:image:alt', content: 'Adam Underwater icon preview'},
+  ];
+};
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations

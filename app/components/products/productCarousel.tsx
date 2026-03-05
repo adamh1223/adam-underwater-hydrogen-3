@@ -80,7 +80,7 @@ export const ProductCarousel = ({
   loading?: 'eager' | 'lazy';
   layout?: string;
   isInWishlist: boolean;
-  isLoggedIn: Promise<boolean> | undefined;
+  isLoggedIn: Promise<boolean> | boolean | undefined;
   compactHighlightGlow?: boolean;
   disableFocusWithinHighlight?: boolean;
 }) => {

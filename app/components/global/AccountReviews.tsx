@@ -16,7 +16,7 @@ interface AccountReviewsProps {
   customerState?: string;
   customerCountry?: string;
   wishlistProducts?: string[];
-  isLoggedIn?: Promise<boolean> | undefined;
+  isLoggedIn?: Promise<boolean> | boolean | undefined;
 }
 
 interface ProductReviewSource {
