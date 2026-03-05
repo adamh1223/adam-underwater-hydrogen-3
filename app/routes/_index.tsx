@@ -30,7 +30,7 @@ import {useEntranceSkeletonReady} from '~/components/skeletons/shared';
 export const meta: MetaFunction = () => {
   const title = 'Adam Underwater | Underwater Video & Photo';
   const description =
-    'Underwater video and photo services. Shop underwater wall art and premium stock footage by Adam Hussain.';
+    'Underwater video and photo services. Shop underwater wall art and premium stock footage.';
   const shareImage =
     'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
 

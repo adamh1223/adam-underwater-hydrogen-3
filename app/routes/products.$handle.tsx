@@ -153,7 +153,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   const description =
     product?.seo?.description ||
     product?.description ||
-    'Premium underwater wall art and stock footage by Adam Hussain.';
+    'Premium underwater wall art and stock footage.';
   const canonicalUrl = product?.handle
     ? `${siteUrl}/products/${product.handle}`
     : `${siteUrl}/products`;

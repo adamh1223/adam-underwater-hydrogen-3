@@ -219,7 +219,7 @@ function SearchResultsPredictiveProducts({
           return (
             <React.Fragment key={product.id}>
               {showProductHeader && (
-                <div className="m-5">
+                <div className="mx-2">
                   <div className="flex justify-center pb-2">
                     Framed Canvas Print:
                   </div>
@@ -247,7 +247,7 @@ function SearchResultsPredictiveProducts({
           return (
             <React.Fragment key={product.id}>
               {showProductHeader && (
-                <div className="mx-5 mb-5">
+                <div className="mx-2 mb-2">
                   <div className="flex justify-center pb-2">
                     {isBundle
                       ? 'Stock Footage Video Bundle:'
