@@ -60,9 +60,12 @@ button[aria-label^='Go to slide'] {
     transition: transform 200ms ease-in-out;
     transform: translateX(100%);
     overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
     overscroll-behavior: contain;
     padding-top: var(--aside-top);
     z-index: 200;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
   }
 }
@@ -81,9 +84,12 @@ button[aria-label^='Go to slide'] {
     transition: transform 200ms ease-in-out;
     transform: translateX(100%);
     overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
     overscroll-behavior: contain;
     padding-top: var(--aside-top);
     z-index: 200;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
   }
 }
@@ -103,11 +109,20 @@ button[aria-label^='Go to slide'] {
     transition: transform 200ms ease-in-out;
     transform: translateX(100%);
     overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
     overscroll-behavior: contain;
     padding-top: var(--aside-top);
     z-index: 200;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+aside > div,
+aside main {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 aside header {
@@ -469,8 +484,7 @@ button.reset:hover:not(:has(> *)) {
 
 .predictive-search-form {
   background: var(--color-light);
-  position: sticky;
-  top: 0;
+  position: static;
 }
 
 .predictive-search-result {
