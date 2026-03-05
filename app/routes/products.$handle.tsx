@@ -1829,12 +1829,12 @@ export default function Product() {
                   <a
                     href="#reviews"
                     onClick={(evt) => handleScroll('reviews', evt)}
-                    className="no-underline text-inherit"
+                    className="inline-block no-underline text-inherit w-fit"
                   >
-                    <div className="average-product-rating">
-                      <div className="flex items-center gap-2">
+                    <div className="average-product-rating inline-flex">
+                      <div className="inline-flex items-center gap-2">
                         <div
-                          className="relative flex items-center"
+                          className="relative inline-flex h-5 items-center pointer-events-none"
                           aria-hidden="true"
                         >
                           <Rating
@@ -1846,7 +1846,7 @@ export default function Product() {
                             {FIVE_STAR_KEYS.map((starKey) => (
                               <RatingButton
                                 key={`mobile-max-${starKey}`}
-                                className="h-5 w-5 p-0.5"
+                                className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                               />
                             ))}
                           </Rating>
@@ -1858,14 +1858,14 @@ export default function Product() {
                               {FIVE_STAR_KEYS.map((starKey) => (
                                 <RatingButton
                                   key={`mobile-fill-${starKey}`}
-                                  className="h-5 w-5 p-0.5"
+                                  className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                                   aria-label={`Average rating ${formattedAverageRating} out of 5`}
                                 />
                               ))}
                             </Rating>
                           </div>
                         </div>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                           {formattedAverageRating} (
                           {reviewsCount === 1
                             ? '1 review'
@@ -1964,12 +1964,12 @@ export default function Product() {
                       <a
                         href="#reviews"
                         onClick={(evt) => handleScroll('reviews', evt)}
-                        className="no-underline text-inherit"
+                        className="inline-block no-underline text-inherit w-fit"
                       >
-                        <div className="average-product-rating">
-                          <div className="flex items-center gap-2">
+                        <div className="average-product-rating inline-flex">
+                          <div className="inline-flex items-center gap-2">
                             <div
-                              className="relative flex items-center"
+                              className="relative inline-flex h-5 items-center pointer-events-none"
                               aria-hidden="true"
                             >
                               <Rating
@@ -1981,7 +1981,7 @@ export default function Product() {
                                 {FIVE_STAR_KEYS.map((starKey) => (
                                   <RatingButton
                                     key={`desktop-max-${starKey}`}
-                                    className="h-5 w-5 p-0.5"
+                                    className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                                   />
                                 ))}
                               </Rating>
@@ -1995,14 +1995,14 @@ export default function Product() {
                                   {FIVE_STAR_KEYS.map((starKey) => (
                                     <RatingButton
                                       key={`desktop-fill-${starKey}`}
-                                      className="h-5 w-5 p-0.5"
+                                      className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                                       aria-label={`Average rating ${formattedAverageRating} out of 5`}
                                     />
                                   ))}
                                 </Rating>
                               </div>
                             </div>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                               {formattedAverageRating} (
                               {reviewsCount === 1
                                 ? '1 review'
@@ -2098,12 +2098,12 @@ export default function Product() {
                       <a
                         href="#reviews"
                         onClick={(evt) => handleScroll('reviews', evt)}
-                        className="no-underline text-inherit"
+                        className="inline-block no-underline text-inherit w-fit"
                       >
-                        <div className="average-product-rating">
-                          <div className="flex items-center gap-2">
+                        <div className="average-product-rating inline-flex">
+                          <div className="inline-flex items-center gap-2">
                             <div
-                              className="relative flex items-center"
+                              className="relative inline-flex h-5 items-center pointer-events-none"
                               aria-hidden="true"
                             >
                               <Rating
@@ -2115,7 +2115,7 @@ export default function Product() {
                                 {FIVE_STAR_KEYS.map((starKey) => (
                                   <RatingButton
                                     key={`desktop-max-${starKey}`}
-                                    className="h-5 w-5 p-0.5"
+                                    className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                                   />
                                 ))}
                               </Rating>
@@ -2129,14 +2129,14 @@ export default function Product() {
                                   {FIVE_STAR_KEYS.map((starKey) => (
                                     <RatingButton
                                       key={`desktop-fill-${starKey}`}
-                                      className="h-5 w-5 p-0.5"
+                                      className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                                       aria-label={`Average rating ${formattedAverageRating} out of 5`}
                                     />
                                   ))}
                                 </Rating>
                               </div>
                             </div>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                               {formattedAverageRating} (
                               {reviewsCount === 1
                                 ? '1 review'
@@ -2870,7 +2870,7 @@ export default function Product() {
                 <div className="average-product-rating">
                   <div className="flex items-center gap-2">
                     <div
-                      className="relative flex items-center"
+                      className="relative inline-flex h-5 items-center"
                       aria-hidden="true"
                     >
                       <Rating
@@ -2882,7 +2882,7 @@ export default function Product() {
                         {FIVE_STAR_KEYS.map((starKey) => (
                           <RatingButton
                             key={`reviews-max-${starKey}`}
-                            className="h-5 w-5 p-0.5"
+                            className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                           />
                         ))}
                       </Rating>
@@ -2894,14 +2894,14 @@ export default function Product() {
                           {FIVE_STAR_KEYS.map((starKey) => (
                             <RatingButton
                               key={`reviews-fill-${starKey}`}
-                              className="h-5 w-5 p-0.5"
+                              className="h-5 w-5 p-0 flex items-center justify-center leading-none"
                               aria-label={`Average rating ${formattedAverageRating} out of 5`}
                             />
                           ))}
                         </Rating>
                       </div>
                     </div>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="relative top-[3px] inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
                       {formattedAverageRating} (
                       {reviewsCount === 1
                         ? '1 review'
