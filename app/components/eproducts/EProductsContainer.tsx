@@ -749,7 +749,7 @@ function EProductsContainer({
                           ]}
                           disabled={disableButton}
                           onClick={() => {
-                            open('cart');
+                            open('cart', 'eproducts-grid-add-to-cart-primary');
                           }}
                           replaceExistingLineProductId={product.id}
                         >
@@ -888,7 +888,7 @@ function EProductsContainer({
                             ]}
                             disabled={disableButton}
                             onClick={() => {
-                              open('cart');
+                              open('cart', 'eproducts-grid-add-to-cart-compact');
                             }}
                             replaceExistingLineProductId={product.id}
                           >
@@ -1163,7 +1163,7 @@ function EProductsContainer({
                         ]}
                         disabled={disableButton}
                         onClick={() => {
-                          open('cart');
+                          open('cart', 'eproducts-list-add-to-cart-compact');
                         }}
                         replaceExistingLineProductId={product.id}
                       >
@@ -1448,7 +1448,7 @@ function EProductsContainer({
                           ]}
                           disabled={disableButton}
                           onClick={() => {
-                            open('cart');
+                            open('cart', 'eproducts-list-add-to-cart-expanded');
                           }}
                           replaceExistingLineProductId={product.id}
                         >

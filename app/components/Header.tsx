@@ -28,6 +28,7 @@ import '../components/navbar/styles/Navbar.css';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
+import {emitAsideDebug} from '~/lib/asideDebugClient';
 import {ChevronUp, Divide} from 'lucide-react';
 import {log} from 'util';
 import { RootLoader } from '~/root';
@@ -1060,7 +1061,7 @@ function HeaderMenuMobileToggle() {
   return (
     <button
       className="header-menu-mobile-toggle reset"
-      onClick={() => open('mobile')}
+      onClick={() => open('mobile', 'header-mobile-toggle')}
     >
       <h3>☰</h3>
     </button>
@@ -1073,7 +1074,7 @@ function SearchToggle() {
     <button
       
       className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-2 py-2"
-      onClick={() => open('search')}
+      onClick={() => open('search', 'header-search-toggle')}
     >
       <LuSearch></LuSearch>
     </button>
@@ -1085,19 +1086,39 @@ function CartBadge({count}: {count: number | null}) {
   const navigate = useNavigate();
   const {publish, shop, cart, prevCart} = useAnalytics();
   const mobileActivationGuard = useMobileActivationGuard();
+  const CART_ACTIVATION_TARGET = 'header-cart-toggle';
+  const logAsideDebug = (event: string, details: Record<string, unknown>) => {
+    emitAsideDebug({
+      event,
+      details,
+      source: typeof details?.source === 'string' ? details.source : undefined,
+    });
+  };
   return (
     <div>
       <button
+        {...mobileActivationGuard.getActivationTargetProps(
+          CART_ACTIVATION_TARGET,
+        )}
         data-aside-toggle="cart"
         // href="/cart"
         className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-2 py-2"
         onPointerEnter={(e) => {
           // Prevent "random" cart opens on mobile where touch can trigger mouse
           // hover events. Only open on true mouse hover.
-          if (e.pointerType === 'mouse') open('cart');
+          if (e.pointerType === 'mouse') open('cart', 'header-cart-hover');
         }}
         onClick={(e) => {
-          if (mobileActivationGuard.shouldSuppressActivation()) {
+          const activationDecision = mobileActivationGuard.getActivationDecision(
+            CART_ACTIVATION_TARGET,
+          );
+          if (activationDecision.suppress) {
+            logAsideDebug('cart-open-suppressed', {
+              source: 'header-cart-click',
+              decision: activationDecision.reason,
+              activeType,
+              ...activationDecision,
+            });
             e.preventDefault();
             e.stopPropagation();
             return;
@@ -1117,7 +1138,12 @@ function CartBadge({count}: {count: number | null}) {
             return;
           }
 
-          open('cart');
+          logAsideDebug('cart-open-allowed', {
+            source: 'header-cart-click',
+            activeType,
+            ...activationDecision,
+          });
+          open('cart', 'header-cart-click');
         }}
       >
         <div>

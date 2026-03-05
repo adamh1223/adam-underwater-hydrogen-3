@@ -664,7 +664,7 @@ export const ProductCarousel = ({
               )}
             </Carousel>
             {totalItems > 1 && layout === 'grid' && (
-              <div className="carousel-preview-dots-grid absolute bottom-[-15px] left-0 right-0 z-40 pointer-events-none flex items-end justify-center gap-3 h-32 pt-[28px]">
+              <div className="carousel-preview-dots-grid absolute bottom-[-12px] left-0 right-0 z-40 pointer-events-none flex items-end justify-center gap-3 h-32 pt-[28px]">
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}

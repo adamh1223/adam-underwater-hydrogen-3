@@ -103,7 +103,7 @@ export function ProductForm({
         VideoAlreadyInCart
       }
       onClick={() => {
-        open('cart');
+        open('cart', 'product-form-add-to-cart');
       }}
       lines={addToCartLines}
       replaceExistingLineProductId={isVideo ? productId : undefined}

@@ -7,11 +7,12 @@ import {
   useRef,
   useState,
 } from 'react';
+import {emitAsideDebug} from '~/lib/asideDebugClient';
 
 type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
 type AsideContextValue = {
   type: AsideType;
-  open: (mode: AsideType) => void;
+  open: (mode: AsideType, source?: string) => void;
   close: () => void;
 };
 
@@ -209,16 +210,42 @@ function AsideTopOffsetSync() {
 Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const location = useLocation();
   const [type, setType] = useState<AsideType>('closed');
+  const logAsideDebug = (event: string, details: Record<string, unknown>) => {
+    const sourceFromDetails =
+      typeof details?.source === 'string' ? details.source : undefined;
+    emitAsideDebug({
+      event,
+      details,
+      route: location.pathname,
+      activeType: type,
+      source: sourceFromDetails,
+    });
+  };
 
   return (
     <AsideContext.Provider
       value={{
         type,
-        open: (mode) => {
-          if (location.pathname === '/cart' && mode === 'cart') return;
+        open: (mode, source = 'unspecified') => {
+          if (location.pathname === '/cart' && mode === 'cart') {
+            logAsideDebug('open-blocked', {mode, source});
+            return;
+          }
+          const cartOpenCallStack =
+            mode === 'cart'
+              ? new Error()
+                  .stack?.split('\n')
+                  .slice(1, 7)
+                  .map((line) => line.trim())
+                  .join(' | ')
+              : undefined;
+          logAsideDebug('open', {mode, source, cartOpenCallStack});
           setType(mode);
         },
-        close: () => setType('closed'),
+        close: () => {
+          logAsideDebug('close', {mode: type});
+          setType('closed');
+        },
       }}
     >
       <AsideTopOffsetSync />
