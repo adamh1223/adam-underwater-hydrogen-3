@@ -62,9 +62,90 @@ import RecommendedProducts from '~/components/products/recommendedProducts';
 import CollectionPageSkeleton from '~/components/skeletons/CollectionPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
+import {DEFAULT_LINK_PREVIEW_ICON} from '~/lib/linkPreview';
+
 export const meta: MetaFunction<typeof loader> = ({data}) => {
+  const collection = data?.collection as
+    | {
+        handle?: string | null;
+        title?: string | null;
+        description?: string | null;
+        image?: {url?: string | null} | null;
+        products?: {nodes?: Array<Record<string, any>>} | null;
+      }
+    | undefined;
+  const collectionHandle = collection?.handle?.toLowerCase() ?? '';
+  const collectionProducts = Array.isArray(collection?.products?.nodes)
+    ? collection.products.nodes
+    : [];
+
+  const productPreviewImage = (product: Record<string, any> | undefined) =>
+    product?.selectedOrFirstAvailableVariant?.image?.url ??
+    product?.featuredImage?.url ??
+    product?.images?.nodes?.[0]?.url ??
+    '';
+
+  const printOneProduct =
+    collectionHandle === 'prints'
+      ? collectionProducts.find((product) =>
+          Array.isArray(product?.tags)
+            ? product.tags.some(
+                (tag: unknown) =>
+                  typeof tag === 'string' && /^print[-_]1$/i.test(tag.trim()),
+              )
+            : false,
+        )
+      : undefined;
+
+  const shareImage =
+    (collectionHandle === 'prints'
+      ? productPreviewImage(printOneProduct as Record<string, any> | undefined)
+      : '') ||
+    collection?.image?.url ||
+    productPreviewImage(collectionProducts[0]) ||
+    DEFAULT_LINK_PREVIEW_ICON;
+
+  const title =
+    collectionHandle === 'stock'
+      ? 'Adam Underwater | Stock Footage'
+      : collectionHandle === 'prints'
+        ? 'Adam Underwater | Prints'
+        : `Adam Underwater | ${collection?.title ?? ''} Collection`;
+  const description =
+    collection?.description?.trim() ||
+    'Explore Adam Underwater collections.';
+  const canonicalUrl =
+    data?.currentShareUrl ??
+    data?.canonicalCollectionUrl ??
+    'https://adamunderwater.com/collections';
+
   return [
-    {title: `Adam Underwater | ${data?.collection?.title ?? ''} Collection`},
+    {title},
+    {name: 'title', content: title},
+    {name: 'description', content: description},
+    {
+      tagName: 'link',
+      rel: 'canonical',
+      href: canonicalUrl,
+    },
+    {property: 'og:type', content: 'website'},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:url', content: canonicalUrl},
+    {property: 'og:image', content: shareImage},
+    {property: 'og:image:secure_url', content: shareImage},
+    {
+      property: 'og:image:alt',
+      content: `${collection?.title ?? 'Collection'} preview image`,
+    },
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+    {name: 'twitter:image', content: shareImage},
+    {
+      name: 'twitter:image:alt',
+      content: `${collection?.title ?? 'Collection'} preview image`,
+    },
   ];
 };
 
@@ -161,6 +242,8 @@ async function loadCriticalData({
     collection,
     searchTerm,
     cart: cart.get(),
+    canonicalCollectionUrl: `${url.origin}/collections/${handle}`,
+    currentShareUrl: `${url.origin}${url.pathname}${url.search}`,
   };
 }
 
@@ -1851,6 +1934,12 @@ const COLLECTION_QUERY = `#graphql
       handle
       title
       description
+      image {
+        url
+        altText
+        width
+        height
+      }
       products(
         first: $first,
         last: $last,
