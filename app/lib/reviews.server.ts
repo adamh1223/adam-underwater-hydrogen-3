@@ -8,15 +8,13 @@ import {
 type CustomerNode = {
   id?: string | null;
   defaultAddress?: {
-    zoneCode?: string | null;
-    territoryCode?: string | null;
+    provinceCode?: string | null;
+    countryCodeV2?: string | null;
   } | null;
-  addresses?: {
-    nodes?: Array<{
-      zoneCode?: string | null;
-      territoryCode?: string | null;
-    } | null> | null;
-  } | null;
+  addresses?: Array<{
+    provinceCode?: string | null;
+    countryCodeV2?: string | null;
+  } | null> | null;
 } | null;
 
 const REVIEW_LOCATION_CUSTOMERS_QUERY = `#graphql
@@ -25,14 +23,12 @@ const REVIEW_LOCATION_CUSTOMERS_QUERY = `#graphql
       ... on Customer {
         id
         defaultAddress {
-          zoneCode
-          territoryCode
+          provinceCode
+          countryCodeV2
         }
-        addresses(first: 6) {
-          nodes {
-            zoneCode
-            territoryCode
-          }
+        addresses {
+          provinceCode
+          countryCodeV2
         }
       }
     }

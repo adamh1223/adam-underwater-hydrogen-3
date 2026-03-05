@@ -257,6 +257,14 @@
   max-width: calc(100% - 24px);
 }
 
+/* Search page (Product = All) mid-range portrait prints need a little more
+ * height than the default stepped grid width.
+ */
+.search-page-all-print-image-vertical-mid {
+  width: 14rem;
+  max-width: calc(100% - 20px);
+}
+
 .aside-search-print-image-horizontal {
   max-width: calc(100% - 8px);
 }

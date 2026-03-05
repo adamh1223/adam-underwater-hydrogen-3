@@ -141,6 +141,7 @@ function EProductsContainer({
   compactHighlightGlow = false,
   forceCardPreviewViewportAutoplay = false,
   disableFocusWithinHighlight = false,
+  renderContext = 'default',
 }: {
   product: ProductItemFragment & {images: {nodes: shopifyImage[]}} & {
     selectedOrFirstAvailableVariant?: {id: string};
@@ -154,6 +155,7 @@ function EProductsContainer({
   compactHighlightGlow?: boolean;
   forceCardPreviewViewportAutoplay?: boolean;
   disableFocusWithinHighlight?: boolean;
+  renderContext?: 'default' | 'aside-search' | 'search-page-all';
 }) {
   const location = useLocation();
   const shouldDisableFocusWithinHighlight =
@@ -318,20 +320,33 @@ function EProductsContainer({
   const shouldRenderListDescription = false;
   const compactListUpperBound = compactListMaxViewportWidth ?? 600;
   const expandedListLowerBound = compactListUpperBound + 1;
+  const isSearchPageAll = renderContext === 'search-page-all';
+  const isSearchPageAllMidRange =
+    windowWidth != undefined && windowWidth >= 778 && windowWidth <= 912;
+  const shouldForceCompactInSearchPageAll =
+    isSearchPageAll && isSearchPageAllMidRange;
   const shouldRenderListBottomCard =
     layout !== 'grid' &&
     windowWidth != undefined &&
-    (windowWidth <= compactListUpperBound || windowWidth >= 913);
+    (windowWidth <= compactListUpperBound ||
+      windowWidth >= 913 ||
+      shouldForceCompactInSearchPageAll);
   const shouldRenderListCompactRange =
     layout === 'list' &&
     windowWidth != undefined &&
-    (windowWidth <= compactListUpperBound || windowWidth >= 913);
+    (windowWidth <= compactListUpperBound ||
+      windowWidth >= 913 ||
+      shouldForceCompactInSearchPageAll);
   const shouldRenderListExpandedRange =
     layout === 'list' &&
     windowWidth != undefined &&
+    !shouldForceCompactInSearchPageAll &&
     windowWidth >= expandedListLowerBound &&
     windowWidth <= 912;
-  const isGridCompact = windowWidth != undefined && windowWidth <= 600;
+  const isGridCompact =
+    windowWidth != undefined &&
+    (windowWidth <= 600 ||
+      (layout === 'grid' && shouldForceCompactInSearchPageAll));
   const listRangeCardClassName =
     layout === 'list'
       ? shouldRenderListCompactRange

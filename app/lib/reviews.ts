@@ -66,13 +66,14 @@ const US_STATE_NAMES: Record<string, string> = {
 type ReviewAddressLike = {
   zoneCode?: string | null;
   territoryCode?: string | null;
+  provinceCode?: string | null;
+  countryCode?: string | null;
+  countryCodeV2?: string | null;
 } | null;
 
 type ReviewCustomerLike = {
   defaultAddress?: ReviewAddressLike;
-  addresses?: {
-    nodes?: ReviewAddressLike[] | null;
-  } | null;
+  addresses?: ReviewAddressLike[] | {nodes?: ReviewAddressLike[] | null} | null;
 } | null;
 
 function normalizeReviewLocationPart(value?: string | null) {
@@ -119,15 +120,25 @@ function formatReviewState(state?: string | null, country?: string | null) {
 export function getCustomerReviewLocation(
   customer?: ReviewCustomerLike,
 ): ReviewLocationFields {
+  const getAddressState = (address?: ReviewAddressLike) =>
+    normalizeReviewLocationPart(address?.zoneCode ?? address?.provinceCode);
+  const getAddressCountry = (address?: ReviewAddressLike) =>
+    normalizeReviewLocationPart(
+      address?.territoryCode ?? address?.countryCodeV2 ?? address?.countryCode,
+    );
+
+  const addressList = Array.isArray(customer?.addresses)
+    ? customer.addresses
+    : customer?.addresses?.nodes ?? [];
+
   const fallbackAddress =
-    customer?.addresses?.nodes?.find(
-      (address) => address?.zoneCode || address?.territoryCode,
-    ) ?? null;
+    addressList.find((address) => getAddressState(address) || getAddressCountry(address)) ??
+    null;
   const address = customer?.defaultAddress ?? fallbackAddress;
 
   return {
-    customerState: normalizeReviewLocationPart(address?.zoneCode),
-    customerCountry: normalizeReviewLocationPart(address?.territoryCode),
+    customerState: getAddressState(address),
+    customerCountry: getAddressCountry(address),
   };
 }
 

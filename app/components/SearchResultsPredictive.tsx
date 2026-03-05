@@ -199,7 +199,8 @@ interface PredictiveSearchLayout {
   showProductHeader?: boolean;
   wishlistProducts: string[];
   isLoggedIn: Promise<boolean> | undefined;
-  surface?: 'default' | 'aside-search';
+  surface?: 'default' | 'aside-search' | 'search-page';
+  searchPageAllSelectionMode?: boolean;
 }
 function SearchResultsPredictiveProducts({
   term,
@@ -211,8 +212,23 @@ function SearchResultsPredictiveProducts({
   wishlistProducts,
   isLoggedIn,
   surface = 'default',
+  searchPageAllSelectionMode = false,
 }: PredictiveSearchLayout) {
   if (!products.length) return null;
+  const shouldApplySearchPageAllTweaks =
+    surface === 'search-page' && searchPageAllSelectionMode;
+  const printRenderContext =
+    surface === 'aside-search'
+      ? 'aside-search'
+      : shouldApplySearchPageAllTweaks
+        ? 'search-page-all'
+        : 'default';
+  const eproductRenderContext =
+    surface === 'aside-search'
+      ? 'aside-search'
+      : shouldApplySearchPageAllTweaks
+        ? 'search-page-all'
+        : 'default';
 
   return (
     <>
@@ -231,7 +247,7 @@ function SearchResultsPredictiveProducts({
                     layout={layout}
                     isInWishlist={isInWishlist}
                     isLoggedIn={isLoggedIn}
-                    renderContext={surface}
+                    renderContext={printRenderContext}
                   />
                 </div>
               )}
@@ -241,7 +257,7 @@ function SearchResultsPredictiveProducts({
                   layout={layout}
                   isInWishlist={isInWishlist}
                   isLoggedIn={isLoggedIn}
-                  renderContext={surface}
+                  renderContext={printRenderContext}
                 />
               )}
             </React.Fragment>
@@ -265,6 +281,7 @@ function SearchResultsPredictiveProducts({
                     isInWishlist={isInWishlist}
                     isLoggedIn={isLoggedIn}
                     forceCardPreviewViewportAutoplay
+                    renderContext={eproductRenderContext}
                   />
                 </div>
               )}
@@ -276,6 +293,7 @@ function SearchResultsPredictiveProducts({
                   isInWishlist={isInWishlist}
                   isLoggedIn={isLoggedIn}
                   forceCardPreviewViewportAutoplay
+                  renderContext={eproductRenderContext}
                 />
               )}
             </React.Fragment>

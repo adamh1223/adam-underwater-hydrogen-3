@@ -84,7 +84,7 @@ export const ProductCarousel = ({
   isLoggedIn: Promise<boolean> | boolean | undefined;
   compactHighlightGlow?: boolean;
   disableFocusWithinHighlight?: boolean;
-  renderContext?: 'default' | 'aside-search';
+  renderContext?: 'default' | 'aside-search' | 'search-page-all';
 }) => {
   // If caller passed a string id by mistake, bail out gracefully
   if (typeof product === 'string') {
@@ -109,6 +109,7 @@ export const ProductCarousel = ({
   const {title, images, priceRange, handle, id, tags} =
     prod as collectionProduct;
   const isAsideSearch = renderContext === 'aside-search';
+  const isSearchPageAll = renderContext === 'search-page-all';
 
   // Persistent "held" highlight on print cards should only come from touch drag logic,
   // not from mouse click/focus states.
@@ -348,6 +349,15 @@ export const ProductCarousel = ({
     // Aside predictive search has a fixed-width card lane (300/350/400px).
     // Use aside-specific portrait sizing tied to those lane breakpoints.
     carouselHeight = 'aside-search-print-image-vertical';
+  } else if (
+    isSearchPageAll &&
+    (isVertPrimary || isVertOnly) &&
+    layout === 'grid' &&
+    windowWidth != undefined &&
+    windowWidth >= 778 &&
+    windowWidth <= 912
+  ) {
+    carouselHeight = 'search-page-all-print-image-vertical-mid';
   } else if (isHorOnly) {
     // Horizontal Only = 120
     carouselHeight = 'w-120';
