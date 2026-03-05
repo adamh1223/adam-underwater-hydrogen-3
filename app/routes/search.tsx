@@ -2,22 +2,33 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import {
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  type MetaFunction,
+} from '@remix-run/react';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
-import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
+import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import {
   type RegularSearchReturn,
   type PredictiveSearchReturn,
   getEmptyPredictiveSearchResult,
 } from '~/lib/search';
 import {Button} from '~/components/ui/button';
-import {Input} from '~/components/ui/input';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useId, useRef, useState} from 'react';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import SearchPageSkeleton from '~/components/skeletons/SearchPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
+import {EnhancedPartialSearchResult} from '~/lib/types';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '~/components/ui/input-group';
+import {LuSearch} from 'react-icons/lu';
 
 export const meta: MetaFunction = () => {
   return [{title: `Adam Underwater | Search`}];
@@ -73,13 +84,23 @@ export async function loader({request, context}: LoaderFunctionArgs) {
 export default function SearchPage() {
   // const {type, term, result, error, cart} = useLoaderData<typeof loader>();
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   const {type, term, result, error, cart, isLoggedIn, wishlistProducts} = data;
-  if (type === 'predictive') return null;
+
+  const queriesDatalistId = useId();
+  const predictiveFetcher = useFetcher<PredictiveSearchReturn>({
+    key: 'search-page',
+  });
 
   const [isPageReady, setIsPageReady] = useState(false);
   const hasCalledLoad = useRef(false);
   const searchImgRef = useRef<HTMLImageElement>(null);
+  const [searchText, setSearchText] = useState(term);
+  const [isPredictiveMode, setIsPredictiveMode] = useState(false);
+  const [committedPredictiveResult, setCommittedPredictiveResult] = useState(
+    getEmptyPredictiveSearchResult(),
+  );
 
   const handleSearchImgLoad = useCallback(() => {
     if (hasCalledLoad.current) return;
@@ -102,51 +123,230 @@ export default function SearchPage() {
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
+
+  useEffect(() => {
+    // When URL q changes (including from aside submit), sync the page input.
+    setSearchText(term);
+    setIsPredictiveMode(false);
+    setCommittedPredictiveResult(getEmptyPredictiveSearchResult());
+  }, [term]);
+
+  const gridColumnCount =
+    windowWidth != undefined
+      ? Math.max(1, Math.floor((windowWidth - 1) / 700) + 1)
+      : 1;
+
+  const runPredictiveSearch = useCallback(
+    (value: string) => {
+      predictiveFetcher.submit(
+        {
+          q: value,
+          predictive: true,
+        },
+        {method: 'GET', action: '/search'},
+      );
+    },
+    [predictiveFetcher],
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nextValue = e.target.value;
+    setSearchText(nextValue);
+    setIsPredictiveMode(true);
+    runPredictiveSearch(nextValue);
+  };
+
+  const handleInputFocus = () => {
+    if (!searchText?.trim()) return;
+    setIsPredictiveMode(true);
+    runPredictiveSearch(searchText.trim());
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const trimmedValue = searchText?.trim() ?? '';
+    setIsPredictiveMode(false);
+    navigate(`/search${trimmedValue ? `?q=${encodeURIComponent(trimmedValue)}` : ''}`);
+  };
+
+  const activePredictiveTerm =
+    predictiveFetcher.state === 'loading' || predictiveFetcher.state === 'submitting'
+      ? String(predictiveFetcher.formData?.get('q') ?? '').trim()
+      : searchText.trim();
+  const hasPredictiveResponseForInput =
+    predictiveFetcher.data?.type === 'predictive' &&
+    predictiveFetcher.data.term === activePredictiveTerm;
+  const latestPredictiveResult =
+    hasPredictiveResponseForInput && predictiveFetcher.data?.result
+      ? predictiveFetcher.data.result
+      : getEmptyPredictiveSearchResult();
+  const hasPredictiveTerm = searchText.trim().length > 0;
+
+  useEffect(() => {
+    if (!isPredictiveMode || !hasPredictiveTerm) {
+      setCommittedPredictiveResult(getEmptyPredictiveSearchResult());
+      return;
+    }
+    if (predictiveFetcher.state !== 'idle') return;
+    if (predictiveFetcher.data?.type !== 'predictive') return;
+    if (predictiveFetcher.data.term !== searchText.trim()) return;
+
+    setCommittedPredictiveResult(predictiveFetcher.data.result);
+  }, [
+    isPredictiveMode,
+    hasPredictiveTerm,
+    predictiveFetcher.state,
+    predictiveFetcher.data,
+    searchText,
+  ]);
+
+  const predictiveResult =
+    predictiveFetcher.state === 'idle' && hasPredictiveResponseForInput
+      ? latestPredictiveResult
+      : committedPredictiveResult;
+  const predictiveProducts = (predictiveResult.items.products ??
+    []) as unknown as EnhancedPartialSearchResult[];
+  const predictiveQueries = predictiveResult.items.queries ?? [];
+  const showPredictiveResults = isPredictiveMode;
+  const showPredictiveEmpty =
+    showPredictiveResults &&
+    hasPredictiveTerm &&
+    predictiveFetcher.state === 'idle' &&
+    hasPredictiveResponseForInput &&
+    predictiveResult.total === 0;
+  const showPredictiveLoading =
+    showPredictiveResults &&
+    hasPredictiveTerm &&
+    predictiveFetcher.state !== 'idle' &&
+    predictiveProducts.length === 0;
+  const predictiveProductCount = predictiveProducts.length;
+  const regularProductCount = result?.items?.products?.nodes?.length ?? 0;
+  const displayedProductCount = showPredictiveResults
+    ? predictiveProductCount
+    : regularProductCount;
+  const hasPrintProducts = predictiveProducts.some((product) =>
+    product.tags.includes('Prints'),
+  );
+  const hasVideoProducts = predictiveProducts.some((product) =>
+    product.tags.includes('Video'),
+  );
+  const predictiveGridClassName = [
+    'prods-grid',
+    'gap-x-2',
+    hasPrintProducts && hasVideoProducts ? 'mixed-product-grid' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const predictiveGridStyle =
+    windowWidth != undefined
+      ? {gridTemplateColumns: `repeat(${gridColumnCount}, minmax(0, 1fr))`}
+      : undefined;
+
+  if (type === 'predictive') {
+    return null;
+  }
 
   return (
     <SkeletonGate isReady={isPageReady} skeleton={<SearchPageSkeleton />}>
     <div className="search">
       <div className="flex justify-center pt-5">
-        <img ref={searchImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/searchstore.png'} style={{height: '95px'}} onLoad={handleSearchImgLoad}></img>
+        <img
+          ref={searchImgRef}
+          src={'https://downloads.adamunderwater.com/store-1-au/public/searchstore.png'}
+          style={{height: '95px'}}
+          onLoad={handleSearchImgLoad}
+          alt="Search Store"
+        />
       </div>
-      <SearchForm>
-        {({inputRef}) => (
-          <>
-            <div className="flex justify-center mt-5">
-              <Input
-                defaultValue={term}
-                name="q"
-                placeholder="Search…"
-                ref={inputRef}
-                type="search"
-                className="w-40"
-              />
-              &nbsp;
-              <Button variant="outline" type="submit">
-                Search
-              </Button>
+      <form onSubmit={handleSearchSubmit}>
+        <div className="mt-5 flex flex-col items-center">
+          <div className="flex w-full max-w-[335px] flex-col gap-2 min-[601px]:w-auto min-[601px]:max-w-none min-[601px]:flex-row min-[601px]:items-start">
+            <div className="flex w-full flex-col items-center min-[601px]:w-[284px]">
+              <InputGroup className="w-full">
+                <InputGroupAddon align="inline-start">
+                  <LuSearch className="text-muted-foreground" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  name="q"
+                  onChange={handleInputChange}
+                  onFocus={handleInputFocus}
+                  placeholder="Search..."
+                  type="search"
+                  value={searchText}
+                  list={queriesDatalistId}
+                />
+              </InputGroup>
+              <p className="text-muted-foreground mt-1.5 w-full pl-9 text-left text-[11px]">
+                Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+              </p>
             </div>
-          </>
-        )}
-      </SearchForm>
-      {error && <p style={{color: 'red'}}>{error}</p>}
-      {!term || !result?.total ? (
-        <SearchResults.Empty />
+            <Button
+              variant="outline"
+              type="submit"
+              className="hidden min-[601px]:inline-flex min-[601px]:w-auto"
+            >
+              Search
+            </Button>
+          </div>
+          <SearchResultsPredictive.Queries
+            queries={predictiveQueries}
+            queriesDatalistId={queriesDatalistId}
+          />
+        </div>
+      </form>
+
+      <div className="mx-2 mt-4">
+        <div className="product-counter-container" style={{justifyContent: 'flex-start'}}>
+          <div className="flex flex-col items-start">
+            <h4 className="font-medium text-md">
+              {displayedProductCount} product
+              {displayedProductCount !== 1 && 's'}
+            </h4>
+          </div>
+        </div>
+      </div>
+
+      {showPredictiveResults ? (
+        showPredictiveEmpty ? (
+          <SearchResultsPredictive.Empty term={{current: searchText.trim()}} />
+        ) : showPredictiveLoading ? (
+          <div className="flex justify-center px-4 py-6 text-center text-muted-foreground">
+            Searching...
+          </div>
+        ) : (
+          <div className={predictiveGridClassName} style={predictiveGridStyle}>
+            <SearchResultsPredictive.Products
+              products={predictiveProducts}
+              layout="grid"
+              term={{current: searchText.trim()}}
+              cart={cart}
+              wishlistProducts={wishlistProducts ?? []}
+              isLoggedIn={isLoggedIn}
+            />
+          </div>
+        )
       ) : (
-        <SearchResults result={result} term={term}>
-          {({articles, pages, products, term}) => (
-            <div>
-              <SearchResults.Products
-                products={products}
-                term={term}
-                cart={cart}
-                isLoggedIn={isLoggedIn}
-                wishlistProducts={wishlistProducts}
-              />
-            </div>
+        <>
+          {error && <p style={{color: 'red'}}>{error}</p>}
+          {!term || !result?.total ? (
+            <SearchResults.Empty />
+          ) : (
+            <SearchResults result={result} term={term}>
+              {({products, term}) => (
+                <div>
+                  <SearchResults.Products
+                    products={products}
+                    term={term}
+                    cart={cart}
+                    isLoggedIn={isLoggedIn}
+                    wishlistProducts={wishlistProducts}
+                  />
+                </div>
+              )}
+            </SearchResults>
           )}
-        </SearchResults>
+        </>
       )}
       <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
     </div>
