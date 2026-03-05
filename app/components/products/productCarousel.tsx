@@ -74,6 +74,7 @@ export const ProductCarousel = ({
   isLoggedIn = undefined,
   compactHighlightGlow = false,
   disableFocusWithinHighlight = false,
+  renderContext = 'default',
 }: {
   // accept full product OR a looser shape (to silence type-checking when your caller doesn't have full objects)
   product: collectionPageProduct | any;
@@ -83,6 +84,7 @@ export const ProductCarousel = ({
   isLoggedIn: Promise<boolean> | boolean | undefined;
   compactHighlightGlow?: boolean;
   disableFocusWithinHighlight?: boolean;
+  renderContext?: 'default' | 'aside-search';
 }) => {
   // If caller passed a string id by mistake, bail out gracefully
   if (typeof product === 'string') {
@@ -106,6 +108,7 @@ export const ProductCarousel = ({
 
   const {title, images, priceRange, handle, id, tags} =
     prod as collectionProduct;
+  const isAsideSearch = renderContext === 'aside-search';
 
   // Persistent "held" highlight on print cards should only come from touch drag logic,
   // not from mouse click/focus states.
@@ -135,8 +138,8 @@ export const ProductCarousel = ({
 
   const articleClassName =
     layout === 'grid'
-      ? 'group relative h-full mb-[12px]'
-      : 'group relative h-full mb-[12px]';
+      ? `group relative h-full mb-[12px] ${isAsideSearch ? 'aside-search-print-card' : ''}`
+      : `group relative h-full mb-[12px] ${isAsideSearch ? 'aside-search-print-card' : ''}`;
 
   const variantUrl = useVariantUrl(handle);
 
@@ -341,7 +344,11 @@ export const ProductCarousel = ({
 
     return 'w-72';
   };
-  if (isHorOnly) {
+  if (isAsideSearch && (isVertPrimary || isVertOnly) && layout === 'grid') {
+    // Aside predictive search has a fixed-width card lane (300/350/400px).
+    // Use aside-specific portrait sizing tied to those lane breakpoints.
+    carouselHeight = 'aside-search-print-image-vertical';
+  } else if (isHorOnly) {
     // Horizontal Only = 120
     carouselHeight = 'w-120';
   } else if (isHorPrimary) {
@@ -427,6 +434,14 @@ export const ProductCarousel = ({
     }
   };
   const loginValue = useIsLoggedIn(isLoggedIn);
+  const asideArrowShellClassName =
+    isAsideSearch && layout === 'grid'
+      ? isVertical
+        ? 'aside-search-arrow-shell-vertical'
+        : isHorizontal
+          ? 'aside-search-arrow-shell-horizontal'
+          : ''
+      : '';
 
   return (
     <article className={articleClassName}>
@@ -502,7 +517,7 @@ export const ProductCarousel = ({
               layout === 'grid'
                 ? 'h-full print-top-part-card-grid'
                 : 'h-full print-top-part-card-list'
-            }`}
+            } ${isAsideSearch ? 'aside-search-print-media-area' : ''}`}
           >
             {layout === 'grid' && (
               <div className="cursor-pointer absolute top-[2px] right-[2px] z-50 p-1">
@@ -564,7 +579,7 @@ export const ProductCarousel = ({
             )}
             <Carousel
               setApi={setCarouselApi}
-              className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'}`}
+              className={`z-42 carousel-hover-safe w-full max-w-7xl transform-none ${layout === 'grid' && 'print-carousel-grid'} ${layout === 'list' && 'print-carousel-list'} ${isAsideSearch ? 'aside-search-print-carousel' : ''}`}
             >
               <Link
                 className={`product-item ${layout === 'list' && 'flex items-center'}`}
@@ -586,7 +601,9 @@ export const ProductCarousel = ({
                       <div
                         className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid' && 'pt-2'
-                        } ${layout === 'list' && 'px-3 py-2'}`}
+                        } ${layout === 'list' && 'px-3 py-2'} ${
+                          isAsideSearch ? 'aside-search-print-image-wrap' : ''
+                        }`}
                       >
                         <img
                           src={getOptimizedImageUrl(
@@ -601,7 +618,11 @@ export const ProductCarousel = ({
                             .join(', ')}
                           sizes={printCardImageSizes}
                           alt={imageAlt}
-                          className={`rounded max-w-full ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500`}
+                          className={`rounded max-w-full ${layout === 'grid' ? `${carouselHeight}` : 'carousel-img-list-view'} object-cover transform group-hover:scale-105 transition-transform duration-500 ${
+                            isAsideSearch && layout === 'grid' && isHorizontal
+                              ? 'aside-search-print-image-horizontal'
+                              : ''
+                          }`}
                         />
                       </div>
                         );
@@ -623,7 +644,7 @@ export const ProductCarousel = ({
                     layout === 'list' && isVertical
                       ? 'list-vertical-arrow-shell'
                       : ''
-                  }`}
+                  } ${asideArrowShellClassName}`}
                 >
                   <Button
                     onClick={decreaseIndex}

@@ -1,12 +1,6 @@
-import {
-  useFetcher,
-  useNavigate,
-  type FormProps,
-  type Fetcher,
-} from '@remix-run/react';
+import {useFetcher, type FormProps, type Fetcher} from '@remix-run/react';
 import React, {useRef, useEffect} from 'react';
 import type {PredictiveSearchReturn} from '~/lib/search';
-import {useAside} from './Aside';
 
 type SearchFormPredictiveChildren = (args: {
   fetchResults: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -17,6 +11,7 @@ type SearchFormPredictiveChildren = (args: {
 
 type SearchFormPredictiveProps = Omit<FormProps, 'children'> & {
   children: SearchFormPredictiveChildren | null;
+  onSubmitSearch?: (term: string) => void;
 };
 
 export const SEARCH_ENDPOINT = '/search';
@@ -27,18 +22,29 @@ export const SEARCH_ENDPOINT = '/search';
 export function SearchFormPredictive({
   children,
   className = 'predictive-search-form',
+  onSubmitSearch,
   ...props
 }: SearchFormPredictiveProps) {
   const fetcher = useFetcher<PredictiveSearchReturn>({key: 'search'});
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const navigate = useNavigate();
-  const aside = useAside();
 
-  /** Reset the input value and blur the input */
-  function resetInput(event: React.FormEvent<HTMLFormElement>) {
+  /** Handle submit (Enter key or submit button) */
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     event.stopPropagation();
-    if (inputRef?.current?.value) {
+
+    const term = inputRef.current?.value?.trim() ?? '';
+
+    if (onSubmitSearch) {
+      onSubmitSearch(term);
+      if (inputRef.current) {
+        inputRef.current.value = '';
+        inputRef.current.blur();
+      }
+      return;
+    }
+
+    if (inputRef.current?.value) {
       inputRef.current.blur();
     }
   }
@@ -77,7 +83,7 @@ export function SearchFormPredictive({
   }
 
   return (
-    <fetcher.Form {...props} className={className} onSubmit={resetInput}>
+    <fetcher.Form {...props} className={className} onSubmit={handleSubmit}>
       {children({inputRef, fetcher, fetchResults})}
     </fetcher.Form>
   );

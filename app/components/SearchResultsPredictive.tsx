@@ -7,7 +7,7 @@ import {
   type PredictiveSearchReturn,
 } from '~/lib/search';
 import {useAside} from './Aside';
-import ProductCarousel from './products/productCarousel';
+import {ProductCarousel} from './products/productCarousel';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import EProductsContainer from './eproducts/EProductsContainer';
 
@@ -64,6 +64,7 @@ export function SearchResultsPredictive({
    */
   function closeSearch() {
     resetInput();
+    term.current = '';
     aside.close();
   }
 
@@ -198,6 +199,7 @@ interface PredictiveSearchLayout {
   showProductHeader?: boolean;
   wishlistProducts: string[];
   isLoggedIn: Promise<boolean> | undefined;
+  surface?: 'default' | 'aside-search';
 }
 function SearchResultsPredictiveProducts({
   term,
@@ -208,6 +210,7 @@ function SearchResultsPredictiveProducts({
   showProductHeader = false,
   wishlistProducts,
   isLoggedIn,
+  surface = 'default',
 }: PredictiveSearchLayout) {
   if (!products.length) return null;
 
@@ -228,6 +231,7 @@ function SearchResultsPredictiveProducts({
                     layout={layout}
                     isInWishlist={isInWishlist}
                     isLoggedIn={isLoggedIn}
+                    renderContext={surface}
                   />
                 </div>
               )}
@@ -237,6 +241,7 @@ function SearchResultsPredictiveProducts({
                   layout={layout}
                   isInWishlist={isInWishlist}
                   isLoggedIn={isLoggedIn}
+                  renderContext={surface}
                 />
               )}
             </React.Fragment>
@@ -259,6 +264,7 @@ function SearchResultsPredictiveProducts({
                     cart={cart}
                     isInWishlist={isInWishlist}
                     isLoggedIn={isLoggedIn}
+                    forceCardPreviewViewportAutoplay
                   />
                 </div>
               )}
@@ -269,6 +275,7 @@ function SearchResultsPredictiveProducts({
                   cart={cart}
                   isInWishlist={isInWishlist}
                   isLoggedIn={isLoggedIn}
+                  forceCardPreviewViewportAutoplay
                 />
               )}
             </React.Fragment>
@@ -329,8 +336,10 @@ function usePredictiveSearch(): UsePredictiveSearchReturn {
   const term = useRef<string>('');
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  if (fetcher?.state === 'loading') {
+  if (fetcher?.state === 'loading' || fetcher?.state === 'submitting') {
     term.current = String(fetcher.formData?.get('q') || '');
+  } else {
+    term.current = inputRef.current?.value ?? '';
   }
 
   // capture the search input element as a ref

@@ -220,6 +220,86 @@
   height: 100%;
 }
 
+/* Aside predictive search has a dedicated print-card layout that should not
+ * inherit full-page print carousel sizing and arrow offsets.
+ */
+.aside-search-print-media-area {
+  padding-top: 4px;
+}
+
+.aside-search-print-image-wrap {
+  padding-top: 14px !important;
+}
+
+.aside-search-print-carousel {
+  --aside-search-vertical-image-width: 11.5rem;
+  --aside-search-vertical-arrow-outset: 14px;
+}
+
+/* Aside width is 350px in this band. */
+@media (min-width: 601px) and (max-width: 1023px) {
+  .aside-search-print-carousel {
+    --aside-search-vertical-image-width: 13.5rem;
+    --aside-search-vertical-arrow-outset: 16px;
+  }
+}
+
+/* Aside width is 400px in this band. */
+@media (min-width: 1024px) {
+  .aside-search-print-carousel {
+    --aside-search-vertical-image-width: 15rem;
+    --aside-search-vertical-arrow-outset: 18px;
+  }
+}
+
+.aside-search-print-image-vertical {
+  width: var(--aside-search-vertical-image-width);
+  max-width: calc(100% - 24px);
+}
+
+.aside-search-print-image-horizontal {
+  max-width: calc(100% - 8px);
+}
+
+.aside-search-arrow-shell-horizontal .left-arrow-carousel-grid-horizontal,
+.aside-search-arrow-shell-horizontal .right-arrow-carousel-grid-horizontal,
+.aside-search-arrow-shell-vertical .left-arrow-carousel-grid-vertical,
+.aside-search-arrow-shell-vertical .right-arrow-carousel-grid-vertical {
+  margin: 0 !important;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.aside-search-arrow-shell-horizontal .left-arrow-carousel-grid-horizontal {
+  left: 10px;
+}
+
+.aside-search-arrow-shell-horizontal .right-arrow-carousel-grid-horizontal {
+  right: 10px;
+}
+
+/* Keep vertical arrows just outside the image edge, but never outside card bounds. */
+.aside-search-arrow-shell-vertical .left-arrow-carousel-grid-vertical {
+  left: max(
+    10px,
+    calc(
+      50% - (var(--aside-search-vertical-image-width) / 2) -
+        var(--aside-search-vertical-arrow-outset)
+    )
+  );
+}
+
+.aside-search-arrow-shell-vertical .right-arrow-carousel-grid-vertical {
+  right: max(
+    10px,
+    calc(
+      50% - (var(--aside-search-vertical-image-width) / 2) -
+        var(--aside-search-vertical-arrow-outset)
+    )
+  );
+}
+
 .print-bottom-part-card-inside-grid {
   padding: 12px 4px 0 4px;
 }

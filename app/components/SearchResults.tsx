@@ -1,10 +1,11 @@
 import {Link} from '@remix-run/react';
 import {CartReturn, Image, Money, Pagination} from '@shopify/hydrogen';
 import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
-import ProductCarousel from './products/productCarousel';
+import {ProductCarousel} from './products/productCarousel';
 import EProductsContainer from './eproducts/EProductsContainer';
 import Sectiontitle from './global/Sectiontitle';
 import {EnhancedPartialSearchResult} from '~/lib/types';
+import {useEffect, useState} from 'react';
 
 type SearchItems = RegularSearchReturn['result']['items'];
 type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
@@ -110,7 +111,22 @@ function SearchResultsProducts({
   isLoggedIn,
   wishlistProducts,
 }: SearchResults) {
-  
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
+    typeof window === 'undefined' ? undefined : window.innerWidth,
+  );
+  const gridColumnCount =
+    windowWidth != undefined
+      ? Math.max(1, Math.floor((windowWidth - 1) / 700) + 1)
+      : 1;
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   if (!products?.nodes.length) {
     return null;
@@ -130,10 +146,18 @@ function SearchResultsProducts({
           const hasVideoProducts = nodes.some((product) =>
             product.tags.includes('Video'),
           );
-          const productGridClassName =
-            hasPrintProducts && hasVideoProducts
-              ? 'prods-grid gap-x-5 mixed-product-grid'
-              : 'prods-grid gap-x-5';
+          const hasCardProducts = hasPrintProducts || hasVideoProducts;
+          const productGridClassName = [
+            'prods-grid',
+            'gap-x-2',
+            hasPrintProducts && hasVideoProducts ? 'mixed-product-grid' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          const productGridStyle =
+            hasCardProducts && windowWidth != undefined
+              ? {gridTemplateColumns: `repeat(${gridColumnCount}, minmax(0, 1fr))`}
+              : undefined;
 
           const ItemsMarkup = nodes.map((product) => {
             const productUrl = urlWithTrackingParams({
@@ -170,6 +194,7 @@ function SearchResultsProducts({
                     cart={cart}
                     isLoggedIn={isLoggedIn}
                     isInWishlist={!!isInWishlist}
+                    forceCardPreviewViewportAutoplay
                   />
                 </div>
               );
@@ -198,7 +223,9 @@ function SearchResultsProducts({
                   {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
                 </PreviousLink>
               </div>
-              <div className={productGridClassName}>{ItemsMarkup}</div>
+              <div className={productGridClassName} style={productGridStyle}>
+                {ItemsMarkup}
+              </div>
               <div className="flex justify-center">
                 <NextLink>
                   {isLoading ? 'Loading...' : <span>Load more ↓</span>}

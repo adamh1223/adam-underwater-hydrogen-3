@@ -1,11 +1,11 @@
 import {Await, Link, useNavigate} from '@remix-run/react';
-import {Suspense, useId, useState} from 'react';
+import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
+import {Aside, useAside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
@@ -23,8 +23,6 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from './ui/input-group';
-import {Skeleton} from './ui/skeleton';
-import {Card, CardContent} from './ui/card';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -102,30 +100,37 @@ interface SearchAsideProps {
 function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
   const queriesDatalistId = useId();
   const navigate = useNavigate();
+  const aside = useAside();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const handleClick = () => {
-    navigate(`/search?q=${searchTerm}`);
+  const handleSearchSubmit = (term: string) => {
+    const trimmedTerm = term.trim();
+    navigate(
+      `${SEARCH_ENDPOINT}${trimmedTerm ? `?q=${encodeURIComponent(trimmedTerm)}` : ''}`,
+    );
+    aside.close();
   };
 
   return (
     <Aside type="search" heading="SEARCH">
       <div className="mt-[8px] cart-main ">
         <br />
-        <SearchFormPredictive>
+        <SearchFormPredictive onSubmitSearch={handleSearchSubmit}>
           {({fetchResults, inputRef}) => {
             const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearchTerm(e.target.value);
               fetchResults(e);
             };
             return (
-              <div className="flex flex-col items-center mb-5 mx-3 bg-background">
-                <div className="flex items-center gap-2">
-                  <InputGroup className="w-[220px]">
+              <div className="mb-5 flex w-full min-w-0 flex-col items-center bg-background px-3 box-border">
+                <p className="order-1 min-[601px]:order-2 text-muted-foreground text-[11px] w-full min-[601px]:w-[220px] text-left pl-9 mb-1 min-[601px]:mb-0 min-[601px]:mt-1.5">
+                  Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+                </p>
+                <div className="order-2 min-[601px]:order-1 flex w-full min-w-0 max-w-full flex-col gap-2 min-[601px]:w-auto min-[601px]:max-w-none min-[601px]:flex-row min-[601px]:items-center">
+                  <InputGroup className="w-full min-w-0 max-w-full min-[601px]:w-[220px]">
                     <InputGroupAddon align="inline-start">
                       <LuSearch className="text-muted-foreground" />
                     </InputGroupAddon>
                     <InputGroupInput
+                      className="w-full min-w-0"
                       name="q"
                       onChange={handleChange}
                       onFocus={fetchResults}
@@ -137,15 +142,12 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
                   </InputGroup>
                   <Button
                     variant="outline"
-                    onClick={handleClick}
-                    className="cursor-pointer"
+                    type="submit"
+                    className="cursor-pointer w-full min-[601px]:w-auto"
                   >
                     Search
                   </Button>
                 </div>
-                <p className="text-muted-foreground text-[11px] mt-1.5 w-[220px] text-left pl-8">
-                  Try &ldquo;Sea Lion&rdquo; or &ldquo;Night&rdquo;
-                </p>
               </div>
             );
           }}
@@ -154,29 +156,18 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
         <SearchResultsPredictive>
           {({items, total, term, state, closeSearch}) => {
             const {articles, collections, pages, products, queries} = items;
+            const hasSearchTerm = term.current.trim().length > 0;
 
-            if (state === 'loading' && term.current) {
-              return (
-                <div className="flex flex-col gap-3 px-3">
-                  {Array.from({length: 2}).map((_, i) => (
-                    <Card key={`aside-skel-${i}`} className="h-full mb-1 pb-1">
-                      <CardContent className="flex flex-col h-full p-0">
-                        <Skeleton className="w-full rounded-b-none rounded-t-xl aspect-[16/10]" />
-                        <div className="flex flex-col items-center gap-2 px-3 py-3">
-                          <Skeleton className="h-4 w-3/5" />
-                          <Skeleton className="h-3.5 w-2/5" />
-                          <Skeleton className="h-3.5 w-1/4" />
-                          <Skeleton className="h-8 w-full rounded-md mt-0.5" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              );
+            if (!hasSearchTerm) {
+              return null;
+            }
+
+            if (!total && state === 'idle') {
+              return <SearchResultsPredictive.Empty term={term} />;
             }
 
             if (!total) {
-              return <SearchResultsPredictive.Empty term={term} />;
+              return null;
             }
 
             return (
@@ -190,6 +181,7 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
                     products as unknown as EnhancedPartialSearchResult[]
                   }
                   showProductHeader
+                  surface="aside-search"
                   term={term}
                   isLoggedIn={isLoggedIn}
                   wishlistProducts={wishlistProducts}

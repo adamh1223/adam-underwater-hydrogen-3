@@ -1453,7 +1453,7 @@ export default function Collection() {
         )}
 
         {collection?.handle === 'stock' && (
-          <div className="flex justify-center pt-2 pb-1">
+          <div className="flex justify-center pt-2">
             <div className="toggle-container">
               <Tooltip>
                 <TooltipTrigger asChild>
