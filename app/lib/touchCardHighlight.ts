@@ -51,7 +51,13 @@ let activePointerIdentifier: number | null = null;
 
 function shouldHoldTouchCardHighlight(): boolean {
   if (typeof window === 'undefined') return true;
-  return window.innerWidth < 500;
+  const hasTouchCapability =
+    'ontouchstart' in window ||
+    (window.navigator?.maxTouchPoints ?? 0) > 0 ||
+    window.matchMedia?.('(pointer: coarse)')?.matches ||
+    window.matchMedia?.('(any-pointer: coarse)')?.matches;
+
+  return window.innerWidth < 500 && hasTouchCapability;
 }
 
 function dispatchTouchCardHighlight(cardId: string) {

@@ -41,7 +41,7 @@ export default function Layout() {
         />
         <link
           rel="icon"
-          href="https://downloads.adamunderwater.com/store-1-au/public/real-icon-2.png"
+          href="/favicon.ico"
           type="image/png"
         />
         <link rel="stylesheet" href={tailwindCss} />

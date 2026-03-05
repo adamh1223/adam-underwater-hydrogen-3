@@ -1583,11 +1583,21 @@ export default function Product() {
       typeof navigator.share === 'function'
     ) {
       try {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        });
+        const isApplePlatform =
+          typeof navigator.userAgent === 'string' &&
+          /(iPhone|iPad|iPod|Macintosh)/i.test(navigator.userAgent);
+
+        // On Apple share sheets, sharing only the URL gives the OS room to
+        // resolve rich link metadata instead of showing a generic placeholder.
+        const sharePayload = isApplePlatform
+          ? {url: shareUrl}
+          : {
+              title: shareTitle,
+              text: shareText,
+              url: shareUrl,
+            };
+
+        await navigator.share(sharePayload);
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {

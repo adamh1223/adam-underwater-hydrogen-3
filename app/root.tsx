@@ -128,25 +128,38 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
  */
 export function links() {
   return [
-    // Google Search favicon (48x48)
+    {
+      rel: 'icon',
+      href: '/favicon.ico',
+    },
+    {
+      rel: 'shortcut icon',
+      href: '/favicon.ico',
+    },
     {
       rel: 'icon',
       type: 'image/png',
-      sizes: '48x48',
-      href: 'https://downloads.adamunderwater.com/store-1-au/public/favicon-48.png',
+      sizes: '32x32',
+      href: '/favicon-32x32.png',
     },
-
-    // Browser tab icon (high quality)
     {
       rel: 'icon',
       type: 'image/png',
-      href: 'https://downloads.adamunderwater.com/store-1-au/public/real-icon-2.png',
+      sizes: '16x16',
+      href: '/favicon-16x16.png',
     },
-
-    // Apple
     {
       rel: 'apple-touch-icon',
-      href: 'https://downloads.adamunderwater.com/store-1-au/public/real-icon-2.png',
+      sizes: '180x180',
+      href: '/apple-touch-icon.png',
+    },
+    {
+      rel: 'apple-touch-icon-precomposed',
+      href: '/apple-touch-icon-precomposed.png',
+    },
+    {
+      rel: 'manifest',
+      href: '/site.webmanifest',
     },
   ];
 }
