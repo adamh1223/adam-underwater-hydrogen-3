@@ -63,7 +63,12 @@ export default defineConfig({
        * Include 'example-dep' in the array below.
        * @see https://vitejs.dev/config/dep-optimization-options
        */
-      include: ['use-sync-external-store/shim', 'react-image-zooom'],
+      include: [
+        'use-sync-external-store/shim',
+        'react-image-zooom',
+        'cookie',
+        'set-cookie-parser',
+      ],
     },
   },
   resolve: {

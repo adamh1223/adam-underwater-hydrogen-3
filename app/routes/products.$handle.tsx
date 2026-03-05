@@ -24,6 +24,8 @@ import {
   ArrowRight,
   ChevronLeftIcon,
   ChevronRightIcon,
+  Share,
+  Share2,
   StarIcon,
 } from 'lucide-react';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
@@ -64,6 +66,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog';
 import ThreeUpCarouselBox from '~/components/global/ThreeUpCarouselBox';
 import ReviewForm from '~/components/form/ReviewForm';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
@@ -77,103 +85,6 @@ import {SkeletonGate} from '~/components/skeletons/shared';
 
 const DEFAULT_SHARE_IMAGE =
   'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
-const DEFAULT_R2_PUBLIC_BASE_URL = 'https://downloads.adamunderwater.com';
-const PRINT_TEXT_IMAGE_ASSET_PATH = 'global-assets/shared/prints';
-const PRINT_TEXT_IMAGE_EXTENSIONS = [
-  'jpg',
-  'jpeg',
-  'png',
-  'webp',
-  'JPG',
-  'JPEG',
-  'PNG',
-  'WEBP',
-] as const;
-const printTextImageUrlCache = new Map<string, string | null>();
-
-function getR2PublicBaseUrl(env: Env | undefined) {
-  const candidate =
-    env?.R2_PUBLIC_BASE_URL?.trim() || DEFAULT_R2_PUBLIC_BASE_URL;
-  return candidate.replace(/\/+$/, '');
-}
-
-function getPrintProductNumberFromTags(tags: unknown): number | null {
-  if (!Array.isArray(tags)) return null;
-
-  for (const tag of tags) {
-    if (typeof tag !== 'string') continue;
-    const match = tag.trim().match(/^print[-_](\d+)$/i);
-    if (!match?.[1]) continue;
-
-    const parsed = Number.parseInt(match[1], 10);
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return parsed;
-    }
-  }
-
-  return null;
-}
-
-function buildPrintTextImageUrl(
-  baseUrl: string,
-  productNumber: number,
-  extension: string,
-) {
-  return `${baseUrl}/${PRINT_TEXT_IMAGE_ASSET_PATH}/print${productNumber}-text-image.${extension}`;
-}
-
-async function urlExists(url: string) {
-  try {
-    const response = await fetch(url, {method: 'HEAD'});
-    if (response.ok) return true;
-
-    if (response.status === 405) {
-      const fallbackResponse = await fetch(url, {
-        method: 'GET',
-        headers: {'Range': 'bytes=0-0'},
-      });
-      return fallbackResponse.ok || fallbackResponse.status === 206;
-    }
-
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-async function resolvePrintTextImageFromTags(
-  tags: unknown,
-  env: Env | undefined,
-) {
-  if (!Array.isArray(tags)) return null;
-
-  const normalizedTags = tags
-    .filter((tag): tag is string => typeof tag === 'string')
-    .map((tag) => tag.trim());
-  const isPrintProduct =
-    normalizedTags.includes('Prints') && !normalizedTags.includes('Video');
-  if (!isPrintProduct) return null;
-
-  const productNumber = getPrintProductNumberFromTags(normalizedTags);
-  if (!productNumber) return null;
-
-  const baseUrl = getR2PublicBaseUrl(env);
-  const cacheKey = `${baseUrl}|${productNumber}`;
-  if (printTextImageUrlCache.has(cacheKey)) {
-    return printTextImageUrlCache.get(cacheKey) ?? null;
-  }
-
-  for (const extension of PRINT_TEXT_IMAGE_EXTENSIONS) {
-    const candidateUrl = buildPrintTextImageUrl(baseUrl, productNumber, extension);
-    if (await urlExists(candidateUrl)) {
-      printTextImageUrlCache.set(cacheKey, candidateUrl);
-      return candidateUrl;
-    }
-  }
-
-  printTextImageUrlCache.set(cacheKey, null);
-  return null;
-}
 
 function withShopifyCroppedShareImage(
   imageUrl: string,
@@ -209,17 +120,16 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   const canonicalUrl = product?.handle
     ? `${siteUrl}/products/${product.handle}`
     : `${siteUrl}/products`;
+  const ogUrl = data?.currentShareUrl ?? canonicalUrl;
   const productMainImage =
-    product?.featuredImage?.url ??
     product?.selectedOrFirstAvailableVariant?.image?.url ??
+    product?.featuredImage?.url ??
     '';
-  const shareImage =
-    data?.printTextImageShareImage ??
-    (productMainImage
-      ? isEProduct
-        ? withShopifyCroppedShareImage(productMainImage, 1200, 630)
-        : productMainImage
-      : DEFAULT_SHARE_IMAGE);
+  const shareImage = productMainImage
+    ? isEProduct
+      ? withShopifyCroppedShareImage(productMainImage, 1200, 630)
+      : productMainImage
+    : DEFAULT_SHARE_IMAGE;
 
   return [
     {title},
@@ -232,7 +142,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     {property: 'og:title', content: title},
     {property: 'og:description', content: description},
     {property: 'og:type', content: 'product'},
-    {property: 'og:url', content: canonicalUrl},
+    {property: 'og:url', content: ogUrl},
     {property: 'og:image', content: shareImage},
     {property: 'og:image:secure_url', content: shareImage},
     ...(isEProduct
@@ -664,6 +574,10 @@ async function loadCriticalData({
   }
 
   const handle = handleParam.toLowerCase();
+  const requestUrl = new URL(request.url);
+  const resolvedSiteUrl = (
+    context.env.PUBLIC_SITE_URL || requestUrl.origin
+  ).replace(/\/$/, '');
   const selectedOptions = getSelectedProductOptions(request);
   const [{product}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
@@ -682,11 +596,6 @@ async function loadCriticalData({
       product.selectedOrFirstAvailableVariant = highestResolutionVariant;
     }
   }
-
-  const printTextImageShareImage = await resolvePrintTextImageFromTags(
-    product.tags,
-    context.env,
-  );
 
   const reviews = await context.storefront.query(GET_REVIEW_QUERY, {
     variables: {productId: product.id},
@@ -728,8 +637,8 @@ async function loadCriticalData({
     isLoggedIn,
     wishlistProducts,
     cart: cart.get(),
-    printTextImageShareImage,
-    siteUrl: context.env.PUBLIC_SITE_URL || 'https://adamunderwater.com',
+    siteUrl: resolvedSiteUrl,
+    currentShareUrl: `${resolvedSiteUrl}${requestUrl.pathname}${requestUrl.search}`,
   };
 }
 
@@ -764,6 +673,7 @@ export default function Product() {
     customer,
     isLoggedIn,
     wishlistProducts,
+    siteUrl,
   } = useLoaderData<typeof loader>();
 
   const [isPageReady, setIsPageReady] = useState(false);
@@ -1493,8 +1403,38 @@ export default function Product() {
     }
   };
   const navigate = useNavigate();
+  const location = useLocation();
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  const normalizedSiteUrl = (siteUrl ?? 'https://adamunderwater.com').replace(
+    /\/$/,
+    '',
+  );
+  const shareUrl = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const selectedOptions = Array.isArray(selectedVariant?.selectedOptions)
+      ? selectedVariant.selectedOptions
+      : [];
+
+    for (const option of selectedOptions) {
+      const name = option?.name;
+      const value = option?.value;
+      if (typeof name !== 'string' || typeof value !== 'string') continue;
+      params.set(name, value);
+    }
+
+    const query = params.toString();
+    return `${normalizedSiteUrl}${location.pathname}${query ? `?${query}` : ''}`;
+  }, [
+    location.pathname,
+    location.search,
+    normalizedSiteUrl,
+    selectedVariant?.selectedOptions,
+  ]);
+  const shareTitle = `Adam Underwater | ${title}`;
+  const shareText = `Check out "${title}" on Adam Underwater.`;
 
   const addToFavorites = async () => {
     try {
@@ -1547,7 +1487,172 @@ export default function Product() {
     }
   };
 
-  const location = useLocation();
+  const openShareTarget = useCallback((targetUrl: string) => {
+    if (typeof window === 'undefined') return;
+
+    const popup = window.open(
+      targetUrl,
+      '_blank',
+      'noopener,noreferrer,width=640,height=720',
+    );
+    if (!popup) {
+      window.location.href = targetUrl;
+    }
+  }, []);
+
+  const handleCopyShareLink = useCallback(async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copied');
+        setIsShareDialogOpen(false);
+        return;
+      }
+    } catch {
+      // Fall through to prompt fallback.
+    }
+
+    if (typeof window !== 'undefined') {
+      window.prompt('Copy this link:', shareUrl);
+    }
+    setIsShareDialogOpen(false);
+  }, [shareUrl]);
+
+  const handleShareButtonClick = useCallback(async () => {
+    if (
+      typeof navigator !== 'undefined' &&
+      typeof navigator.share === 'function'
+    ) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+      }
+    }
+
+    setIsShareDialogOpen(true);
+  }, [shareText, shareTitle, shareUrl]);
+
+  const shareOptions = useMemo(() => {
+    const encodedUrl = encodeURIComponent(shareUrl);
+    const encodedTitle = encodeURIComponent(shareTitle);
+    const encodedText = encodeURIComponent(`${shareText} ${shareUrl}`);
+
+    return [
+      {label: 'Copy link', onClick: handleCopyShareLink},
+      {
+        label: 'Email',
+        onClick: () => {
+          if (typeof window === 'undefined') return;
+          window.location.href = `mailto:?subject=${encodedTitle}&body=${encodedText}`;
+          setIsShareDialogOpen(false);
+        },
+      },
+      {
+        label: 'Messages (SMS)',
+        onClick: () => {
+          if (typeof window === 'undefined') return;
+          window.location.href = `sms:?&body=${encodedText}`;
+          setIsShareDialogOpen(false);
+        },
+      },
+      {
+        label: 'WhatsApp',
+        onClick: () => {
+          openShareTarget(`https://api.whatsapp.com/send?text=${encodedText}`);
+          setIsShareDialogOpen(false);
+        },
+      },
+      {
+        label: 'Facebook',
+        onClick: () => {
+          openShareTarget(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+          );
+          setIsShareDialogOpen(false);
+        },
+      },
+      {
+        label: 'X',
+        onClick: () => {
+          openShareTarget(
+            `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+              shareText,
+            )}&url=${encodedUrl}`,
+          );
+          setIsShareDialogOpen(false);
+        },
+      },
+    ];
+  }, [handleCopyShareLink, openShareTarget, shareText, shareTitle, shareUrl]);
+
+  const productActionButtonClassName =
+    'inline-flex items-center justify-center cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground relative z-50';
+  const productActionIconClassName = 'h-4 w-4';
+
+  const renderProductHeaderActionButtons = () => (
+    <TooltipProvider>
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={wishlistItem ? removeFromFavorites : addToFavorites}
+              className={productActionButtonClassName}
+            >
+              {pendingWishlistChange ? (
+                <ReloadIcon
+                  className={`${productActionIconClassName} animate-spin`}
+                />
+              ) : (
+                <>
+                  {wishlistItem ? (
+                    <FaHeart className={productActionIconClassName} />
+                  ) : (
+                    <>
+                      {isLoggedIn ? (
+                        <FaRegHeart className={productActionIconClassName} />
+                      ) : (
+                        <Link to="/account/login">
+                          <FaRegHeart
+                            className={productActionIconClassName}
+                          />
+                        </Link>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-sm z-1000">
+            {wishlistItem ? 'Remove from Favorites' : 'Save to Favorites'}
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleShareButtonClick}
+              className={productActionButtonClassName}
+              aria-label="Share product"
+            >
+              <Share className={productActionIconClassName} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-sm z-1000">
+            Share
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
 
   const retryTimerRef = useRef<number | null>(null);
 
@@ -1703,43 +1808,7 @@ export default function Product() {
               <div className="individual-product-header-container px-[35px]">
                 <div className="title-button-wrapper">
                   <span className="capitalize text-3xl font-bold">{title}</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={
-                            wishlistItem ? removeFromFavorites : addToFavorites
-                          }
-                          className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                        >
-                          {pendingWishlistChange ? (
-                            <ReloadIcon className="animate-spin" />
-                          ) : (
-                            <>
-                              {wishlistItem ? (
-                                <FaHeart />
-                              ) : (
-                                <>
-                                  {isLoggedIn ? (
-                                    <FaRegHeart />
-                                  ) : (
-                                    <Link to="/account/login">
-                                      <FaRegHeart />
-                                    </Link>
-                                  )}
-                                </>
-                              )}
-                            </>
-                          )}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-sm z-1000">
-                        {wishlistItem
-                          ? 'Remove from Favorites'
-                          : 'Save to Favorites'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {renderProductHeaderActionButtons()}
                 </div>
 
                 {!isVideo && (
@@ -1872,45 +1941,7 @@ export default function Product() {
                       <span className="capitalize text-3xl font-bold title-text">
                         {title}
                       </span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              onClick={
-                                wishlistItem
-                                  ? removeFromFavorites
-                                  : addToFavorites
-                              }
-                              className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                            >
-                              {pendingWishlistChange ? (
-                                <ReloadIcon className="animate-spin" />
-                              ) : (
-                                <>
-                                  {wishlistItem ? (
-                                    <FaHeart />
-                                  ) : (
-                                    <>
-                                      {isLoggedIn ? (
-                                        <FaRegHeart />
-                                      ) : (
-                                        <Link to="/account/login">
-                                          <FaRegHeart />
-                                        </Link>
-                                      )}
-                                    </>
-                                  )}
-                                </>
-                              )}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="text-sm z-1000">
-                            {wishlistItem
-                              ? 'Remove from Favorites'
-                              : 'Save to Favorites'}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      {renderProductHeaderActionButtons()}
                     </div>
 
                     {!isVideo && (
@@ -2044,45 +2075,7 @@ export default function Product() {
                       <span className="capitalize text-3xl font-bold title-text">
                         {title}
                       </span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              onClick={
-                                wishlistItem
-                                  ? removeFromFavorites
-                                  : addToFavorites
-                              }
-                              className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
-                            >
-                              {pendingWishlistChange ? (
-                                <ReloadIcon className="animate-spin" />
-                              ) : (
-                                <>
-                                  {wishlistItem ? (
-                                    <FaHeart />
-                                  ) : (
-                                    <>
-                                      {isLoggedIn ? (
-                                        <FaRegHeart />
-                                      ) : (
-                                        <Link to="/account/login">
-                                          <FaRegHeart />
-                                        </Link>
-                                      )}
-                                    </>
-                                  )}
-                                </>
-                              )}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="text-sm z-1000">
-                            {wishlistItem
-                              ? 'Remove from Favorites'
-                              : 'Save to Favorites'}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      {renderProductHeaderActionButtons()}
                     </div>
 
                     {!isVideo && (
@@ -2993,6 +2986,26 @@ export default function Product() {
               ],
             }}
           />
+          <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Share this product</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-2 pt-1">
+                {shareOptions.map((option) => (
+                  <Button
+                    key={option.label}
+                    type="button"
+                    variant="outline"
+                    onClick={option.onClick}
+                    className="justify-start"
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
         </section>
       </>
     </SkeletonGate>
