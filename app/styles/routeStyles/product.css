@@ -115,8 +115,16 @@
   /* One continuous rule prevents step-changes at 521px and 1000px. */
   max-height: clamp(182px, calc(206px - 1.1vw), 202px);
 }
+
+/* Prints collection page: give carousel images a little more top breathing room
+ * inside the card across all viewport sizes and both orientations.
+ */
+.prints-collection-results-surface .print-carousel-image-wrap {
+  padding-top: 0.75rem !important;
+}
+
 .print-carousel-list {
-  padding: clamp(10px, 1.1vw, 14px) 2px 12px 2px;
+  padding: 0 2px 12px 2px;
 }
 @media (max-width: 800px) {
   .description-html-card {

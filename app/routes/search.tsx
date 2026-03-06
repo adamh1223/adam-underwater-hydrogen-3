@@ -40,6 +40,10 @@ import {LuSearch, LuZoomIn, LuZoomOut} from 'react-icons/lu';
 import {Popover, PopoverContent, PopoverTrigger} from '~/components/ui/popover';
 import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
+import {
+  COMBINED_SEARCH_HINT_WORDS,
+  RandomizedSearchHint,
+} from '~/components/RandomizedSearchHint';
 
 export const meta: MetaFunction = () => {
   return [{title: `Adam Underwater | Search`}];
@@ -1062,9 +1066,11 @@ export default function SearchPage() {
                       list={queriesDatalistId}
                     />
                   </InputGroup>
-                  <p className="desktop-search-hint w-[284px] pl-9 text-left text-[11px] text-muted-foreground">
-                    Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
-                  </p>
+                  <RandomizedSearchHint
+                    words={COMBINED_SEARCH_HINT_WORDS}
+                    storageKey="search-hint-combined-page"
+                    className="desktop-search-hint w-[284px] pl-9 text-left text-[11px] text-muted-foreground"
+                  />
                 </div>
               </div>
 
@@ -1120,9 +1126,11 @@ export default function SearchPage() {
                           list={queriesDatalistId}
                         />
                       </InputGroup>
-                      <p className="mt-1.5 w-[300px] max-w-[calc(100vw-80px)] pl-9 text-left text-[11px] text-muted-foreground">
-                        Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
-                      </p>
+                      <RandomizedSearchHint
+                        words={COMBINED_SEARCH_HINT_WORDS}
+                        storageKey="search-hint-combined-page"
+                        className="mt-1.5 w-[300px] max-w-[calc(100vw-80px)] pl-9 text-left text-[11px] text-muted-foreground"
+                      />
                     </div>
                   </div>
                 </div>

@@ -23,6 +23,10 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from './ui/input-group';
+import {
+  COMBINED_SEARCH_HINT_WORDS,
+  RandomizedSearchHint,
+} from '~/components/RandomizedSearchHint';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -138,9 +142,11 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
             };
             return (
               <div className="mb-5 flex w-full min-w-0 flex-col items-center bg-background px-3 box-border">
-                <p className="order-1 text-muted-foreground text-[11px] w-full text-left pl-9 mb-1 min-[601px]:hidden">
-                  Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
-                </p>
+                <RandomizedSearchHint
+                  words={COMBINED_SEARCH_HINT_WORDS}
+                  storageKey="search-hint-combined-aside-mobile"
+                  className="order-1 text-muted-foreground text-[11px] w-full text-left pl-9 mb-1 min-[601px]:hidden"
+                />
                 <div className="order-2 flex w-full min-w-0 max-w-full flex-col gap-2 min-[601px]:w-auto min-[601px]:max-w-none min-[601px]:flex-row min-[601px]:items-start">
                   <div className="flex w-full min-w-0 max-w-full flex-col items-center min-[601px]:w-[220px] min-[601px]:items-start">
                     <InputGroup className="w-full min-w-0 max-w-full min-[601px]:w-[220px]">
@@ -158,9 +164,11 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
                         list={queriesDatalistId}
                       />
                     </InputGroup>
-                    <p className="hidden min-[601px]:block text-muted-foreground text-[11px] w-full pl-9 text-left mt-1.5">
-                      Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
-                    </p>
+                    <RandomizedSearchHint
+                      words={COMBINED_SEARCH_HINT_WORDS}
+                      storageKey="search-hint-combined-aside-desktop"
+                      className="hidden min-[601px]:block text-muted-foreground text-[11px] w-full pl-9 text-left mt-1.5"
+                    />
                   </div>
                   <Button
                     variant="outline"

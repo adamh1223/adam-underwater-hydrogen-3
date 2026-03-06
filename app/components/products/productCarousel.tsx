@@ -302,10 +302,9 @@ export const ProductCarousel = ({
   const getVerticalGridCarouselWidth = (viewportWidth: number) => {
     if (viewportWidth <= 700) return 'w-64';
 
-    // 701-1400 retains the legacy cadence.
+    // 701-1400 retains the legacy cadence, with 701-900 aligned to w-48.
     if (viewportWidth <= 1400) {
       const cycleOffset = (viewportWidth - 701) % 700;
-      if (cycleOffset <= 49) return 'w-40';
       if (cycleOffset <= 199) return 'w-48';
       if (cycleOffset <= 399) return 'w-56';
       if (cycleOffset <= 599) return 'w-64';
@@ -314,7 +313,7 @@ export const ProductCarousel = ({
 
     // >= 1401:
     // 1401-2100 (3-col range) baseline:
-    //   1401-1450 w-48, 1451-1600 w-56, 1601-1800 w-64, 1801-2100 w-72
+    //   1401-1600 w-56, 1601-1800 w-64, 1801-2100 w-72
     // For larger column ranges, scale those same breakpoint offsets by column count
     // (rounded to 50px) and clamp at the max width step.
     const bandStart = 1401;
@@ -322,6 +321,11 @@ export const ProductCarousel = ({
     const bandIndex = Math.floor((viewportWidth - bandStart) / bandSize); // 0 => 1401-2100, 1 => 2101-2800, ...
     const offsetInBand = (viewportWidth - bandStart) % bandSize; // 0..699
     const columnsInRange = bandIndex + 3; // 3-col at 1401+, 4-col at 2101+, etc.
+
+    // Treat 1401-1450 the same as 1451-1600.
+    if (bandIndex === 0 && offsetInBand < 50) {
+      return 'w-56';
+    }
 
     const widthSteps = ['w-48', 'w-56', 'w-64', 'w-72'] as const;
     const baselineBandEndOffsets = [50, 200, 400, 700] as const;
@@ -609,9 +613,9 @@ export const ProductCarousel = ({
 
                         return (
                       <div
-                        className={`flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
+                        className={`print-carousel-image-wrap flex items-center justify-center ${layout === 'grid' && 'w-[85%]'} ${layout === 'list' && isVertical && 'w-[65%]'} ${
                           layout === 'grid' && 'pt-2'
-                        } ${layout === 'list' && 'px-3 py-2'} ${
+                        } ${layout === 'list' && 'px-2 py-1'} ${
                           isAsideSearch ? 'aside-search-print-image-wrap' : ''
                         }`}
                       >

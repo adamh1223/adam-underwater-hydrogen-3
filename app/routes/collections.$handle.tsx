@@ -63,6 +63,11 @@ import CollectionPageSkeleton from '~/components/skeletons/CollectionPageSkeleto
 import {SkeletonGate} from '~/components/skeletons/shared';
 import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
 import {DEFAULT_LINK_PREVIEW_ICON} from '~/lib/linkPreview';
+import {
+  EPRODUCT_SEARCH_HINT_WORDS,
+  PRINT_SEARCH_HINT_WORDS,
+  RandomizedSearchHint,
+} from '~/components/RandomizedSearchHint';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const collection = data?.collection as
@@ -1548,9 +1553,23 @@ export default function Collection() {
                             </InputGroupAddon>
                           )}
                         </InputGroup>
-                        <p className="desktop-search-hint text-muted-foreground text-[11px] w-[284px] text-left pl-9">
-                          Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
-                        </p>
+                        {collection?.handle === 'stock' ? (
+                          <RandomizedSearchHint
+                            words={EPRODUCT_SEARCH_HINT_WORDS}
+                            storageKey="search-hint-stock"
+                            className="desktop-search-hint text-muted-foreground text-[11px] w-[284px] text-left pl-9"
+                          />
+                        ) : collection?.handle === 'prints' ? (
+                          <RandomizedSearchHint
+                            words={PRINT_SEARCH_HINT_WORDS}
+                            storageKey="search-hint-prints"
+                            className="desktop-search-hint text-muted-foreground text-[11px] w-[284px] text-left pl-9"
+                          />
+                        ) : (
+                          <p className="desktop-search-hint text-muted-foreground text-[11px] w-[284px] text-left pl-9">
+                            Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+                          </p>
+                        )}
                       </div>
                     );
                   }}
@@ -1646,9 +1665,23 @@ export default function Collection() {
                                   </InputGroupAddon>
                                 )}
                               </InputGroup>
-                              <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
-                                Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
-                              </p>
+                              {collection?.handle === 'stock' ? (
+                                <RandomizedSearchHint
+                                  words={EPRODUCT_SEARCH_HINT_WORDS}
+                                  storageKey="search-hint-stock"
+                                  className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9"
+                                />
+                              ) : collection?.handle === 'prints' ? (
+                                <RandomizedSearchHint
+                                  words={PRINT_SEARCH_HINT_WORDS}
+                                  storageKey="search-hint-prints"
+                                  className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9"
+                                />
+                              ) : (
+                                <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
+                                  Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+                                </p>
+                              )}
                             </div>
                           );
                         }}
@@ -1752,7 +1785,11 @@ export default function Collection() {
               </div>
             ) : (
               <div
-                className={`${layoutClassName} collection-results-surface`.trim()}
+                className={`${layoutClassName} collection-results-surface ${
+                  collection?.handle === 'prints'
+                    ? 'prints-collection-results-surface'
+                    : ''
+                }`.trim()}
                 style={productsContainerStyle}
               >
                 <SearchResultsPredictive.Products
@@ -1770,7 +1807,11 @@ export default function Collection() {
         )}
         {!searchText && (
           <div
-            className={`${layoutClassName} collection-results-surface`.trim()}
+            className={`${layoutClassName} collection-results-surface ${
+              collection?.handle === 'prints'
+                ? 'prints-collection-results-surface'
+                : ''
+            }`.trim()}
             style={productsContainerStyle}
           >
             <PaginatedResourceSection
