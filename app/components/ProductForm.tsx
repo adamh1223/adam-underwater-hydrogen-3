@@ -24,6 +24,8 @@ import {cn} from '~/lib/utils';
 
 const selectedVariantHighlightClass =
   'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+const hoveredVariantHighlightClass =
+  'hover:border-[hsl(var(--primary)/0.65)] hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.28),0_0_10px_hsl(var(--primary)/0.18)]';
 const variantOptionBaseClass =
   'product-options-item border transition-[border-color,box-shadow] duration-300 focus-visible:border-primary focus-visible:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
 
@@ -193,6 +195,7 @@ export function ProductForm({
                       <Link
                         className={cn(
                           variantOptionBaseClass,
+                          !selected && hoveredVariantHighlightClass,
                           selected
                             ? selectedVariantHighlightClass
                             : 'border-transparent',
@@ -216,6 +219,7 @@ export function ProductForm({
                         className={cn(
                           variantOptionBaseClass,
                           exists && !selected && 'link',
+                          !selected && hoveredVariantHighlightClass,
                           selected
                             ? selectedVariantHighlightClass
                             : 'border-transparent',

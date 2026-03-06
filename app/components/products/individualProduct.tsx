@@ -137,6 +137,8 @@ function IndividualProduct({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<any>(null);
+  const carouselApiRef = useRef<any>(null);
+  carouselApiRef.current = carouselApi;
   const mediaContainerRef = useRef<HTMLDivElement | null>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < 700 : false,
@@ -162,6 +164,9 @@ function IndividualProduct({
 
   const orientationImages =
     orientation === 'Landscape' ? productImages : verticalProductImages;
+  const orientationImagesKey = orientationImages
+    .map((image) => image.url)
+    .join('|');
   const zoomItems = orientationImages.map((image) => ({
     url: getOptimizedImageUrl(image.url, 2200),
     type: 'image',
@@ -400,31 +405,25 @@ function IndividualProduct({
     const onSelect = () => {
       setActiveIndex(carouselApi.selectedScrollSnap());
     };
+    onSelect();
     carouselApi.on('select', onSelect);
+    carouselApi.on('reInit', onSelect);
     return () => {
       carouselApi.off('select', onSelect);
+      carouselApi.off('reInit', onSelect);
     };
   }, [carouselApi]);
 
-  const handleThumbnailClick = (index: number) => {
-    if (carouselApi) {
-      carouselApi.scrollTo(index); // smooth scroll
-    }
-    setActiveIndex(index);
-  };
-
-  // Reset carousel to first slide
-  const resetCarousel = useCallback(() => {
-    if (carouselApi) {
-      carouselApi.scrollTo(0); // scroll smoothly to first
-    }
-    setActiveIndex(0); // update blue border
-  }, [carouselApi]);
-
-  // Reset carousel when productImages change
-  useEffect(() => {
-    resetCarousel();
-  }, [orientationImages, resetCarousel]);
+  const handleThumbnailClick = useCallback(
+    (index: number) => {
+      const api = carouselApiRef.current;
+      if (api) {
+        api.scrollTo(index);
+      }
+      setActiveIndex(index);
+    },
+    [],
+  );
 
   // const threeSixtyCarouselImages = productImages.nodes
   //   .map((image: any) => {
@@ -446,8 +445,8 @@ function IndividualProduct({
                 <>
                   {orientation === 'Landscape' && (
                     <Carousel
-                      className="print-carousel-individual-horizontal print-carousel-individual-detail mx-3 flex items-center justify-center"
-                      key={JSON.stringify(orientationImages)}
+                      className="print-carousel-individual-horizontal print-carousel-individual-detail mx-3"
+                      key={orientationImagesKey}
                       setApi={setCarouselApi}
                       style={detailArrowStyle}
                     >
@@ -504,8 +503,8 @@ function IndividualProduct({
                   )}
                   {orientation === 'Vertical' && (
                     <Carousel
-                      className="print-carousel-individual-vertical print-carousel-individual-detail mx-3 flex items-center justify-center"
-                      key={JSON.stringify(orientationImages)}
+                      className="print-carousel-individual-vertical print-carousel-individual-detail mx-3"
+                      key={orientationImagesKey}
                       setApi={setCarouselApi}
                       style={detailArrowStyle}
                     >
@@ -573,31 +572,34 @@ function IndividualProduct({
                     <button
                       type="button"
                       key={url.url}
-                      className={`print-detail-shortcut relative overflow-hidden cursor-pointer border-2 ${
+                      className={`print-detail-shortcut relative cursor-pointer ${
                         idx === activeIndex
-                          ? 'border-[hsl(var(--primary))]'
-                          : ''
+                          ? 'print-detail-shortcut--active'
+                          : 'print-detail-shortcut--inactive'
                       }`}
                       style={getThumbnailButtonStyle(url)}
                       onClick={() => handleThumbnailClick(idx)}
+                      aria-pressed={idx === activeIndex}
                       aria-label={`Go to image ${idx + 1}`}
                     >
-                      {!loadedUrls.has(url.url) && (
-                        <Skeleton className="absolute inset-0 rounded-sm" />
-                      )}
-                      <img
-                        src={getOptimizedImageUrl(url.url, thumbnailWidths[1])}
-                        srcSet={buildSrcSet(url.url, thumbnailWidths)}
-                        sizes={thumbnailSizes}
-                        alt={
-                          url.altText || `${productName} thumbnail ${idx + 1}`
-                        }
-                        className={`print-detail-shortcut-image ${!loadedUrls.has(url.url) ? 'invisible' : ''}`}
-                        loading={idx < 4 ? 'eager' : 'lazy'}
-                        decoding="async"
-                        onLoad={() => handleImageLoaded(url.url)}
-                        {...{fetchpriority: idx < 2 ? 'high' : 'auto'}}
-                      />
+                      <div className="print-detail-shortcut-media">
+                        {!loadedUrls.has(url.url) && (
+                          <Skeleton className="absolute inset-0 print-detail-shortcut-skeleton" />
+                        )}
+                        <img
+                          src={getOptimizedImageUrl(url.url, thumbnailWidths[1])}
+                          srcSet={buildSrcSet(url.url, thumbnailWidths)}
+                          sizes={thumbnailSizes}
+                          alt={
+                            url.altText || `${productName} thumbnail ${idx + 1}`
+                          }
+                          className={`print-detail-shortcut-image ${!loadedUrls.has(url.url) ? 'invisible' : ''}`}
+                          loading={idx < 4 ? 'eager' : 'lazy'}
+                          decoding="async"
+                          onLoad={() => handleImageLoaded(url.url)}
+                          {...{fetchpriority: idx < 2 ? 'high' : 'auto'}}
+                        />
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -612,31 +614,34 @@ function IndividualProduct({
                     <button
                       type="button"
                       key={url.url}
-                      className={`print-detail-shortcut print-detail-shortcut-vertical relative overflow-hidden cursor-pointer border-2 ${
+                      className={`print-detail-shortcut print-detail-shortcut-vertical relative cursor-pointer ${
                         idx === activeIndex
-                          ? 'border-[hsl(var(--primary))]'
-                          : ''
+                          ? 'print-detail-shortcut--active'
+                          : 'print-detail-shortcut--inactive'
                       }`}
                       style={getThumbnailButtonStyle(url)}
                       onClick={() => handleThumbnailClick(idx)}
+                      aria-pressed={idx === activeIndex}
                       aria-label={`Go to image ${idx + 1}`}
                     >
-                      {!loadedUrls.has(url.url) && (
-                        <Skeleton className="absolute inset-0 rounded-sm" />
-                      )}
-                      <img
-                        src={getOptimizedImageUrl(url.url, thumbnailWidths[1])}
-                        srcSet={buildSrcSet(url.url, thumbnailWidths)}
-                        sizes={thumbnailSizes}
-                        alt={
-                          url.altText || `${productName} thumbnail ${idx + 1}`
-                        }
-                        className={`print-detail-shortcut-image ${!loadedUrls.has(url.url) ? 'invisible' : ''}`}
-                        loading={idx < 4 ? 'eager' : 'lazy'}
-                        decoding="async"
-                        onLoad={() => handleImageLoaded(url.url)}
-                        {...{fetchpriority: idx < 2 ? 'high' : 'auto'}}
-                      />
+                      <div className="print-detail-shortcut-media">
+                        {!loadedUrls.has(url.url) && (
+                          <Skeleton className="absolute inset-0 print-detail-shortcut-skeleton" />
+                        )}
+                        <img
+                          src={getOptimizedImageUrl(url.url, thumbnailWidths[1])}
+                          srcSet={buildSrcSet(url.url, thumbnailWidths)}
+                          sizes={thumbnailSizes}
+                          alt={
+                            url.altText || `${productName} thumbnail ${idx + 1}`
+                          }
+                          className={`print-detail-shortcut-image ${!loadedUrls.has(url.url) ? 'invisible' : ''}`}
+                          loading={idx < 4 ? 'eager' : 'lazy'}
+                          decoding="async"
+                          onLoad={() => handleImageLoaded(url.url)}
+                          {...{fetchpriority: idx < 2 ? 'high' : 'auto'}}
+                        />
+                      </div>
                     </button>
                   ))}
                 </div>

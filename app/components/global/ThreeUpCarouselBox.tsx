@@ -19,6 +19,29 @@ interface ThreeUpCarouselBoxProps {
   cards: CardData[];
 }
 
+const BASE_COLUMNS = 2;
+const FIRST_COLUMN_GROWTH_VIEWPORT = 1024;
+// Preserve the same +1 column growth cadence as the 720px -> 1024px jump.
+const COLUMN_GROWTH_INTERVAL = 304;
+
+function getVisibleColumnCount(viewportWidth: number, totalCards: number) {
+  if (totalCards <= 0) return 0;
+
+  const minimumColumns = Math.min(BASE_COLUMNS, totalCards);
+  if (viewportWidth < FIRST_COLUMN_GROWTH_VIEWPORT) {
+    return minimumColumns;
+  }
+
+  const additionalColumns =
+    1 +
+    Math.floor(
+      (viewportWidth - FIRST_COLUMN_GROWTH_VIEWPORT) /
+        COLUMN_GROWTH_INTERVAL,
+    );
+
+  return Math.min(totalCards, minimumColumns + additionalColumns);
+}
+
 export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
@@ -34,13 +57,17 @@ export default function ThreeUpCarouselBox({cards}: ThreeUpCarouselBoxProps) {
   const carouselGapRem = 1;
 
   function slideStyleForCount(count: number) {
-    const gapTotalRem = (count - 1) * carouselGapRem;
-    const width = `calc((100% - ${gapTotalRem}rem) / ${count})`;
+    const safeCount = Math.max(1, count);
+    const gapTotalRem = (safeCount - 1) * carouselGapRem;
+    const width = `calc((100% - ${gapTotalRem}rem) / ${safeCount})`;
     return {flex: `0 0 ${width}`, maxWidth: width};
   }
 
-const carouselAlign: 'start' | 'center' = 'start';
- 
+  const viewportWidth = windowWidth ?? 0;
+  const visibleColumns = getVisibleColumnCount(viewportWidth, cards.length);
+  const shouldShowArrows = cards.length > visibleColumns;
+  const useDesktopCardLayout = viewportWidth >= 1024;
+  const carouselAlign: 'start' | 'center' = 'start';
 
   return (
     <div className="w-full flex justify-center">
@@ -53,136 +80,63 @@ const carouselAlign: 'start' | 'center' = 'start';
         }}
       >
         <CarouselContent className="!flex !items-stretch !justify-start gap-4">
-          {/* ≥ 1024px (3 slides) */}
-          {windowWidth && windowWidth >= 1024 && (
-            <>
-              {cards.map((card: CardData, idx: number) => (
-                <CarouselItem
-                  key={idx}
-                  style={slideStyleForCount(3)}
-                  className="flex justify-center"
-                >
-                  <Card className="w-full">
-                    <CardHeader>
-                      <div className="flex justify-start">
-                        <img
-                          src={card.icon}
-                          alt={`${card.title} icon`}
-                          style={{height: '2rem'}}
-                        />
-                      </div>
-                      <div className="flex justify-center">
-                        <strong>{card.title}</strong>
-                      </div>
-                      <hr />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-center">
-                        <img
-                          src={card.image}
-                          alt={card.title}
-                          className="max-h-[200px] object-contain p"
-                        />
-                      </div>
-                      <div className="flex justify-center pt-2">
-                        <div className="max-w-[85%] text-center">
-                          {card.description}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </>
-          )}
-          {/* 720–1023px (2 slides) */}
-          {windowWidth && windowWidth < 1024 && (
-            <>
-              {cards.map((card: CardData, idx: number) => (
-                <CarouselItem
-                  key={idx}
-                  style={slideStyleForCount(2)}
-                  className="flex justify-center items-stretch"
-                >
-                  <Card className="group w-full p-1 overflow-visible">
-                    <CardHeader>
-                      <div className="flex justify-start">
-                        <img
-                          src={card.icon}
-                          alt={`${card.title} icon`}
-                          style={{height: '2rem'}}
-                        />
-                      </div>
-                      <div className="flex justify-center">
-                        <strong>{card.title}</strong>
-                      </div>
-                      <hr />
-                    </CardHeader>
-                    <div>
-                      <div className="flex justify-center px-1 pt-2">
-                        <img
-                          src={card.image}
-                          alt={card.title}
-                          className="max-h-[200px] object-contain p"
-                        />
-                      </div>
-                      <div className="flex justify-center pt-2">
-                        <div className="max-w-[95%] text-center">
-                          {card.description}
-                        </div>
-                      </div>
+          {cards.map((card: CardData, idx: number) => (
+            <CarouselItem
+              key={idx}
+              style={slideStyleForCount(visibleColumns)}
+              className="flex justify-center items-stretch"
+            >
+              <Card
+                className={
+                  useDesktopCardLayout
+                    ? 'w-full'
+                    : 'group w-full p-1 overflow-visible'
+                }
+              >
+                <CardHeader>
+                  <div className="flex justify-start">
+                    <img
+                      src={card.icon}
+                      alt={`${card.title} icon`}
+                      style={{height: '2rem'}}
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <strong>{card.title}</strong>
+                  </div>
+                  <hr />
+                </CardHeader>
+                <CardContent className={useDesktopCardLayout ? '' : 'px-1'}>
+                  <div
+                    className={`flex justify-center pt-2 ${
+                      useDesktopCardLayout ? '' : 'px-1'
+                    }`}
+                  >
+                    <img
+                      src={card.image}
+                      alt={card.title}
+                      className="max-h-[200px] object-contain p"
+                    />
+                  </div>
+                  <div className="flex justify-center pt-2">
+                    <div
+                      className={
+                        useDesktopCardLayout
+                          ? 'max-w-[85%] text-center'
+                          : 'max-w-[95%] text-center'
+                      }
+                    >
+                      {card.description}
                     </div>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </>
-          )}
-          {/* < 720px (1 slide) */}
-          {/* {windowWidth && windowWidth < 720 && (
-            <>
-              {cards.map((card: CardData, idx: number) => (
-                <CarouselItem
-                  key={idx}
-                  style={slideStyleForCount(2)}
-                  className="flex justify-center"
-                >
-                  <Card className="w-full">
-                    <CardHeader>
-                      <div className="flex justify-start">
-                        <img
-                          src={card.icon}
-                          alt={`${card.title} icon`}
-                          style={{height: '2rem'}}
-                        />
-                      </div>
-                      <div className="flex justify-center">
-                        <strong>{card.title}</strong>
-                      </div>
-                      <hr />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-center">
-                        <img
-                          src={card.image}
-                          alt={card.title}
-                          className="max-h-[200px] object-contain p"
-                        />
-                      </div>
-                      <div className="flex justify-center pt-2">
-                        <div className="max-w-[85%] text-center">
-                          {card.description}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </>
-          )} */}
+                  </div>
+                </CardContent>
+              </Card>
+            </CarouselItem>
+          ))}
         </CarouselContent>
 
-        <CarouselPrevious />
-        <CarouselNext />
+        {shouldShowArrows && <CarouselPrevious />}
+        {shouldShowArrows && <CarouselNext />}
       </Carousel>
     </div>
   );

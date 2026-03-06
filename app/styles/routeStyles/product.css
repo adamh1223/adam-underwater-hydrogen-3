@@ -1216,12 +1216,17 @@
 
 .print-carousel-individual-horizontal [data-slot='carousel-content'] > div,
 .print-carousel-individual-vertical [data-slot='carousel-content'] > div {
-  transform: translateZ(0);
+  display: flex;
+  align-items: stretch;
   backface-visibility: hidden;
+  will-change: transform;
 }
 
 .print-carousel-individual-horizontal [data-slot='carousel-item'],
 .print-carousel-individual-vertical [data-slot='carousel-item'] {
+  flex: 0 0 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow: clip;
   contain: paint;
   background: hsl(var(--background));
@@ -1383,7 +1388,10 @@
   align-items: center;
   justify-content: center;
   background: hsl(var(--background));
+  border-radius: var(--product-option-radius, 0.375rem);
+  overflow: visible;
   padding: 0;
+  transition: box-shadow 180ms ease;
 }
 
 .print-detail-shortcut-vertical {
@@ -1396,6 +1404,47 @@
   height: 100%;
   object-fit: contain;
   display: block;
+  pointer-events: none;
+}
+
+.print-detail-shortcut-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.print-detail-shortcut-skeleton {
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.print-detail-shortcut--inactive {
+  box-shadow: 0 0 0 1px hsl(var(--border) / 0.7);
+}
+
+.print-detail-shortcut--inactive:hover {
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.65),
+    0 0 0 2px hsl(var(--primary) / 0.28),
+    0 0 10px hsl(var(--primary) / 0.18);
+}
+
+.print-detail-shortcut--active {
+  box-shadow:
+    0 0 0 1px hsl(var(--primary)),
+    0 0 0 2px hsl(var(--primary) / 0.5),
+    0 0 20px hsl(var(--primary) / 0.35);
+}
+
+.print-detail-shortcut:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px hsl(var(--primary)),
+    0 0 0 2px hsl(var(--primary) / 0.5),
+    0 0 20px hsl(var(--primary) / 0.35);
 }
 
 .bundle-detail-shortcuts-outer {
