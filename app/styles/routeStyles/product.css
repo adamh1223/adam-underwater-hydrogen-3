@@ -1302,6 +1302,38 @@
   overflow: hidden;
 }
 
+/* Bundle detail carousel: hard-clip the viewport so adjacent slides never
+ * bleed into the active frame. Keep clipping at viewport level to avoid
+ * cropping the iframe content itself.
+ */
+.individual-video-bundle-detail-media
+  [data-slot='carousel-content'][data-orientation='horizontal'] {
+  overflow: clip !important;
+  position: relative;
+  isolation: isolate;
+  contain: paint;
+  clip-path: inset(0) !important;
+  -webkit-clip-path: inset(0) !important;
+  background: hsl(var(--background));
+}
+
+.individual-video-bundle-detail-media [data-slot='carousel-content'] > div {
+  display: flex;
+  align-items: stretch;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.individual-video-bundle-detail-media [data-slot='carousel-item'] {
+  flex: 0 0 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: clip;
+  contain: paint;
+  background: hsl(var(--background));
+  backface-visibility: hidden;
+}
+
 .individual-video-bundle-detail-media
   .bundle-detail-carousel-arrow[data-slot='carousel-previous'],
 .individual-video-bundle-detail-media
@@ -1473,18 +1505,59 @@
   align-items: center;
   justify-content: center;
   background: hsl(var(--background));
+  border-radius: var(--product-option-radius, 0.375rem);
+  overflow: visible;
+  padding: 0;
+  transition: box-shadow 180ms ease;
+}
+
+.bundle-detail-shortcut-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .bundle-detail-shortcut-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.bundle-detail-shortcut--inactive {
+  box-shadow: 0 0 0 1px hsl(var(--border) / 0.7);
+}
+
+.bundle-detail-shortcut--inactive:hover {
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.65),
+    0 0 0 2px hsl(var(--primary) / 0.28),
+    0 0 10px hsl(var(--primary) / 0.18);
+}
+
+.bundle-detail-shortcut--active {
+  box-shadow:
+    0 0 0 1px hsl(var(--primary)),
+    0 0 0 2px hsl(var(--primary) / 0.5),
+    0 0 20px hsl(var(--primary) / 0.35);
+}
+
+.bundle-detail-shortcut:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px hsl(var(--primary)),
+    0 0 0 2px hsl(var(--primary) / 0.5),
+    0 0 20px hsl(var(--primary) / 0.35);
 }
 
 .bundle-detail-empty {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 0.5rem;
+  height: 100%;
+  border-radius: inherit;
   border: 1px solid hsl(var(--border));
   background: hsl(var(--muted));
   color: hsl(var(--muted-foreground));

@@ -142,30 +142,37 @@ function IndividualVideoBundle({
                 <button
                   type="button"
                   key={`bundle-shortcut-${clip.index}`}
-                  className={`cursor-pointer border-2 bundle-detail-shortcut ${
+                  className={`cursor-pointer bundle-detail-shortcut ${
                     idx === currentIndex
-                      ? 'border-[hsl(var(--primary))]'
-                      : 'border-border'
+                      ? 'bundle-detail-shortcut--active'
+                      : 'bundle-detail-shortcut--inactive'
                   }`}
                   onClick={() => handleThumbnailClick(idx)}
+                  aria-pressed={idx === currentIndex}
                   aria-label={`Go to clip ${clip.index}`}
                 >
-                  {clip.image?.url ? (
-                    <img
-                      src={getOptimizedImageUrl(clip.image.url, 360)}
-                      srcSet={[180, 240, 320, 420]
-                        .map(
-                          (width) =>
-                            `${getOptimizedImageUrl(clip.image?.url ?? '', width)} ${width}w`,
-                        )
-                        .join(', ')}
-                      sizes="(max-width: 700px) 22vw, 12vw"
-                      alt={clip.image.altText ?? `Clip ${clip.index} thumbnail`}
-                      className="bundle-detail-shortcut-image"
-                    />
-                  ) : (
-                    <span className="text-sm">{clip.index}</span>
-                  )}
+                  <div className="bundle-detail-shortcut-media">
+                    {clip.image?.url ? (
+                      <img
+                        src={getOptimizedImageUrl(clip.image.url, 360)}
+                        srcSet={[180, 240, 320, 420]
+                          .map(
+                            (width) =>
+                              `${getOptimizedImageUrl(clip.image?.url ?? '', width)} ${width}w`,
+                          )
+                          .join(', ')}
+                        sizes="(max-width: 700px) 22vw, 12vw"
+                        alt={
+                          clip.image.altText ?? `Clip ${clip.index} thumbnail`
+                        }
+                        className="bundle-detail-shortcut-image"
+                      />
+                    ) : (
+                      <span className="bundle-detail-empty text-sm">
+                        {clip.index}
+                      </span>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
