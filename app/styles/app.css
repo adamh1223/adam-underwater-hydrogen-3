@@ -1253,10 +1253,22 @@ span {
   }
 }
 
+@media (min-width: 1024px) {
+  .policy-div {
+    width: 80vw;
+    display: flex;
+    justify-content: center;
+  }
+}
+@media (max-width: 1023px) {
+  .policy-div {
+    width: 92vw;
+    display: flex;
+    justify-content: center;
+  }
+}
 .policy-div {
-  width: 80vw;
-  display: flex;
-  justify-content: center;
+  max-width: 1480px;
 }
 
 .three-d-carousel {

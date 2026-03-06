@@ -55,18 +55,21 @@ function FooterMenu({
               <Link
                 to="https://www.instagram.com/adamunderwater/"
                 target="_blank"
+                rel="noreferrer"
               >
                 <FaInstagram className="social-icon" />
               </Link>
               <Link
                 to="https://www.youtube.com/@Seaforestation"
                 target="_blank"
+                rel="noreferrer"
               >
                 <FaYoutube className="social-icon" />
               </Link>
               <Link
                 to="https://www.linkedin.com/in/adam-hussain-2baa31178/"
                 target="_blank"
+                rel="noreferrer"
               >
                 <FaLinkedin className="social-icon" />
               </Link>
@@ -93,22 +96,22 @@ function FooterMenu({
           </div>
           <div className="my-[-10px]">
             <Button variant="link">
-              <Link to="/policies/privacy-policy">Privacy Policy</Link>
+              <Link to="/policies?policy=privacy-policy">Privacy Policy</Link>
             </Button>
           </div>
           <div className="my-[-10px]">
             <Button variant="link">
-              <Link to="/policies/refund-policy">Refund Policy</Link>
+              <Link to="/policies?policy=refund-policy">Refund Policy</Link>
             </Button>
           </div>
           <div className="my-[-10px]">
             <Button variant="link">
-              <Link to="/policies/terms-of-service">Terms of Service</Link>
+              <Link to="/policies?policy=terms-of-service">Terms of Service</Link>
             </Button>
           </div>
           <div className="my-[-10px]">
             <Button variant="link">
-              <Link to="/policies/shipping-policy">Shipping Policy</Link>
+              <Link to="/policies?policy=shipping-policy">Shipping Policy</Link>
             </Button>
           </div>
         </div>
@@ -119,7 +122,11 @@ function FooterMenu({
       <div className="flex justify-center ms-[-5px] mb-3">
         <Button variant="link" asChild>
           <Link to="/">
-            <img src={'https://downloads.adamunderwater.com/store-1-au/public/colorlogo.svg'} className='footer-logo'></img>
+            <img
+              src={'https://downloads.adamunderwater.com/store-1-au/public/colorlogo.svg'}
+              className="footer-logo"
+              alt="Adam Underwater logo"
+            />
           </Link>
         </Button>
       </div>
@@ -167,7 +174,7 @@ const FALLBACK_FOOTER_MENU = {
       tags: [],
       title: 'Privacy Policy',
       type: 'SHOP_POLICY',
-      url: '/policies/privacy-policy',
+      url: '/policies?policy=privacy-policy',
       items: [],
     },
     {
@@ -176,7 +183,7 @@ const FALLBACK_FOOTER_MENU = {
       tags: [],
       title: 'Refund Policy',
       type: 'SHOP_POLICY',
-      url: '/policies/refund-policy',
+      url: '/policies?policy=refund-policy',
       items: [],
     },
     {
@@ -185,7 +192,7 @@ const FALLBACK_FOOTER_MENU = {
       tags: [],
       title: 'Shipping Policy',
       type: 'SHOP_POLICY',
-      url: '/policies/shipping-policy',
+      url: '/policies?policy=shipping-policy',
       items: [],
     },
     {
@@ -194,7 +201,7 @@ const FALLBACK_FOOTER_MENU = {
       tags: [],
       title: 'Terms of Service',
       type: 'SHOP_POLICY',
-      url: '/policies/terms-of-service',
+      url: '/policies?policy=terms-of-service',
       items: [],
     },
   ],

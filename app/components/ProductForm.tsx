@@ -20,6 +20,12 @@ import {
 } from '~/components/ui/accordion';
 import {Card} from '~/components/ui/card';
 import {useMemo} from 'react';
+import {cn} from '~/lib/utils';
+
+const selectedVariantHighlightClass =
+  'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+const variantOptionBaseClass =
+  'product-options-item border transition-[border-color,box-shadow] duration-300 focus-visible:border-primary focus-visible:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
 
 export function ProductForm({
   cart,
@@ -185,16 +191,18 @@ export function ProductForm({
                   if (isDifferentProduct) {
                     return (
                       <Link
-                        className="product-options-item"
+                        className={cn(
+                          variantOptionBaseClass,
+                          selected
+                            ? selectedVariantHighlightClass
+                            : 'border-transparent',
+                        )}
                         key={option.name + name}
                         prefetch={isPrint ? 'render' : 'intent'}
                         preventScrollReset
                         replace
                         to={`/products/${handle}?${variantUriQuery}`}
                         style={{
-                          border: selected
-                            ? '1px solid black'
-                            : '1px solid transparent',
                           opacity: available ? 1 : 0.3,
                         }}
                       >
@@ -205,14 +213,15 @@ export function ProductForm({
                     return (
                       <button
                         type="button"
-                        className={`product-options-item${
-                          exists && !selected ? ' link' : ''
-                        }`}
+                        className={cn(
+                          variantOptionBaseClass,
+                          exists && !selected && 'link',
+                          selected
+                            ? selectedVariantHighlightClass
+                            : 'border-transparent',
+                        )}
                         key={option.name + name}
                         style={{
-                          border: selected
-                            ? '1px solid #0EA5E9'
-                            : '1px solid transparent',
                           opacity: available ? 1 : 0.3,
                         }}
                         disabled={!exists}
