@@ -1246,6 +1246,18 @@
   overflow: visible;
 }
 
+.individual-video-bundle-detail-media {
+  --bundle-detail-arrow-size: 2rem;
+  --bundle-detail-arrow-gutter: var(--bundle-detail-arrow-size);
+}
+
+@media (max-width: 1023px) {
+  .individual-video-bundle-detail-media {
+    --bundle-detail-arrow-size: 2rem;
+    --bundle-detail-arrow-gutter: var(--bundle-detail-arrow-size);
+  }
+}
+
 @media (min-width: 1024px) {
   .individual-video-product-detail-media {
     /* Same idea as the vertical print carousel: keep the same baseline at
@@ -1264,10 +1276,39 @@
   max-width: 100%;
 }
 
+.individual-video-bundle-detail-media .bundle-detail-media-frame {
+  width: calc(100% - (var(--bundle-detail-arrow-gutter) * 2));
+  max-width: calc(100% - (var(--bundle-detail-arrow-gutter) * 2));
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .bundle-detail-main-media {
   width: 100%;
   max-width: 100%;
   overflow: hidden;
+}
+
+.individual-video-bundle-detail-media
+  .bundle-detail-carousel-arrow[data-slot='carousel-previous'],
+.individual-video-bundle-detail-media
+  .bundle-detail-carousel-arrow[data-slot='carousel-next'] {
+  width: var(--bundle-detail-arrow-size) !important;
+  height: var(--bundle-detail-arrow-size) !important;
+}
+
+.individual-video-bundle-detail-media
+  .bundle-detail-carousel-arrow-prev[data-slot='carousel-previous'] {
+  left: calc(-1 * var(--bundle-detail-arrow-gutter)) !important;
+  right: auto !important;
+  transform: translateY(-50%) !important;
+}
+
+.individual-video-bundle-detail-media
+  .bundle-detail-carousel-arrow-next[data-slot='carousel-next'] {
+  right: calc(-1 * var(--bundle-detail-arrow-gutter)) !important;
+  left: auto !important;
+  transform: translateY(-50%) !important;
 }
 
 .bundle-detail-iframe,

@@ -1,5 +1,5 @@
-import {Await, Link, useNavigate} from '@remix-run/react';
-import {Suspense, useId} from 'react';
+import {Await, Link, useLocation, useNavigate} from '@remix-run/react';
+import {Suspense, useEffect, useId, useRef} from 'react';
 import type {
   CartApiQueryFragment,
   FooterQuery,
@@ -100,7 +100,9 @@ interface SearchAsideProps {
 function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
   const queriesDatalistId = useId();
   const navigate = useNavigate();
+  const location = useLocation();
   const aside = useAside();
+  const previousRouteRef = useRef<string | null>(null);
 
   const handleSearchSubmit = (term: string) => {
     const trimmedTerm = term.trim();
@@ -109,6 +111,21 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
     );
     aside.close();
   };
+
+  useEffect(() => {
+    const currentRoute = `${location.pathname}${location.search}${location.hash}`;
+    const previousRoute = previousRouteRef.current;
+
+    if (
+      previousRoute !== null &&
+      previousRoute !== currentRoute &&
+      aside.type === 'search'
+    ) {
+      aside.close();
+    }
+
+    previousRouteRef.current = currentRoute;
+  }, [aside, location.hash, location.pathname, location.search]);
 
   return (
     <Aside type="search" heading="SEARCH">
@@ -121,29 +138,34 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
             };
             return (
               <div className="mb-5 flex w-full min-w-0 flex-col items-center bg-background px-3 box-border">
-                <p className="order-1 min-[601px]:order-2 text-muted-foreground text-[11px] w-full min-[601px]:w-[220px] text-left pl-9 mb-1 min-[601px]:mb-0 min-[601px]:mt-1.5">
+                <p className="order-1 text-muted-foreground text-[11px] w-full text-left pl-9 mb-1 min-[601px]:hidden">
                   Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
                 </p>
-                <div className="order-2 min-[601px]:order-1 flex w-full min-w-0 max-w-full flex-col gap-2 min-[601px]:w-auto min-[601px]:max-w-none min-[601px]:flex-row min-[601px]:items-center">
-                  <InputGroup className="w-full min-w-0 max-w-full min-[601px]:w-[220px]">
-                    <InputGroupAddon align="inline-start">
-                      <LuSearch className="text-muted-foreground" />
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      className="w-full min-w-0"
-                      name="q"
-                      onChange={handleChange}
-                      onFocus={fetchResults}
-                      placeholder="Search"
-                      ref={inputRef}
-                      type="search"
-                      list={queriesDatalistId}
-                    />
-                  </InputGroup>
+                <div className="order-2 flex w-full min-w-0 max-w-full flex-col gap-2 min-[601px]:w-auto min-[601px]:max-w-none min-[601px]:flex-row min-[601px]:items-start">
+                  <div className="flex w-full min-w-0 max-w-full flex-col items-center min-[601px]:w-[220px] min-[601px]:items-start">
+                    <InputGroup className="w-full min-w-0 max-w-full min-[601px]:w-[220px]">
+                      <InputGroupAddon align="inline-start">
+                        <LuSearch className="text-muted-foreground" />
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        className="w-full min-w-0"
+                        name="q"
+                        onChange={handleChange}
+                        onFocus={fetchResults}
+                        placeholder="Search"
+                        ref={inputRef}
+                        type="search"
+                        list={queriesDatalistId}
+                      />
+                    </InputGroup>
+                    <p className="hidden min-[601px]:block text-muted-foreground text-[11px] w-full pl-9 text-left mt-1.5">
+                      Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+                    </p>
+                  </div>
                   <Button
                     variant="outline"
                     type="submit"
-                    className="cursor-pointer w-full min-[601px]:w-auto"
+                    className="cursor-pointer w-full min-[601px]:w-auto min-[601px]:self-start"
                   >
                     Search
                   </Button>

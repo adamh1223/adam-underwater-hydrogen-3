@@ -200,7 +200,7 @@ function IndividualVideoBundle({
         ref={mediaContainerRef}
       >
         <Carousel
-          className="bundle-detail-carousel"
+          className="bundle-detail-carousel individual-video-bundle-detail-media"
           key={JSON.stringify(clips.map((clip) => clip.index))}
           setApi={setCarouselApi}
           opts={{watchDrag: true}}
@@ -248,12 +248,10 @@ function IndividualVideoBundle({
             </CarouselContent>
 
             <CarouselPrevious
-              className="cursor-pointer z-[80] h-10 w-10 rounded-full border border-border bg-background/80 text-white hover:bg-background"
-              style={{left: '-2.5rem'}}
+              className="bundle-detail-carousel-arrow bundle-detail-carousel-arrow-prev cursor-pointer z-[80] p-0 shadow-none text-white"
             />
             <CarouselNext
-              className="cursor-pointer z-[80] h-10 w-10 rounded-full border border-border bg-background/80 text-white hover:bg-background"
-              style={{right: '-2.5rem'}}
+              className="bundle-detail-carousel-arrow bundle-detail-carousel-arrow-next cursor-pointer z-[80] p-0 shadow-none text-white"
             />
           </div>
         </Carousel>
