@@ -2692,3 +2692,23 @@ span {
 .k-title {
   text-decoration: underline;
 }
+
+@media (max-width: 1350px) {
+  .product-carousel-container {
+    padding: 0 16px;
+  }
+}
+@media (min-width: 1351px) {
+  .product-carousel-container {
+    padding: 0;
+  }
+
+  /* Keep the bundle detail carousel width stable past 1350px.
+   * Without this override, the base container drops side padding to 0 at 1351px,
+   * causing a visible iframe/carousel lateral jump.
+   */
+  .bundle-detail-carousel-container.product-carousel-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

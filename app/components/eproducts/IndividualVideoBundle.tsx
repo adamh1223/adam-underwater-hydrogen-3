@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {
   Carousel,
   CarouselApi,
@@ -35,14 +35,6 @@ function IndividualVideoBundle({
 }) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const mediaContainerRef = useRef<HTMLDivElement | null>(null);
-  const shortcutsInnerRef = useRef<HTMLDivElement | null>(null);
-  const [shortcutsOuterWidth, setShortcutsOuterWidth] = useState<number | null>(
-    null,
-  );
-  const [shortcutsItemWidth, setShortcutsItemWidth] = useState<number | null>(
-    null,
-  );
 
   const activeClipArrayIndex = useMemo(() => {
     const matchIndex = clips.findIndex((clip) => clip.index === activeClipIndex);
@@ -81,124 +73,11 @@ function IndividualVideoBundle({
     onActiveClipChange?.(clips[index]?.index ?? 1);
   };
 
-  const recalculateShortcutLayout = useCallback(() => {
-    if (clips.length <= 1) {
-      setShortcutsOuterWidth(null);
-      setShortcutsItemWidth(null);
-      return;
-    }
-
-    const shortcutsInner = shortcutsInnerRef.current;
-    const mediaContainer = mediaContainerRef.current;
-
-    if (!shortcutsInner || !mediaContainer) {
-      setShortcutsOuterWidth(null);
-      setShortcutsItemWidth(null);
-      return;
-    }
-
-    const availableWidth = mediaContainer.clientWidth;
-    if (!availableWidth) return;
-
-    const computedInnerStyle = window.getComputedStyle(shortcutsInner);
-    const gapValue = Number.parseFloat(
-      computedInnerStyle.columnGap || computedInnerStyle.gap || '0',
-    );
-    const gap = Number.isNaN(gapValue) ? 0 : gapValue;
-
-    const firstShortcut = shortcutsInner.querySelector<HTMLButtonElement>(
-      '.bundle-detail-shortcut',
-    );
-    const shortcutStyle = firstShortcut
-      ? window.getComputedStyle(firstShortcut)
-      : null;
-    const baseWidthVar = shortcutStyle?.getPropertyValue(
-      '--bundle-shortcut-base-width',
-    );
-    const baseItemWidth = Number.parseFloat(baseWidthVar ?? '');
-    const defaultItemWidth =
-      Number.isFinite(baseItemWidth) && baseItemWidth > 0
-        ? baseItemWidth
-        : firstShortcut?.getBoundingClientRect().width || 130;
-
-    const clipCount = clips.length;
-    const oneRowWidth = Math.round(
-      clipCount * defaultItemWidth + Math.max(0, clipCount - 1) * gap,
-    );
-
-    if (oneRowWidth <= availableWidth) {
-      setShortcutsOuterWidth(oneRowWidth);
-      setShortcutsItemWidth(null);
-      return;
-    }
-
-    const maxItemsPerRowAtDefault = Math.max(
-      1,
-      Math.floor((availableWidth + gap) / (defaultItemWidth + gap)),
-    );
-    const minItemsPerRowForTwoLines = Math.ceil(clipCount / 2);
-
-    // Prefer natural wrapping (e.g. 4 -> 3 + 1 -> 2 + 2) and only shrink
-    // thumbnail width if needed to keep the layout at two lines max.
-    const targetItemsPerRow = Math.max(
-      maxItemsPerRowAtDefault,
-      minItemsPerRowForTwoLines,
-    );
-
-    if (targetItemsPerRow <= maxItemsPerRowAtDefault) {
-      const targetWidth = Math.round(
-        targetItemsPerRow * defaultItemWidth +
-          Math.max(0, targetItemsPerRow - 1) * gap,
-      );
-      setShortcutsOuterWidth(targetWidth);
-      setShortcutsItemWidth(null);
-      return;
-    }
-
-    const fittedItemWidth = Math.max(
-      1,
-      Math.floor(
-        (availableWidth - Math.max(0, targetItemsPerRow - 1) * gap) /
-          targetItemsPerRow,
-      ),
-    );
-    const targetWidth = Math.round(
-      targetItemsPerRow * fittedItemWidth +
-        Math.max(0, targetItemsPerRow - 1) * gap,
-    );
-
-    setShortcutsOuterWidth(targetWidth);
-    setShortcutsItemWidth(fittedItemWidth);
-  }, [clips.length]);
-
-  useEffect(() => {
-    recalculateShortcutLayout();
-
-    const mediaContainer = mediaContainerRef.current;
-    const resizeObserver =
-      typeof ResizeObserver !== 'undefined' && mediaContainer
-        ? new ResizeObserver(() => {
-            recalculateShortcutLayout();
-          })
-        : null;
-
-    resizeObserver?.observe(mediaContainer as Element);
-    window.addEventListener('resize', recalculateShortcutLayout);
-
-    return () => {
-      resizeObserver?.disconnect();
-      window.removeEventListener('resize', recalculateShortcutLayout);
-    };
-  }, [recalculateShortcutLayout]);
-
   if (!clips.length) return null;
 
   return (
     <div className="grid grid-cols-1 w-full h-fit lg:self-center">
-      <div
-        className="grid grid-cols-1 w-full h-fit content-start self-start px-2 product-carousel-container relative"
-        ref={mediaContainerRef}
-      >
+      <div className="grid grid-cols-1 w-full h-fit content-start self-start px-2 product-carousel-container bundle-detail-carousel-container relative">
         <Carousel
           className="bundle-detail-carousel individual-video-bundle-detail-media"
           key={JSON.stringify(clips.map((clip) => clip.index))}
@@ -257,15 +136,8 @@ function IndividualVideoBundle({
         </Carousel>
 
         {clips.length > 1 && (
-          <div
-            className="bundle-detail-shortcuts-outer"
-            style={
-              shortcutsOuterWidth
-                ? {width: `${shortcutsOuterWidth}px`}
-                : undefined
-            }
-          >
-            <div className="bundle-detail-shortcuts-inner" ref={shortcutsInnerRef}>
+          <div className="bundle-detail-shortcuts-outer">
+            <div className="bundle-detail-shortcuts-inner">
               {clips.map((clip, idx) => (
                 <button
                   type="button"
@@ -275,14 +147,6 @@ function IndividualVideoBundle({
                       ? 'border-[hsl(var(--primary))]'
                       : 'border-border'
                   }`}
-                  style={
-                    shortcutsItemWidth
-                      ? {
-                          width: `${shortcutsItemWidth}px`,
-                          height: `${Math.round((shortcutsItemWidth * 75) / 130)}px`,
-                        }
-                      : undefined
-                  }
                   onClick={() => handleThumbnailClick(idx)}
                   aria-label={`Go to clip ${clip.index}`}
                 >

@@ -15,7 +15,7 @@ function IndividualVideoProduct({
 
   return (
     <div className="grid grid-cols-1">
-      <div className="grid grid-cols-1 px-2 product-carousel-container relative">
+      <div className="grid grid-cols-1 product-carousel-container relative">
         <div className="bundle-detail-carousel individual-video-product-detail-media">
           <div className="bundle-detail-media-frame">
             <div className="bundle-detail-main-media flex items-center justify-center">
