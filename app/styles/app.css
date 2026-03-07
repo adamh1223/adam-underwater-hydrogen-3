@@ -1906,11 +1906,13 @@ span {
   background: radial-gradient(
     closest-side,
     transparent 51%,
-    hsl(var(--primary) / 1) 53%,
-    hsl(var(--primary) / 0.01) 62%,
-    hsl(var(--primary) / 0.005) 72%,
-    hsl(var(--primary) / 0.0001) 78%,
-    hsl(var(--primary) / 0) 83%
+    hsl(var(--primary) / 0.9) 53%,
+    hsl(var(--primary) / 0.08) 62%,
+    hsl(var(--primary) / 0.04) 72%,
+    hsl(var(--primary) / 0.01) 78%,
+    hsl(var(--primary) / 0.008) 83%,
+    hsl(var(--primary) / 0.003) 93%,
+    hsl(var(--primary) / 0) 100%
   );
   -webkit-mask:
     conic-gradient(
@@ -1926,7 +1928,7 @@ span {
     );
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  filter: blur(8px);
+  filter: blur(5px);
 }
 
 /* Add: sweep 0 → 359 */
