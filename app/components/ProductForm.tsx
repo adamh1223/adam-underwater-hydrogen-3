@@ -23,7 +23,7 @@ import {useMemo} from 'react';
 import {cn} from '~/lib/utils';
 
 const selectedVariantHighlightClass =
-  'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] variant-option-selected-splash';
 const hoveredVariantHighlightClass =
   'hover:border-[hsl(var(--primary)/0.65)] hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.28),0_0_10px_hsl(var(--primary)/0.18)]';
 const variantOptionBaseClass =

@@ -6,7 +6,10 @@ import {
   isRouteErrorResponse,
   type MetaFunction,
   type ShouldRevalidateFunction,
+  useLocation,
+  useNavigation,
 } from '@remix-run/react';
+import {useEffect, useRef} from 'react';
 
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {CUSTOMER_WISHLIST} from './lib/customerQueries';
@@ -279,6 +282,92 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 
 export default function App() {
+  const navigation = useNavigation();
+  const location = useLocation();
+  const navigationStateRef = useRef(navigation.state);
+  const locationKeyRef = useRef(location.key);
+
+  useEffect(() => {
+    navigationStateRef.current = navigation.state;
+    locationKeyRef.current = location.key;
+  }, [location.key, navigation.state]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const splashClassName = 'product-card-nav-splash-running';
+    const cardSelector = `[data-slot="card"].${splashClassName}`;
+    const productLinkSelector =
+      'a.product-item[href*="/products/"], a.product-card-click-splash[href*="/products/"]';
+
+    const clearSplash = () => {
+      document
+        .querySelectorAll<HTMLElement>(cardSelector)
+        .forEach((card) => card.classList.remove(splashClassName));
+    };
+
+    const handleCardLinkClickCapture = (event: MouseEvent) => {
+      if (
+        event.button !== 0 ||
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.shiftKey
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const productLink = target.closest<HTMLAnchorElement>(productLinkSelector);
+      if (!productLink) return;
+
+      const card =
+        target.closest<HTMLElement>('[data-slot="card"]') ??
+        productLink.closest<HTMLElement>('[data-slot="card"]') ??
+        productLink.querySelector<HTMLElement>('[data-slot="card"]');
+      if (!card) return;
+
+      clearSplash();
+      card.classList.add(splashClassName);
+
+      // If click did not start a route transition (e.g. drag-cancel / blocked
+      // click), stop the looping splash so it cannot run forever.
+      const originLocationKey = locationKeyRef.current;
+      window.setTimeout(() => {
+        if (
+          navigationStateRef.current === 'idle' &&
+          locationKeyRef.current === originLocationKey
+        ) {
+          card.classList.remove(splashClassName);
+        }
+      }, 900);
+    };
+
+    document.addEventListener('click', handleCardLinkClickCapture, true);
+
+    return () => {
+      document.removeEventListener('click', handleCardLinkClickCapture, true);
+      clearSplash();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (navigation.state !== 'idle') return;
+
+    const splashClassName = 'product-card-nav-splash-running';
+    const clearOnNextFrame = requestAnimationFrame(() => {
+      document
+        .querySelectorAll<HTMLElement>(`[data-slot="card"].${splashClassName}`)
+        .forEach((card) => card.classList.remove(splashClassName));
+    });
+
+    return () => cancelAnimationFrame(clearOnNextFrame);
+  }, [location.key, navigation.state]);
+
   return <Outlet />;
 }
 

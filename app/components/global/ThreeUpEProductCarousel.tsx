@@ -57,7 +57,7 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                 >
                   <Link
                     to={`/products/${product.handle}`}
-                    className="w-full flex justify-center"
+                    className="w-full flex justify-center product-card-click-splash"
                   >
                     <Card className="group w-full max-w-[420px] mx-2 p-3 overflow-visible flex flex-col">
                       {/* Title */}
@@ -105,7 +105,7 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                 >
                   <Link
                     to={`/products/${product.handle}`}
-                    className="w-full flex justify-center"
+                    className="w-full flex justify-center product-card-click-splash"
                   >
                     <Card className="group w-full max-w-[420px] mx-2 p-3 overflow-visible flex flex-col">
                       <p className="text-center text-muted-foreground px-2">
@@ -150,7 +150,7 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                 >
                   <Link
                     to={`/products/${product.handle}`}
-                    className="w-full flex justify-center"
+                    className="w-full flex justify-center product-card-click-splash"
                   >
                     <Card className="group w-full max-w-[420px] mx-2 p-3 overflow-visible flex flex-col">
                       <p className="text-center text-muted-foreground px-2">

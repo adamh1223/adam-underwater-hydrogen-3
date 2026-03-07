@@ -59,7 +59,7 @@ export function ThreeUpCarousel({products}: ThreeUpCarouselProps) {
                 >
                   <Link
                     to={`/products/${product.handle}`}
-                    className="w-full flex justify-center"
+                    className="w-full flex justify-center product-card-click-splash"
                   >
                     {/* keep group on the Card so children can use group-hover */}
                     <Card className="group w-full max-w-[420px] mx-2 p-4 overflow-visible">
@@ -104,7 +104,7 @@ export function ThreeUpCarousel({products}: ThreeUpCarouselProps) {
                 >
                   <Link
                     to={`/products/${product.handle}`}
-                    className="w-full flex justify-center"
+                    className="w-full flex justify-center product-card-click-splash"
                   >
                     <Card className="group w-full max-w-[420px] mx-2 p-4 overflow-visible">
                       <p className="text-center text-muted-foreground px-2">
@@ -147,7 +147,7 @@ export function ThreeUpCarousel({products}: ThreeUpCarouselProps) {
                 >
                   <Link
                     to={`/products/${product.handle}`}
-                    className="w-full flex justify-center"
+                    className="w-full flex justify-center product-card-click-splash"
                   >
                     <Card className="group w-full max-w-[420px] mx-2 p-4 overflow-visible">
                       <p className="text-center text-muted-foreground px-2">

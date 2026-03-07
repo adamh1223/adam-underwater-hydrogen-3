@@ -1447,6 +1447,7 @@ export default function Product() {
   };
   const navigate = useNavigate();
   const location = useLocation();
+  const shouldShowProductEntrySkeleton = location.key === 'default';
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -1814,7 +1815,7 @@ export default function Product() {
   }, [location, scrollToSection]);
   return (
     <SkeletonGate
-      isReady={isPageReady}
+      isReady={isPageReady || !shouldShowProductEntrySkeleton}
       skeleton={
         <ProductPageSkeleton
           isVideo={isVideo}
