@@ -1825,9 +1825,7 @@ span {
 .favorite-toggle-btn {
   --favorite-border-width: 1px;
   --favorite-radius: var(--radius-md, 0.375rem);
-  --favorite-line-radius: calc(
-    var(--favorite-radius) - 1px
-  );
+  --favorite-line-radius: calc(var(--favorite-radius) - 1px);
   --favorite-border-start-angle: 0deg;
   position: relative;
   isolation: isolate;
@@ -1895,8 +1893,7 @@ span {
 /* ── Progressive glow (::after) ──
    Background: radial gradient with opacity profile (transparent centre,
    peak at inner ring edge, custom falloff outward).
-   Mask: content-box XOR conic-sweep — two layers, mobile-safe.
-   The transparent centre means mask leakage inside the button is invisible. */
+   Mask: content-box XOR conic-sweep — two layers, mobile-safe. */
 .favorite-toggle-btn--animating::after,
 .favorite-toggle-btn--animating-reverse::after {
   content: '';
@@ -1908,14 +1905,20 @@ span {
   z-index: 1;
   background: radial-gradient(
     closest-side,
-    transparent 49%,
-    hsl(var(--primary) / 0.65) 52%,
-    hsl(var(--primary) / 0.3) 68%,
-    hsl(var(--primary) / 0.08) 76%,
-    hsl(var(--primary) / 0) 86%
+    transparent 51%,
+    hsl(var(--primary) / 1) 53%,
+    hsl(var(--primary) / 0.01) 62%,
+    hsl(var(--primary) / 0.005) 72%,
+    hsl(var(--primary) / 0.0001) 78%,
+    hsl(var(--primary) / 0) 83%
   );
   -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
+    conic-gradient(
+        from var(--favorite-border-start-angle),
+        #000 var(--favorite-glow-progress),
+        transparent 0
+      )
+      content-box,
     conic-gradient(
       from var(--favorite-border-start-angle),
       #000 var(--favorite-glow-progress),
@@ -1923,13 +1926,14 @@ span {
     );
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  filter: blur(12px);
+  filter: blur(8px);
 }
 
 /* Add: sweep 0 → 359 */
 .favorite-toggle-btn--animating::before {
   --favorite-border-progress: 0deg;
-  animation: favorite-toggle-border-trace 820ms cubic-bezier(0.42, 0, 0.58, 1) forwards;
+  animation: favorite-toggle-border-trace 820ms cubic-bezier(0.42, 0, 0.58, 1)
+    forwards;
 }
 .favorite-toggle-btn--animating::after {
   --favorite-glow-progress: 0deg;
@@ -1944,8 +1948,8 @@ span {
 }
 .favorite-toggle-btn--animating-reverse::after {
   --favorite-glow-progress: 359deg;
-  animation: favorite-toggle-glow 820ms cubic-bezier(0.42, 0, 0.58, 1)
-    reverse forwards;
+  animation: favorite-toggle-glow 820ms cubic-bezier(0.42, 0, 0.58, 1) reverse
+    forwards;
 }
 
 @keyframes favorite-toggle-border-trace {
@@ -1964,7 +1968,7 @@ span {
   to {
     --favorite-glow-progress: 359deg;
   }
-} 
+}
 
 .heart-btn:hover {
   background: var(--accent);
