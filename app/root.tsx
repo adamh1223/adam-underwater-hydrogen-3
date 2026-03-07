@@ -334,7 +334,7 @@ export default function App() {
       card.classList.add(splashClassName);
 
       // If click did not start a route transition (e.g. drag-cancel / blocked
-      // click), stop the looping splash so it cannot run forever.
+      // click), clear the splash class after one cycle.
       const originLocationKey = locationKeyRef.current;
       window.setTimeout(() => {
         if (

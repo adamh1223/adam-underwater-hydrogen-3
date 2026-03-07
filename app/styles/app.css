@@ -801,7 +801,7 @@ button.reset:hover:not(:has(> *)) {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  animation: product-card-nav-splash-wave 900ms ease-out infinite;
+  animation: product-card-nav-splash-wave 900ms ease-out 1 forwards;
 }
 
 @keyframes product-card-nav-splash-wave {

@@ -1,5 +1,6 @@
 import {
   data as remixData,
+  redirect,
   type LoaderFunctionArgs,
 } from '@shopify/remix-oxygen';
 import {
@@ -24,17 +25,15 @@ export const meta: MetaFunction = () => {
   return buildIconLinkPreviewMeta('Adam Underwater | My Account');
 };
 
-export async function loader({context}: LoaderFunctionArgs) {
+export async function loader({context, request}: LoaderFunctionArgs) {
   const isLoggedIn = await context.customerAccount.isLoggedIn();
   if (!isLoggedIn) {
-    return remixData(
-      {customer: null},
-      {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        },
+    const loginUrl = new URL('/account/login', request.url);
+    return redirect(loginUrl.toString(), {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       },
-    );
+    });
   }
 
   let customer = null;
