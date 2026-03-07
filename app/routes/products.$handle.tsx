@@ -224,6 +224,101 @@ function hasSelectedResolutionOption(
 
 const FIVE_STAR_KEYS = ['one', 'two', 'three', 'four', 'five'] as const;
 
+type ProductSpecItem = {
+  iconSrc: string;
+  title: string;
+  description: string;
+};
+
+const PRINT_SPECS: ProductSpecItem[] = [
+  {
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png',
+    title: 'Printing Process',
+    description:
+      'Images are printed on the Canon ImagePro-Graf 4600 Pro and stretched over thick wooden frames using stretcher plyers.',
+  },
+  {
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png',
+    title: 'Anti-glare',
+    description:
+      'The professional matte canvas that we use does not reflect light - the print will be viewable in any room and any wall.',
+  },
+  {
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png',
+    title: 'Paper Quality',
+    description:
+      'Printed on 200 GSM, polyester inkjet matte canvas on the Canon ImagePro-graf 4600 on a 44 inch roll.',
+  },
+  {
+    iconSrc: 'https://downloads.adamunderwater.com/store-1-au/public/durable.png',
+    title: 'Durable',
+    description:
+      'Prints are professionally stretched over heavy duty wooden frames. Staples are methodically placed to allow even tension of the canvas.',
+  },
+];
+
+const FRAME_SPECS: ProductSpecItem[] = [
+  {
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png',
+    title: 'Handcrafted',
+    description:
+      'Each frame is assembled by hand. Canvas is stretched over frames using stretcher plyers, and stapled onto the back frame.',
+  },
+  {
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png',
+    title: 'Light Weight',
+    description:
+      'Heavy duty and high quality canvas stretcher bars remove the need for extra wooden braces, reducing weight.',
+  },
+  {
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png',
+    title: 'Interactive',
+    description:
+      'Tap your phone on the bottom right corner of the canvas to see the latest products at Adam Underwater.',
+  },
+  {
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png',
+    title: 'Ready to Hang',
+    description:
+      'Wire is installed on the back of each frame, and hanging materials are included. We recommend using 2 hangers for large prints.',
+  },
+];
+
+function SpecsGrid({
+  sectionClassName,
+  items,
+}: {
+  sectionClassName: 'print-specs' | 'frame-specs';
+  items: ProductSpecItem[];
+}) {
+  return (
+    <div className={`${sectionClassName} product-specs-grid`}>
+      {items.map((item) => (
+        <div key={`${sectionClassName}-${item.title}`} className="product-specs-item">
+          <div className="flex justify-center">
+            <img src={item.iconSrc} alt={item.title} style={{height: '2.7rem'}} />
+          </div>
+          <div className="flex justify-center">{item.title}</div>
+          <div className="product-specs-item-description">
+            <Card className="w-full h-full">
+              <CardContent>
+                <div>{item.description}</div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function getHighestResolutionVariant(
   product: any,
 ): Record<string, unknown> | null {
@@ -2004,7 +2099,7 @@ export default function Product() {
             )}
             {/* <ProductImage image={selectedVariant?.image} /> */}
             {windowWidth != undefined && windowWidth < 1024 && (
-              <div className="product-main px-[35px]">
+              <div className="product-main px-[16px]">
                 {windowWidth && windowWidth >= 1024 && (
                   <>
                     <div className="title-button-wrapper">
@@ -2322,113 +2417,10 @@ export default function Product() {
                         Print Specs
                       </AccordionTrigger>
                       <AccordionContent>
-                        <div className="print-specs">
-                          {/* section body */}
-                          <div className="print-specs-container-1">
-                            <div className="column-1">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                Printing Process
-                              </div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                  <CardContent>
-                                    <div>
-                                      Images are printed on the Canon
-                                      ImagePro-Graf 4600 Pro and stretched over
-                                      thick wooden frames using stretcher
-                                      plyers.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                            <div className="column-2">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                Anti-glare
-                              </div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                  <CardContent>
-                                    <div>
-                                      The professional matte canvas that we use
-                                      does not reflect light - the print will be
-                                      viewable in any room and any wall.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="print-specs-container-2">
-                            <div className="column-1">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                Paper Quality
-                              </div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                  <CardContent>
-                                    <div>
-                                      Printed on 200 GSM, polyester inkjet matte
-                                      canvas on the Canon ImagePro-graf 4600 on
-                                      a 44 inch roll.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                            <div className="column-2">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/durable.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">Durable</div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                  <CardContent>
-                                    <div>
-                                      Prints are professionally stretched over
-                                      heavy duty wooden frames. Staples are
-                                      methodically placed to allow even tension
-                                      of the canvas.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <SpecsGrid
+                          sectionClassName="print-specs"
+                          items={PRINT_SPECS}
+                        />
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-2">
@@ -2436,114 +2428,10 @@ export default function Product() {
                         Frame Specs
                       </AccordionTrigger>
                       <AccordionContent>
-                        <div className="frame-specs">
-                          {/* section body */}
-                          <div className="frame-specs-container-1">
-                            <div className="column-1">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                Handcrafted
-                              </div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                  <CardContent>
-                                    <div>
-                                      Each frame is assembled by hand. Canvas is
-                                      stretched over frames using stretcher
-                                      plyers, and stapled onto the back frame.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                            <div className="column-2">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                Light Weight
-                              </div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                  <CardContent>
-                                    <div>
-                                      Heavy duty and high quality canvas
-                                      stretcher bars remove the need for extra
-                                      wooden braces, reducing weight.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="frame-specs-container-2">
-                            <div className="column-1">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                Interactive
-                              </div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                  <CardContent>
-                                    <div>
-                                      Tap your phone on the bottom right corner
-                                      of the canvas to see the latest products
-                                      at Adam Underwater.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                            <div className="column-2">
-                              <div className="flex justify-center">
-                                <img
-                                  src={
-                                    'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'
-                                  }
-                                  alt=""
-                                  style={{height: '2.7rem'}}
-                                />
-                              </div>
-                              <div className="flex justify-center">
-                                Ready to Hang
-                              </div>
-                              <div className="flex justify-center">
-                                <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                  <CardContent>
-                                    <div>
-                                      Wire is installed on the back of each
-                                      frame, and hanging materials are included.
-                                      We recommend using 2 hangers for large
-                                      prints.
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <SpecsGrid
+                          sectionClassName="frame-specs"
+                          items={FRAME_SPECS}
+                        />
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
@@ -2665,118 +2553,10 @@ export default function Product() {
                                 Print Specs
                               </AccordionTrigger>
                               <AccordionContent>
-                                <div className="print-specs">
-                                  {/* section body */}
-                                  <div className="print-specs-container-1">
-                                    <div className="column-1">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/printingprocess.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Printing Process
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                          <CardContent>
-                                            <div>
-                                              Images are printed on the Canon
-                                              ImagePro-Graf 4600 Pro and
-                                              stretched over thick wooden frames
-                                              using stretcher plyers.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                    <div className="column-2">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/antiglare.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Anti-glare
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                          <CardContent>
-                                            <div>
-                                              The professional matte canvas that
-                                              we use does not reflect light -
-                                              the print will be viewable in any
-                                              room and any wall.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="print-specs-container-2">
-                                    <div className="column-1">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/paperquality2.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Paper Quality
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                          <CardContent>
-                                            <div>
-                                              Printed on 200 GSM, polyester
-                                              inkjet matte canvas on the Canon
-                                              ImagePro-graf 4600 on a 44 inch
-                                              roll.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                    <div className="column-2">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/durable.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Durable
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                          <CardContent>
-                                            <div>
-                                              Prints are professionally
-                                              stretched over heavy duty wooden
-                                              frames. Staples are methodically
-                                              placed to allow even tension of
-                                              the canvas.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                                <SpecsGrid
+                                  sectionClassName="print-specs"
+                                  items={PRINT_SPECS}
+                                />
                               </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="item-2">
@@ -2784,117 +2564,10 @@ export default function Product() {
                                 Frame Specs
                               </AccordionTrigger>
                               <AccordionContent>
-                                <div className="frame-specs">
-                                  {/* section body */}
-                                  <div className="frame-specs-container-1">
-                                    <div className="column-1">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/handcrafted.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Handcrafted
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                          <CardContent>
-                                            <div>
-                                              Each frame is assembled by hand.
-                                              Canvas is stretched over frames
-                                              using stretcher plyers, and
-                                              stapled onto the back frame.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                    <div className="column-2">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/lightweight.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Light Weight
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] my-2">
-                                          <CardContent>
-                                            <div>
-                                              Heavy duty and high quality canvas
-                                              stretcher bars remove the need for
-                                              extra wooden braces, reducing
-                                              weight.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="frame-specs-container-2">
-                                    <div className="column-1">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/phonetap.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Interactive
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                          <CardContent>
-                                            <div>
-                                              Tap your phone on the bottom right
-                                              corner of the canvas to see the
-                                              latest products at Adam
-                                              Underwater.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                    <div className="column-2">
-                                      <div className="flex justify-center">
-                                        <img
-                                          src={
-                                            'https://downloads.adamunderwater.com/store-1-au/public/readytohang.png'
-                                          }
-                                          alt=""
-                                          style={{height: '2.7rem'}}
-                                        />
-                                      </div>
-                                      <div className="flex justify-center">
-                                        Ready to Hang
-                                      </div>
-                                      <div className="flex justify-center">
-                                        <Card className="w-[180px] md:w-[300px] lg:w-[190px] xl:w-[250px] mt-2">
-                                          <CardContent>
-                                            <div>
-                                              Wire is installed on the back of
-                                              each frame, and hanging materials
-                                              are included. We recommend using 2
-                                              hangers for large prints.
-                                            </div>
-                                          </CardContent>
-                                        </Card>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
+                                <SpecsGrid
+                                  sectionClassName="frame-specs"
+                                  items={FRAME_SPECS}
+                                />
                               </AccordionContent>
                             </AccordionItem>
                           </Accordion>

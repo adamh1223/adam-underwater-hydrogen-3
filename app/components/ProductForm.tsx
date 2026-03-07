@@ -19,15 +19,16 @@ import {
   AccordionTrigger,
 } from '~/components/ui/accordion';
 import {Card} from '~/components/ui/card';
-import {useMemo} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {cn} from '~/lib/utils';
 
 const selectedVariantHighlightClass =
-  'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] variant-option-selected-splash';
+  'border-primary shadow-[0_0_0_1px_hsl(var(--primary)),0_0_0_2px_hsl(var(--primary)/0.62),0_0_28px_hsl(var(--primary)/0.5)]';
 const hoveredVariantHighlightClass =
-  'hover:border-[hsl(var(--primary)/0.65)] hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.28),0_0_10px_hsl(var(--primary)/0.18)]';
+  'hover:border-[hsl(var(--primary)/0.75)] hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.75),0_0_0_2px_hsl(var(--primary)/0.38),0_0_14px_hsl(var(--primary)/0.3)]';
 const variantOptionBaseClass =
-  'product-options-item border transition-[border-color,box-shadow] duration-300 focus-visible:border-primary focus-visible:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+  'product-options-item border transition-[border-color,box-shadow] duration-300 focus-visible:border-primary focus-visible:shadow-[0_0_0_1px_hsl(var(--primary)),0_0_0_2px_hsl(var(--primary)/0.62),0_0_28px_hsl(var(--primary)/0.5)]';
+const VARIANT_SPLASH_DURATION_MS = 700;
 
 export function ProductForm({
   cart,
@@ -51,6 +52,15 @@ export function ProductForm({
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
+  const [activeSplashKey, setActiveSplashKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeSplashKey) return;
+    const timeoutId = window.setTimeout(() => {
+      setActiveSplashKey(null);
+    }, VARIANT_SPLASH_DURATION_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [activeSplashKey]);
 
   // ✅ Format price safely
   const formattedPrice = selectedVariant?.price?.amount
@@ -163,7 +173,12 @@ export function ProductForm({
                 shouldInlineAddToCart ? 'product-options-inline-selector' : ''
               }
             >
-              <p className="mb-2 product-options-label">
+              <p
+                className={cn(
+                  'product-options-label',
+                  shouldInlineAddToCart ? 'mb-0' : 'mb-2',
+                )}
+              >
                 <strong>{option.name}:</strong>
               </p>
               <div className="product-options-grid">
@@ -178,38 +193,51 @@ export function ProductForm({
                     isDifferentProduct,
                     swatch,
                   } = value;
-
-                  const determineLayout = (name: string) => {
-                    if (name === 'three columns') return '3';
-                    if (name === 'two columns') return '2';
-                    return '';
-                  };
-
-                  const layoutToCheck = determineLayout(name);
-                  const variantImagesToShow = imagesToShow?.filter((image) =>
-                    image?.url?.includes(layoutToCheck),
+                  const isSizeOption =
+                    option.name.trim().toLowerCase() === 'size';
+                  const variantImagesToShow = isSizeOption
+                    ? imagesToShow
+                    : undefined;
+                  const hasVisualSwatch = Boolean(
+                    swatch?.image?.previewImage?.url ||
+                      swatch?.color ||
+                      (isSizeOption && (variantImagesToShow?.length ?? 0) > 0),
                   );
+                  const optionSelectionKey = `${option.name}:${name}`;
+                  const shouldApplySplash =
+                    selected && activeSplashKey === optionSelectionKey;
 
                   if (isDifferentProduct) {
                     return (
                       <Link
                         className={cn(
                           variantOptionBaseClass,
+                          hasVisualSwatch && 'product-options-item--swatch',
                           !selected && hoveredVariantHighlightClass,
                           selected
                             ? selectedVariantHighlightClass
                             : 'border-transparent',
+                          shouldApplySplash && 'variant-option-selected-splash',
                         )}
                         key={option.name + name}
                         prefetch={isPrint ? 'render' : 'intent'}
                         preventScrollReset
                         replace
                         to={`/products/${handle}?${variantUriQuery}`}
+                        onClick={() => {
+                          if (!selected) {
+                            setActiveSplashKey(optionSelectionKey);
+                          }
+                        }}
                         style={{
                           opacity: available ? 1 : 0.3,
                         }}
                       >
-                        <ProductOptionSwatch swatch={swatch} name={name} />
+                        <ProductOptionSwatch
+                          swatch={swatch}
+                          name={name}
+                          variantImagesToShow={variantImagesToShow}
+                        />
                       </Link>
                     );
                   } else {
@@ -218,11 +246,13 @@ export function ProductForm({
                         type="button"
                         className={cn(
                           variantOptionBaseClass,
+                          hasVisualSwatch && 'product-options-item--swatch',
                           exists && !selected && 'link',
                           !selected && hoveredVariantHighlightClass,
                           selected
                             ? selectedVariantHighlightClass
                             : 'border-transparent',
+                          shouldApplySplash && 'variant-option-selected-splash',
                         )}
                         key={option.name + name}
                         style={{
@@ -231,6 +261,7 @@ export function ProductForm({
                         disabled={!exists}
                         onClick={() => {
                           if (!selected) {
+                            setActiveSplashKey(optionSelectionKey);
                             navigate(`?${variantUriQuery}`, {
                               replace: true,
                               preventScrollReset: true,
