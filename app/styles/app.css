@@ -1833,6 +1833,12 @@ span {
   isolation: isolate;
   overflow: visible;
   border-radius: var(--favorite-radius);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .favorite-toggle-btn > * {
