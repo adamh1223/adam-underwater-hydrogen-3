@@ -1893,10 +1893,10 @@ span {
 }
 
 /* ── Progressive glow (::after) ──
-   Radial background fades from brighter inside to dimmer outside.
-   Three-layer mask: conic sweep ∩ (content-box XOR border-box ring).
-   Result: only the swept portion of the ring is visible, with a smooth
-   inner→outer opacity falloff that mimics box-shadow. */
+   Background: radial gradient with opacity profile (transparent centre,
+   peak at inner ring edge, custom falloff outward).
+   Mask: content-box XOR conic-sweep — two layers, mobile-safe.
+   The transparent centre means mask leakage inside the button is invisible. */
 .favorite-toggle-btn--animating::after,
 .favorite-toggle-btn--animating-reverse::after {
   content: '';
@@ -1908,22 +1908,22 @@ span {
   z-index: 1;
   background: radial-gradient(
     closest-side,
-    hsl(var(--primary) / 0.7) 0%,
-    hsl(var(--primary) / 0.6) 33%,
-    hsl(var(--primary) / 0.05) 48%,
-    hsl(var(--primary) / 0) 65%
+    transparent 49%,
+    hsl(var(--primary) / 0.65) 52%,
+    hsl(var(--primary) / 0.3) 68%,
+    hsl(var(--primary) / 0.08) 76%,
+    hsl(var(--primary) / 0) 86%
   );
   -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
     conic-gradient(
       from var(--favorite-border-start-angle),
       #000 var(--favorite-glow-progress),
       transparent 0
-    ),
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: source-in, xor;
-  mask-composite: intersect, exclude;
-  filter: blur(10px);
+    );
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: blur(12px);
 }
 
 /* Add: sweep 0 → 359 */
@@ -1964,7 +1964,7 @@ span {
   to {
     --favorite-glow-progress: 359deg;
   }
-}
+} 
 
 .heart-btn:hover {
   background: var(--accent);
