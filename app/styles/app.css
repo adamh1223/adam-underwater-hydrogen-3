@@ -1857,9 +1857,10 @@ span {
 }
 
 /* ── Animating states (add / remove) ── */
-.favorite-toggle-btn--animating,
+.favorite-toggle-btn--animating {
+  box-shadow: none;
+}
 .favorite-toggle-btn--animating-reverse {
-  border-color: transparent !important;
   box-shadow: none;
 }
 
@@ -1901,8 +1902,8 @@ span {
   z-index: 1;
   background: radial-gradient(
     closest-side,
-    hsl(var(--primary) / 0.48) 0%,
-    hsl(var(--primary) / 0.42) 33%,
+    hsl(var(--primary) / 0.62) 0%,
+    hsl(var(--primary) / 0.54) 33%,
     hsl(var(--primary) / 0.1) 55%,
     hsl(var(--primary) / 0) 90%
   );
