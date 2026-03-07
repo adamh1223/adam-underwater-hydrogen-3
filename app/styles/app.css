@@ -1826,7 +1826,7 @@ span {
   --favorite-border-width: 1px;
   --favorite-radius: var(--radius-md, 0.375rem);
   --favorite-line-radius: calc(
-    var(--favorite-radius) + var(--favorite-border-width)
+    var(--favorite-radius) - 1px
   );
   --favorite-border-start-angle: 0deg;
   position: relative;
@@ -1895,17 +1895,17 @@ span {
 .favorite-toggle-btn--animating-reverse::after {
   content: '';
   position: absolute;
-  inset: -12px;
-  border-radius: calc(var(--favorite-line-radius) + 11px);
+  inset: -15px;
+  border-radius: calc(var(--favorite-line-radius) + 14px);
   padding: 15px;
   pointer-events: none;
   z-index: 1;
   background: radial-gradient(
     closest-side,
-    hsl(var(--primary) / 0.62) 0%,
-    hsl(var(--primary) / 0.54) 33%,
-    hsl(var(--primary) / 0.1) 55%,
-    hsl(var(--primary) / 0) 90%
+    hsl(var(--primary) / 0.7) 0%,
+    hsl(var(--primary) / 0.6) 33%,
+    hsl(var(--primary) / 0.05) 48%,
+    hsl(var(--primary) / 0) 65%
   );
   -webkit-mask:
     conic-gradient(
