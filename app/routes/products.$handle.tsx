@@ -87,6 +87,7 @@ const DEFAULT_SHARE_IMAGE =
   'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
 const SHARE_CACHE_BUST_VERSION = '2';
 const INTERNAL_SHARE_QUERY_PARAMS = new Set(['_au_meta', '_au_variant']);
+const FAVORITE_BORDER_TRACE_MS = 820;
 
 function withShopifyCroppedShareImage(
   imageUrl: string,
@@ -1545,7 +1546,18 @@ export default function Product() {
   const shouldShowProductEntrySkeleton = location.key === 'default';
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
+  const [favoriteBorderTraceState, setFavoriteBorderTraceState] = useState<
+    'idle' | 'adding' | 'removing'
+  >('idle');
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (favoriteBorderTraceState === 'idle') return;
+    const timeoutId = window.setTimeout(() => {
+      setFavoriteBorderTraceState('idle');
+    }, FAVORITE_BORDER_TRACE_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [favoriteBorderTraceState]);
 
   const normalizedSiteUrl = (siteUrl ?? 'https://adamunderwater.com').replace(
     /\/$/,
@@ -1604,6 +1616,7 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(true);
+      setFavoriteBorderTraceState('adding');
       toast.success('Added to Favorites', {
         action: {
           label: 'View All Favorites',
@@ -1613,6 +1626,7 @@ export default function Product() {
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
+      setFavoriteBorderTraceState('idle');
       setPendingWishlistChange(false);
     }
   };
@@ -1629,6 +1643,7 @@ export default function Product() {
       });
       const json = await response.json();
       setWishlistItem(false);
+      setFavoriteBorderTraceState('removing');
       toast.success('Removed from Favorites', {
         action: {
           label: 'View All Favorites',
@@ -1638,6 +1653,7 @@ export default function Product() {
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
+      setFavoriteBorderTraceState('idle');
       setPendingWishlistChange(false);
     }
   };
@@ -1760,6 +1776,17 @@ export default function Product() {
 
   const productActionButtonClassName =
     'inline-flex items-center justify-center cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground relative z-50';
+  const productWishlistButtonClassName = `${productActionButtonClassName} favorite-toggle-btn${
+    wishlistItem && favoriteBorderTraceState === 'idle'
+      ? ' favorite-toggle-btn--active'
+      : ''
+  }${
+    favoriteBorderTraceState === 'adding' ? ' favorite-toggle-btn--animating' : ''
+  }${
+    favoriteBorderTraceState === 'removing'
+      ? ' favorite-toggle-btn--animating-reverse'
+      : ''
+  }`;
   const productActionIconClassName = 'h-4 w-4';
 
   const renderProductHeaderActionButtons = () => (
@@ -1769,7 +1796,7 @@ export default function Product() {
           <TooltipTrigger asChild>
             <button
               onClick={wishlistItem ? removeFromFavorites : addToFavorites}
-              className={productActionButtonClassName}
+              className={productWishlistButtonClassName}
             >
               {pendingWishlistChange ? (
                 <ReloadIcon

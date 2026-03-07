@@ -61,6 +61,8 @@ type collectionPageProduct =
   | collectionProduct
   | (PartialPredictiveSearchResult<'products'> & expandedPartialPredictive);
 
+const FAVORITE_BORDER_TRACE_MS = 820;
+
 /**
  * NOTE: product prop is now permissive to avoid TS errors when callers pass just an id.
  * Prefer passing the full product object (collectionProduct) from the parent.
@@ -154,6 +156,9 @@ export const ProductCarousel = ({
   const [totalItems, setTotalItems] = useState(0);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
+  const [favoriteBorderTraceState, setFavoriteBorderTraceState] = useState<
+    'idle' | 'adding' | 'removing'
+  >('idle');
 
   const listLayoutColumns =
     layout === 'list' ? {gridTemplateColumns: '60% 40%'} : undefined;
@@ -410,6 +415,7 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(true);
+      setFavoriteBorderTraceState('adding');
       toast.success('Added to Favorites', {
         action: {
           label: 'View All Favorites',
@@ -419,6 +425,7 @@ export const ProductCarousel = ({
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
+      setFavoriteBorderTraceState('idle');
       setPendingWishlistChange(false);
     }
   };
@@ -435,6 +442,7 @@ export const ProductCarousel = ({
       });
       const json = await response.json();
       setWishlistItem(false);
+      setFavoriteBorderTraceState('removing');
       toast.success('Removed from Favorites', {
         action: {
           label: 'View All Favorites',
@@ -444,10 +452,29 @@ export const ProductCarousel = ({
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
+      setFavoriteBorderTraceState('idle');
       setPendingWishlistChange(false);
     }
   };
+  useEffect(() => {
+    if (favoriteBorderTraceState === 'idle') return;
+    const timeoutId = window.setTimeout(() => {
+      setFavoriteBorderTraceState('idle');
+    }, FAVORITE_BORDER_TRACE_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [favoriteBorderTraceState]);
   const loginValue = useIsLoggedIn(isLoggedIn);
+  const wishlistToggleButtonClassName = `cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground relative z-50 favorite-toggle-btn${
+    wishlistItem && favoriteBorderTraceState === 'idle'
+      ? ' favorite-toggle-btn--active'
+      : ''
+  }${
+    favoriteBorderTraceState === 'adding' ? ' favorite-toggle-btn--animating' : ''
+  }${
+    favoriteBorderTraceState === 'removing'
+      ? ' favorite-toggle-btn--animating-reverse'
+      : ''
+  }`;
   const asideArrowShellClassName =
     isAsideSearch && layout === 'grid'
       ? isVertical
@@ -495,7 +522,7 @@ export const ProductCarousel = ({
                       wishlistItem ? removeFromFavorites : addToFavorites
                     }
                     disabled={!loginValue}
-                    className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                    className={wishlistToggleButtonClassName}
                   >
                     {pendingWishlistChange ? (
                       <ReloadIcon className="animate-spin" />
@@ -559,7 +586,7 @@ export const ProductCarousel = ({
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }
                         disabled={!loginValue}
-                        className="cursor-pointer p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        className={wishlistToggleButtonClassName}
                       >
                         {pendingWishlistChange ? (
                           <ReloadIcon className="animate-spin" />

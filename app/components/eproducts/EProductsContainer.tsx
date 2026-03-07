@@ -39,6 +39,7 @@ const bundleDurationRegex = /^d(\d+)-(.+)$/i;
 const bundleResolutionRegex = /^res(\d+)-(.+)$/i;
 const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
 const bundleClipNameRegex = /^cn(\d+)__+(.+)$/i;
+const FAVORITE_BORDER_TRACE_MS = 820;
 
 function normalizeResolutionLabel(value: string): string {
   return value.trim().toUpperCase();
@@ -439,6 +440,9 @@ function EProductsContainer({
   const loginValue = useIsLoggedIn(isLoggedIn);
   const [wishlistItem, setWishlistItem] = useState(isInWishlist);
   const [pendingWishlistChange, setPendingWishlistChange] = useState(false);
+  const [favoriteBorderTraceState, setFavoriteBorderTraceState] = useState<
+    'idle' | 'adding' | 'removing'
+  >('idle');
   const handleBundleCardClick = (event: React.MouseEvent<HTMLElement>) => {
     if (!isBundle) return;
     const target = event.target as Element | null;
@@ -465,6 +469,7 @@ function EProductsContainer({
       });
       const json = await response.json();
       setWishlistItem(true);
+      setFavoriteBorderTraceState('adding');
       toast.success('Added to Favorites', {
         action: {
           label: 'View All Favorites',
@@ -474,6 +479,7 @@ function EProductsContainer({
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(false);
+      setFavoriteBorderTraceState('idle');
       setPendingWishlistChange(false);
     }
   };
@@ -490,6 +496,7 @@ function EProductsContainer({
       });
       const json = await response.json();
       setWishlistItem(false);
+      setFavoriteBorderTraceState('removing');
       toast.success('Removed from Favorites', {
         action: {
           label: 'View All Favorites',
@@ -499,9 +506,30 @@ function EProductsContainer({
       setPendingWishlistChange(false);
     } catch (error) {
       setWishlistItem(true);
+      setFavoriteBorderTraceState('idle');
       setPendingWishlistChange(false);
     }
   };
+  useEffect(() => {
+    if (favoriteBorderTraceState === 'idle') return;
+    const timeoutId = window.setTimeout(() => {
+      setFavoriteBorderTraceState('idle');
+    }, FAVORITE_BORDER_TRACE_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [favoriteBorderTraceState]);
+  const favoriteToggleClassSuffix = `favorite-toggle-btn${
+    wishlistItem && favoriteBorderTraceState === 'idle'
+      ? ' favorite-toggle-btn--active'
+      : ''
+  }${
+    favoriteBorderTraceState === 'adding' ? ' favorite-toggle-btn--animating' : ''
+  }${
+    favoriteBorderTraceState === 'removing'
+      ? ' favorite-toggle-btn--animating-reverse'
+      : ''
+  }`;
+  const wishlistGridButtonClassName = `fav-btn-grid cursor-pointer rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground relative z-50 ${favoriteToggleClassSuffix}`;
+  const wishlistListButtonClassName = `cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground relative z-50 ${favoriteToggleClassSuffix}`;
 
   return (
     <>
@@ -584,7 +612,7 @@ function EProductsContainer({
                                 : addToFavorites
                             }
                             disabled={!loginValue}
-                            className="fav-btn-grid cursor-pointer  rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                            className={wishlistGridButtonClassName}
                           >
                             {pendingWishlistChange ? (
                               <>
@@ -997,7 +1025,7 @@ function EProductsContainer({
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }
                         disabled={!loginValue}
-                        className="cursor-pointer rounded-md border fav-btn-list border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        className={wishlistListButtonClassName}
                       >
                         {pendingWishlistChange ? (
                           <div className="flex justify-center items-center">
@@ -1222,7 +1250,7 @@ function EProductsContainer({
                           wishlistItem ? removeFromFavorites : addToFavorites
                         }
                         disabled={!loginValue}
-                        className="cursor-pointer fav-btn-list rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer relative z-50"
+                        className={wishlistListButtonClassName}
                       >
                         {pendingWishlistChange ? (
                           <div className="flex justify-center items-center">
