@@ -1,10 +1,10 @@
 import type {CustomerFragment} from 'customer-accountapi.generated';
 import type {CustomerUpdateInput} from '@shopify/hydrogen/customer-account-api-types';
 import {
+  Fragment,
   useEffect,
   useRef,
   useState,
-  type ChangeEvent,
   type FormEvent,
 } from 'react';
 import {toast} from 'sonner';
@@ -25,11 +25,35 @@ import {
   useOutletContext,
   type MetaFunction,
 } from '@remix-run/react';
+import {ChevronDown} from 'lucide-react';
+import {
+  type CountryCode,
+  getCountries,
+  getCountryCallingCode,
+  getExampleNumber,
+  parsePhoneNumberFromString,
+} from 'libphonenumber-js';
+import phoneExamples from 'libphonenumber-js/examples.mobile.json';
+import {REGEXP_ONLY_DIGITS} from 'input-otp';
 import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
-import {Button} from '~/components/ui/button';
+import {Button, buttonVariants} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from '~/components/ui/input-otp';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
+import {cn} from '~/lib/utils';
 
 export type ActionResponse = {
   error: string | null;
@@ -70,6 +94,169 @@ const CUSTOMER_PHONE_UPDATE = `
     }
   }
 ` as const;
+
+const DEFAULT_PHONE_COUNTRY: CountryCode = 'US';
+
+type CountryPhoneOption = {
+  country: CountryCode;
+  label: string;
+  dialCodeDisplay: string;
+  dialDigits: string;
+  localLength: number;
+  localGroups: number[];
+};
+
+function fallbackOtpGroups(totalDigits: number): number[] {
+  if (totalDigits <= 0) return [];
+  if (totalDigits <= 4) return [totalDigits];
+  if (totalDigits === 5) return [2, 3];
+  if (totalDigits === 6) return [3, 3];
+  if (totalDigits === 7) return [3, 4];
+  if (totalDigits === 8) return [4, 4];
+  if (totalDigits === 9) return [3, 3, 3];
+  if (totalDigits === 10) return [3, 3, 4];
+  if (totalDigits === 11) return [3, 4, 4];
+  if (totalDigits === 12) return [3, 3, 3, 3];
+  if (totalDigits === 13) return [3, 3, 3, 4];
+  if (totalDigits === 14) return [3, 3, 4, 4];
+  const leading = [3, 3, 3, 4];
+  const consumed = leading.reduce((sum, value) => sum + value, 0);
+  return [...leading, totalDigits - consumed].filter((value) => value > 0);
+}
+
+function deriveOtpGroups(exampleNational: string, totalDigits: number): number[] {
+  const groupedDigits = (exampleNational.match(/\d+/g) ?? []).map(
+    (group) => group.length,
+  );
+  if (!groupedDigits.length) {
+    return fallbackOtpGroups(totalDigits);
+  }
+  const groupedTotal = groupedDigits.reduce((sum, value) => sum + value, 0);
+  if (groupedTotal !== totalDigits) {
+    return fallbackOtpGroups(totalDigits);
+  }
+  return groupedDigits;
+}
+
+function formatLocalDigitsByGroups(localDigits: string, groups: number[]): string {
+  if (!localDigits.length) return '';
+  const chunks: string[] = [];
+  let cursor = 0;
+  for (const groupLength of groups) {
+    if (cursor >= localDigits.length) break;
+    const nextChunk = localDigits.slice(cursor, cursor + groupLength);
+    if (!nextChunk.length) break;
+    chunks.push(nextChunk);
+    cursor += groupLength;
+  }
+  if (cursor < localDigits.length) {
+    chunks.push(localDigits.slice(cursor));
+  }
+  return chunks.join('-');
+}
+
+function buildCombinedPhoneValue(
+  option: CountryPhoneOption,
+  localDigits: string,
+): string {
+  if (!localDigits.length) return '';
+  const formattedLocal = formatLocalDigitsByGroups(localDigits, option.localGroups);
+  return `${option.dialCodeDisplay}-${formattedLocal}`;
+}
+
+function resolveInitialPhoneState(phoneValue: string): {
+  country: CountryCode;
+  localDigits: string;
+} {
+  const fallbackOption = COUNTRY_PHONE_OPTION_BY_COUNTRY.get(
+    DEFAULT_PHONE_COUNTRY,
+  ) as CountryPhoneOption;
+  const trimmedPhoneValue = phoneValue.trim();
+  if (!trimmedPhoneValue.length) {
+    return {country: fallbackOption.country, localDigits: ''};
+  }
+
+  const parsedPhoneNumber = parsePhoneNumberFromString(trimmedPhoneValue);
+  if (parsedPhoneNumber?.country) {
+    const parsedCountry = parsedPhoneNumber.country as CountryCode;
+    const parsedCountryOption = COUNTRY_PHONE_OPTION_BY_COUNTRY.get(parsedCountry);
+    if (parsedCountryOption) {
+      return {
+        country: parsedCountry,
+        localDigits: parsedPhoneNumber.nationalNumber
+          .replace(/\D/g, '')
+          .slice(0, parsedCountryOption.localLength),
+      };
+    }
+  }
+
+  const normalizedDigits = trimmedPhoneValue.replace(/\D/g, '');
+  if (!normalizedDigits.length) {
+    return {country: fallbackOption.country, localDigits: ''};
+  }
+
+  if (trimmedPhoneValue.startsWith('+')) {
+    const prefixMatch = COUNTRY_PHONE_OPTIONS_BY_DIAL_PREFIX.find((option) =>
+      normalizedDigits.startsWith(option.dialDigits),
+    );
+    if (prefixMatch) {
+      return {
+        country: prefixMatch.country,
+        localDigits: normalizedDigits
+          .slice(prefixMatch.dialDigits.length)
+          .slice(0, prefixMatch.localLength),
+      };
+    }
+  }
+
+  return {
+    country: fallbackOption.country,
+    localDigits: normalizedDigits.slice(0, fallbackOption.localLength),
+  };
+}
+
+const regionDisplayNames =
+  typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+    ? new Intl.DisplayNames(['en'], {type: 'region'})
+    : null;
+
+const COUNTRY_PHONE_OPTIONS: CountryPhoneOption[] = getCountries()
+  .map((country) => {
+    const dialDigits = getCountryCallingCode(country);
+    const dialCodeDisplay = `+${dialDigits}`;
+    const countryName = regionDisplayNames?.of(country) ?? country;
+    const examplePhone = getExampleNumber(country, phoneExamples as any);
+    const nationalDigits =
+      examplePhone?.nationalNumber?.replace(/\D/g, '') ?? '';
+    const localLength = nationalDigits.length || 10;
+    const exampleNationalFormat =
+      typeof examplePhone?.formatNational === 'function'
+        ? examplePhone.formatNational()
+        : '';
+    const localGroups = deriveOtpGroups(exampleNationalFormat, localLength);
+
+    return {
+      country,
+      label: countryName,
+      dialCodeDisplay,
+      dialDigits,
+      localLength,
+      localGroups,
+    };
+  })
+  .sort((left, right) => {
+    if (left.country === DEFAULT_PHONE_COUNTRY) return -1;
+    if (right.country === DEFAULT_PHONE_COUNTRY) return 1;
+    return left.label.localeCompare(right.label);
+  });
+
+const COUNTRY_PHONE_OPTION_BY_COUNTRY = new Map<CountryCode, CountryPhoneOption>(
+  COUNTRY_PHONE_OPTIONS.map((option) => [option.country, option]),
+);
+
+const COUNTRY_PHONE_OPTIONS_BY_DIAL_PREFIX = [...COUNTRY_PHONE_OPTIONS].sort(
+  (left, right) => right.dialDigits.length - left.dialDigits.length,
+);
 
 export const meta: MetaFunction = () => {
   return buildIconLinkPreviewMeta('Adam Underwater | My Profile');
@@ -340,7 +527,13 @@ export default function AccountProfile() {
   const marketingSmsOnFile =
     marketingSmsState === 'SUBSCRIBED' || marketingSmsState === 'PENDING';
   const [marketingSms, setMarketingSms] = useState(marketingSmsOnFile);
-  const [phone, setPhone] = useState(phoneOnFile);
+  const initialPhoneState = resolveInitialPhoneState(phoneOnFile);
+  const [selectedPhoneCountry, setSelectedPhoneCountry] = useState<CountryCode>(
+    initialPhoneState.country,
+  );
+  const [phoneLocalDigits, setPhoneLocalDigits] = useState(
+    initialPhoneState.localDigits,
+  );
   const [clientError, setClientError] = useState<string | null>(null);
   const shouldToastOnSuccessRef = useRef(false);
 
@@ -355,30 +548,71 @@ export default function AccountProfile() {
   }, [action?.error, marketingSmsOnFile]);
 
   useEffect(() => {
-    setPhone(phoneOnFile);
+    const nextPhoneState = resolveInitialPhoneState(phoneOnFile);
+    setSelectedPhoneCountry(nextPhoneState.country);
+    setPhoneLocalDigits(nextPhoneState.localDigits);
   }, [phoneOnFile]);
 
   const phoneOnFileValue = phoneOnFile.trim();
+  const selectedPhoneOption =
+    COUNTRY_PHONE_OPTION_BY_COUNTRY.get(selectedPhoneCountry) ??
+    (COUNTRY_PHONE_OPTION_BY_COUNTRY.get(DEFAULT_PHONE_COUNTRY) as CountryPhoneOption);
+  const clampedPhoneLocalDigits = phoneLocalDigits.slice(
+    0,
+    selectedPhoneOption.localLength,
+  );
+  const phoneValue = buildCombinedPhoneValue(
+    selectedPhoneOption,
+    clampedPhoneLocalDigits,
+  );
 
-  const handlePhoneChange = ({target}: ChangeEvent<HTMLInputElement>) => {
-    const nextPhone = target.value;
-    setPhone(nextPhone);
-    setClientError(null);
+  useEffect(() => {
+    if (phoneLocalDigits.length <= selectedPhoneOption.localLength) return;
+    setPhoneLocalDigits((currentDigits) =>
+      currentDigits.slice(0, selectedPhoneOption.localLength),
+    );
+  }, [phoneLocalDigits.length, selectedPhoneOption.localLength]);
 
+  const syncMarketingSmsForPhoneValue = (nextCombinedPhoneValue: string) => {
     if (!phoneOnFileValue.length) return;
-
-    if (nextPhone.trim() !== phoneOnFileValue) {
+    if (nextCombinedPhoneValue.trim() !== phoneOnFileValue) {
       setMarketingSms(false);
       return;
     }
-
     setMarketingSms(marketingSmsOnFile);
+  };
+
+  const handlePhoneCountrySelect = (nextCountry: CountryCode) => {
+    const nextCountryOption = COUNTRY_PHONE_OPTION_BY_COUNTRY.get(nextCountry);
+    if (!nextCountryOption) return;
+
+    const nextLocalDigits = clampedPhoneLocalDigits.slice(
+      0,
+      nextCountryOption.localLength,
+    );
+    setSelectedPhoneCountry(nextCountry);
+    setPhoneLocalDigits(nextLocalDigits);
+    setClientError(null);
+    syncMarketingSmsForPhoneValue(
+      buildCombinedPhoneValue(nextCountryOption, nextLocalDigits),
+    );
+  };
+
+  const handlePhoneLocalDigitsChange = (nextOtpValue: string) => {
+    const nextDigits = nextOtpValue
+      .replace(/\D/g, '')
+      .slice(0, selectedPhoneOption.localLength);
+    setPhoneLocalDigits(nextDigits);
+    setClientError(null);
+    syncMarketingSmsForPhoneValue(
+      buildCombinedPhoneValue(selectedPhoneOption, nextDigits),
+    );
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     setClientError(null);
 
-    if (marketingSms && !phone.trim().length) {
+    if (marketingSms && !phoneValue.trim().length) {
       event.preventDefault();
       setClientError(
         'Please add a phone number and then try subscribing to SMS again.',
@@ -402,7 +636,7 @@ export default function AccountProfile() {
     shouldToastOnSuccessRef.current =
       firstNameValue.trim() !== (customer.firstName ?? '').trim() ||
       lastNameValue.trim() !== (customer.lastName ?? '').trim() ||
-      phone.trim() !== phoneOnFileValue ||
+      phoneValue.trim() !== phoneOnFileValue ||
       marketingEmailChecked !== marketingEmail ||
       marketingSms !== marketingSmsOnFile;
   };
@@ -438,9 +672,6 @@ export default function AccountProfile() {
       <Sectiontitle text="My Profile" />
       <div className="account-profile flex justify-center">
         <Card className="mx-2 mt-3 w-[95%]">
-          <div className="p-4">
-            <h2>My profile</h2>
-          </div>
 
           <Form method="PUT" onSubmit={handleSubmit}>
             <div className="ps-4">
@@ -461,7 +692,7 @@ export default function AccountProfile() {
                     aria-label="First name"
                     defaultValue={customer.firstName ?? ''}
                     minLength={2}
-                    className="w-[250px]"
+                    className="w-[250px] focus-visible:border-primary focus-visible:ring-primary/50"
                   />
                 </div>
                 <label htmlFor="lastName" className="me-2">
@@ -476,7 +707,7 @@ export default function AccountProfile() {
                     aria-label="Last name"
                     defaultValue={customer.lastName ?? ''}
                     minLength={2}
-                    className="w-[250px]"
+                    className="w-[250px] focus-visible:border-primary focus-visible:ring-primary/50"
                   />
                 </div>
                 <label htmlFor="email" className="me-2">
@@ -492,7 +723,7 @@ export default function AccountProfile() {
                     aria-label="Email"
                     defaultValue={email}
                     readOnly
-                    className="w-[250px]"
+                    className="w-[250px] focus-visible:border-primary focus-visible:ring-primary/50"
                   />
                 </div>
                 <label htmlFor="phone" className="me-2">
@@ -504,17 +735,90 @@ export default function AccountProfile() {
                     name="currentPhone"
                     value={phoneOnFile}
                   />
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    placeholder="Phone number"
-                    aria-label="Phone number"
-                    value={phone}
-                    onChange={handlePhoneChange}
-                    className="w-[250px]"
-                  />
+                  <input type="hidden" name="phone" value={phoneValue} />
+                  <div className="flex flex-wrap items-center gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className={cn(
+                            buttonVariants({variant: 'outline', size: 'sm'}),
+                            'h-7 justify-center gap-[2px] px-1 text-xs focus-visible:border-primary focus-visible:ring-primary/50',
+                          )}
+                        >
+                          <span>{selectedPhoneOption.dialCodeDisplay}</span>
+                          <ChevronDown className="size-3.5 opacity-70" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        className="max-h-72 w-[280px]"
+                      >
+                        <DropdownMenuRadioGroup
+                          value={selectedPhoneCountry}
+                          onValueChange={(nextValue) =>
+                            handlePhoneCountrySelect(nextValue as CountryCode)
+                          }
+                        >
+                          {COUNTRY_PHONE_OPTIONS.map((option) => (
+                            <DropdownMenuRadioItem
+                              key={option.country}
+                              value={option.country}
+                            >
+                              {option.label} {option.dialCodeDisplay}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <InputOTPSeparator className="[&_svg]:h-4 [&_svg]:w-2" />
+
+                    <InputOTP
+                      id="phone"
+                      value={clampedPhoneLocalDigits}
+                      onChange={handlePhoneLocalDigitsChange}
+                      maxLength={selectedPhoneOption.localLength}
+                      containerClassName="gap-0.5"
+                      autoComplete="tel-national"
+                      pattern={REGEXP_ONLY_DIGITS}
+                      inputMode="numeric"
+                      aria-label="Phone number"
+                    >
+                      {(() => {
+                        let runningSlotIndex = 0;
+                        return selectedPhoneOption.localGroups.map(
+                          (groupLength, groupPosition) => {
+                            const groupStartIndex = runningSlotIndex;
+                            runningSlotIndex += groupLength;
+                            const slotIndexes = Array.from(
+                              {length: groupLength},
+                              (_, slotOffset) => groupStartIndex + slotOffset,
+                            );
+                            return (
+                            <Fragment
+                              key={`${selectedPhoneCountry}-group-${groupStartIndex}-${groupLength}`}
+                            >
+                              <InputOTPGroup>
+                                {slotIndexes.map((slotIndex) => (
+                                  <InputOTPSlot
+                                    key={`${selectedPhoneCountry}-slot-${slotIndex}`}
+                                    index={slotIndex}
+                                    className="h-7 w-7 text-xs"
+                                  />
+                                ))}
+                              </InputOTPGroup>
+                              {groupPosition <
+                                selectedPhoneOption.localGroups.length - 1 && (
+                                <InputOTPSeparator className="[&_svg]:h-4 [&_svg]:w-2" />
+                              )}
+                            </Fragment>
+                          );
+                          },
+                        );
+                      })()}
+                    </InputOTP>
+                  </div>
                 </div>
                 <div className="pt-4">
                   <h3>Marketing</h3>
