@@ -5,6 +5,7 @@ import {
   Form,
   Link,
   NavLink,
+  useLocation,
   useAsyncValue,
   useNavigate,
   useLoaderData,
@@ -871,6 +872,11 @@ function HeaderCtas({
   const rootData = useRouteLoaderData<RootLoader>('root');
   const customerFirstName = rootData?.customerFirstName ?? '';
   const mobileActivationGuard = useMobileActivationGuard();
+  const location = useLocation();
+
+  useEffect(() => {
+    setAccountMenuOpen(false);
+  }, [location.pathname, location.search, location.hash]);
   
 
   const links: NavLink[] = [
@@ -973,7 +979,11 @@ function HeaderCtas({
                     <div className='p-3'>
 
                   {links.map((link) => (
-                    <Link key={link.href} to={link.href}>
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      onClick={() => setAccountMenuOpen(false)}
+                    >
                       <Button
                         variant="ghost"
                         className="cursor-pointer"
@@ -997,13 +1007,16 @@ function HeaderCtas({
                 </div>
                 <hr />
                 <div className="pt-3 pe-3 pb-3 ps-2 cursor-pointer">
-                  <Logout />
+                  <Logout onSubmit={() => setAccountMenuOpen(false)} />
                 </div>
               </>
             ) : (
               <>
                 <div className="p-3">
-                  <Link to="/account/login">
+                  <Link
+                    to="/account/login"
+                    onClick={() => setAccountMenuOpen(false)}
+                  >
                     <Button variant="ghost" className="mb-3 cursor-pointer">
                       <div className="flex justify-start items-center me-3">
                         <img
@@ -1032,12 +1045,13 @@ function HeaderCtas({
     </nav>
   );
 }
-function Logout() {
+function Logout({onSubmit}: {onSubmit?: () => void}) {
   return (
     <Form
       className="account-logout cursor-pointer"
       method="POST"
       action="/account/logout"
+      onSubmit={onSubmit}
     >
       &nbsp;
       <Button type="submit" variant="ghost" className="custor-pointer">

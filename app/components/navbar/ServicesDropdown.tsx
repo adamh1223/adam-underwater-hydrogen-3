@@ -1,6 +1,6 @@
 // ServicesDropdown.tsx (Portal version)
 import * as RadixHoverCard from '@radix-ui/react-hover-card';
-import {Link, NavLink} from '@remix-run/react';
+import {Link, NavLink, useLocation} from '@remix-run/react';
 import React, {useEffect, useRef, useState} from 'react';
 import {ChevronUp} from 'lucide-react';
 import {Button} from '../ui/button';
@@ -28,6 +28,7 @@ function ServicesDropdown({
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const mobileActivationGuard = useMobileActivationGuard();
+  const location = useLocation();
 
   const writeScrollTarget = (sectionId: string) => {
     try {
@@ -59,6 +60,10 @@ function ServicesDropdown({
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [enableMobileToggle, open]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname, location.search, location.hash]);
 
   return (
     <RadixHoverCard.Root
@@ -126,7 +131,10 @@ function ServicesDropdown({
             <Button variant="ghost">
               <Link
                 to={'/pages/services#video'}
-                onClick={() => writeScrollTarget('video')}
+                onClick={() => {
+                  writeScrollTarget('video');
+                  setOpen(false);
+                }}
               >
                 Underwater Video
               </Link>
@@ -135,7 +143,10 @@ function ServicesDropdown({
             <Button variant="ghost">
               <Link
                 to={'/pages/services#photo'}
-                onClick={() => writeScrollTarget('photo')}
+                onClick={() => {
+                  writeScrollTarget('photo');
+                  setOpen(false);
+                }}
               >
                 Underwater Photo
               </Link>
@@ -144,7 +155,10 @@ function ServicesDropdown({
             <Button variant="ghost">
               <Link
                 to={'/pages/services#drone'}
-                onClick={() => writeScrollTarget('drone')}
+                onClick={() => {
+                  writeScrollTarget('drone');
+                  setOpen(false);
+                }}
               >
                 Drone Services
               </Link>

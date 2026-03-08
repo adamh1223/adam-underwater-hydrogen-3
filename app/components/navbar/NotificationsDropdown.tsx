@@ -1,5 +1,5 @@
 import * as RadixHoverCard from '@radix-ui/react-hover-card';
-import {Link, NavLink, useFetcher} from '@remix-run/react';
+import {Link, NavLink, useFetcher, useLocation} from '@remix-run/react';
 import {ChevronUp} from 'lucide-react';
 import {useEffect, useMemo, useState} from 'react';
 import {LuBell} from 'react-icons/lu';
@@ -21,6 +21,7 @@ function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const fetcher = useFetcher<NotificationsResponse>();
   const mobileActivationGuard = useMobileActivationGuard();
+  const location = useLocation();
 
   const notifications = fetcher.data?.notifications ?? [];
   const unreadCount = fetcher.data?.unreadCount ?? 0;
@@ -35,6 +36,10 @@ function NotificationsDropdown() {
     fetcher.load('/api/notifications?limit=6');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname, location.search, location.hash]);
 
   const notificationsUrl = useMemo(() => {
     return fetcher.data?.loggedIn === false
@@ -108,6 +113,7 @@ function NotificationsDropdown() {
                     <Link
                       key={notification.id}
                       to={selectedUrl}
+                      onClick={() => setOpen(false)}
                       className="rounded px-3 py-2 hover:bg-accent"
                     >
                       <div className="flex items-start justify-between gap-3">

@@ -60,6 +60,13 @@ function shouldHoldTouchCardHighlight(): boolean {
   return window.innerWidth < 500 && hasTouchCapability;
 }
 
+function shouldClearTouchCardHighlightOnNonTouchPointer(): boolean {
+  // On mobile touch UI, Safari/Chrome can emit synthetic non-touch pointer events
+  // after a finger tap. Ignore those so touched card highlight persists until
+  // another card is touched.
+  return !shouldHoldTouchCardHighlight();
+}
+
 function dispatchTouchCardHighlight(cardId: string) {
   if (typeof window === 'undefined') return;
   if (!shouldHoldTouchCardHighlight()) return;
@@ -118,11 +125,6 @@ function setLastTouchPoint(clientX: number, clientY: number) {
   };
 }
 
-function isAnyAsideOverlayExpanded(): boolean {
-  if (typeof document === 'undefined') return false;
-  return Boolean(document.querySelector('.overlay.expanded'));
-}
-
 function resolveCardIdAtPoint(
   clientX: number,
   clientY: number,
@@ -164,7 +166,6 @@ function dispatchTouchHighlightAtPoint(
   clientY: number,
 ): string | undefined {
   if (!shouldHoldTouchCardHighlight()) return undefined;
-  if (isAnyAsideOverlayExpanded()) return undefined;
 
   const cardId = resolveCardIdAtPoint(clientX, clientY);
   if (!cardId) return undefined;
@@ -252,7 +253,6 @@ function installGlobalTouchStartListener() {
 
   globalTouchStartListener = (event: TouchEvent) => {
     if (!shouldHoldTouchCardHighlight()) return;
-    if (isAnyAsideOverlayExpanded()) return;
 
     const touch =
       getTouchByIdentifier(event.changedTouches, activeTouchIdentifier) ??
@@ -271,7 +271,6 @@ function installGlobalTouchStartListener() {
 
   globalTouchMoveListener = (event: TouchEvent) => {
     if (!shouldHoldTouchCardHighlight()) return;
-    if (isAnyAsideOverlayExpanded()) return;
 
     const touch =
       getTouchByIdentifier(event.touches, activeTouchIdentifier) ??
@@ -288,10 +287,6 @@ function installGlobalTouchStartListener() {
 
   globalTouchEndListener = (event: TouchEvent) => {
     if (!shouldHoldTouchCardHighlight()) {
-      activeTouchIdentifier = null;
-      return;
-    }
-    if (isAnyAsideOverlayExpanded()) {
       activeTouchIdentifier = null;
       return;
     }
@@ -331,10 +326,6 @@ function installGlobalTouchStartListener() {
       activeTouchIdentifier = null;
       return;
     }
-    if (isAnyAsideOverlayExpanded()) {
-      activeTouchIdentifier = null;
-      return;
-    }
 
     if (isScrollActive) {
       if (event.touches.length === 0) {
@@ -364,11 +355,14 @@ function installGlobalTouchStartListener() {
 
   globalPointerDownListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') {
-      dispatchTouchCardHighlightClear();
+      if (shouldHoldTouchCardHighlight()) {
+        dispatchTouchHighlightAtPoint(event.clientX, event.clientY);
+      } else if (shouldClearTouchCardHighlightOnNonTouchPointer()) {
+        dispatchTouchCardHighlightClear();
+      }
       return;
     }
     if (!shouldHoldTouchCardHighlight()) return;
-    if (isAnyAsideOverlayExpanded()) return;
     if (isScrollActive) return;
 
     activePointerIdentifier = event.pointerId;
@@ -381,7 +375,6 @@ function installGlobalTouchStartListener() {
   globalPointerMoveListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
     if (!shouldHoldTouchCardHighlight()) return;
-    if (isAnyAsideOverlayExpanded()) return;
     if (isScrollActive) return;
     if (
       activePointerIdentifier !== null &&
@@ -397,15 +390,6 @@ function installGlobalTouchStartListener() {
   globalPointerUpListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
     if (!shouldHoldTouchCardHighlight()) {
-      if (
-        activePointerIdentifier !== null &&
-        event.pointerId === activePointerIdentifier
-      ) {
-        activePointerIdentifier = null;
-      }
-      return;
-    }
-    if (isAnyAsideOverlayExpanded()) {
       if (
         activePointerIdentifier !== null &&
         event.pointerId === activePointerIdentifier
@@ -439,15 +423,6 @@ function installGlobalTouchStartListener() {
   globalPointerCancelListener = (event: PointerEvent) => {
     if (event.pointerType !== 'touch') return;
     if (!shouldHoldTouchCardHighlight()) {
-      if (
-        activePointerIdentifier !== null &&
-        event.pointerId === activePointerIdentifier
-      ) {
-        activePointerIdentifier = null;
-      }
-      return;
-    }
-    if (isAnyAsideOverlayExpanded()) {
       if (
         activePointerIdentifier !== null &&
         event.pointerId === activePointerIdentifier
@@ -701,8 +676,13 @@ export function useTouchCardHighlight(
     onPointerDownCapture: (event) => {
       if (!enabled) return;
       if (event.pointerType !== 'touch') {
-        dispatchTouchCardHighlightClear();
-        setIsTouchHighlighted(false);
+        if (shouldHoldTouchCardHighlight() && cardId) {
+          dispatchTouchCardHighlight(cardId);
+          triggerTouchHighlight();
+        } else if (shouldClearTouchCardHighlightOnNonTouchPointer()) {
+          dispatchTouchCardHighlightClear();
+          setIsTouchHighlighted(false);
+        }
         return;
       }
       if (!cardId) return;
@@ -711,7 +691,6 @@ export function useTouchCardHighlight(
         setIsTouchHighlighted(false);
         return;
       }
-      if (isAnyAsideOverlayExpanded()) return;
       if (isScrollActive) return;
       dispatchTouchCardHighlight(cardId);
       triggerTouchHighlight();
@@ -724,7 +703,6 @@ export function useTouchCardHighlight(
         setIsTouchHighlighted(false);
         return;
       }
-      if (isAnyAsideOverlayExpanded()) return;
       if (isScrollActive) return;
 
       const touch = event.touches?.[0] ?? event.changedTouches?.[0];

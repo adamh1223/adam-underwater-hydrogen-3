@@ -1,6 +1,6 @@
 // AboutDropdown.tsx (updated)
 import * as RadixHoverCard from '@radix-ui/react-hover-card';
-import {Link, NavLink} from '@remix-run/react';
+import {Link, NavLink, useLocation} from '@remix-run/react';
 import React, {useEffect, useRef, useState} from 'react';
 import {ChevronUp} from 'lucide-react';
 import {Button} from '../ui/button';
@@ -28,6 +28,7 @@ function AboutDropdown({
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const mobileActivationGuard = useMobileActivationGuard();
+  const location = useLocation();
 
   const writeScrollTarget = (sectionId: string) => {
     try {
@@ -59,6 +60,10 @@ function AboutDropdown({
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [enableMobileToggle, open]);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname, location.search, location.hash]);
 
   return (
     <RadixHoverCard.Root
@@ -128,7 +133,10 @@ function AboutDropdown({
             <Button variant="ghost" className="cursor-pointer">
               <Link
                 to={'/pages/about'}
-                onClick={() => writeScrollTarget('about')}
+                onClick={() => {
+                  writeScrollTarget('about');
+                  setOpen(false);
+                }}
               >
                 About Me
               </Link>
@@ -136,7 +144,10 @@ function AboutDropdown({
             <Button variant="ghost" className="cursor-pointer">
               <Link
                 to={'/pages/about#gear'}
-                onClick={() => writeScrollTarget('gear')}
+                onClick={() => {
+                  writeScrollTarget('gear');
+                  setOpen(false);
+                }}
               >
                 My Gear
               </Link>
