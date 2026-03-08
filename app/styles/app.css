@@ -1844,6 +1844,16 @@ span {
   z-index: 3;
 }
 
+.favorite-toggle-spinner {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  transform-origin: center;
+  transform-box: fill-box;
+  will-change: transform;
+}
+
 /* ── Final active state ── */
 .favorite-toggle-btn--active {
   border-color: transparent !important;
@@ -1969,6 +1979,50 @@ span {
   }
   to {
     --favorite-glow-progress: 359deg;
+  }
+}
+
+/* ── Mobile: stacked-background glow (< 500px) ──
+   Animated conic gradients in mask distort on mobile.  Instead, stack
+   multiple conic backgrounds at decreasing sizes — where they overlap
+   (inner ring) opacities compound, creating an inner→outer falloff.
+   Mask stays fully static (solid two-layer XOR). */
+@media (max-width: 499px) {
+  .favorite-toggle-btn--animating::after,
+  .favorite-toggle-btn--animating-reverse::after {
+    inset: -15px;
+    border-radius: calc(var(--favorite-line-radius) + 14px);
+    padding: 15px;
+    background:
+      conic-gradient(
+          from var(--favorite-border-start-angle),
+          hsl(var(--primary) / 0.2) var(--favorite-glow-progress),
+          transparent 51%
+        )
+        center / calc(100% - 22px) calc(100% - 22px) no-repeat,
+      conic-gradient(
+          from var(--favorite-border-start-angle),
+          hsl(var(--primary) / 0.002) var(--favorite-glow-progress),
+          transparent 0
+        )
+        center / calc(100% - 18px) calc(100% - 18px) no-repeat,
+      conic-gradient(
+          from var(--favorite-border-start-angle),
+          hsl(var(--primary) / 0.0001) var(--favorite-glow-progress),
+          transparent 0
+        )
+        center / calc(100% - 10px) calc(100% - 10px) no-repeat,
+      conic-gradient(
+        from var(--favorite-border-start-angle),
+        hsl(var(--primary) / 0) var(--favorite-glow-progress),
+        transparent 0
+      );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    filter: blur(5px);
   }
 }
 

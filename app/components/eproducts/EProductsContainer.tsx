@@ -617,7 +617,7 @@ function EProductsContainer({
                             {pendingWishlistChange ? (
                               <>
                                 <div className="flex justify-center items-center">
-                                  <ReloadIcon className="animate-spin" />
+                                  <ReloadIcon className="animate-spin favorite-toggle-spinner" />
                                 </div>
                               </>
                             ) : (
@@ -1029,7 +1029,7 @@ function EProductsContainer({
                       >
                         {pendingWishlistChange ? (
                           <div className="flex justify-center items-center">
-                            <ReloadIcon className="animate-spin" />
+                            <ReloadIcon className="animate-spin favorite-toggle-spinner" />
                           </div>
                         ) : (
                           <>
@@ -1254,7 +1254,7 @@ function EProductsContainer({
                       >
                         {pendingWishlistChange ? (
                           <div className="flex justify-center items-center">
-                            <ReloadIcon className="animate-spin" />
+                            <ReloadIcon className="animate-spin favorite-toggle-spinner" />
                           </div>
                         ) : (
                           <>

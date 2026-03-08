@@ -525,7 +525,7 @@ export const ProductCarousel = ({
                     className={wishlistToggleButtonClassName}
                   >
                     {pendingWishlistChange ? (
-                      <ReloadIcon className="animate-spin" />
+                      <ReloadIcon className="animate-spin favorite-toggle-spinner" />
                     ) : (
                       <>
                         {wishlistItem ? (
@@ -589,7 +589,7 @@ export const ProductCarousel = ({
                         className={wishlistToggleButtonClassName}
                       >
                         {pendingWishlistChange ? (
-                          <ReloadIcon className="animate-spin" />
+                          <ReloadIcon className="animate-spin favorite-toggle-spinner" />
                         ) : (
                           <>
                             {wishlistItem ? (

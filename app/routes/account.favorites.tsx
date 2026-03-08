@@ -114,7 +114,7 @@ export default function Favorites() {
     <>
       <Sectiontitle text="My Favorites" />
       {products?.length ? (
-        <div className="prods-grid gap-x-5 favorites-product-grid">
+        <div className="prods-grid gap-x-5 favorites-product-grid collection-results-surface">
           {products.map((product) => {
             if (product.tags.includes('Prints')) {
               return (
