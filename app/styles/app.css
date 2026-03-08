@@ -418,6 +418,7 @@ button.reset:hover:not(:has(> *)) {
   display: flex;
   align-items: center;
   justify-content: start;
+  margin-top: 4px;
 }
 
 .cart-option-grid {

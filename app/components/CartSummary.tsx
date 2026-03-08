@@ -5,10 +5,9 @@ import {useEffect, useRef, useState} from 'react';
 import {
   FetcherWithComponents,
   Link,
-  redirect,
   useRouteLoaderData,
 } from '@remix-run/react';
-import {Card, CardAction, CardContent, CardHeader} from './ui/card';
+import {Card, CardContent} from './ui/card';
 import {Input} from './ui/input';
 import {Button} from './ui/button';
 import StockForm from './form/StockForm';
@@ -18,16 +17,109 @@ type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
   layout: CartLayout;
 };
+type CartSummaryMoney = CartApiQueryFragment['cost']['subtotalAmount'];
+
+type CartDiscountAllocation = {
+  __typename?: string;
+  targetType?: string;
+  code?: string;
+  title?: string;
+  discountedAmount?: {
+    amount?: string;
+    currencyCode?: string;
+  };
+};
+
+function parseMoneyAmount(amount?: string | null) {
+  const numericAmount = Number(amount);
+  return Number.isFinite(numericAmount) ? numericAmount : 0;
+}
+
+function createMoneyValue(
+  amount: number,
+  currencyCode: CartSummaryMoney['currencyCode'],
+): CartSummaryMoney {
+  return {
+    amount: amount.toFixed(2),
+    currencyCode,
+  };
+}
+
+function getDiscountLabel(allocation: CartDiscountAllocation) {
+  switch (allocation.__typename) {
+    case 'CartAutomaticDiscountAllocation':
+    case 'CartCustomDiscountAllocation':
+      return allocation.title ?? '';
+    case 'CartCodeDiscountAllocation':
+      return allocation.code ?? '';
+    default:
+      return '';
+  }
+}
+
+function isShippingDiscount(allocation: CartDiscountAllocation) {
+  const label = getDiscountLabel(allocation).toLowerCase();
+  return (
+    allocation.targetType === 'SHIPPING_LINE' || label.includes('free shipping')
+  );
+}
 
 export function CartSummary({cart, layout}: CartSummaryProps) {
   const rootData = useRouteLoaderData<RootLoader>('root');
   const isAdmin = Boolean(rootData?.isAdmin);
   const clipProducts = cart.lines.nodes.filter((item) => {
-    //@ts-expect-error not picking up tags somehow
     return item.merchandise.product.tags?.includes('Video');
   });
   const clipNames = clipProducts.map(
     (product) => product.merchandise.product.title,
+  );
+  const subtotalCurrencyCode = (cart.cost?.subtotalAmount?.currencyCode ||
+    'USD') as CartSummaryMoney['currencyCode'];
+  const subtotalAfterDiscount = parseMoneyAmount(
+    cart.cost?.subtotalAmount?.amount,
+  );
+  const subtotalBeforeDiscount = cart.lines.nodes.reduce(
+    (runningTotal, lineItem) => {
+      return (
+        runningTotal +
+        parseMoneyAmount(
+          (
+            lineItem as unknown as {
+              cost?: {subtotalAmount?: {amount?: string | null}};
+            }
+          )?.cost?.subtotalAmount?.amount,
+        )
+      );
+    },
+    0,
+  );
+  const subtotalSavings = Math.max(
+    0,
+    subtotalBeforeDiscount - subtotalAfterDiscount,
+  );
+  const hasProductDiscountSavings = subtotalSavings > 0.0001;
+  const subtotalBeforeDiscountMoney = createMoneyValue(
+    subtotalBeforeDiscount,
+    subtotalCurrencyCode,
+  );
+  const subtotalSavingsMoney = createMoneyValue(
+    subtotalSavings,
+    subtotalCurrencyCode,
+  );
+
+  const allDiscountAllocations = ((
+    cart as unknown as {discountAllocations?: CartDiscountAllocation[]}
+  ).discountAllocations ?? []) as CartDiscountAllocation[];
+  const productDiscountLabels = Array.from(
+    new Set(
+      allDiscountAllocations
+        .filter((allocation) => !isShippingDiscount(allocation))
+        .map((allocation) => getDiscountLabel(allocation))
+        .filter(Boolean),
+    ),
+  );
+  const hasFreeShippingUnlocked = allDiscountAllocations.some((allocation) =>
+    isShippingDiscount(allocation),
   );
 
   const className =
@@ -61,17 +153,59 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           <CardContent>
             <div className="cart-subtotal">
               <p className="cart-header">Subtotal:</p>
-              <div>
+              <div className="ms-1">
                 {cart.cost?.subtotalAmount?.amount ? (
-                  <Money
-                    data={cart.cost?.subtotalAmount}
-                    className="cart-header ms-1"
-                  />
+                  hasProductDiscountSavings ? (
+                    <div className="flex items-center gap-2">
+                      <s className="opacity-70">
+                        <Money data={subtotalBeforeDiscountMoney} />
+                      </s>
+                      <Money
+                        data={cart.cost?.subtotalAmount}
+                        className="cart-header"
+                      />
+                    </div>
+                  ) : (
+                    <Money
+                      data={cart.cost?.subtotalAmount}
+                      className="cart-header"
+                    />
+                  )
                 ) : (
                   '-'
                 )}
               </div>
             </div>
+            {(hasProductDiscountSavings || hasFreeShippingUnlocked) && (
+              <div className="mt-2 space-y-1">
+                {hasProductDiscountSavings && (
+                  <>
+                    {productDiscountLabels.length ? (
+                      productDiscountLabels.map((discountLabel) => (
+                        <p
+                          key={discountLabel}
+                          className="text-sm font-medium text-primary"
+                        >
+                          {discountLabel} applied!
+                        </p>
+                      ))
+                    ) : (
+                      <p className="text-sm font-medium text-primary">
+                        Discount applied!
+                      </p>
+                    )}
+                    <p className="text-sm font-medium text-primary">
+                      Savings: <Money data={subtotalSavingsMoney} />
+                    </p>
+                  </>
+                )}
+                {hasFreeShippingUnlocked && (
+                  <p className="text-sm font-medium text-primary">
+                    Free shipping unlocked!
+                  </p>
+                )}
+              </div>
+            )}
             <br />
             <CartDiscounts discountCodes={cart.discountCodes} />
             <CartGiftCard giftCardCodes={cart.appliedGiftCards} />
@@ -164,7 +298,7 @@ function CartDiscounts({
             type="text"
             name="discountCode"
             placeholder="Discount code"
-            className="w-[180px]"
+            className="w-[180px] focus-visible:border-primary focus-visible:ring-primary/50"
           />
           &nbsp;
           <Button
@@ -251,7 +385,7 @@ function CartGiftCard({
             name="giftCardCode"
             placeholder="Gift card code"
             ref={giftCardCodeInput}
-            className="w-[180px]"
+            className="w-[180px] focus-visible:border-primary focus-visible:ring-primary/50"
           />
           &nbsp;
           <Button

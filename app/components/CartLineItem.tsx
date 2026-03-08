@@ -1,12 +1,12 @@
 import type {CartLineUpdateInput} from '@shopify/hydrogen/storefront-api-types';
 import type {CartLayout} from '~/components/CartMain';
-import {CartForm, Image, type OptimisticCartLine} from '@shopify/hydrogen';
+import {CartForm, Money, type OptimisticCartLine} from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {Link, useFetcher} from '@remix-run/react';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
-import {Card, CardContent, CardDescription} from './ui/card';
+import {Card, CardContent} from './ui/card';
 import {Button} from './ui/button';
 import {generateCartDescription} from '~/lib/utils';
 import {useEffect, useState} from 'react';
@@ -21,6 +21,70 @@ type ProductVariantForSelection = {
   availableForSale?: boolean;
   selectedOptions: ProductVariantOption[];
 };
+type CartLineMoney = NonNullable<CartLine['cost']>['totalAmount'];
+
+function parseMoneyAmount(amount?: string | null) {
+  const numericAmount = Number(amount);
+  return Number.isFinite(numericAmount) ? numericAmount : 0;
+}
+
+function createMoneyValue(
+  amount: number,
+  currencyCode: CartLineMoney['currencyCode'],
+): CartLineMoney {
+  return {
+    amount: amount.toFixed(2),
+    currencyCode,
+  };
+}
+
+function CartLinePrice({
+  price,
+  compareAtPrice,
+  preDiscountPrice,
+  discountPercent,
+}: {
+  price?: CartLineMoney | null;
+  compareAtPrice?: CartLineMoney | null;
+  preDiscountPrice?: CartLineMoney | null;
+  discountPercent: number;
+}) {
+  const hasLineDiscount =
+    !!price &&
+    !!preDiscountPrice &&
+    parseMoneyAmount(preDiscountPrice.amount) >
+      parseMoneyAmount(price.amount) + 0.0001;
+
+  if (!hasLineDiscount) {
+    return (
+      <ProductPrice
+        price={price ?? undefined}
+        compareAtPrice={compareAtPrice}
+      />
+    );
+  }
+
+  return (
+    <div className="product-price">
+      <div className="product-price-on-sale">
+        {price ? <Money data={price} /> : null}
+        <s>
+          <Money data={preDiscountPrice} />
+        </s>
+        {compareAtPrice ? (
+          <s>
+            <Money data={compareAtPrice} />
+          </s>
+        ) : null}
+      </div>
+      <p className="mt-1 text-sm font-medium text-primary">
+        {discountPercent > 0
+          ? `${discountPercent}% discount applied!`
+          : `Discount applied!`}
+      </p>
+    </div>
+  );
+}
 
 /**
  * A single line item in the cart. It displays the product image, title, price.
@@ -41,8 +105,8 @@ export function CartLineItem({
     (option) => option.value === 'Default Title',
   );
   const productTags = Array.isArray(product.tags) ? [...product.tags] : [];
-  const hasPrintTag = productTags.some(
-    (tag) => tag?.toLowerCase?.().includes('print'),
+  const hasPrintTag = productTags.some((tag) =>
+    tag?.toLowerCase?.().includes('print'),
   );
   const cartDescription = generateCartDescription(productTags);
 
@@ -65,19 +129,48 @@ export function CartLineItem({
     !image?.url.includes('vertOnly');
   const isVerticalProduct =
     image?.url?.includes('vertOnly') || image?.url.includes('vertPrimary');
-  const compareAtPerQuantity =
-    line?.cost?.compareAtAmountPerQuantity && line?.quantity
-      ? (
-          parseInt(line?.cost?.compareAtAmountPerQuantity.amount) *
-          line?.quantity
-        ).toPrecision(2)
-      : 0.0;
+  const currencyCode =
+    line?.cost?.totalAmount?.currencyCode ||
+    line?.cost?.compareAtAmountPerQuantity?.currencyCode ||
+    'USD';
 
-  const updatedCompareAt = {
-    ...line?.cost?.compareAtAmountPerQuantity,
-    currencyCode: line?.cost?.compareAtAmountPerQuantity?.currencyCode || 'USD',
-    amount: compareAtPerQuantity?.toString(),
-  };
+  const compareAtAmountPerQuantity = parseMoneyAmount(
+    line?.cost?.compareAtAmountPerQuantity?.amount,
+  );
+  const compareAtTotal = compareAtAmountPerQuantity * (line?.quantity ?? 1);
+  const updatedCompareAt =
+    compareAtAmountPerQuantity > 0
+      ? {
+          ...line?.cost?.compareAtAmountPerQuantity,
+          currencyCode,
+          amount: compareAtTotal.toFixed(2),
+        }
+      : null;
+
+  const lineSubtotalAmount = parseMoneyAmount(
+    (line as unknown as {cost?: {subtotalAmount?: {amount?: string | null}}})
+      ?.cost?.subtotalAmount?.amount,
+  );
+  const lineTotalAmount = parseMoneyAmount(line?.cost?.totalAmount?.amount);
+  const preDiscountPrice =
+    lineSubtotalAmount > lineTotalAmount + 0.0001
+      ? createMoneyValue(lineSubtotalAmount, currencyCode)
+      : null;
+  const lineDiscountPercent =
+    lineSubtotalAmount > 0
+      ? Math.round(
+          ((lineSubtotalAmount - lineTotalAmount) / lineSubtotalAmount) * 100,
+        )
+      : 0;
+
+  const linePrice = (
+    <CartLinePrice
+      price={line?.cost?.totalAmount}
+      compareAtPrice={updatedCompareAt}
+      preDiscountPrice={preDiscountPrice}
+      discountPercent={lineDiscountPercent}
+    />
+  );
 
   return (
     <Card className="mb-2">
@@ -116,13 +209,7 @@ export function CartLineItem({
                       )}
                       <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
-                        {line?.cost?.compareAtAmountPerQuantity &&
-                          line?.quantity && (
-                            <ProductPrice
-                              price={line?.cost?.totalAmount}
-                              compareAtPrice={updatedCompareAt}
-                            />
-                          )}
+                        {linePrice}
                       </div>
                     </div>
                   </Link>
@@ -169,10 +256,7 @@ export function CartLineItem({
                             {cartDescription}
                           </div>
                         )}
-                        <ProductPrice
-                          price={line?.cost?.totalAmount}
-                          compareAtPrice={updatedCompareAt}
-                        />
+                        {linePrice}
                       </div>
                     </div>
                   </Link>
@@ -209,10 +293,7 @@ export function CartLineItem({
                     )}
                     <div className="ps-3 cart-line-text">
                       <strong>{product.title}</strong>
-                      <ProductPrice
-                        price={line?.cost?.totalAmount}
-                        compareAtPrice={updatedCompareAt}
-                      />
+                      {linePrice}
                     </div>
                   </div>
                   <div className="pt-1">
@@ -258,10 +339,7 @@ export function CartLineItem({
                           {cartDescription}
                         </div>
                       )}
-                      <ProductPrice
-                        price={line?.cost?.totalAmount}
-                        compareAtPrice={updatedCompareAt}
-                      />
+                      {linePrice}
                     </div>
                   </div>
                 </Link>
@@ -300,10 +378,7 @@ export function CartLineItem({
                       )}
                       <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
-                        <ProductPrice
-                          price={line?.cost?.totalAmount}
-                          compareAtPrice={updatedCompareAt}
-                        />
+                        {linePrice}
                       </div>
                     </div>
                   </Link>
@@ -351,10 +426,7 @@ export function CartLineItem({
                             {cartDescription}
                           </div>
                         )}
-                        <ProductPrice
-                          price={line?.cost?.totalAmount}
-                          compareAtPrice={updatedCompareAt}
-                        />
+                        {linePrice}
                       </div>
                     </div>
                   </Link>
@@ -398,10 +470,7 @@ export function CartLineItem({
                             {cartDescription}
                           </div>
                         )}
-                        <ProductPrice
-                          price={line?.cost?.totalAmount}
-                          compareAtPrice={updatedCompareAt}
-                        />
+                        {linePrice}
                       </div>
                     </div>
                   </Link>
@@ -679,7 +748,7 @@ function CartLineQuantity({
               value={prevQuantity}
               variant="ghost"
               size="icon"
-              className="cursor-pointer"
+              className="cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
             >
               <span>&#8722; </span>
             </Button>
@@ -692,7 +761,7 @@ function CartLineQuantity({
               value={nextQuantity}
               disabled={!!isOptimistic}
               variant="ghost"
-              className="cursor-pointer"
+              className="cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
             >
               <span>&#43;</span>
             </Button>
@@ -737,7 +806,7 @@ function CartLineRemoveButton({
           disabled={disabled}
           type="submit"
           variant="ghost"
-          className="remove-button cursor-pointer"
+          className="remove-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
           size="sm"
         >
           <p className="remove-button-text">Remove</p>
@@ -748,7 +817,7 @@ function CartLineRemoveButton({
           disabled={disabled}
           type="submit"
           variant="ghost"
-          className="remove-button cursor-pointer"
+          className="remove-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
           size="lg"
         >
           <p className="remove-button-text">Remove</p>

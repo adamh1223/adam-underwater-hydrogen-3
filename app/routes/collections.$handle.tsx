@@ -1098,13 +1098,13 @@ export default function Collection() {
   const promoBannerItems =
     collection?.handle === 'prints'
       ? [
-          'Get 15% off your entire order when you purchase 3 prints',
+          'Get 15% off when you purchase 3 prints',
           'Free Shipping on orders over $300',
           'Sign up for email + SMS for a one time discount code',
         ]
       : collection?.handle === 'stock'
         ? [
-            'Get 15% off your entire order when you purchase 4 stock footage clips',
+            'Get 15% off when you purchase 4 stock footage clips',
             'Free Shipping on orders over $300',
             'Sign up for email + SMS for a one time discount code',
           ]
