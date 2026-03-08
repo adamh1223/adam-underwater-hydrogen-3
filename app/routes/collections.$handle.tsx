@@ -63,6 +63,7 @@ import CollectionPageSkeleton from '~/components/skeletons/CollectionPageSkeleto
 import {SkeletonGate} from '~/components/skeletons/shared';
 import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
 import {DEFAULT_LINK_PREVIEW_ICON} from '~/lib/linkPreview';
+import MarqueeBanner from '~/components/global/MarqueeBanner';
 import {
   EPRODUCT_SEARCH_HINT_WORDS,
   PRINT_SEARCH_HINT_WORDS,
@@ -570,7 +571,7 @@ function PrintsFiltersPopover({
         <PopoverContent
           align="start"
           sideOffset={8}
-          className="z-[1000] w-80 p-4"
+          className="z-[1000] w-80 p-2"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <div className="space-y-4">
@@ -675,7 +676,7 @@ function StockFiltersPopover({
         <PopoverContent
           align="start"
           sideOffset={8}
-          className="z-[1000] w-80 pt-2.5 px-3.5 pb-3.5"
+          className="z-[1000] w-80 p-3"
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <div className="space-y-4">
@@ -1094,6 +1095,20 @@ export default function Collection() {
   const displayedProductCount = hasActiveSearchText
     ? (committedSearchProducts?.length ?? baseProductCount)
     : baseProductCount;
+  const promoBannerItems =
+    collection?.handle === 'prints'
+      ? [
+          'Get 15% off your entire order when you purchase 3 prints',
+          'Free Shipping on orders over $300',
+          'Sign up for email + SMS for a one time discount code',
+        ]
+      : collection?.handle === 'stock'
+        ? [
+            'Get 15% off your entire order when you purchase 4 stock footage clips',
+            'Free Shipping on orders over $300',
+            'Sign up for email + SMS for a one time discount code',
+          ]
+        : null;
 
   useEffect(() => {
     if (collection?.handle !== 'prints') {
@@ -1450,6 +1465,7 @@ export default function Collection() {
   return (
     <SkeletonGate isReady={isPageReady} skeleton={<CollectionPageSkeleton />}>
       <div className="overflow-x-hidden">
+        {promoBannerItems && <MarqueeBanner items={promoBannerItems} />}
         {collection?.handle === 'prints' && (
           <ProductsHeader onLoad={handleHeaderLoad} imgRef={headerImgRef} />
         )}

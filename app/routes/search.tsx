@@ -504,7 +504,7 @@ function SearchFiltersPopover({
       <PopoverContent
         align="start"
         sideOffset={8}
-        className="z-[1000] w-80 px-3.5 pb-3.5 pt-2.5"
+        className="z-[1000] w-90 px-2 py-2"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <div className="space-y-4">
@@ -1051,7 +1051,7 @@ export default function SearchPage() {
               </div>
 
               <div className="search-product-container">
-                <div className="desktop-search-stack flex flex-col items-center">
+                <div className="desktop-search-stack flex flex-col items-center mb-2">
                   <InputGroup className="w-[284px]">
                     <InputGroupAddon align="inline-start">
                       <LuSearch className="text-muted-foreground" />

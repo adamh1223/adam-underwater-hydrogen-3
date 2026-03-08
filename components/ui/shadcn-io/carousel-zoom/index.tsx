@@ -14,6 +14,7 @@ import {
   DialogOverlay,
   DialogPortal,
 } from '~/components/ui/dialog';
+import {Progress} from '~/components/ui/progress';
 import {cn} from '~/lib/utils';
 
 type CarouselZoomItem = {
@@ -36,7 +37,76 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
     React.useState<CarouselApi | null>(null);
   const [zoomCurrentIndex, setZoomCurrentIndex] = React.useState(0);
   const [zoomTotalItems, setZoomTotalItems] = React.useState(0);
-  const scrollZoomToIndex = (index: number) => zoomCarouselApi?.scrollTo(index);
+  const [loadedImageUrls, setLoadedImageUrls] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const preloadingImageUrlsRef = React.useRef<Set<string>>(new Set());
+  const scrollZoomToIndex = React.useCallback(
+    (index: number) => zoomCarouselApi?.scrollTo(index),
+    [zoomCarouselApi],
+  );
+
+  const imageUrls = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          items
+            .filter((item) => item.type === 'image')
+            .map((item) => item.url)
+            .filter((url): url is string => Boolean(url)),
+        ),
+      ),
+    [items],
+  );
+
+  const markImageLoaded = React.useCallback((url: string) => {
+    setLoadedImageUrls((prev) => {
+      if (prev.has(url)) return prev;
+      const next = new Set(prev);
+      next.add(url);
+      return next;
+    });
+  }, []);
+
+  const dialogLoadProgress = React.useMemo(() => {
+    if (!imageUrls.length) return 100;
+    const loadedCount = imageUrls.filter((url) => loadedImageUrls.has(url))
+      .length;
+    return Math.round((loadedCount / imageUrls.length) * 100);
+  }, [imageUrls, loadedImageUrls]);
+
+  React.useEffect(() => {
+    if (!isOpen || !imageUrls.length) return;
+
+    imageUrls.forEach((url) => {
+      if (loadedImageUrls.has(url) || preloadingImageUrlsRef.current.has(url)) {
+        return;
+      }
+
+      preloadingImageUrlsRef.current.add(url);
+      const image = new window.Image();
+
+      const finalize = () => {
+        preloadingImageUrlsRef.current.delete(url);
+        markImageLoaded(url);
+      };
+
+      image.onload = finalize;
+      image.onerror = finalize;
+      image.src = url;
+
+      if (image.complete) {
+        finalize();
+      }
+    });
+  }, [isOpen, imageUrls, loadedImageUrls, markImageLoaded]);
+
+  const activeItem =
+    items[zoomCurrentIndex] ?? items[Math.min(zoomIndex, Math.max(items.length - 1, 0))];
+  const isActiveImageLoading =
+    isOpen &&
+    activeItem?.type === 'image' &&
+    !loadedImageUrls.has(activeItem.url);
 
   React.useEffect(() => {
     if (!zoomCarouselApi) return;
@@ -92,6 +162,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
 
   const openAtIndex = (index: number, options?: {autoplay?: boolean}) => {
     setZoomIndex(index);
+    setZoomCurrentIndex(index);
     setAutoPlayIndex(options?.autoplay ? index : null);
     setIsOpen(true);
   };
@@ -186,23 +257,38 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
               </div>
               <div className="flex flex-1 items-center justify-center">
                 <div className="flex w-full max-w-7xl flex-col items-center gap-6">
-                  <div className="w-full">
+                  <div className="relative w-full">
+                    {isActiveImageLoading && (
+                      <div className="absolute inset-0 z-30 flex items-center justify-center px-6">
+                        <div className="w-full max-w-md rounded-md border border-border bg-background/80 p-4 backdrop-blur-sm">
+                          <p className="mb-2 text-sm text-muted-foreground">
+                            Loading image...
+                          </p>
+                          <Progress value={dialogLoadProgress} />
+                        </div>
+                      </div>
+                    )}
                     <Carousel
                       setApi={setZoomCarouselApi}
                       opts={{startIndex: zoomIndex}}
-                      className="w-full transform-none"
+                      className={cn(
+                        'w-full transform-none',
+                        isActiveImageLoading && 'opacity-0',
+                      )}
                     >
                       <CarouselContent className="ml-0">
                         {items?.map((media, idx) => (
                           <CarouselItem
                             className="flex items-center justify-center pl-0"
-                            key={`${media.url}-${idx}`}
+                            key={`${media.type}-${media.url}`}
                           >
                             <div className="flex h-full w-full items-center justify-center px-4">
                               {media.type === 'image' && (
                                 <img
                                   src={media.url}
                                   alt="Review media"
+                                  onLoad={() => markImageLoaded(media.url)}
+                                  onError={() => markImageLoaded(media.url)}
                                   className="max-h-[calc(100vh-12rem)] w-auto max-w-[90vw] rounded-lg object-contain"
                                 />
                               )}
@@ -256,9 +342,9 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                     </Button>
                   </div>
                   <div className="z-20 flex w-full items-center justify-center gap-3">
-                    {Array.from({length: zoomTotalItems}).map((_, idx) => (
+                    {items.map((item, idx) => (
                       <button
-                        key={`zoom-dot-${idx}`}
+                        key={`zoom-dot-${item.type}-${item.url}`}
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
