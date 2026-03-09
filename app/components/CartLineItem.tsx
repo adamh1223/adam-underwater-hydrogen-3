@@ -42,12 +42,10 @@ function CartLinePrice({
   price,
   compareAtPrice,
   preDiscountPrice,
-  discountPercent,
 }: {
   price?: CartLineMoney | null;
   compareAtPrice?: CartLineMoney | null;
   preDiscountPrice?: CartLineMoney | null;
-  discountPercent: number;
 }) {
   const hasLineDiscount =
     !!price &&
@@ -68,7 +66,7 @@ function CartLinePrice({
     <div className="product-price">
       <div className="product-price-on-sale">
         {price ? <Money data={price} /> : null}
-        <s>
+        <s className="cart-line-regular-discount-price">
           <Money data={preDiscountPrice} />
         </s>
         {compareAtPrice ? (
@@ -77,11 +75,6 @@ function CartLinePrice({
           </s>
         ) : null}
       </div>
-      <p className="mt-1 text-sm font-medium text-primary">
-        {discountPercent > 0
-          ? `${discountPercent}% discount applied!`
-          : `Discount applied!`}
-      </p>
     </div>
   );
 }
@@ -162,13 +155,21 @@ export function CartLineItem({
           ((lineSubtotalAmount - lineTotalAmount) / lineSubtotalAmount) * 100,
         )
       : 0;
+  const hasLineDiscount = lineSubtotalAmount > lineTotalAmount + 0.0001;
+  const lineDiscountText = hasLineDiscount
+    ? lineDiscountPercent > 0
+      ? `${lineDiscountPercent}% discount applied!`
+      : 'Discount applied!'
+    : null;
+  const isMobileView = windowWidth !== undefined && windowWidth <= 600;
+  const showFooterDescription = isMobileView && Boolean(cartDescription);
+  const showInlineDescription = !showFooterDescription;
 
   const linePrice = (
     <CartLinePrice
       price={line?.cost?.totalAmount}
       compareAtPrice={updatedCompareAt}
       preDiscountPrice={preDiscountPrice}
-      discountPercent={lineDiscountPercent}
     />
   );
 
@@ -217,7 +218,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div className="pt-1">
-                    {cartDescription && (
+                    {showInlineDescription && cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
                     <CartLineOptionSelectors line={line} />
@@ -251,7 +252,7 @@ export function CartLineItem({
                       )}
                       <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
-                        {cartDescription && (
+                        {showInlineDescription && cartDescription && (
                           <div className="cart-description">
                             {cartDescription}
                           </div>
@@ -297,7 +298,7 @@ export function CartLineItem({
                     </div>
                   </div>
                   <div className="pt-1">
-                    {cartDescription && (
+                    {showInlineDescription && cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
                   </div>
@@ -334,7 +335,7 @@ export function CartLineItem({
                     )}
                     <div className="ps-3 cart-line-text">
                       <strong>{product.title}</strong>
-                      {cartDescription && (
+                      {showInlineDescription && cartDescription && (
                         <div className="cart-description">
                           {cartDescription}
                         </div>
@@ -386,7 +387,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div className="pt-1">
-                    {cartDescription && (
+                    {showInlineDescription && cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
                     <CartLineOptionSelectors line={line} />
@@ -421,7 +422,7 @@ export function CartLineItem({
                       )}
                       <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
-                        {cartDescription && (
+                        {showInlineDescription && cartDescription && (
                           <div className="cart-description">
                             {cartDescription}
                           </div>
@@ -465,7 +466,7 @@ export function CartLineItem({
                       )}
                       <div className="ps-3 cart-line-text">
                         <strong>{product.title}</strong>
-                        {cartDescription && (
+                        {showInlineDescription && cartDescription && (
                           <div className="cart-description">
                             {cartDescription}
                           </div>
@@ -500,7 +501,7 @@ export function CartLineItem({
                     <strong>{product.title}</strong>
                   </div>
                 </div>
-                {cartDescription && (
+                {showInlineDescription && cartDescription && (
                   <div className="cart-description">{cartDescription}</div>
                 )}
               </Link>
@@ -522,7 +523,13 @@ export function CartLineItem({
             </div>
           )} */}
         </li>
-        <CartLineQuantity line={line} hideQuantityButtons={!!hasPrintTag} />
+        <CartLineQuantity
+          line={line}
+          hideQuantityButtons={!!hasPrintTag}
+          discountText={lineDiscountText}
+          footerDescription={showFooterDescription ? cartDescription : null}
+          isMobile={isMobileView}
+        />
       </CardContent>
     </Card>
   );
@@ -722,54 +729,83 @@ function toOptionInputId(value: string) {
 function CartLineQuantity({
   line,
   hideQuantityButtons,
+  discountText,
+  footerDescription,
+  isMobile,
 }: {
   line: CartLine;
   hideQuantityButtons: boolean;
+  discountText?: string | null;
+  footerDescription?: string | null;
+  isMobile: boolean;
 }) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity, isOptimistic} = line;
   const prevQuantity = Number(Math.max(0, quantity - 1).toFixed(0));
   const nextQuantity = Number((quantity + 1).toFixed(0));
+  const hasDiscountText = Boolean(discountText);
+  const hasFooterDescription = Boolean(isMobile && footerDescription);
+  const footerClassName = [
+    'cart-line-footer',
+    hasDiscountText ? 'has-discount-text' : '',
+    hasFooterDescription ? 'has-mobile-description' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div className="cart-line-quantity">
-      <div className="cart-subheader flex justify-center align-center ps-1">
-        <span>Quantity:</span> &nbsp;
-        <span className="text-md font-bold cart-quantity">{quantity}</span>{' '}
-        &nbsp;&nbsp;
+    <div className={footerClassName}>
+      {hasFooterDescription ? (
+        <div className="cart-description cart-line-footer-description">
+          {footerDescription}
+        </div>
+      ) : null}
+
+      <div className="cart-line-quantity">
+        <div className="cart-subheader cart-line-quantity-label">
+          <span>Quantity:</span>
+          <span className="text-md font-bold cart-quantity">{quantity}</span>
+        </div>
+        {hideQuantityButtons && (
+          <>
+            <CartLineUpdateButton
+              lines={[{id: lineId, quantity: prevQuantity}]}
+            >
+              <Button
+                aria-label="Decrease quantity"
+                disabled={quantity <= 1 || !!isOptimistic}
+                name="decrease-quantity"
+                value={prevQuantity}
+                variant="ghost"
+                size="cartpm"
+                className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+              >
+                <span>&#8722; </span>
+              </Button>
+            </CartLineUpdateButton>
+            <CartLineUpdateButton
+              lines={[{id: lineId, quantity: nextQuantity}]}
+            >
+              <Button
+                aria-label="Increase quantity"
+                name="increase-quantity"
+                value={nextQuantity}
+                disabled={!!isOptimistic}
+                variant="ghost"
+                size='cartpm'
+                className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+              >
+                <span>&#43;</span>
+              </Button>
+            </CartLineUpdateButton>
+          </>
+        )}
+        <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
       </div>
-      {hideQuantityButtons && (
-        <>
-          <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
-            <Button
-              aria-label="Decrease quantity"
-              disabled={quantity <= 1 || !!isOptimistic}
-              name="decrease-quantity"
-              value={prevQuantity}
-              variant="ghost"
-              size="icon"
-              className="cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
-            >
-              <span>&#8722; </span>
-            </Button>
-          </CartLineUpdateButton>
-          &nbsp;
-          <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
-            <Button
-              aria-label="Increase quantity"
-              name="increase-quantity"
-              value={nextQuantity}
-              disabled={!!isOptimistic}
-              variant="ghost"
-              className="cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
-            >
-              <span>&#43;</span>
-            </Button>
-          </CartLineUpdateButton>
-        </>
-      )}
-      &nbsp;
-      <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
+
+      {hasDiscountText ? (
+        <p className="cart-line-footer-discount text-primary text-sm">{discountText}</p>
+      ) : null}
     </div>
   );
 }
@@ -806,7 +842,7 @@ function CartLineRemoveButton({
           disabled={disabled}
           type="submit"
           variant="ghost"
-          className="remove-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+          className="remove-button cart-line-remove-button cursor-pointer px-1.5 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
           size="sm"
         >
           <p className="remove-button-text">Remove</p>
@@ -817,8 +853,8 @@ function CartLineRemoveButton({
           disabled={disabled}
           type="submit"
           variant="ghost"
-          className="remove-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
-          size="lg"
+          className="remove-button cart-line-remove-button cursor-pointer px-1.5 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+          size="cartbtn"
         >
           <p className="remove-button-text">Remove</p>
         </Button>
