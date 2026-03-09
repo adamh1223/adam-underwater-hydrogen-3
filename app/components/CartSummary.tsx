@@ -97,13 +97,31 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
     0,
     subtotalBeforeDiscount - subtotalAfterDiscount,
   );
+  const subtotalCompareAt = cart.lines.nodes.reduce(
+    (runningTotal, lineItem) => {
+      const compareAtPerItem = parseMoneyAmount(
+        (
+          lineItem as unknown as {
+            cost?: {compareAtAmountPerQuantity?: {amount?: string | null}};
+          }
+        )?.cost?.compareAtAmountPerQuantity?.amount,
+      );
+      return runningTotal + compareAtPerItem * (lineItem?.quantity ?? 1);
+    },
+    0,
+  );
   const hasProductDiscountSavings = subtotalSavings > 0.0001;
+  const hasCompareAtSubtotal = subtotalCompareAt > 0.0001;
   const subtotalBeforeDiscountMoney = createMoneyValue(
     subtotalBeforeDiscount,
     subtotalCurrencyCode,
   );
   const subtotalSavingsMoney = createMoneyValue(
     subtotalSavings,
+    subtotalCurrencyCode,
+  );
+  const subtotalCompareAtMoney = createMoneyValue(
+    subtotalCompareAt,
     subtotalCurrencyCode,
   );
 
@@ -121,6 +139,9 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   const hasFreeShippingUnlocked = allDiscountAllocations.some((allocation) =>
     isShippingDiscount(allocation),
   );
+  const productDiscountAppliedText = productDiscountLabels.length
+    ? `${productDiscountLabels.join(', ')} applied!`
+    : 'Discount applied!';
 
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
@@ -150,26 +171,38 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
             <p className="cart-header">Totals</p>
             <hr />
           </div>
-          <CardContent>
+          <div className='p-2'>
             <div className="cart-subtotal">
               <p className="cart-header">Subtotal:</p>
               <div className="ms-1">
                 {cart.cost?.subtotalAmount?.amount ? (
                   hasProductDiscountSavings ? (
-                    <div className="flex items-center gap-2">
-                      <s className="opacity-70">
-                        <Money data={subtotalBeforeDiscountMoney} />
-                      </s>
+                    <div className="product-price-on-sale cart-subtotal-price-on-sale">
                       <Money
                         data={cart.cost?.subtotalAmount}
                         className="cart-header"
                       />
+                      <s className="cart-line-regular-discount-price">
+                        <Money data={subtotalBeforeDiscountMoney} />
+                      </s>
+                      {hasCompareAtSubtotal ? (
+                        <s>
+                          <Money data={subtotalCompareAtMoney} />
+                        </s>
+                      ) : null}
                     </div>
                   ) : (
-                    <Money
-                      data={cart.cost?.subtotalAmount}
-                      className="cart-header"
-                    />
+                    <div className="product-price-on-sale cart-subtotal-price-on-sale">
+                      <Money
+                        data={cart.cost?.subtotalAmount}
+                        className="cart-header"
+                      />
+                      {hasCompareAtSubtotal ? (
+                        <s>
+                          <Money data={subtotalCompareAtMoney} />
+                        </s>
+                      ) : null}
+                    </div>
                   )
                 ) : (
                   '-'
@@ -179,25 +212,12 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
             {(hasProductDiscountSavings || hasFreeShippingUnlocked) && (
               <div className="mt-2 space-y-1">
                 {hasProductDiscountSavings && (
-                  <>
-                    {productDiscountLabels.length ? (
-                      productDiscountLabels.map((discountLabel) => (
-                        <p
-                          key={discountLabel}
-                          className="text-sm font-medium text-primary"
-                        >
-                          {discountLabel} applied!
-                        </p>
-                      ))
-                    ) : (
-                      <p className="text-sm font-medium text-primary">
-                        Discount applied!
-                      </p>
-                    )}
-                    <p className="text-sm font-medium text-primary">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-primary">
+                    <p>{productDiscountAppliedText}</p>
+                    <p>
                       Savings: <Money data={subtotalSavingsMoney} />
                     </p>
-                  </>
+                  </div>
                 )}
                 {hasFreeShippingUnlocked && (
                   <p className="text-sm font-medium text-primary">
@@ -209,7 +229,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
             <br />
             <CartDiscounts discountCodes={cart.discountCodes} />
             <CartGiftCard giftCardCodes={cart.appliedGiftCards} />
-          </CardContent>
+          </div>
         </Card>
       </div>
 

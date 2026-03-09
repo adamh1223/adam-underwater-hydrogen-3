@@ -1141,7 +1141,7 @@
 }
 
 .print-carousel-individual-vertical {
-  max-width: clamp(16rem, 64vw, 25rem);
+  max-width: clamp(16rem, 80vw, 25rem);
 }
 
 .print-carousel-main-stage {
@@ -1379,13 +1379,22 @@
 .bundle-detail-image {
   object-fit: cover;
 }
-
-.print-detail-shortcuts-outer {
-  width: min(100%, clamp(280px, 90vw, 680px));
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
-  padding-top: 6px;
+@media (max-width: 499px) {
+  .print-detail-shortcuts-outer {
+    width: min(100%, clamp(280px, 90vw, 680px));
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+}
+@media (min-width: 500px) {
+  .print-detail-shortcuts-outer {
+    width: min(100%, clamp(280px, 90vw, 680px));
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding-top: 6px;
+  }
 }
 
 .print-detail-shortcuts-host {
