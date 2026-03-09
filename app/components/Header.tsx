@@ -27,6 +27,8 @@ import NotificationsDropdown from './navbar/NotificationsDropdown';
 import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './ui/hover-card';
+import {Tooltip, TooltipContent, TooltipTrigger} from './ui/tooltip';
+import {Kbd} from './ui/kbd';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
 import {emitAsideDebug} from '~/lib/asideDebugClient';
@@ -1085,13 +1087,19 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button
-      
-      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-2 py-2"
-      onClick={() => open('search', 'header-search-toggle')}
-    >
-      <LuSearch></LuSearch>
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-2 py-2"
+          onClick={() => open('search', 'header-search-toggle')}
+        >
+          <LuSearch></LuSearch>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="z-[1001]">
+        Keyboard shortcut: <Kbd>s</Kbd>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

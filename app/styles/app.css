@@ -176,8 +176,9 @@ aside li {
   right: 0;
   top: 0;
   overflow-x: hidden;
-  transition: opacity 400ms ease-in-out;
-  transition: opacity 400ms;
+  transition:
+    opacity 400ms ease-in-out,
+    visibility 0s linear 200ms;
   visibility: hidden;
   z-index: 200;
 }
@@ -208,6 +209,9 @@ aside li {
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
+  transition:
+    opacity 400ms ease-in-out,
+    visibility 0s linear 0s;
 }
 /* reveal aside */
 .overlay.expanded aside {

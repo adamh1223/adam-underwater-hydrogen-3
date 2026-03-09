@@ -37,8 +37,10 @@ import {
   InputGroupInput,
 } from '~/components/ui/input-group';
 import {LuSearch, LuZoomIn, LuZoomOut} from 'react-icons/lu';
-import {Popover, PopoverContent, PopoverTrigger} from '~/components/ui/popover';
+import {Popover, PopoverAnchor, PopoverContent} from '~/components/ui/popover';
 import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
+import {Tooltip, TooltipContent, TooltipTrigger} from '~/components/ui/tooltip';
+import {Kbd} from '~/components/ui/kbd';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {
   COMBINED_SEARCH_HINT_WORDS,
@@ -272,6 +274,59 @@ function bundleMatchesFrameRate(
   return frames.some((frame) => frame === frameRateFilter);
 }
 
+function chainMouseHandler<EventType>(
+  originalHandler: ((event: EventType) => void) | undefined,
+  nextHandler: (event: EventType) => void,
+) {
+  return (event: EventType) => {
+    originalHandler?.(event);
+    nextHandler(event);
+  };
+}
+
+function HoverOnlyTooltip({
+  content,
+  children,
+  side = 'top',
+}: {
+  content: React.ReactNode;
+  children: React.ReactElement<{
+    onMouseEnter?: (event: React.MouseEvent) => void;
+    onMouseLeave?: (event: React.MouseEvent) => void;
+    onPointerDown?: (event: React.PointerEvent) => void;
+    onClick?: (event: React.MouseEvent) => void;
+    onBlur?: (event: React.FocusEvent) => void;
+  }>;
+  side?: 'top' | 'right' | 'bottom' | 'left';
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Tooltip open={open}>
+      <TooltipTrigger asChild>
+        {React.cloneElement(children, {
+          onMouseEnter: chainMouseHandler(children.props.onMouseEnter, () =>
+            setOpen(true),
+          ),
+          onMouseLeave: chainMouseHandler(children.props.onMouseLeave, () =>
+            setOpen(false),
+          ),
+          onPointerDown: chainMouseHandler(children.props.onPointerDown, () =>
+            setOpen(false),
+          ),
+          onClick: chainMouseHandler(children.props.onClick, () =>
+            setOpen(false),
+          ),
+          onBlur: chainMouseHandler(children.props.onBlur, () => setOpen(false)),
+        })}
+      </TooltipTrigger>
+      <TooltipContent side={side} className="z-[1001]">
+        {content}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 const SearchFilterIconButton = React.forwardRef<
   HTMLButtonElement,
   {
@@ -474,6 +529,8 @@ function SearchFiltersPopover({
   setResolutionFilterIndex,
   frameRateFilter,
   setFrameRateFilter,
+  open,
+  onOpenChange,
 }: {
   productFilter: SearchProductFilter;
   setProductFilter: (value: SearchProductFilter) => void;
@@ -485,6 +542,8 @@ function SearchFiltersPopover({
   setResolutionFilterIndex: (value: number) => void;
   frameRateFilter: FrameRateFilter;
   setFrameRateFilter: (value: FrameRateFilter) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const isFiltered = productFilter !== 'all';
 
@@ -497,10 +556,25 @@ function SearchFiltersPopover({
   };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <SearchFilterIconButton isFiltered={isFiltered} />
-      </PopoverTrigger>
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverAnchor asChild>
+        <div className="inline-flex">
+          <HoverOnlyTooltip
+            content={
+              <>
+                Keyboard shortcut: <Kbd>f</Kbd>
+              </>
+            }
+          >
+            <SearchFilterIconButton
+              isFiltered={isFiltered}
+              onClick={() => onOpenChange(!open)}
+              aria-expanded={open}
+              aria-haspopup="dialog"
+            />
+          </HoverOnlyTooltip>
+        </div>
+      </PopoverAnchor>
       <PopoverContent
         align="start"
         sideOffset={8}
@@ -663,7 +737,8 @@ export default function SearchPage() {
     getEmptyPredictiveSearchResult(),
   );
   const [layout, setLayout] = useState<SearchLayoutMode>('grid');
-  const [productFilter, setProductFilter] = useState<SearchProductFilter>('all');
+  const [productFilter, setProductFilter] =
+    useState<SearchProductFilter>('all');
   const [printsFilterState, setPrintsFilterState] =
     useState<PrintsFilterState>('All');
   const [durationFilterIndex, setDurationFilterIndex] = useState(
@@ -676,6 +751,8 @@ export default function SearchPage() {
     DEFAULT_FRAME_RATE_FILTER,
   );
   const [hasHydratedControls, setHasHydratedControls] = useState(false);
+  const [isSearchFiltersPopoverOpen, setIsSearchFiltersPopoverOpen] =
+    useState(false);
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
   const handleSearchImgLoad = useCallback(() => {
@@ -700,6 +777,30 @@ export default function SearchPage() {
   }, []);
 
   useEffect(() => {
+    const handleFilterShortcut = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.isContentEditable ||
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT'
+      ) {
+        return;
+      }
+
+      if (event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        setIsSearchFiltersPopoverOpen((isOpen) => !isOpen);
+      }
+    };
+
+    window.addEventListener('keydown', handleFilterShortcut);
+    return () => window.removeEventListener('keydown', handleFilterShortcut);
+  }, []);
+
+  useEffect(() => {
     // When URL q changes (including from aside submit), sync the page input.
     setSearchText(term);
     setIsPredictiveMode(false);
@@ -708,7 +809,9 @@ export default function SearchPage() {
 
   useEffect(() => {
     try {
-      const savedLayout = window.localStorage.getItem(SEARCH_LAYOUT_STORAGE_KEY);
+      const savedLayout = window.localStorage.getItem(
+        SEARCH_LAYOUT_STORAGE_KEY,
+      );
       if (savedLayout === 'grid' || savedLayout === 'list') {
         setLayout(savedLayout);
       }
@@ -792,7 +895,10 @@ export default function SearchPage() {
         SEARCH_STOCK_RESOLUTION_FILTER_KEY,
         String(resolutionFilterIndex),
       );
-      window.localStorage.setItem(SEARCH_STOCK_FRAME_RATE_FILTER_KEY, frameRateFilter);
+      window.localStorage.setItem(
+        SEARCH_STOCK_FRAME_RATE_FILTER_KEY,
+        frameRateFilter,
+      );
     } catch {
       // Ignore storage access errors.
     }
@@ -894,8 +1000,11 @@ export default function SearchPage() {
       ? ((data.result?.items?.products?.nodes ??
           []) as unknown as EnhancedPartialSearchResult[])
       : [];
-  const showPredictiveResults = isPredictiveMode && searchText.trim().length > 0;
-  const baseProducts = showPredictiveResults ? predictiveProducts : regularProducts;
+  const showPredictiveResults =
+    isPredictiveMode && searchText.trim().length > 0;
+  const baseProducts = showPredictiveResults
+    ? predictiveProducts
+    : regularProducts;
 
   const filteredDisplayedProducts = useMemo(() => {
     let filteredProducts = baseProducts.slice();
@@ -905,12 +1014,14 @@ export default function SearchPage() {
       if (printsFilterState === 'Horizontal') {
         filteredProducts = filteredProducts.filter(
           (product) =>
-            product.tags.includes('horOnly') || product.tags.includes('horPrimary'),
+            product.tags.includes('horOnly') ||
+            product.tags.includes('horPrimary'),
         );
       } else if (printsFilterState === 'Vertical') {
         filteredProducts = filteredProducts.filter(
           (product) =>
-            product.tags.includes('vertOnly') || product.tags.includes('vertPrimary'),
+            product.tags.includes('vertOnly') ||
+            product.tags.includes('vertPrimary'),
         );
       }
       return filteredProducts;
@@ -982,7 +1093,8 @@ export default function SearchPage() {
     hasPredictiveTerm &&
     predictiveFetcher.state !== 'idle' &&
     predictiveProducts.length === 0;
-  const hasRegularSearchResults = Boolean(term?.trim()) && Boolean(result?.total);
+  const hasRegularSearchResults =
+    Boolean(term?.trim()) && Boolean(result?.total);
   const displayedProductCount = showPredictiveResults
     ? filteredDisplayedProducts.length
     : hasRegularSearchResults
@@ -998,7 +1110,11 @@ export default function SearchPage() {
         : 'print-list-grid';
   const layoutClassName =
     layout === 'grid'
-      ? ['prods-grid', 'gap-x-2', hasPrintProducts && hasVideoProducts ? 'mixed-product-grid' : '']
+      ? [
+          'prods-grid',
+          'gap-x-2',
+          hasPrintProducts && hasVideoProducts ? 'mixed-product-grid' : '',
+        ]
           .filter(Boolean)
           .join(' ')
       : `mt-[10px] mx-[10px] grid ${listGridClassName} gap-2`;
@@ -1047,12 +1163,14 @@ export default function SearchPage() {
                   setResolutionFilterIndex={setResolutionFilterIndex}
                   frameRateFilter={frameRateFilter}
                   setFrameRateFilter={setFrameRateFilter}
+                  open={isSearchFiltersPopoverOpen}
+                  onOpenChange={setIsSearchFiltersPopoverOpen}
                 />
               </div>
 
               <div className="search-product-container">
                 <div className="desktop-search-stack flex flex-col items-center mb-2">
-                  <InputGroup className="w-[284px]">
+                  <InputGroup className="w-[284px] has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50">
                     <InputGroupAddon align="inline-start">
                       <LuSearch className="text-muted-foreground" />
                     </InputGroupAddon>
@@ -1112,7 +1230,7 @@ export default function SearchPage() {
                 <div className="search-center">
                   <div className="search-product-container">
                     <div className="mt-[8px] flex flex-col items-center">
-                      <InputGroup className="w-[300px] max-w-[calc(100vw-80px)]">
+                      <InputGroup className="w-[300px] max-w-[calc(100vw-80px)] has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50">
                         <InputGroupAddon align="inline-start">
                           <LuSearch className="text-muted-foreground" />
                         </InputGroupAddon>
@@ -1157,6 +1275,8 @@ export default function SearchPage() {
                     setResolutionFilterIndex={setResolutionFilterIndex}
                     frameRateFilter={frameRateFilter}
                     setFrameRateFilter={setFrameRateFilter}
+                    open={isSearchFiltersPopoverOpen}
+                    onOpenChange={setIsSearchFiltersPopoverOpen}
                   />
                 </div>
 
@@ -1207,7 +1327,9 @@ export default function SearchPage() {
               Searching...
             </div>
           ) : showPredictiveEmpty ? (
-            <SearchResultsPredictive.Empty term={{current: searchText.trim()}} />
+            <SearchResultsPredictive.Empty
+              term={{current: searchText.trim()}}
+            />
           ) : (
             <div
               className={`${layoutClassName} collection-results-surface`.trim()}
@@ -1253,7 +1375,9 @@ export default function SearchPage() {
             )}
           </>
         )}
-        <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
+        <Analytics.SearchView
+          data={{searchTerm: term, searchResults: result}}
+        />
       </div>
     </SkeletonGate>
   );
@@ -1668,8 +1792,11 @@ async function predictiveSearch({
   const term = String(url.searchParams.get('q') || '').trim();
   const limit = Number(url.searchParams.get('limit') || 10);
   const type = 'predictive';
+  const hasSearchableCharacters = /[\p{L}\p{N}]/u.test(term);
 
-  if (!term) return {type, term, result: getEmptyPredictiveSearchResult()};
+  if (!term || !hasSearchableCharacters) {
+    return {type, term, result: getEmptyPredictiveSearchResult()};
+  }
 
   // Predictively search articles, collections, pages, products, and queries (suggestions)
   const {predictiveSearch: items, errors} = await storefront.query(

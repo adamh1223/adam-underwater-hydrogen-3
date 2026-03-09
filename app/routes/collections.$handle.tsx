@@ -33,7 +33,7 @@ import React, {
   useState,
 } from 'react';
 import {LuSearch, LuZoomIn, LuZoomOut} from 'react-icons/lu';
-import {Popover, PopoverTrigger, PopoverContent} from '~/components/ui/popover';
+import {Popover, PopoverAnchor, PopoverContent} from '~/components/ui/popover';
 import {
   applyHighestResolutionVariantToProducts,
   parseResolutionValue,
@@ -52,11 +52,8 @@ import {EnhancedPartialSearchResult} from '~/lib/types';
 import {type PredictiveSearchReturn} from '~/lib/search';
 import Product from './products.$handle';
 import Collections from './collections._index';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '~/components/ui/tooltip';
+import {Tooltip, TooltipContent, TooltipTrigger} from '~/components/ui/tooltip';
+import {Kbd} from '~/components/ui/kbd';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import CollectionPageSkeleton from '~/components/skeletons/CollectionPageSkeleton';
@@ -118,8 +115,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
         ? 'Adam Underwater | Prints'
         : `Adam Underwater | ${collection?.title ?? ''} Collection`;
   const description =
-    collection?.description?.trim() ||
-    'Explore Adam Underwater collections.';
+    collection?.description?.trim() || 'Explore Adam Underwater collections.';
   const canonicalUrl =
     data?.currentShareUrl ??
     data?.canonicalCollectionUrl ??
@@ -325,20 +321,21 @@ function HoverOnlyTooltip({
     <Tooltip open={open}>
       <TooltipTrigger asChild>
         {React.cloneElement(children, {
-          onMouseEnter: chainMouseHandler(
-            children.props.onMouseEnter,
-            () => setOpen(true),
+          onMouseEnter: chainMouseHandler(children.props.onMouseEnter, () =>
+            setOpen(true),
           ),
-          onMouseLeave: chainMouseHandler(
-            children.props.onMouseLeave,
-            () => setOpen(false),
+          onMouseLeave: chainMouseHandler(children.props.onMouseLeave, () =>
+            setOpen(false),
           ),
-          onPointerDown: chainMouseHandler(
-            children.props.onPointerDown,
-            () => setOpen(false),
+          onPointerDown: chainMouseHandler(children.props.onPointerDown, () =>
+            setOpen(false),
           ),
-          onClick: chainMouseHandler(children.props.onClick, () => setOpen(false)),
-          onBlur: chainMouseHandler(children.props.onBlur, () => setOpen(false)),
+          onClick: chainMouseHandler(children.props.onClick, () =>
+            setOpen(false),
+          ),
+          onBlur: chainMouseHandler(children.props.onBlur, () =>
+            setOpen(false),
+          ),
         })}
       </TooltipTrigger>
       <TooltipContent side={side} className="z-[1001]">
@@ -367,7 +364,9 @@ const CollectionFilterIconButton = React.forwardRef<
       {...props}
     >
       <img
-        src={'https://downloads.adamunderwater.com/store-1-au/public/filter.png'}
+        src={
+          'https://downloads.adamunderwater.com/store-1-au/public/filter.png'
+        }
         alt=""
         className="w-5 h-5"
       ></img>
@@ -547,27 +546,38 @@ function NotchedSlider({
 function PrintsFiltersPopover({
   filterState,
   setFilterState,
+  open,
+  onOpenChange,
 }: {
   filterState: 'All' | 'Horizontal' | 'Vertical';
   setFilterState: (value: 'All' | 'Horizontal' | 'Vertical') => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const isFiltered = filterState !== 'All';
   const handleReset = () => setFilterState('All');
 
   return (
-    <Tooltip>
-      <Popover>
-        <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverAnchor asChild>
+        <div className="inline-flex">
+          <HoverOnlyTooltip
+            content={
+              <>
+                Keyboard shortcut: <Kbd>f</Kbd>
+              </>
+            }
+          >
             <CollectionFilterIconButton
               isFiltered={isFiltered}
               ariaLabel="Filter print products"
+              onClick={() => onOpenChange(!open)}
+              aria-expanded={open}
+              aria-haspopup="dialog"
             />
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="z-[1001]">
-          Filter Products
-        </TooltipContent>
+          </HoverOnlyTooltip>
+        </div>
+      </PopoverAnchor>
         <PopoverContent
           align="start"
           sideOffset={8}
@@ -580,7 +590,13 @@ function PrintsFiltersPopover({
                 <p className="text-sm font-medium text-foreground">
                   Orientation
                 </p>
-                <HoverOnlyTooltip content="Reset Filters - shortcut: r">
+                <HoverOnlyTooltip
+                  content={
+                    <>
+                      Reset Filters - shortcut: <Kbd>r</Kbd>
+                    </>
+                  }
+                >
                   <button
                     type="button"
                     className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
@@ -602,7 +618,18 @@ function PrintsFiltersPopover({
                   (value, index) => (
                     <HoverOnlyTooltip
                       key={value}
-                      content={`Keyboard shortcut: ${value === 'All' ? 'a' : value === 'Horizontal' ? 'h' : 'v'}`}
+                      content={
+                        <>
+                          Keyboard shortcut:{' '}
+                          <Kbd>
+                            {value === 'All'
+                              ? 'a'
+                              : value === 'Horizontal'
+                                ? 'h'
+                                : 'v'}
+                          </Kbd>
+                        </>
+                      }
                     >
                       <button
                         type="button"
@@ -627,9 +654,8 @@ function PrintsFiltersPopover({
               vertical on the product page
             </p>
           </div>
-        </PopoverContent>
-      </Popover>
-    </Tooltip>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -640,6 +666,8 @@ function StockFiltersPopover({
   setResolutionFilterIndex,
   frameRateFilter,
   setFrameRateFilter,
+  open,
+  onOpenChange,
 }: {
   durationFilterIndex: number;
   setDurationFilterIndex: (v: number) => void;
@@ -647,6 +675,8 @@ function StockFiltersPopover({
   setResolutionFilterIndex: (v: number) => void;
   frameRateFilter: FrameRateFilter;
   setFrameRateFilter: (v: FrameRateFilter) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const isFiltered =
     durationFilterIndex !== DEFAULT_DURATION_FILTER_INDEX ||
@@ -660,19 +690,26 @@ function StockFiltersPopover({
   };
 
   return (
-    <Tooltip>
-      <Popover>
-        <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverAnchor asChild>
+        <div className="inline-flex">
+          <HoverOnlyTooltip
+            content={
+              <>
+                Keyboard shortcut: <Kbd>f</Kbd>
+              </>
+            }
+          >
             <CollectionFilterIconButton
               isFiltered={isFiltered}
               ariaLabel="Filter stock footage"
+              onClick={() => onOpenChange(!open)}
+              aria-expanded={open}
+              aria-haspopup="dialog"
             />
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="z-[1001]">
-          Filter Products
-        </TooltipContent>
+          </HoverOnlyTooltip>
+        </div>
+      </PopoverAnchor>
         <PopoverContent
           align="start"
           sideOffset={8}
@@ -680,78 +717,83 @@ function StockFiltersPopover({
           onOpenAutoFocus={(event) => event.preventDefault()}
         >
           <div className="space-y-4">
-          <NotchedSlider
-            label="Duration (seconds)"
-            notches={DURATION_NOTCHES}
-            value={durationFilterIndex}
-            onChange={setDurationFilterIndex}
-            headerContent={
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-foreground">
-                  Duration (seconds)
-                </p>
-                <HoverOnlyTooltip content="Reset Filters - shortcut: r">
-                  <button
-                    type="button"
-                    className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
-                    aria-label="Reset stock filters"
-                    onClick={handleReset}
+            <NotchedSlider
+              label="Duration (seconds)"
+              notches={DURATION_NOTCHES}
+              value={durationFilterIndex}
+              onChange={setDurationFilterIndex}
+              headerContent={
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-foreground">
+                    Duration (seconds)
+                  </p>
+                  <HoverOnlyTooltip
+                    content={
+                      <>
+                        Reset Filters - shortcut: <Kbd>r</Kbd>
+                      </>
+                    }
                   >
-                    <img
-                      src={
-                        'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
-                      }
-                      alt=""
-                      className="w-5 h-5"
-                    ></img>
-                  </button>
-                </HoverOnlyTooltip>
-              </div>
-            }
-          />
-          <NotchedSlider
-            label="Resolution"
-            notches={RESOLUTION_NOTCHES}
-            value={resolutionFilterIndex}
-            onChange={setResolutionFilterIndex}
-          />
-          <div className="border-t border-border pt-2">
-            <p className="text-sm font-medium text-foreground mb-3">
-              Frame Rate
-            </p>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              value={frameRateFilter}
-              onValueChange={(value) => {
-                if (value) setFrameRateFilter(value as FrameRateFilter);
-              }}
-              className="w-full cursor-pointer"
-            >
-              <ToggleGroupItem
-                value="all"
-                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                    <button
+                      type="button"
+                      className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+                      aria-label="Reset stock filters"
+                      onClick={handleReset}
+                    >
+                      <img
+                        src={
+                          'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                        }
+                        alt=""
+                        className="w-5 h-5"
+                      ></img>
+                    </button>
+                  </HoverOnlyTooltip>
+                </div>
+              }
+            />
+            <NotchedSlider
+              label="Resolution"
+              notches={RESOLUTION_NOTCHES}
+              value={resolutionFilterIndex}
+              onChange={setResolutionFilterIndex}
+            />
+            <div className="border-t border-border pt-2">
+              <p className="text-sm font-medium text-foreground mb-3">
+                Frame Rate
+              </p>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                value={frameRateFilter}
+                onValueChange={(value) => {
+                  if (value) setFrameRateFilter(value as FrameRateFilter);
+                }}
+                className="w-full cursor-pointer"
               >
-                All
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="24fps"
-                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                24fps
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="slowmo"
-                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-              >
-                Slowmo
-              </ToggleGroupItem>
-            </ToggleGroup>
+                <ToggleGroupItem
+                  value="all"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="24fps"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  24fps
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="slowmo"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  Slowmo
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-    </Tooltip>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -1011,10 +1053,20 @@ export default function Collection() {
     useState(false);
   const [hasInitializedStockFilter, setHasInitializedStockFilter] =
     useState(false);
+  const [isCollectionFiltersPopoverOpen, setIsCollectionFiltersPopoverOpen] =
+    useState(false);
   const setGridLayout = () => setLayout('grid');
   const setListLayout = () => setLayout('list');
-  const gridViewTooltip = 'Keyboard shortcut: =';
-  const listViewTooltip = 'Keyboard shortcut: -';
+  const gridViewTooltip = (
+    <>
+      Keyboard shortcut: <Kbd>=</Kbd>
+    </>
+  );
+  const listViewTooltip = (
+    <>
+      Keyboard shortcut: <Kbd>-</Kbd>
+    </>
+  );
 
   useEffect(() => {
     try {
@@ -1228,14 +1280,16 @@ export default function Collection() {
         STOCK_RESOLUTION_FILTER_KEY,
         String(resolutionFilterIndex),
       );
-      window.localStorage.setItem(
-        STOCK_FRAME_RATE_FILTER_KEY,
-        frameRateFilter,
-      );
+      window.localStorage.setItem(STOCK_FRAME_RATE_FILTER_KEY, frameRateFilter);
     } catch {
       // Ignore storage access errors
     }
-  }, [collection?.handle, durationFilterIndex, resolutionFilterIndex, frameRateFilter]);
+  }, [
+    collection?.handle,
+    durationFilterIndex,
+    resolutionFilterIndex,
+    frameRateFilter,
+  ]);
 
   useEffect(() => {
     const baseConnection = collection?.products;
@@ -1273,8 +1327,7 @@ export default function Collection() {
 
         // Existing clip-type filter
         if (stockFilterState === 'All Clips') {
-          if (!(p.tags.includes('Video') && !isBundleProduct))
-            return false;
+          if (!(p.tags.includes('Video') && !isBundleProduct)) return false;
         } else if (stockFilterState === 'Discounted Bundles') {
           if (!isBundleProduct) return false;
         }
@@ -1410,6 +1463,12 @@ export default function Collection() {
 
       const key = event.key.toLowerCase();
 
+      if (key === 'f') {
+        event.preventDefault();
+        setIsCollectionFiltersPopoverOpen((isOpen) => !isOpen);
+        return;
+      }
+
       if (collection?.handle === 'stock') {
         if (key === 'a') {
           event.preventDefault();
@@ -1486,7 +1545,7 @@ export default function Collection() {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  Keyboard shortcut: a
+                  Keyboard shortcut: <Kbd>a</Kbd>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -1499,7 +1558,7 @@ export default function Collection() {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  Keyboard shortcut: d
+                  Keyboard shortcut: <Kbd>d</Kbd>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -1524,12 +1583,16 @@ export default function Collection() {
                   setResolutionFilterIndex={setResolutionFilterIndex}
                   frameRateFilter={frameRateFilter}
                   setFrameRateFilter={setFrameRateFilter}
+                  open={isCollectionFiltersPopoverOpen}
+                  onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
               )}
               {collection?.handle === 'prints' && (
                 <PrintsFiltersPopover
                   filterState={filterState}
                   setFilterState={setFilterState}
+                  open={isCollectionFiltersPopoverOpen}
+                  onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
               )}
             </div>
@@ -1546,7 +1609,7 @@ export default function Collection() {
 
                     return (
                       <div className="desktop-search-stack flex flex-col items-center">
-                        <InputGroup className="w-[284px]">
+                        <InputGroup className="w-[284px] has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50">
                           <InputGroupAddon align="inline-start">
                             <LuSearch className="text-muted-foreground" />
                           </InputGroupAddon>
@@ -1611,9 +1674,7 @@ export default function Collection() {
                     <LuZoomOut />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top">
-                  {listViewTooltip}
-                </TooltipContent>
+                <TooltipContent side="top">{listViewTooltip}</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -1633,9 +1694,7 @@ export default function Collection() {
                     <LuZoomIn />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top">
-                  {gridViewTooltip}
-                </TooltipContent>
+                <TooltipContent side="top">{gridViewTooltip}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -1658,7 +1717,7 @@ export default function Collection() {
 
                           return (
                             <div className="flex flex-col items-center">
-                              <InputGroup className="w-[300px]">
+                              <InputGroup className="w-[300px] has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50">
                                 <InputGroupAddon align="inline-start">
                                   <LuSearch className="text-muted-foreground" />
                                 </InputGroupAddon>
@@ -1695,7 +1754,8 @@ export default function Collection() {
                                 />
                               ) : (
                                 <p className="text-muted-foreground text-[11px] mt-1.5 w-[300px] text-left pl-9">
-                                  Try &ldquo;Sea Lion&rdquo; or &ldquo;Fish&rdquo;
+                                  Try &ldquo;Sea Lion&rdquo; or
+                                  &ldquo;Fish&rdquo;
                                 </p>
                               )}
                             </div>
@@ -1725,12 +1785,16 @@ export default function Collection() {
                       setResolutionFilterIndex={setResolutionFilterIndex}
                       frameRateFilter={frameRateFilter}
                       setFrameRateFilter={setFrameRateFilter}
+                      open={isCollectionFiltersPopoverOpen}
+                      onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />
                   )}
                   {collection?.handle === 'prints' && (
                     <PrintsFiltersPopover
                       filterState={filterState}
                       setFilterState={setFilterState}
+                      open={isCollectionFiltersPopoverOpen}
+                      onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />
                   )}
                 </div>

@@ -18,11 +18,7 @@ import {CorePageWarmup} from '~/components/CorePageWarmup';
 import {Button} from './ui/button';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import {LuSearch} from 'react-icons/lu';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from './ui/input-group';
+import {InputGroup, InputGroupAddon, InputGroupInput} from './ui/input-group';
 import {
   COMBINED_SEARCH_HINT_WORDS,
   RandomizedSearchHint,
@@ -131,6 +127,35 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
     previousRouteRef.current = currentRoute;
   }, [aside, location.hash, location.pathname, location.search]);
 
+  useEffect(() => {
+    const handleGlobalSearchShortcut = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.isContentEditable ||
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT'
+      ) {
+        return;
+      }
+
+      if (event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        if (aside.type === 'search') {
+          aside.close();
+          return;
+        }
+        aside.open('search', 'global-search-shortcut');
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalSearchShortcut);
+    return () =>
+      window.removeEventListener('keydown', handleGlobalSearchShortcut);
+  }, [aside]);
+
   return (
     <Aside type="search" heading="SEARCH">
       <div className="mt-[8px] cart-main ">
@@ -149,7 +174,7 @@ function SearchAside({isLoggedIn, wishlistProducts}: SearchAsideProps) {
                 />
                 <div className="order-2 flex w-full min-w-0 max-w-full flex-col gap-2 min-[601px]:w-auto min-[601px]:max-w-none min-[601px]:flex-row min-[601px]:items-start">
                   <div className="flex w-full min-w-0 max-w-full flex-col items-center min-[601px]:w-[220px] min-[601px]:items-start">
-                    <InputGroup className="w-full min-w-0 max-w-full min-[601px]:w-[220px]">
+                    <InputGroup className="w-full min-w-0 max-w-full min-[601px]:w-[220px] has-[[data-slot=input-group-control]:focus-visible]:border-primary has-[[data-slot=input-group-control]:focus-visible]:ring-primary/50">
                       <InputGroupAddon align="inline-start">
                         <LuSearch className="text-muted-foreground" />
                       </InputGroupAddon>

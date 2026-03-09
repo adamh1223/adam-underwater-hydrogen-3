@@ -4,6 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
+import {Kbd} from '~/components/ui/kbd';
 
 export default function ToggleSwitch({
   selected,
@@ -25,7 +26,7 @@ export default function ToggleSwitch({
             </button>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-sm z-1000">
-            Keyboard shortcut: a
+            Keyboard shortcut: <Kbd>a</Kbd>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -38,7 +39,7 @@ export default function ToggleSwitch({
             </button>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-sm z-1000">
-            Keyboard shortcut: h
+            Keyboard shortcut: <Kbd>h</Kbd>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -51,7 +52,7 @@ export default function ToggleSwitch({
             </button>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-sm z-1000">
-            Keyboard shortcut: v
+            Keyboard shortcut: <Kbd>v</Kbd>
           </TooltipContent>
         </Tooltip>
       </div>
