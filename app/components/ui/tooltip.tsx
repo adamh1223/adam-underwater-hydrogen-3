@@ -18,13 +18,43 @@ function TooltipProvider({
 
 function Tooltip({
   disableHoverableContent = true,
+  open,
+  defaultOpen,
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+  const [isTouchLikeDevice, setIsTouchLikeDevice] = React.useState(() => {
+    if (typeof window === 'undefined') return true;
+    return !window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  });
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const updatePointerMode = () => {
+      setIsTouchLikeDevice(!mediaQuery.matches);
+    };
+
+    updatePointerMode();
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', updatePointerMode);
+      return () => mediaQuery.removeEventListener('change', updatePointerMode);
+    }
+
+    mediaQuery.addListener(updatePointerMode);
+    return () => mediaQuery.removeListener(updatePointerMode);
+  }, []);
+
   return (
     <TooltipProvider>
       <TooltipPrimitive.Root
         data-slot="tooltip"
         disableHoverableContent={disableHoverableContent}
+        open={isTouchLikeDevice ? false : open}
+        defaultOpen={isTouchLikeDevice ? false : defaultOpen}
+        onOpenChange={isTouchLikeDevice ? undefined : onOpenChange}
         {...props}
       />
     </TooltipProvider>

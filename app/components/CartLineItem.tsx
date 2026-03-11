@@ -94,10 +94,19 @@ export function CartLineItem({
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
-  const hasOnlyDefaultTitle = selectedOptions.some(
+  const normalizedSelectedOptions = Array.isArray(selectedOptions)
+    ? selectedOptions
+    : [];
+  const hasOnlyDefaultTitle = normalizedSelectedOptions.some(
     (option) => option.value === 'Default Title',
   );
   const productTags = Array.isArray(product.tags) ? [...product.tags] : [];
+  const normalizedProductTags = productTags.map((tag) => tag.toLowerCase());
+  const productTitleLower = product.title.toLowerCase();
+  const selectedOrientationValue =
+    normalizedSelectedOptions
+      .find((option) => option.name.toLowerCase() === 'orientation')
+      ?.value?.toLowerCase() ?? '';
   const hasPrintTag = productTags.some((tag) =>
     tag?.toLowerCase?.().includes('print'),
   );
@@ -111,17 +120,34 @@ export function CartLineItem({
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
+
+  const isPrintProduct = normalizedProductTags.includes('prints');
+  const isVideoProduct = normalizedProductTags.includes('video');
+  const hasHorizontalPrintTag = normalizedProductTags.some((tag) =>
+    ['horonly', 'horprimary', 'horizontal'].includes(tag),
+  );
+  const hasVerticalPrintTag = normalizedProductTags.some((tag) =>
+    ['vertonly', 'vertprimary', 'vertical'].includes(tag),
+  );
 
   const isHorizontalProduct =
-    image?.url?.includes('horPrimary') || image?.url.includes('horOnly');
-  const isStockClip =
-    !image?.url.includes('horOnly') &&
-    !image?.url.includes('horPrimary') &&
-    !image?.url.includes('vertPrimary') &&
-    !image?.url.includes('vertOnly');
+    isPrintProduct &&
+    (selectedOrientationValue === 'landscape' ||
+      selectedOrientationValue === 'horizontal' ||
+      hasHorizontalPrintTag ||
+      productTitleLower.includes('horizontal'));
   const isVerticalProduct =
-    image?.url?.includes('vertOnly') || image?.url.includes('vertPrimary');
+    isPrintProduct &&
+    (selectedOrientationValue === 'vertical' ||
+      selectedOrientationValue === 'portrait' ||
+      hasVerticalPrintTag ||
+      productTitleLower.includes('vertical'));
+  const isStockClip = isVideoProduct && !isPrintProduct;
+  const usesStockLayout =
+    isStockClip ||
+    isHorizontalProduct ||
+    (isPrintProduct && !isVerticalProduct && !isHorizontalProduct);
   const currencyCode =
     line?.cost?.totalAmount?.currencyCode ||
     line?.cost?.compareAtAmountPerQuantity?.currencyCode ||
@@ -176,16 +202,16 @@ export function CartLineItem({
   return (
     <Card className="mb-2">
       <CardContent>
-        <li
+          <li
           key={id}
           className={`${
             isHorizontalProduct && 'cart-line-horizontal-product'
-          } ${isStockClip && 'cart-line-stock-product'} ${
+          } ${usesStockLayout && 'cart-line-stock-product'} ${
             isVerticalProduct && 'cart-line-vertical-product'
           }`}
         >
           {/* ✔0-600px landscape print in cart */}
-          {windowWidth != undefined &&
+          {/* {windowWidth != undefined &&
             windowWidth <= 600 &&
             isHorizontalProduct && (
               <>
@@ -208,9 +234,11 @@ export function CartLineItem({
                           className="cart-line-horizontal-product-img"
                         />
                       )}
-                      <div className="ps-3 cart-line-text">
-                        <strong>{product.title}</strong>
-                        {linePrice}
+                      <div className="ps-3">
+                        <div className='product-title'>{product.title}</div>
+                        <div className='product-price'>
+                          {linePrice}
+                          </div>
                       </div>
                     </div>
                   </Link>
@@ -225,9 +253,9 @@ export function CartLineItem({
                   </div>
                 )}
               </>
-            )}
+            )} */}
           {/* ✔601px+ landscape print in cart */}
-          {windowWidth != undefined &&
+          {/* {windowWidth != undefined &&
             windowWidth > 600 &&
             isHorizontalProduct && (
               <>
@@ -269,9 +297,9 @@ export function CartLineItem({
                   </div>
                 )}
               </>
-            )}
-          {/* ✔0px-600px stock clip in cart */}
-          {windowWidth != undefined && windowWidth <= 600 && isStockClip && (
+            )} */}
+          {/* ✔0px-600px stock clip OR horizontal print in cart */}
+          {windowWidth != undefined && windowWidth <= 600 && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -283,8 +311,8 @@ export function CartLineItem({
                     }
                   }}
                 >
-                  <div className="flex flex-row">
-                    {isStockClip && (
+                  <div className="flex flex-row min-w-0">
+                    {usesStockLayout && (
                       <img
                         alt={title}
                         src={image?.url}
@@ -292,12 +320,14 @@ export function CartLineItem({
                         className="cart-line-stock-product-img"
                       />
                     )}
-                    <div className="ps-3 cart-line-text">
-                      <strong>{product.title}</strong>
-                      {linePrice}
+                    <div className="ps-[8px] cart-line-text min-w-0 flex-1">
+                      <div className="product-title">{product.title}</div>
+                      <div className="product-price">
+                        {linePrice}
+                      </div>
                     </div>
                   </div>
-                  <div className="pt-1">
+                  <div>
                     {showInlineDescription && cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
@@ -306,13 +336,13 @@ export function CartLineItem({
               </div>
               {!hasOnlyDefaultTitle && (
                 <div>
-                  <CartLineOptionSelectors line={line} className="pt-3" />
+                  <CartLineOptionSelectors line={line} className="pt-[6px]" />
                 </div>
               )}
             </>
           )}
-          {/* ✔601px+ stock clip in cart */}
-          {windowWidth != undefined && windowWidth > 600 && isStockClip && (
+          {/* ✔601px+ stock clip OR horizontal print in cart */}
+          {windowWidth != undefined && windowWidth > 600 && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -324,8 +354,8 @@ export function CartLineItem({
                     }
                   }}
                 >
-                  <div className="flex flex-row">
-                    {isStockClip && (
+                  <div className="flex flex-row min-w-0">
+                    {usesStockLayout && (
                       <img
                         alt={title}
                         src={image?.url}
@@ -333,14 +363,16 @@ export function CartLineItem({
                         className="cart-line-stock-product-img"
                       />
                     )}
-                    <div className="ps-3 cart-line-text">
-                      <strong>{product.title}</strong>
+                    <div className="ps-2 cart-line-text min-w-0 flex-1">
+                      <div className='product-title'>{product.title}</div>
                       {showInlineDescription && cartDescription && (
                         <div className="cart-description">
                           {cartDescription}
                         </div>
                       )}
-                      {linePrice}
+                      <div className='product-price'>
+                        {linePrice}
+                        </div>
                     </div>
                   </div>
                 </Link>
@@ -348,7 +380,7 @@ export function CartLineItem({
 
               {!hasOnlyDefaultTitle && (
                 <div>
-                  <CartLineOptionSelectors line={line} className="pt-3" />
+                  <CartLineOptionSelectors line={line} className="pt-2" />
                 </div>
               )}
             </>
@@ -368,7 +400,7 @@ export function CartLineItem({
                       }
                     }}
                   >
-                    <div className="flex flex-row">
+                    <div className="flex flex-row min-w-0">
                       {isVerticalProduct && (
                         <img
                           alt={title}
@@ -377,7 +409,7 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img"
                         />
                       )}
-                      <div className="ps-3 cart-line-text">
+                      <div className="ps-3 cart-line-text min-w-0 flex-1">
                         <strong>{product.title}</strong>
                         {linePrice}
                       </div>
@@ -411,7 +443,7 @@ export function CartLineItem({
                       }
                     }}
                   >
-                    <div className="flex flex-row">
+                    <div className="flex flex-row min-w-0">
                       {isVerticalProduct && (
                         <img
                           alt={title}
@@ -420,7 +452,7 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img"
                         />
                       )}
-                      <div className="ps-3 cart-line-text">
+                      <div className="ps-3 cart-line-text min-w-0 flex-1">
                         <strong>{product.title}</strong>
                         {showInlineDescription && cartDescription && (
                           <div className="cart-description">
@@ -455,7 +487,7 @@ export function CartLineItem({
                       }
                     }}
                   >
-                    <div className="flex flex-row">
+                    <div className="flex flex-row min-w-0">
                       {isVerticalProduct && (
                         <img
                           alt={title}
@@ -464,7 +496,7 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img"
                         />
                       )}
-                      <div className="ps-3 cart-line-text">
+                      <div className="ps-3 cart-line-text min-w-0 flex-1">
                         <strong>{product.title}</strong>
                         {showInlineDescription && cartDescription && (
                           <div className="cart-description">
@@ -776,7 +808,7 @@ function CartLineQuantity({
                 disabled={quantity <= 1 || !!isOptimistic}
                 name="decrease-quantity"
                 value={prevQuantity}
-                variant="ghost"
+                variant="secondary"
                 size="cartpm"
                 className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
               >
@@ -791,7 +823,7 @@ function CartLineQuantity({
                 name="increase-quantity"
                 value={nextQuantity}
                 disabled={!!isOptimistic}
-                variant="ghost"
+                variant="secondary"
                 size='cartpm'
                 className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
               >
@@ -841,7 +873,7 @@ function CartLineRemoveButton({
         <Button
           disabled={disabled}
           type="submit"
-          variant="ghost"
+          variant="secondary"
           className="remove-button cart-line-remove-button cursor-pointer px-1.5 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
           size="sm"
         >
@@ -852,7 +884,7 @@ function CartLineRemoveButton({
         <Button
           disabled={disabled}
           type="submit"
-          variant="ghost"
+          variant="secondary"
           className="remove-button cart-line-remove-button cursor-pointer px-1.5 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
           size="cartbtn"
         >
