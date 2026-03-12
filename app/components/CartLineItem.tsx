@@ -366,7 +366,6 @@ export function CartLineItem({
   const isTabletStockLayout =
     windowWidth !== undefined &&
     windowWidth > 600 &&
-    windowWidth <= 1023 &&
     usesStockLayout;
   const showFooterDescription = isMobileView && Boolean(cartDescription);
   const showInlineDescription = !showFooterDescription;
@@ -555,7 +554,7 @@ export function CartLineItem({
             </>
           )}
           {/* ✔601px-1023px stock clip OR horizontal print in cart */}
-          {windowWidth != undefined && windowWidth > 600 && windowWidth <= 1023 && usesStockLayout && (
+          {windowWidth != undefined && windowWidth > 600 && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -599,7 +598,7 @@ export function CartLineItem({
             </>
           )}
           {/* ✔1024px+ stock clip OR horizontal print in cart */}
-          {windowWidth != undefined && windowWidth > 1023 && usesStockLayout && (
+          {/* {windowWidth != undefined && windowWidth > 1023 && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -641,7 +640,7 @@ export function CartLineItem({
                 </div>
               )}
             </>
-          )}
+          )} */}
           {/* ✔0px-600px vertical print in cart */}
           {windowWidth != undefined &&
             windowWidth <= 600 &&
