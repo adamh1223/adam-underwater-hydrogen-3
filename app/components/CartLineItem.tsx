@@ -814,6 +814,7 @@ export function CartLineItem({
         </li>
         <CartLineQuantity
           line={normalizedLine}
+          windowWidth={windowWidth}
           showPendingPrintControlLook={Boolean(
             pendingPreview && normalizedLine.isOptimistic,
           )}
@@ -1031,6 +1032,7 @@ function toOptionInputId(value: string) {
  */
 function CartLineQuantity({
   line,
+  windowWidth,
   showPendingPrintControlLook,
   hideQuantityButtons,
   discountText,
@@ -1040,6 +1042,7 @@ function CartLineQuantity({
   isStockClipLine,
 }: {
   line: CartLineWithPendingMetadata;
+  windowWidth?: number;
   showPendingPrintControlLook: boolean;
   hideQuantityButtons: boolean;
   discountText?: string | null;
@@ -1054,11 +1057,16 @@ function CartLineQuantity({
   const nextQuantity = Number((quantity + 1).toFixed(0));
   const hasDiscountText = Boolean(discountText);
   const hasFooterDescription = Boolean(isMobile && footerDescription);
+  const useTabletPrintGrid = Boolean(
+    hideQuantityButtons &&
+      windowWidth !== undefined &&
+      windowWidth > 600,
+  );
   const usesStackedQuantityLayout =
     hideQuantityButtons && (isTabletStockLayout || isMobile);
   const hasInlineDiscountWithControls = Boolean(
     hasDiscountText &&
-      (isStockClipLine || (isMobile && usesStackedQuantityLayout)),
+      (isStockClipLine || useTabletPrintGrid || (isMobile && usesStackedQuantityLayout)),
   );
   const hasInlineMobileDiscount = Boolean(isMobile && hasInlineDiscountWithControls);
   const footerClassName = [
@@ -1078,7 +1086,9 @@ function CartLineQuantity({
     .filter(Boolean)
     .join(' ');
   const quantityContentClassName = usesStackedQuantityLayout
-    ? 'cart-line-quantity-stack'
+    ? useTabletPrintGrid
+      ? 'cart-line-quantity-tablet-grid'
+      : 'cart-line-quantity-stack'
     : 'cart-line-quantity-row';
   const shouldKeepPrintControlsEnabled =
     showPendingPrintControlLook && hideQuantityButtons;
@@ -1160,39 +1170,65 @@ function CartLineQuantity({
 
       <div className={quantityClassName}>
         <div className={quantityContentClassName}>
-          <div className="cart-subheader cart-line-quantity-label">
-            <span>Quantity:</span>
-            <span className="text-md font-bold cart-quantity">{quantity}</span>
-          </div>
-          {usesStackedQuantityLayout ? (
-            <div className="cart-line-qty-controls">
-              {quantityButtonsInner}
-              <div className="cart-line-remove-wrap">
-                <CartLineRemoveButton
-                  lineIds={[lineId]}
-                  disabled={disableControlsForOptimistic}
-                  visualOnly={shouldKeepPrintControlsEnabled}
-                />
+          {useTabletPrintGrid ? (
+            <>
+              <div className="cart-subheader cart-line-quantity-label">
+                <span>Quantity:</span>
+                <span className="text-md font-bold cart-quantity">{quantity}</span>
               </div>
-              {hasInlineMobileDiscount ? (
-                <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
-                  {discountText}
-                </p>
-              ) : null}
-            </div>
+              <div className="cart-line-qty-controls cart-line-qty-controls-tablet-grid">
+                {quantityButtonsInner}
+                <div className="cart-line-remove-wrap">
+                  <CartLineRemoveButton
+                    lineIds={[lineId]}
+                    disabled={disableControlsForOptimistic}
+                    visualOnly={shouldKeepPrintControlsEnabled}
+                  />
+                </div>
+                {hasDiscountText ? (
+                  <p className="cart-line-footer-discount cart-line-footer-discount-inline cart-line-footer-discount-inline-tablet text-primary text-sm">
+                    {discountText}
+                  </p>
+                ) : null}
+              </div>
+            </>
           ) : (
             <>
-              {quantityButtons}
-              <CartLineRemoveButton
-                lineIds={[lineId]}
-                disabled={disableControlsForOptimistic}
-                visualOnly={shouldKeepPrintControlsEnabled}
-              />
-              {hasInlineDiscountWithControls ? (
-                <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
-                  {discountText}
-                </p>
-              ) : null}
+              <div className="cart-subheader cart-line-quantity-label">
+                <span>Quantity:</span>
+                <span className="text-md font-bold cart-quantity">{quantity}</span>
+              </div>
+              {usesStackedQuantityLayout ? (
+                <div className="cart-line-qty-controls">
+                  {quantityButtonsInner}
+                  <div className="cart-line-remove-wrap">
+                    <CartLineRemoveButton
+                      lineIds={[lineId]}
+                      disabled={disableControlsForOptimistic}
+                      visualOnly={shouldKeepPrintControlsEnabled}
+                    />
+                  </div>
+                  {hasInlineMobileDiscount ? (
+                    <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
+                      {discountText}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <>
+                  {quantityButtons}
+                  <CartLineRemoveButton
+                    lineIds={[lineId]}
+                    disabled={disableControlsForOptimistic}
+                    visualOnly={shouldKeepPrintControlsEnabled}
+                  />
+                  {hasInlineDiscountWithControls ? (
+                    <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
+                      {discountText}
+                    </p>
+                  ) : null}
+                </>
+              )}
             </>
           )}
         </div>
