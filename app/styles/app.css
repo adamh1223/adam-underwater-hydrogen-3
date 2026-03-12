@@ -452,6 +452,14 @@ button.reset:hover:not(:has(> *)) {
   min-width: 0;
 }
 
+.cart-line-quantity-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
 .cart-line-quantity-row > form {
   display: inline-flex;
   align-items: center;
@@ -502,13 +510,6 @@ button.reset:hover:not(:has(> *)) {
   .cart-line-quantity {
     gap: 0.2rem;
     align-items: flex-start;
-  }
-
-  .cart-line-quantity .cart-line-quantity-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.2rem;
   }
 
   .cart-line-footer.has-mobile-description:not(.has-discount-text) {

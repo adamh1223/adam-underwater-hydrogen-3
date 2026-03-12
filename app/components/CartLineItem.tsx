@@ -1088,7 +1088,7 @@ function CartLineQuantity({
     ? useTabletPrintGrid
       ? 'cart-line-quantity-tablet-grid'
       : 'cart-line-quantity-stack'
-    : 'cart-line-quantity-row';
+    : 'cart-line-quantity-stack';
   const shouldKeepPrintControlsEnabled =
     showPendingPrintControlLook && hideQuantityButtons;
   const disableControlsForOptimistic = !!isOptimistic && !shouldKeepPrintControlsEnabled;
