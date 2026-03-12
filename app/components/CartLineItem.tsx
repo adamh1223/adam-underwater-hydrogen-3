@@ -188,6 +188,11 @@ export function CartLineItem({
       : 'Discount applied!'
     : null;
   const isMobileView = windowWidth !== undefined && windowWidth <= 600;
+  const isTabletStockLayout =
+    windowWidth !== undefined &&
+    windowWidth > 600 &&
+    windowWidth <= 1023 &&
+    usesStockLayout;
   const showFooterDescription = isMobileView && Boolean(cartDescription);
   const showInlineDescription = !showFooterDescription;
 
@@ -231,7 +236,7 @@ export function CartLineItem({
                           alt={title}
                           src={image?.url}
                           loading="lazy"
-                          className="cart-line-horizontal-product-img"
+                          className="cart-line-horizontal-product-img rounded-md"
                         />
                       )}
                       <div className="ps-3">
@@ -275,7 +280,7 @@ export function CartLineItem({
                           alt={title}
                           src={image?.url}
                           loading="lazy"
-                          className="cart-line-horizontal-product-img"
+                          className="cart-line-horizontal-product-img rounded-md"
                         />
                       )}
                       <div className="ps-3 cart-line-text">
@@ -317,7 +322,7 @@ export function CartLineItem({
                         alt={title}
                         src={image?.url}
                         loading="lazy"
-                        className="cart-line-stock-product-img"
+                        className="cart-line-stock-product-img rounded-md"
                       />
                     )}
                     <div className="ps-[8px] cart-line-text min-w-0 flex-1">
@@ -341,8 +346,8 @@ export function CartLineItem({
               )}
             </>
           )}
-          {/* ✔601px+ stock clip OR horizontal print in cart */}
-          {windowWidth != undefined && windowWidth > 600 && usesStockLayout && (
+          {/* ✔601px-1023px stock clip OR horizontal print in cart */}
+          {windowWidth != undefined && windowWidth > 600 && windowWidth <= 1023 && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -360,7 +365,51 @@ export function CartLineItem({
                         alt={title}
                         src={image?.url}
                         loading="lazy"
-                        className="cart-line-stock-product-img"
+                        className="cart-line-stock-product-img rounded-md"
+                      />
+                    )}
+                    <div className="ps-2 cart-line-text min-w-0 flex-1">
+                      <div className='product-title'>{product.title}</div>
+                      {showInlineDescription && cartDescription && (
+                        <div className="cart-description">
+                          {cartDescription}
+                        </div>
+                      )}
+                      <div className='product-price'>
+                        {linePrice}
+                        </div>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {!hasOnlyDefaultTitle && (
+                <div>
+                  <CartLineOptionSelectors line={line} className="pt-2" />
+                </div>
+              )}
+            </>
+          )}
+          {/* ✔1024px+ stock clip OR horizontal print in cart */}
+          {windowWidth != undefined && windowWidth > 1023 && usesStockLayout && (
+            <>
+              <div>
+                <Link
+                  prefetch="intent"
+                  to={lineItemUrl}
+                  onClick={() => {
+                    if (layout === 'aside') {
+                      close();
+                    }
+                  }}
+                >
+                  <div className="flex flex-row min-w-0">
+                    {usesStockLayout && (
+                      <img
+                        alt={title}
+                        src={image?.url}
+                        loading="lazy"
+                        className="cart-line-stock-product-img rounded-md"
                       />
                     )}
                     <div className="ps-2 cart-line-text min-w-0 flex-1">
@@ -406,7 +455,7 @@ export function CartLineItem({
                           alt={title}
                           src={image?.url}
                           loading="lazy"
-                          className="cart-line-vertical-product-img"
+                          className="cart-line-vertical-product-img rounded-md"
                         />
                       )}
                       <div className="ps-3 cart-line-text min-w-0 flex-1">
@@ -449,7 +498,7 @@ export function CartLineItem({
                           alt={title}
                           src={image?.url}
                           loading="lazy"
-                          className="cart-line-vertical-product-img"
+                          className="cart-line-vertical-product-img rounded-md"
                         />
                       )}
                       <div className="ps-3 cart-line-text min-w-0 flex-1">
@@ -493,7 +542,7 @@ export function CartLineItem({
                           alt={title}
                           src={image?.url}
                           loading="lazy"
-                          className="cart-line-vertical-product-img"
+                          className="cart-line-vertical-product-img rounded-md"
                         />
                       )}
                       <div className="ps-3 cart-line-text min-w-0 flex-1">
@@ -561,6 +610,8 @@ export function CartLineItem({
           discountText={lineDiscountText}
           footerDescription={showFooterDescription ? cartDescription : null}
           isMobile={isMobileView}
+          isTabletStockLayout={isTabletStockLayout}
+          isStockClipLine={isStockClip}
         />
       </CardContent>
     </Card>
@@ -764,12 +815,16 @@ function CartLineQuantity({
   discountText,
   footerDescription,
   isMobile,
+  isTabletStockLayout,
+  isStockClipLine,
 }: {
   line: CartLine;
   hideQuantityButtons: boolean;
   discountText?: string | null;
   footerDescription?: string | null;
   isMobile: boolean;
+  isTabletStockLayout: boolean;
+  isStockClipLine: boolean;
 }) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity, isOptimistic} = line;
@@ -777,13 +832,69 @@ function CartLineQuantity({
   const nextQuantity = Number((quantity + 1).toFixed(0));
   const hasDiscountText = Boolean(discountText);
   const hasFooterDescription = Boolean(isMobile && footerDescription);
+  const usesStackedQuantityLayout =
+    hideQuantityButtons && (isTabletStockLayout || isMobile);
+  const hasInlineDiscountWithControls = Boolean(
+    hasDiscountText &&
+      (isStockClipLine || (isMobile && usesStackedQuantityLayout)),
+  );
+  const hasInlineMobileDiscount = Boolean(isMobile && hasInlineDiscountWithControls);
   const footerClassName = [
     'cart-line-footer',
     hasDiscountText ? 'has-discount-text' : '',
     hasFooterDescription ? 'has-mobile-description' : '',
+    isTabletStockLayout ? 'is-tablet-stock-layout' : '',
+    hasInlineMobileDiscount ? 'has-inline-mobile-discount' : '',
   ]
     .filter(Boolean)
     .join(' ');
+  const quantityClassName = [
+    'cart-line-quantity',
+    isTabletStockLayout ? 'is-tablet-stock-layout' : '',
+    isStockClipLine ? 'is-stock-clip-line' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const quantityContentClassName = usesStackedQuantityLayout
+    ? 'cart-line-quantity-stack'
+    : 'cart-line-quantity-row';
+  const quantityButtonsInner = hideQuantityButtons ? (
+    <>
+      <CartLineUpdateButton
+        lines={[{id: lineId, quantity: prevQuantity}]}
+      >
+        <Button
+          aria-label="Decrease quantity"
+          disabled={quantity <= 1 || !!isOptimistic}
+          name="decrease-quantity"
+          value={prevQuantity}
+          variant="secondary"
+          size="cartpm"
+          className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+        >
+          <span>&#8722; </span>
+        </Button>
+      </CartLineUpdateButton>
+      <CartLineUpdateButton
+        lines={[{id: lineId, quantity: nextQuantity}]}
+      >
+        <Button
+          aria-label="Increase quantity"
+          name="increase-quantity"
+          value={nextQuantity}
+          disabled={!!isOptimistic}
+          variant="secondary"
+          size="cartpm"
+          className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+        >
+          <span>&#43;</span>
+        </Button>
+      </CartLineUpdateButton>
+    </>
+  ) : null;
+  const quantityButtons = quantityButtonsInner ? (
+    <div className="cart-line-qty-controls">{quantityButtonsInner}</div>
+  ) : null;
 
   return (
     <div className={footerClassName}>
@@ -793,49 +904,39 @@ function CartLineQuantity({
         </div>
       ) : null}
 
-      <div className="cart-line-quantity">
-        <div className="cart-subheader cart-line-quantity-label">
-          <span>Quantity:</span>
-          <span className="text-md font-bold cart-quantity">{quantity}</span>
+      <div className={quantityClassName}>
+        <div className={quantityContentClassName}>
+          <div className="cart-subheader cart-line-quantity-label">
+            <span>Quantity:</span>
+            <span className="text-md font-bold cart-quantity">{quantity}</span>
+          </div>
+          {usesStackedQuantityLayout ? (
+            <div className="cart-line-qty-controls">
+              {quantityButtonsInner}
+              <div className="cart-line-remove-wrap">
+                <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
+              </div>
+              {hasInlineMobileDiscount ? (
+                <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
+                  {discountText}
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <>
+              {quantityButtons}
+              <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
+              {hasInlineDiscountWithControls ? (
+                <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
+                  {discountText}
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
-        {hideQuantityButtons && (
-          <>
-            <CartLineUpdateButton
-              lines={[{id: lineId, quantity: prevQuantity}]}
-            >
-              <Button
-                aria-label="Decrease quantity"
-                disabled={quantity <= 1 || !!isOptimistic}
-                name="decrease-quantity"
-                value={prevQuantity}
-                variant="secondary"
-                size="cartpm"
-                className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
-              >
-                <span>&#8722; </span>
-              </Button>
-            </CartLineUpdateButton>
-            <CartLineUpdateButton
-              lines={[{id: lineId, quantity: nextQuantity}]}
-            >
-              <Button
-                aria-label="Increase quantity"
-                name="increase-quantity"
-                value={nextQuantity}
-                disabled={!!isOptimistic}
-                variant="secondary"
-                size='cartpm'
-                className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
-              >
-                <span>&#43;</span>
-              </Button>
-            </CartLineUpdateButton>
-          </>
-        )}
-        <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
       </div>
 
-      {hasDiscountText ? (
+      {hasDiscountText && !hasInlineDiscountWithControls ? (
         <p className="cart-line-footer-discount text-primary text-sm">{discountText}</p>
       ) : null}
     </div>
