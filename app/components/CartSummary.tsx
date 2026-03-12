@@ -270,10 +270,15 @@ export function CartSummary({
     qualifiesForPrintBulkDiscount ? 'Buy 3 prints get 15% off' : null,
     qualifiesForStockBulkDiscount ? 'Buy 4 stock footage clips get 15% off' : null,
   ].filter((label): label is string => Boolean(label));
+  const shouldUseProvisionalDiscountLabels =
+    provisionalPendingSavings > 0.0001 ||
+    (hasProductDiscountSavings &&
+      productDiscountLabelsFromCart.length === 0 &&
+      provisionalProductDiscountLabels.length > 0);
   const productDiscountLabels = Array.from(
     new Set([
       ...productDiscountLabelsFromCart,
-      ...(provisionalPendingSavings > 0.0001
+      ...(shouldUseProvisionalDiscountLabels
         ? provisionalProductDiscountLabels
         : []),
     ]),
@@ -281,9 +286,12 @@ export function CartSummary({
   const hasFreeShippingUnlocked = allDiscountAllocations.some((allocation) =>
     isShippingDiscount(allocation),
   );
+  const hasAnyNonShippingDiscountFromCart = productDiscountLabelsFromCart.length > 0;
+  const hasAnyNonShippingDiscount = hasAnyNonShippingDiscountFromCart || hasProductDiscountSavings;
   const hasProvisionalFreeShippingUnlocked = subtotalAfterDiscount >= 300;
   const hasEffectiveFreeShippingUnlocked =
-    hasFreeShippingUnlocked || hasProvisionalFreeShippingUnlocked;
+    !hasAnyNonShippingDiscount &&
+    (hasFreeShippingUnlocked || hasProvisionalFreeShippingUnlocked);
   const productDiscountAppliedText = productDiscountLabels.length
     ? `${productDiscountLabels.join(', ')} applied!`
     : 'Discount applied!';
