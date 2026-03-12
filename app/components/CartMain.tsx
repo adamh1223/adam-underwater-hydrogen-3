@@ -1,13 +1,18 @@
 import {useOptimisticCart} from '@shopify/hydrogen';
 import {Link, useLocation} from '@remix-run/react';
+import {useEffect, useMemo, useState} from 'react';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
-import {CartLineItem} from '~/components/CartLineItem';
-import {CartSummary} from './CartSummary';
 import {DefaultCart} from '~/lib/types';
 import {CartPageLayout} from './cartLayouts/CartPageLayout';
 import {CartAsideLayout} from './cartLayouts/CartAsideLayout';
 import {Button} from './ui/button';
+import {
+  CART_PENDING_LINE_ADD_EVENT,
+  createCartPendingLinePreview,
+  type CartPendingLinePreview,
+  type CartPendingLinePreviewPayload,
+} from '~/lib/cartPendingLine';
 
 export type CartLayout = 'page' | 'aside';
 
@@ -26,9 +31,64 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const cart = useOptimisticCart(originalCart);
   const location = useLocation();
   const currentURL = location.pathname;
-  
+  const [pendingLinePreviews, setPendingLinePreviews] = useState<
+    CartPendingLinePreview[]
+  >([]);
 
-  const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handlePendingLineAdd = (event: Event) => {
+      const detail = (event as CustomEvent<CartPendingLinePreviewPayload>).detail;
+      if (!detail?.merchandiseId) return;
+
+      setPendingLinePreviews((previousPreviews) => {
+        const nextPreview = createCartPendingLinePreview(detail);
+        return [...previousPreviews, nextPreview];
+      });
+    };
+
+    window.addEventListener(
+      CART_PENDING_LINE_ADD_EVENT,
+      handlePendingLineAdd as EventListener,
+    );
+    return () => {
+      window.removeEventListener(
+        CART_PENDING_LINE_ADD_EVENT,
+        handlePendingLineAdd as EventListener,
+      );
+    };
+  }, []);
+
+  const cartMerchandiseIds = useMemo(
+    () =>
+      new Set(
+        (cart?.lines?.nodes ?? [])
+          .filter((line) => !line.isOptimistic)
+          .map((line) => line.merchandise.id),
+      ),
+    [cart?.lines?.nodes],
+  );
+
+  useEffect(() => {
+    setPendingLinePreviews((previousPreviews) => {
+      if (!previousPreviews.length) return previousPreviews;
+
+      const now = Date.now();
+      const remainingPreviews = previousPreviews.filter((preview) => {
+        const hasResolvedInCart = cartMerchandiseIds.has(preview.merchandiseId);
+        const hasExpired = now - preview.createdAt > 12000;
+        return !hasResolvedInCart && !hasExpired;
+      });
+
+      return remainingPreviews.length === previousPreviews.length
+        ? previousPreviews
+        : remainingPreviews;
+    });
+  }, [cartMerchandiseIds]);
+
+  const hasPendingLines = pendingLinePreviews.length > 0;
+  const linesCount = Boolean((cart?.lines?.nodes?.length || 0) || hasPendingLines);
   const withDiscount =
     cart &&
     Boolean(cart?.discountCodes?.filter((code) => code.applicable)?.length);
@@ -44,6 +104,7 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
           layout={layout}
           cart={cart as DefaultCart}
           cartHasItems={cartHasItems}
+          pendingLinePreviews={pendingLinePreviews}
         />
       )}
       {currentURL != '/cart' && (
@@ -53,6 +114,7 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
           cart={cart as DefaultCart}
           cartHasItems={cartHasItems}
           className={className}
+          pendingLinePreviews={pendingLinePreviews}
         />
       )}
     </>

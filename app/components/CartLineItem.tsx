@@ -8,10 +8,15 @@ import {useAside} from './Aside';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {Card, CardContent} from './ui/card';
 import {Button} from './ui/button';
+import {Skeleton} from './ui/skeleton';
 import {generateCartDescription} from '~/lib/utils';
-import {useEffect, useState} from 'react';
+import {Fragment, useEffect, useState} from 'react';
+import type {CartPendingLinePreview} from '~/lib/cartPendingLine';
 
 type CartLine = OptimisticCartLine<CartApiQueryFragment>;
+type CartLineWithPendingMetadata = CartLine & {
+  __pendingOptionValuesByName?: Record<string, string[]>;
+};
 type ProductVariantOption = {
   name: string;
   value: string;
@@ -35,6 +40,91 @@ function createMoneyValue(
   return {
     amount: amount.toFixed(2),
     currencyCode,
+  };
+}
+
+function normalizePendingLineWithPreview({
+  line,
+  pendingPreview,
+}: {
+  line: CartLineWithPendingMetadata;
+  pendingPreview?: CartPendingLinePreview | null;
+}): CartLineWithPendingMetadata {
+  if (!pendingPreview || !line?.isOptimistic) {
+    return line;
+  }
+
+  const lineCost = line?.cost ?? null;
+  const lineCurrencyCode =
+    lineCost?.totalAmount?.currencyCode ??
+    lineCost?.compareAtAmountPerQuantity?.currencyCode ??
+    ('USD' as CartLineMoney['currencyCode']);
+  const currencyCode = (pendingPreview.priceCurrencyCode ??
+    lineCurrencyCode) as CartLineMoney['currencyCode'];
+  const totalAmount =
+    pendingPreview.priceAmount ?? lineCost?.totalAmount?.amount ?? '0.00';
+  const compareAtAmount =
+    pendingPreview.compareAtAmount ??
+    lineCost?.compareAtAmountPerQuantity?.amount ??
+    null;
+  const selectedOptions =
+    pendingPreview.selectedOptions?.length
+      ? pendingPreview.selectedOptions
+      : (line?.merchandise?.selectedOptions ?? []);
+  const productTags =
+    pendingPreview.productTags?.length
+      ? pendingPreview.productTags
+      : Array.isArray(line?.merchandise?.product?.tags)
+        ? line.merchandise.product.tags
+        : [];
+
+  return {
+    ...line,
+    merchandise: {
+      ...line.merchandise,
+      title: pendingPreview.variantTitle ?? line?.merchandise?.title ?? 'Default Title',
+      image: pendingPreview.imageUrl
+        ? {
+            ...(line?.merchandise?.image ?? {}),
+            url: pendingPreview.imageUrl,
+            altText:
+              pendingPreview.productTitle ??
+              line?.merchandise?.image?.altText ??
+              null,
+          }
+        : line?.merchandise?.image,
+      selectedOptions,
+      product: {
+        ...line.merchandise.product,
+        id: pendingPreview.productId ?? line?.merchandise?.product?.id,
+        title:
+          pendingPreview.productTitle ??
+          line?.merchandise?.product?.title ??
+          '',
+        handle:
+          pendingPreview.productHandle ??
+          line?.merchandise?.product?.handle ??
+          '',
+        tags: productTags,
+      },
+    },
+    cost: {
+      ...lineCost,
+      totalAmount: {
+        ...(lineCost?.totalAmount ?? {}),
+        amount: totalAmount,
+        currencyCode,
+      },
+      compareAtAmountPerQuantity: compareAtAmount
+        ? ({
+            ...(lineCost?.compareAtAmountPerQuantity ?? {}),
+            amount: compareAtAmount,
+            currencyCode,
+          } as CartLineMoney)
+        : null,
+    },
+    __pendingOptionValuesByName:
+      pendingPreview.optionValuesByName ?? line.__pendingOptionValuesByName,
   };
 }
 
@@ -79,6 +169,62 @@ function CartLinePrice({
   );
 }
 
+function CartLineItemSkeleton({
+  optionCount,
+  isVerticalImage,
+  showQuantityButtons,
+}: {
+  optionCount: number;
+  isVerticalImage: boolean;
+  showQuantityButtons: boolean;
+}) {
+  const normalizedOptionCount = Math.max(1, Math.min(optionCount, 3));
+  const skeletonOptionRows = ['one', 'two', 'three'].slice(
+    0,
+    normalizedOptionCount,
+  );
+  const imageSkeletonClassName = isVerticalImage
+    ? 'h-[115px] w-[95px]'
+    : 'h-[95px] w-[115px]';
+
+  return (
+    <Card className="mb-2">
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex min-w-0 gap-2">
+            <Skeleton className={`${imageSkeletonClassName} shrink-0 rounded-md`} />
+            <div className="min-w-0 flex-1 space-y-2 pt-1">
+              <Skeleton className="h-7 w-[82%] rounded-md" />
+              <Skeleton className="h-6 w-[58%] rounded-md" />
+              <Skeleton className="h-6 w-[72%] rounded-md" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[minmax(7rem,9.5rem)_minmax(0,1fr)] items-center gap-x-2 gap-y-2">
+            {skeletonOptionRows.map((rowKey) => (
+              <Fragment key={`cart-line-skeleton-option-${rowKey}`}>
+                <Skeleton className="h-6 w-[78%] rounded-md" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </Fragment>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-7 w-[106px] rounded-md" />
+            {showQuantityButtons ? (
+              <>
+                <Skeleton className="h-10 w-10 rounded-md" />
+                <Skeleton className="h-10 w-10 rounded-md" />
+              </>
+            ) : null}
+            <Skeleton className="h-10 w-[96px] rounded-md" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 /**
  * A single line item in the cart. It displays the product image, title, price.
  * It also provides controls to update the quantity or remove the line item.
@@ -86,11 +232,16 @@ function CartLinePrice({
 export function CartLineItem({
   layout,
   line,
+  pendingPreview = null,
+  suppressOptimisticSkeleton = false,
 }: {
   layout: CartLayout;
-  line: CartLine;
+  line: CartLineWithPendingMetadata;
+  pendingPreview?: CartPendingLinePreview | null;
+  suppressOptimisticSkeleton?: boolean;
 }) {
-  const {id, merchandise} = line;
+  const normalizedLine = normalizePendingLineWithPreview({line, pendingPreview});
+  const {id, merchandise} = normalizedLine;
   const {product, title, image, selectedOptions} = merchandise;
   const lineItemUrl = useVariantUrl(product.handle, selectedOptions);
   const {close} = useAside();
@@ -112,7 +263,9 @@ export function CartLineItem({
   );
   const cartDescription = generateCartDescription(productTags);
 
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
+    typeof window !== 'undefined' ? window.innerWidth : undefined,
+  );
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -149,28 +302,28 @@ export function CartLineItem({
     isHorizontalProduct ||
     (isPrintProduct && !isVerticalProduct && !isHorizontalProduct);
   const currencyCode =
-    line?.cost?.totalAmount?.currencyCode ||
-    line?.cost?.compareAtAmountPerQuantity?.currencyCode ||
+    normalizedLine?.cost?.totalAmount?.currencyCode ||
+    normalizedLine?.cost?.compareAtAmountPerQuantity?.currencyCode ||
     'USD';
 
   const compareAtAmountPerQuantity = parseMoneyAmount(
-    line?.cost?.compareAtAmountPerQuantity?.amount,
+    normalizedLine?.cost?.compareAtAmountPerQuantity?.amount,
   );
-  const compareAtTotal = compareAtAmountPerQuantity * (line?.quantity ?? 1);
+  const compareAtTotal = compareAtAmountPerQuantity * (normalizedLine?.quantity ?? 1);
   const updatedCompareAt =
     compareAtAmountPerQuantity > 0
       ? {
-          ...line?.cost?.compareAtAmountPerQuantity,
+          ...normalizedLine?.cost?.compareAtAmountPerQuantity,
           currencyCode,
           amount: compareAtTotal.toFixed(2),
         }
       : null;
 
   const lineSubtotalAmount = parseMoneyAmount(
-    (line as unknown as {cost?: {subtotalAmount?: {amount?: string | null}}})
+    (normalizedLine as unknown as {cost?: {subtotalAmount?: {amount?: string | null}}})
       ?.cost?.subtotalAmount?.amount,
   );
-  const lineTotalAmount = parseMoneyAmount(line?.cost?.totalAmount?.amount);
+  const lineTotalAmount = parseMoneyAmount(normalizedLine?.cost?.totalAmount?.amount);
   const preDiscountPrice =
     lineSubtotalAmount > lineTotalAmount + 0.0001
       ? createMoneyValue(lineSubtotalAmount, currencyCode)
@@ -195,10 +348,43 @@ export function CartLineItem({
     usesStockLayout;
   const showFooterDescription = isMobileView && Boolean(cartDescription);
   const showInlineDescription = !showFooterDescription;
+  const hasResolvedProductIdentity = Boolean(
+    product?.title && product?.handle && image?.url,
+  );
+  const hasResolvedLinePrice = Boolean(normalizedLine?.cost?.totalAmount?.amount);
+  const hasRenderableLayout = isVerticalProduct || usesStockLayout;
+  const likelyPrintLine =
+    hasPrintTag ||
+    normalizedSelectedOptions.some((option) =>
+      ['orientation', 'layout', 'size'].includes(option.name.toLowerCase()),
+    );
+  const skeletonOptionCount = normalizedSelectedOptions.length || (likelyPrintLine ? 3 : 1);
+  const showQuantityButtonsInSkeleton = likelyPrintLine || Boolean(hasPrintTag);
+  const shouldRenderOptimisticSkeleton = Boolean(
+    normalizedLine?.isOptimistic &&
+      !pendingPreview &&
+      (!hasResolvedProductIdentity ||
+        !hasResolvedLinePrice ||
+        !hasRenderableLayout ||
+        windowWidth === undefined),
+  );
+
+  if (shouldRenderOptimisticSkeleton) {
+    if (suppressOptimisticSkeleton) {
+      return null;
+    }
+    return (
+      <CartLineItemSkeleton
+        optionCount={skeletonOptionCount}
+        isVerticalImage={isVerticalProduct}
+        showQuantityButtons={showQuantityButtonsInSkeleton}
+      />
+    );
+  }
 
   const linePrice = (
     <CartLinePrice
-      price={line?.cost?.totalAmount}
+      price={normalizedLine?.cost?.totalAmount}
       compareAtPrice={updatedCompareAt}
       preDiscountPrice={preDiscountPrice}
     />
@@ -254,7 +440,7 @@ export function CartLineItem({
                     {showInlineDescription && cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
-                    <CartLineOptionSelectors line={line} />
+                    <CartLineOptionSelectors line={normalizedLine} />
                   </div>
                 )}
               </>
@@ -298,7 +484,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div>
-                    <CartLineOptionSelectors line={line} className="pt-3" />
+                    <CartLineOptionSelectors line={normalizedLine} className="pt-3" />
                   </div>
                 )}
               </>
@@ -341,7 +527,7 @@ export function CartLineItem({
               </div>
               {!hasOnlyDefaultTitle && (
                 <div>
-                  <CartLineOptionSelectors line={line} className="pt-[6px]" />
+                  <CartLineOptionSelectors line={normalizedLine} className="pt-[6px]" />
                 </div>
               )}
             </>
@@ -385,7 +571,7 @@ export function CartLineItem({
 
               {!hasOnlyDefaultTitle && (
                 <div>
-                  <CartLineOptionSelectors line={line} className="pt-2" />
+                  <CartLineOptionSelectors line={normalizedLine} className="pt-2" />
                 </div>
               )}
             </>
@@ -429,7 +615,7 @@ export function CartLineItem({
 
               {!hasOnlyDefaultTitle && (
                 <div>
-                  <CartLineOptionSelectors line={line} className="pt-2" />
+                  <CartLineOptionSelectors line={normalizedLine} className="pt-2" />
                 </div>
               )}
             </>
@@ -471,7 +657,7 @@ export function CartLineItem({
                     {showInlineDescription && cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
-                    <CartLineOptionSelectors line={line} />
+                    <CartLineOptionSelectors line={normalizedLine} />
                   </div>
                 )}
               </>
@@ -516,7 +702,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div>
-                    <CartLineOptionSelectors line={line} className="pt-3" />
+                    <CartLineOptionSelectors line={normalizedLine} className="pt-3" />
                   </div>
                 )}
               </>
@@ -560,7 +746,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div>
-                    <CartLineOptionSelectors line={line} className="pt-3" />
+                    <CartLineOptionSelectors line={normalizedLine} className="pt-3" />
                   </div>
                 )}
               </>
@@ -605,7 +791,7 @@ export function CartLineItem({
           )} */}
         </li>
         <CartLineQuantity
-          line={line}
+          line={normalizedLine}
           hideQuantityButtons={!!hasPrintTag}
           discountText={lineDiscountText}
           footerDescription={showFooterDescription ? cartDescription : null}
@@ -622,7 +808,7 @@ function CartLineOptionSelectors({
   line,
   className,
 }: {
-  line: CartLine;
+  line: CartLineWithPendingMetadata;
   className?: string;
 }) {
   const fetcher = useFetcher();
@@ -636,6 +822,7 @@ function CartLineOptionSelectors({
       variants?: {nodes?: ProductVariantForSelection[]};
     };
   const variants = productWithVariants.variants?.nodes ?? [];
+  const pendingOptionValuesByName = line.__pendingOptionValuesByName ?? {};
 
   if (!selectedOptions.length) return null;
 
@@ -651,6 +838,7 @@ function CartLineOptionSelectors({
           variants,
           selectedOptions,
           optionName: selectedOption.name,
+          fallbackOptionValuesByName: pendingOptionValuesByName,
         });
         const currentValue = selectedOption.value;
         const dropdownValues = optionValues.includes(currentValue)
@@ -730,10 +918,12 @@ function getSelectableOptionValues({
   variants,
   selectedOptions,
   optionName,
+  fallbackOptionValuesByName,
 }: {
   variants: ProductVariantForSelection[];
   selectedOptions: ProductVariantOption[];
   optionName: string;
+  fallbackOptionValuesByName?: Record<string, string[]>;
 }) {
   const values = new Set<string>();
 
@@ -752,6 +942,11 @@ function getSelectableOptionValues({
 
     if (!matchesOtherOptions) continue;
     values.add(optionValue);
+  }
+
+  const fallbackOptionValues = fallbackOptionValuesByName?.[optionName] ?? [];
+  for (const fallbackOptionValue of fallbackOptionValues) {
+    if (fallbackOptionValue) values.add(fallbackOptionValue);
   }
 
   if (!values.size) {
@@ -818,7 +1013,7 @@ function CartLineQuantity({
   isTabletStockLayout,
   isStockClipLine,
 }: {
-  line: CartLine;
+  line: CartLineWithPendingMetadata;
   hideQuantityButtons: boolean;
   discountText?: string | null;
   footerDescription?: string | null;

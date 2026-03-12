@@ -21,6 +21,12 @@ type VariantProductSummary = {
   tags: string[];
 };
 
+type IncomingLineWithPreloadHint = {
+  merchandiseId?: unknown;
+  __productId?: unknown;
+  __isVideo?: unknown;
+};
+
 const VARIANT_PRODUCT_SUMMARY_QUERY = `#graphql
   query CartVariantProductSummary($ids: [ID!]!) {
     nodes(ids: $ids) {
@@ -62,6 +68,30 @@ function toCartLineInput(line: unknown): CartLineInput | null {
     attributes: candidate.attributes,
     sellingPlanId: candidate.sellingPlanId,
   };
+}
+
+function getPreloadedVariantSummariesFromLines(lines: unknown[]) {
+  const summaryByVariantId = new Map<string, VariantProductSummary>();
+
+  for (const line of lines) {
+    if (typeof line !== 'object' || line === null) continue;
+
+    const candidate = line as IncomingLineWithPreloadHint;
+    const merchandiseId =
+      typeof candidate.merchandiseId === 'string' ? candidate.merchandiseId : '';
+    const productId =
+      typeof candidate.__productId === 'string' ? candidate.__productId : '';
+
+    if (!merchandiseId || !productId) continue;
+
+    const isVideo = candidate.__isVideo === true;
+    summaryByVariantId.set(merchandiseId, {
+      productId,
+      tags: isVideo ? ['Video'] : [],
+    });
+  }
+
+  return summaryByVariantId;
 }
 
 function toCartLineUpdateInput(line: unknown): CartLineUpdateInput | null {
@@ -167,12 +197,32 @@ async function handleVideoAwareLineAdd({
   lines: unknown[];
 }) {
   const normalizedLines = lines.map(toCartLineInput).filter(Boolean);
+  const preloadedSummaries = getPreloadedVariantSummariesFromLines(lines);
+  const allSummariesKnownFromPreload =
+    normalizedLines.length > 0 &&
+    normalizedLines.every((line) => preloadedSummaries.has(line.merchandiseId));
+  const hasAnyVideoFromPreload = normalizedLines.some((line) => {
+    const summary = preloadedSummaries.get(line.merchandiseId);
+    return summary ? isVideoProduct(summary.tags) : false;
+  });
+
+  // Fast path for non-video adds (prints): no cart read + no variant summary query.
+  if (allSummariesKnownFromPreload && !hasAnyVideoFromPreload) {
+    return context.cart.addLines(normalizedLines);
+  }
+
   const currentCart = await context.cart.get();
   const currentLines = currentCart?.lines.nodes ?? [];
-  const incomingVariantSummaries = await getVariantProductSummaries(
-    context,
-    normalizedLines.map((line) => line.merchandiseId),
-  );
+  const missingVariantIds = normalizedLines
+    .map((line) => line.merchandiseId)
+    .filter((variantId) => !preloadedSummaries.has(variantId));
+  const fetchedSummaries = missingVariantIds.length
+    ? await getVariantProductSummaries(context, missingVariantIds)
+    : new Map<string, VariantProductSummary>();
+  const incomingVariantSummaries = new Map<string, VariantProductSummary>([
+    ...fetchedSummaries,
+    ...preloadedSummaries,
+  ]);
 
   const regularAdds: CartLineInput[] = [];
   const pendingVideoAdds = new Map<string, CartLineInput>();
@@ -243,12 +293,20 @@ async function handleVideoAwareLineUpdate({
   const currentCart = await context.cart.get();
   const currentLines = currentCart?.lines.nodes ?? [];
   const currentLineById = new Map(currentLines.map((line) => [line.id, line]));
-  const incomingVariantSummaries = await getVariantProductSummaries(
-    context,
-    normalizedLines
-      .map((line) => line.merchandiseId)
-      .filter((merchandiseId): merchandiseId is string => Boolean(merchandiseId)),
+  const preloadedSummaries = getPreloadedVariantSummariesFromLines(lines);
+  const updateVariantIds = normalizedLines
+    .map((line) => line.merchandiseId)
+    .filter((merchandiseId): merchandiseId is string => Boolean(merchandiseId));
+  const missingVariantIds = updateVariantIds.filter(
+    (variantId) => !preloadedSummaries.has(variantId),
   );
+  const fetchedSummaries = missingVariantIds.length
+    ? await getVariantProductSummaries(context, missingVariantIds)
+    : new Map<string, VariantProductSummary>();
+  const incomingVariantSummaries = new Map<string, VariantProductSummary>([
+    ...fetchedSummaries,
+    ...preloadedSummaries,
+  ]);
 
   const regularUpdates: CartLineUpdateInput[] = [];
   const videoUpdates = new Map<string, CartLineUpdateInput>();

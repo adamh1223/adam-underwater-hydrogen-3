@@ -21,6 +21,7 @@ import {
 import {Card} from '~/components/ui/card';
 import {useEffect, useMemo, useState} from 'react';
 import {cn} from '~/lib/utils';
+import type {CartPendingLinePreviewPayload} from '~/lib/cartPendingLine';
 
 const selectedVariantHighlightClass =
   'border-primary shadow-[0_0_0_1px_hsl(var(--primary)),0_0_0_2px_hsl(var(--primary)/0.62),0_0_28px_hsl(var(--primary)/0.5)]';
@@ -39,6 +40,7 @@ export function ProductForm({
   VideoAlreadyInCart,
   isVideo,
   isPrint,
+  isVideoBundle,
 }: {
   cart?: Promise<CartReturn | null>;
   productId: string;
@@ -69,6 +71,9 @@ export function ProductForm({
   const formattedCompareAtPrice = selectedVariant?.compareAtPrice?.amount
     ? parseFloat(selectedVariant.compareAtPrice.amount).toFixed(2)
     : null;
+  const formattedPriceLabel = formattedPrice != null ? `$${formattedPrice}` : null;
+  const formattedCompareAtPriceLabel =
+    formattedCompareAtPrice != null ? `$${formattedCompareAtPrice}` : null;
   const showSelectedVariantTitle = Boolean(
     selectedVariant?.title && selectedVariant.title !== 'Default Title',
   );
@@ -77,12 +82,83 @@ export function ProductForm({
       option.optionValues.length > 1 &&
       option.name.trim().toLowerCase() === 'resolution',
   );
+  const selectedVariantOptions =
+    selectedVariant?.selectedOptions
+      ?.filter((option) => option.value !== 'Default Title')
+      .map((option) => ({
+        name: option.name,
+        value: option.value,
+      })) ?? [];
+  const optionValuesByName = productOptions.reduce<Record<string, string[]>>(
+    (optionMap, option) => {
+      const optionValues = Array.from(
+        new Set(
+          option.optionValues
+            .map((optionValue) => optionValue.name)
+            .filter((optionValueName): optionValueName is string =>
+              Boolean(optionValueName),
+            ),
+        ),
+      );
+
+      if (optionValues.length) {
+        optionMap[option.name] = optionValues;
+      }
+
+      return optionMap;
+    },
+    {},
+  );
+  const orientationValue =
+    selectedVariantOptions.find(
+      (option) => option.name.toLowerCase() === 'orientation',
+    )?.value ?? '';
+  const isVerticalPreview =
+    orientationValue.toLowerCase() === 'vertical' ||
+    orientationValue.toLowerCase() === 'portrait';
+  const productTypeLabel = isPrint
+    ? 'Framed Canvas Print'
+    : isVideoBundle
+      ? 'Stock Footage Video Bundle'
+      : 'Stock Footage Video';
+  const pendingProductTags = isPrint
+    ? ['Prints']
+    : isVideoBundle
+      ? ['Video', 'Bundle']
+      : ['Video'];
+  const previewImageUrl =
+    selectedVariant?.image?.url ?? imagesToShow?.[0]?.url ?? null;
+  const pendingLinePreview: CartPendingLinePreviewPayload | null =
+    selectedVariant?.id
+      ? {
+          merchandiseId: selectedVariant.id,
+          productId,
+          productHandle: selectedVariant?.product?.handle,
+          productTitle: selectedVariant?.product?.title ?? '',
+          productTags: pendingProductTags,
+          variantTitle: selectedVariant?.title ?? undefined,
+          optionValuesByName,
+          productTypeLabel,
+          imageUrl: previewImageUrl,
+          priceLabel: formattedPriceLabel,
+          priceAmount: selectedVariant?.price?.amount ?? null,
+          priceCurrencyCode: selectedVariant?.price?.currencyCode ?? null,
+          compareAtPriceLabel: formattedCompareAtPriceLabel,
+          compareAtAmount: selectedVariant?.compareAtPrice?.amount ?? null,
+          selectedOptions: selectedVariantOptions,
+          showQuantityButtons: isPrint,
+          isVerticalImage: isVerticalPreview,
+        }
+      : null;
   const addToCartLines = selectedVariant
     ? [
         {
           merchandiseId: selectedVariant.id,
           quantity: 1,
           selectedVariant,
+          __productId: productId,
+          __isVideo: isVideo,
+          __preview: pendingLinePreview,
         },
       ]
     : [];
@@ -135,10 +211,10 @@ export function ProductForm({
         </div>
         {selectedVariant?.availableForSale ? (
           <div className="add-to-cart-btn-text">
-            Add to cart: ${formattedPrice} &nbsp;
-            {formattedCompareAtPrice != null && (
+            Add to cart: {formattedPriceLabel} &nbsp;
+            {formattedCompareAtPriceLabel != null && (
               <span className="add-to-cart-btn-compare-at-price">
-                ${formattedCompareAtPrice}
+                {formattedCompareAtPriceLabel}
               </span>
             )}
           </div>

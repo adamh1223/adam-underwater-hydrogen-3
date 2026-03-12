@@ -3,13 +3,16 @@ import {CartEmpty, CartMainProps} from '../CartMain';
 import {CartLineItem} from '../CartLineItem';
 import {CartSummary} from '../CartSummary';
 import {DefaultCart} from '~/lib/types';
+import type {CartPendingLinePreview} from '~/lib/cartPendingLine';
+import {CartPendingLineItem} from '../CartPendingLineItem';
 
-interface cartPageLayoutProps {
+interface CartPageLayoutProps {
   linesCount: boolean;
   layout: CartMainProps['layout'];
   cart: DefaultCart;
   cartHasItems: boolean;
   className: string;
+  pendingLinePreviews: CartPendingLinePreview[];
 }
 
 export function CartAsideLayout({
@@ -18,7 +21,34 @@ export function CartAsideLayout({
   cart,
   cartHasItems,
   className,
-}: cartPageLayoutProps) {
+  pendingLinePreviews,
+}: CartPageLayoutProps) {
+  const cartLines = cart?.lines?.nodes ?? [];
+  const isLineOptimistic = (line: (typeof cartLines)[number]) =>
+    Boolean((line as {isOptimistic?: boolean}).isOptimistic);
+  const nonOptimisticMerchandiseIds = new Set(
+    cartLines
+      .filter((line) => !isLineOptimistic(line))
+      .map((line) => line.merchandise.id),
+  );
+  const visibleCartLines = cartLines.filter(
+    (line) =>
+      !(
+        isLineOptimistic(line) &&
+        nonOptimisticMerchandiseIds.has(line.merchandise.id)
+      ),
+  );
+  const cartMerchandiseIds = new Set(
+    visibleCartLines.map((line) => line.merchandise.id),
+  );
+  const standalonePendingPreviews = pendingLinePreviews.filter(
+    (preview) => !cartMerchandiseIds.has(preview.merchandiseId),
+  );
+  const pendingPreviewByMerchandiseId = new Map<string, CartPendingLinePreview>();
+  for (const preview of pendingLinePreviews) {
+    pendingPreviewByMerchandiseId.set(preview.merchandiseId, preview);
+  }
+
   return (
     <>
       <div className={className}>
@@ -27,8 +57,22 @@ export function CartAsideLayout({
           <div aria-labelledby="cart-lines">
             <div className="mt-5">
               <ul className="mx-2">
-                {(cart?.lines?.nodes ?? []).map((line) => (
-                  <CartLineItem key={line.id} line={line} layout={layout} />
+                {standalonePendingPreviews.map((preview) => (
+                  <CartPendingLineItem
+                    key={preview.previewId}
+                    preview={preview}
+                    layout={layout}
+                  />
+                ))}
+                {visibleCartLines.map((line) => (
+                  <CartLineItem
+                    key={line.id}
+                    line={line}
+                    layout={layout}
+                    pendingPreview={pendingPreviewByMerchandiseId.get(
+                      line.merchandise.id,
+                    )}
+                  />
                 ))}
               </ul>
             </div>
