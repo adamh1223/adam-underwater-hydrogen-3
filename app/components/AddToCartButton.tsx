@@ -67,6 +67,7 @@ function AddToCartContent({
   replaceExistingLineProductId?: string;
 }) {
   const hasSubmitted = useRef(false);
+  const hasShownImmediateToastForSubmit = useRef(false);
 
   useEffect(() => {
     if (fetcher.state === 'submitting') {
@@ -75,9 +76,10 @@ function AddToCartContent({
 
     if (hasSubmitted.current && fetcher.state === 'idle') {
       const hasErrors = Boolean(fetcher.data?.errors?.length);
-      if (!hasErrors) {
+      if (!hasErrors && !hasShownImmediateToastForSubmit.current) {
         toast.success('Added to Cart');
       }
+      hasShownImmediateToastForSubmit.current = false;
       hasSubmitted.current = false;
     }
   }, [fetcher.data, fetcher.state]);
@@ -111,6 +113,8 @@ function AddToCartContent({
       );
     if (immediatePreview) {
       emitCartPendingLinePreview(immediatePreview);
+      toast.success('Added to Cart');
+      hasShownImmediateToastForSubmit.current = true;
     }
 
     fetcher.submit(

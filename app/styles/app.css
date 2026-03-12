@@ -464,6 +464,12 @@ button.reset:hover:not(:has(> *)) {
   min-width: 0;
 }
 
+.cart-line-qty-controls > form,
+.cart-line-remove-wrap > form {
+  display: inline-flex;
+  align-items: center;
+}
+
 .cart-line-footer-discount-inline {
   margin-left: 0.25rem;
   min-width: 0;

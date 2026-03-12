@@ -11,6 +11,7 @@ interface CartPageLayoutProps {
   cart: DefaultCart;
   cartHasItems: boolean;
   pendingLinePreviews: CartPendingLinePreview[];
+  provisionalDiscountPercentByMerchandiseId: Map<string, number>;
 }
 export function CartPageLayout({
   linesCount,
@@ -18,6 +19,7 @@ export function CartPageLayout({
   cart,
   cartHasItems,
   pendingLinePreviews,
+  provisionalDiscountPercentByMerchandiseId,
 }: CartPageLayoutProps) {
   const cartLines = cart?.lines?.nodes ?? [];
   const isLineOptimistic = (line: (typeof cartLines)[number]) =>
@@ -62,6 +64,11 @@ export function CartPageLayout({
                   key={preview.previewId}
                   preview={preview}
                   layout={layout}
+                  provisionalDiscountPercentage={
+                    provisionalDiscountPercentByMerchandiseId.get(
+                      preview.merchandiseId,
+                    ) ?? 0
+                  }
                 />
               ))}
               {visibleCartLines.map((line) => (
@@ -72,6 +79,11 @@ export function CartPageLayout({
                   pendingPreview={pendingPreviewByMerchandiseId.get(
                     line.merchandise.id,
                   )}
+                  provisionalDiscountPercentage={
+                    provisionalDiscountPercentByMerchandiseId.get(
+                      line.merchandise.id,
+                    ) ?? 0
+                  }
                 />
               ))}
             </ul>
@@ -80,7 +92,13 @@ export function CartPageLayout({
         {/* put this line inside a div for cart page to mimic old project, gave div a class */}
         {/* I also commented out the css for cart-main */}
         <div className="lg:col-span-4">
-          {cartHasItems && <CartSummary cart={cart} layout={layout} />}
+          {cartHasItems && (
+            <CartSummary
+              cart={cart}
+              layout={layout}
+              pendingLinePreviews={pendingLinePreviews}
+            />
+          )}
         </div>
         {/* </div> */}
       </div>

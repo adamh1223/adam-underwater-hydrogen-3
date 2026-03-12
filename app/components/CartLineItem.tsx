@@ -233,11 +233,13 @@ export function CartLineItem({
   layout,
   line,
   pendingPreview = null,
+  provisionalDiscountPercentage = 0,
   suppressOptimisticSkeleton = false,
 }: {
   layout: CartLayout;
   line: CartLineWithPendingMetadata;
   pendingPreview?: CartPendingLinePreview | null;
+  provisionalDiscountPercentage?: number;
   suppressOptimisticSkeleton?: boolean;
 }) {
   const normalizedLine = normalizePendingLineWithPreview({line, pendingPreview});
@@ -324,17 +326,37 @@ export function CartLineItem({
       ?.cost?.subtotalAmount?.amount,
   );
   const lineTotalAmount = parseMoneyAmount(normalizedLine?.cost?.totalAmount?.amount);
-  const preDiscountPrice =
-    lineSubtotalAmount > lineTotalAmount + 0.0001
-      ? createMoneyValue(lineSubtotalAmount, currencyCode)
-      : null;
-  const lineDiscountPercent =
-    lineSubtotalAmount > 0
+  const hasServerLineDiscount = lineSubtotalAmount > lineTotalAmount + 0.0001;
+  const canApplyProvisionalDiscount =
+    provisionalDiscountPercentage > 0 && !hasServerLineDiscount;
+  const effectivePreDiscountAmount =
+    lineSubtotalAmount > 0.0001 ? lineSubtotalAmount : lineTotalAmount;
+  const provisionalDiscountedAmount = canApplyProvisionalDiscount
+    ? Math.max(
+        0,
+        effectivePreDiscountAmount * (1 - provisionalDiscountPercentage / 100),
+      )
+    : lineTotalAmount;
+  const effectiveLineTotalAmount = canApplyProvisionalDiscount
+    ? provisionalDiscountedAmount
+    : lineTotalAmount;
+  const displayPriceMoney = normalizedLine?.cost?.totalAmount
+    ? createMoneyValue(effectiveLineTotalAmount, currencyCode)
+    : normalizedLine?.cost?.totalAmount;
+  const lineDiscountPercent = hasServerLineDiscount
+    ? lineSubtotalAmount > 0
       ? Math.round(
           ((lineSubtotalAmount - lineTotalAmount) / lineSubtotalAmount) * 100,
         )
+      : 0
+    : canApplyProvisionalDiscount
+      ? provisionalDiscountPercentage
       : 0;
-  const hasLineDiscount = lineSubtotalAmount > lineTotalAmount + 0.0001;
+  const preDiscountPrice =
+    hasServerLineDiscount || canApplyProvisionalDiscount
+      ? createMoneyValue(effectivePreDiscountAmount, currencyCode)
+      : null;
+  const hasLineDiscount = hasServerLineDiscount || canApplyProvisionalDiscount;
   const lineDiscountText = hasLineDiscount
     ? lineDiscountPercent > 0
       ? `${lineDiscountPercent}% discount applied!`
@@ -384,7 +406,7 @@ export function CartLineItem({
 
   const linePrice = (
     <CartLinePrice
-      price={normalizedLine?.cost?.totalAmount}
+      price={displayPriceMoney}
       compareAtPrice={updatedCompareAt}
       preDiscountPrice={preDiscountPrice}
     />
@@ -792,6 +814,9 @@ export function CartLineItem({
         </li>
         <CartLineQuantity
           line={normalizedLine}
+          showPendingPrintControlLook={Boolean(
+            pendingPreview && normalizedLine.isOptimistic,
+          )}
           hideQuantityButtons={!!hasPrintTag}
           discountText={lineDiscountText}
           footerDescription={showFooterDescription ? cartDescription : null}
@@ -1006,6 +1031,7 @@ function toOptionInputId(value: string) {
  */
 function CartLineQuantity({
   line,
+  showPendingPrintControlLook,
   hideQuantityButtons,
   discountText,
   footerDescription,
@@ -1014,6 +1040,7 @@ function CartLineQuantity({
   isStockClipLine,
 }: {
   line: CartLineWithPendingMetadata;
+  showPendingPrintControlLook: boolean;
   hideQuantityButtons: boolean;
   discountText?: string | null;
   footerDescription?: string | null;
@@ -1053,39 +1080,71 @@ function CartLineQuantity({
   const quantityContentClassName = usesStackedQuantityLayout
     ? 'cart-line-quantity-stack'
     : 'cart-line-quantity-row';
+  const shouldKeepPrintControlsEnabled =
+    showPendingPrintControlLook && hideQuantityButtons;
+  const disableControlsForOptimistic = !!isOptimistic && !shouldKeepPrintControlsEnabled;
   const quantityButtonsInner = hideQuantityButtons ? (
-    <>
-      <CartLineUpdateButton
-        lines={[{id: lineId, quantity: prevQuantity}]}
-      >
+    shouldKeepPrintControlsEnabled ? (
+      <>
         <Button
           aria-label="Decrease quantity"
-          disabled={quantity <= 1 || !!isOptimistic}
+          disabled={quantity <= 1}
           name="decrease-quantity"
           value={prevQuantity}
           variant="secondary"
           size="cartpm"
+          type="button"
           className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
         >
           <span>&#8722; </span>
         </Button>
-      </CartLineUpdateButton>
-      <CartLineUpdateButton
-        lines={[{id: lineId, quantity: nextQuantity}]}
-      >
         <Button
           aria-label="Increase quantity"
           name="increase-quantity"
           value={nextQuantity}
-          disabled={!!isOptimistic}
+          disabled={false}
           variant="secondary"
           size="cartpm"
+          type="button"
           className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
         >
           <span>&#43;</span>
         </Button>
-      </CartLineUpdateButton>
-    </>
+      </>
+    ) : (
+      <>
+        <CartLineUpdateButton
+          lines={[{id: lineId, quantity: prevQuantity}]}
+        >
+          <Button
+            aria-label="Decrease quantity"
+            disabled={quantity <= 1 || disableControlsForOptimistic}
+            name="decrease-quantity"
+            value={prevQuantity}
+            variant="secondary"
+            size="cartpm"
+            className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+          >
+            <span>&#8722; </span>
+          </Button>
+        </CartLineUpdateButton>
+        <CartLineUpdateButton
+          lines={[{id: lineId, quantity: nextQuantity}]}
+        >
+          <Button
+            aria-label="Increase quantity"
+            name="increase-quantity"
+            value={nextQuantity}
+            disabled={disableControlsForOptimistic}
+            variant="secondary"
+            size="cartpm"
+            className="cart-line-qty-button cursor-pointer focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+          >
+            <span>&#43;</span>
+          </Button>
+        </CartLineUpdateButton>
+      </>
+    )
   ) : null;
   const quantityButtons = quantityButtonsInner ? (
     <div className="cart-line-qty-controls">{quantityButtonsInner}</div>
@@ -1109,7 +1168,11 @@ function CartLineQuantity({
             <div className="cart-line-qty-controls">
               {quantityButtonsInner}
               <div className="cart-line-remove-wrap">
-                <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
+                <CartLineRemoveButton
+                  lineIds={[lineId]}
+                  disabled={disableControlsForOptimistic}
+                  visualOnly={shouldKeepPrintControlsEnabled}
+                />
               </div>
               {hasInlineMobileDiscount ? (
                 <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
@@ -1120,7 +1183,11 @@ function CartLineQuantity({
           ) : (
             <>
               {quantityButtons}
-              <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
+              <CartLineRemoveButton
+                lineIds={[lineId]}
+                disabled={disableControlsForOptimistic}
+                visualOnly={shouldKeepPrintControlsEnabled}
+              />
               {hasInlineDiscountWithControls ? (
                 <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
                   {discountText}
@@ -1146,19 +1213,52 @@ function CartLineQuantity({
 function CartLineRemoveButton({
   lineIds,
   disabled,
+  visualOnly = false,
 }: {
   lineIds: string[];
   disabled: boolean;
+  visualOnly?: boolean;
 }) {
-  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(() =>
+    typeof window !== 'undefined' ? window.innerWidth : undefined,
+  );
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     function handleResize() {
       setWindowWidth(window.innerWidth);
     }
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
+  if (visualOnly) {
+    return (
+      <>
+        {windowWidth != null && windowWidth <= 600 && (
+          <Button
+            disabled={false}
+            type="button"
+            variant="secondary"
+            className="remove-button cart-line-remove-button cursor-pointer px-1.5 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+            size="sm"
+          >
+            <p className="remove-button-text">Remove</p>
+          </Button>
+        )}
+        {windowWidth != null && windowWidth > 600 && (
+          <Button
+            disabled={false}
+            type="button"
+            variant="secondary"
+            className="remove-button cart-line-remove-button cursor-pointer px-1.5 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-transparent"
+            size="cartbtn"
+          >
+            <p className="remove-button-text">Remove</p>
+          </Button>
+        )}
+      </>
+    );
+  }
   return (
     <CartForm
       route="/cart"

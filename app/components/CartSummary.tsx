@@ -2,6 +2,7 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useEffect, useRef, useState} from 'react';
+import type {CartPendingLinePreview} from '~/lib/cartPendingLine';
 import {
   FetcherWithComponents,
   Link,
@@ -16,8 +17,19 @@ import type {RootLoader} from '~/root';
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
   layout: CartLayout;
+  pendingLinePreviews?: CartPendingLinePreview[];
 };
 type CartSummaryMoney = CartApiQueryFragment['cost']['subtotalAmount'];
+type CartLineNode = OptimisticCart<CartApiQueryFragment | null>['lines']['nodes'][number];
+type EffectiveSummaryLine = {
+  merchandiseId: string;
+  quantity: number;
+  tags: string[];
+  subtotalBeforeDiscount: number;
+  subtotalAfterDiscount: number;
+  compareAtPerQuantity: number;
+  hasServerDiscount: boolean;
+};
 
 type CartDiscountAllocation = {
   __typename?: string;
@@ -64,9 +76,108 @@ function isShippingDiscount(allocation: CartDiscountAllocation) {
   );
 }
 
-export function CartSummary({cart, layout}: CartSummaryProps) {
+function isLineOptimistic(line: CartLineNode) {
+  return Boolean((line as {isOptimistic?: boolean}).isOptimistic);
+}
+
+function lineSubtotalBeforeDiscount(line: CartLineNode) {
+  const subtotal = parseMoneyAmount(
+    (
+      line as unknown as {
+        cost?: {subtotalAmount?: {amount?: string | null}};
+      }
+    )?.cost?.subtotalAmount?.amount,
+  );
+  if (subtotal > 0.0001) return subtotal;
+  return parseMoneyAmount(line?.cost?.totalAmount?.amount);
+}
+
+function lineCompareAtPerQuantity(line: CartLineNode) {
+  return parseMoneyAmount(
+    (
+      line as unknown as {
+        cost?: {compareAtAmountPerQuantity?: {amount?: string | null}};
+      }
+    )?.cost?.compareAtAmountPerQuantity?.amount,
+  );
+}
+
+function lineTags(line: CartLineNode) {
+  return Array.isArray(line?.merchandise?.product?.tags)
+    ? line.merchandise.product.tags
+    : [];
+}
+
+function isPrintLine(tags: string[]) {
+  return tags.some((tag) => tag?.toLowerCase?.() === 'prints');
+}
+
+function isStockClipLine(tags: string[]) {
+  const loweredTags = tags.map((tag) => tag.toLowerCase());
+  return loweredTags.includes('video') && !loweredTags.includes('bundle');
+}
+
+export function CartSummary({
+  cart,
+  layout,
+  pendingLinePreviews = [],
+}: CartSummaryProps) {
   const rootData = useRouteLoaderData<RootLoader>('root');
   const isAdmin = Boolean(rootData?.isAdmin);
+  const pendingPreviewByMerchandiseId = new Map(
+    pendingLinePreviews.map((preview) => [preview.merchandiseId, preview] as const),
+  );
+  const cartMerchandiseIds = new Set(
+    cart.lines.nodes.map((line) => line.merchandise.id),
+  );
+
+  const effectiveSummaryLines: EffectiveSummaryLine[] = cart.lines.nodes.map((line) => {
+    const pendingPreview = pendingPreviewByMerchandiseId.get(line.merchandise.id);
+    const usePendingPreviewForAmounts = Boolean(
+      pendingPreview && isLineOptimistic(line),
+    );
+
+    const subtotalAfterDiscount = usePendingPreviewForAmounts
+      ? parseMoneyAmount(pendingPreview?.priceAmount)
+      : parseMoneyAmount(line?.cost?.totalAmount?.amount);
+    const subtotalBeforeDiscount = usePendingPreviewForAmounts
+      ? subtotalAfterDiscount
+      : lineSubtotalBeforeDiscount(line);
+    const compareAtPerQuantity = usePendingPreviewForAmounts
+      ? parseMoneyAmount(pendingPreview?.compareAtAmount)
+      : lineCompareAtPerQuantity(line);
+    const tags = usePendingPreviewForAmounts
+      ? (pendingPreview?.productTags ?? lineTags(line))
+      : lineTags(line);
+
+    return {
+      merchandiseId: line.merchandise.id,
+      quantity: line?.quantity ?? 1,
+      tags,
+      subtotalBeforeDiscount,
+      subtotalAfterDiscount,
+      compareAtPerQuantity,
+      hasServerDiscount:
+        !usePendingPreviewForAmounts &&
+        subtotalBeforeDiscount > subtotalAfterDiscount + 0.0001,
+    };
+  });
+
+  for (const pendingPreview of pendingLinePreviews) {
+    if (cartMerchandiseIds.has(pendingPreview.merchandiseId)) continue;
+
+    const pendingSubtotal = parseMoneyAmount(pendingPreview.priceAmount);
+    effectiveSummaryLines.push({
+      merchandiseId: pendingPreview.merchandiseId,
+      quantity: 1,
+      tags: pendingPreview.productTags ?? [],
+      subtotalBeforeDiscount: pendingSubtotal,
+      subtotalAfterDiscount: pendingSubtotal,
+      compareAtPerQuantity: parseMoneyAmount(pendingPreview.compareAtAmount),
+      hasServerDiscount: false,
+    });
+  }
+
   const clipProducts = cart.lines.nodes.filter((item) => {
     return item.merchandise.product.tags?.includes('Video');
   });
@@ -75,43 +186,62 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   );
   const subtotalCurrencyCode = (cart.cost?.subtotalAmount?.currencyCode ||
     'USD') as CartSummaryMoney['currencyCode'];
-  const subtotalAfterDiscount = parseMoneyAmount(
-    cart.cost?.subtotalAmount?.amount,
+  const subtotalAfterServerDiscount = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) =>
+      runningTotal + lineItem.subtotalAfterDiscount * lineItem.quantity,
+    0,
   );
-  const subtotalBeforeDiscount = cart.lines.nodes.reduce(
+  const subtotalBeforeDiscount = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) =>
+      runningTotal + lineItem.subtotalBeforeDiscount * lineItem.quantity,
+    0,
+  );
+  const printQuantity = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) =>
+      runningTotal + (isPrintLine(lineItem.tags) ? lineItem.quantity : 0),
+    0,
+  );
+  const stockClipQuantity = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) =>
+      runningTotal + (isStockClipLine(lineItem.tags) ? lineItem.quantity : 0),
+    0,
+  );
+  const qualifiesForPrintBulkDiscount = printQuantity >= 3;
+  const qualifiesForStockBulkDiscount = stockClipQuantity >= 4;
+
+  const provisionalPendingSavings = effectiveSummaryLines.reduce(
     (runningTotal, lineItem) => {
+      if (lineItem.hasServerDiscount) return runningTotal;
+
+      const qualifiesForPrint =
+        qualifiesForPrintBulkDiscount && isPrintLine(lineItem.tags);
+      const qualifiesForStockClip =
+        qualifiesForStockBulkDiscount && isStockClipLine(lineItem.tags);
+      if (!qualifiesForPrint && !qualifiesForStockClip) return runningTotal;
+
       return (
-        runningTotal +
-        parseMoneyAmount(
-          (
-            lineItem as unknown as {
-              cost?: {subtotalAmount?: {amount?: string | null}};
-            }
-          )?.cost?.subtotalAmount?.amount,
-        )
+        runningTotal + lineItem.subtotalBeforeDiscount * lineItem.quantity * 0.15
       );
     },
     0,
   );
-  const subtotalSavings = Math.max(
+
+  const subtotalAfterDiscount = Math.max(
     0,
-    subtotalBeforeDiscount - subtotalAfterDiscount,
+    subtotalAfterServerDiscount - provisionalPendingSavings,
   );
-  const subtotalCompareAt = cart.lines.nodes.reduce(
-    (runningTotal, lineItem) => {
-      const compareAtPerItem = parseMoneyAmount(
-        (
-          lineItem as unknown as {
-            cost?: {compareAtAmountPerQuantity?: {amount?: string | null}};
-          }
-        )?.cost?.compareAtAmountPerQuantity?.amount,
-      );
-      return runningTotal + compareAtPerItem * (lineItem?.quantity ?? 1);
-    },
+  const subtotalSavings = Math.max(0, subtotalBeforeDiscount - subtotalAfterDiscount);
+  const subtotalCompareAt = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) =>
+      runningTotal + lineItem.compareAtPerQuantity * lineItem.quantity,
     0,
   );
   const hasProductDiscountSavings = subtotalSavings > 0.0001;
   const hasCompareAtSubtotal = subtotalCompareAt > 0.0001;
+  const subtotalAfterDiscountMoney = createMoneyValue(
+    subtotalAfterDiscount,
+    subtotalCurrencyCode,
+  );
   const subtotalBeforeDiscountMoney = createMoneyValue(
     subtotalBeforeDiscount,
     subtotalCurrencyCode,
@@ -128,7 +258,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
   const allDiscountAllocations = ((
     cart as unknown as {discountAllocations?: CartDiscountAllocation[]}
   ).discountAllocations ?? []) as CartDiscountAllocation[];
-  const productDiscountLabels = Array.from(
+  const productDiscountLabelsFromCart = Array.from(
     new Set(
       allDiscountAllocations
         .filter((allocation) => !isShippingDiscount(allocation))
@@ -136,9 +266,24 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         .filter(Boolean),
     ),
   );
+  const provisionalProductDiscountLabels = [
+    qualifiesForPrintBulkDiscount ? 'Buy 3 prints get 15% off' : null,
+    qualifiesForStockBulkDiscount ? 'Buy 4 stock footage clips get 15% off' : null,
+  ].filter((label): label is string => Boolean(label));
+  const productDiscountLabels = Array.from(
+    new Set([
+      ...productDiscountLabelsFromCart,
+      ...(provisionalPendingSavings > 0.0001
+        ? provisionalProductDiscountLabels
+        : []),
+    ]),
+  );
   const hasFreeShippingUnlocked = allDiscountAllocations.some((allocation) =>
     isShippingDiscount(allocation),
   );
+  const hasProvisionalFreeShippingUnlocked = subtotalAfterDiscount >= 300;
+  const hasEffectiveFreeShippingUnlocked =
+    hasFreeShippingUnlocked || hasProvisionalFreeShippingUnlocked;
   const productDiscountAppliedText = productDiscountLabels.length
     ? `${productDiscountLabels.join(', ')} applied!`
     : 'Discount applied!';
@@ -175,11 +320,11 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
             <div className="cart-subtotal">
               <p className="cart-header">Subtotal:</p>
               <div className="ms-1">
-                {cart.cost?.subtotalAmount?.amount ? (
+                {effectiveSummaryLines.length ? (
                   hasProductDiscountSavings ? (
                     <div className="product-price-on-sale cart-subtotal-price-on-sale">
                       <Money
-                        data={cart.cost?.subtotalAmount}
+                        data={subtotalAfterDiscountMoney}
                         className="cart-header"
                       />
                       <s className="cart-line-regular-discount-price">
@@ -194,7 +339,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
                   ) : (
                     <div className="product-price-on-sale cart-subtotal-price-on-sale">
                       <Money
-                        data={cart.cost?.subtotalAmount}
+                        data={subtotalAfterDiscountMoney}
                         className="cart-header"
                       />
                       {hasCompareAtSubtotal ? (
@@ -209,7 +354,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
                 )}
               </div>
             </div>
-            {(hasProductDiscountSavings || hasFreeShippingUnlocked) && (
+            {(hasProductDiscountSavings || hasEffectiveFreeShippingUnlocked) && (
               <div className="mt-2 space-y-1">
                 {hasProductDiscountSavings && (
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-primary">
@@ -219,7 +364,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
                     </p>
                   </div>
                 )}
-                {hasFreeShippingUnlocked && (
+                {hasEffectiveFreeShippingUnlocked && (
                   <p className="text-sm font-medium text-primary">
                     Free shipping unlocked!
                   </p>

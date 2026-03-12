@@ -21,6 +21,65 @@ export type CartMainProps = {
   layout: CartLayout;
 };
 
+type CartLineNodeForDiscountPreview = {
+  isOptimistic?: boolean;
+  quantity?: number;
+  merchandise: {
+    id: string;
+    product: {
+      tags?: string[] | null;
+    };
+  };
+  cost?: {
+    totalAmount?: {
+      amount?: string | null;
+    };
+    subtotalAmount?: {
+      amount?: string | null;
+    };
+  };
+};
+
+function parseMoneyAmount(amount?: string | null) {
+  const numericAmount = Number(amount);
+  return Number.isFinite(numericAmount) ? numericAmount : 0;
+}
+
+function isLineOptimistic(
+  line: CartLineNodeForDiscountPreview,
+) {
+  return Boolean((line as {isOptimistic?: boolean}).isOptimistic);
+}
+
+function getLineSubtotalBeforeDiscount(
+  line: CartLineNodeForDiscountPreview,
+) {
+  const subtotalAmount = parseMoneyAmount(
+    (
+      line as unknown as {
+        cost?: {subtotalAmount?: {amount?: string | null}};
+      }
+    )?.cost?.subtotalAmount?.amount,
+  );
+  if (subtotalAmount > 0.0001) return subtotalAmount;
+  return parseMoneyAmount(line?.cost?.totalAmount?.amount);
+}
+
+function getLineSubtotalAfterDiscount(
+  line: CartLineNodeForDiscountPreview,
+) {
+  return parseMoneyAmount(line?.cost?.totalAmount?.amount);
+}
+
+function isPrintLine(tags: string[]) {
+  return tags.some((tag) => tag?.toLowerCase?.() === 'prints');
+}
+
+function isStockClipLine(tags: string[]) {
+  const loweredTags = tags.map((tag) => tag.toLowerCase());
+  return loweredTags.includes('video') && !loweredTags.includes('bundle');
+}
+
 /**
  * The main cart component that displays the cart items and summary.
  * It is used by both the /cart route and the cart aside dialog.
@@ -88,6 +147,79 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   }, [cartMerchandiseIds]);
 
   const hasPendingLines = pendingLinePreviews.length > 0;
+  const provisionalDiscountPercentByMerchandiseId = useMemo(() => {
+    if (!hasPendingLines) return new Map<string, number>();
+
+    const pendingPreviewByMerchandiseId = new Map(
+      pendingLinePreviews.map((preview) => [preview.merchandiseId, preview] as const),
+    );
+    const effectiveLines = (cart?.lines?.nodes ?? []).map((line) => {
+      const pendingPreview = pendingPreviewByMerchandiseId.get(line.merchandise.id);
+      const applyPendingPreviewAmounts =
+        Boolean(pendingPreview) && isLineOptimistic(line);
+      const tags = applyPendingPreviewAmounts
+        ? (pendingPreview?.productTags ?? [])
+        : Array.isArray(line?.merchandise?.product?.tags)
+          ? line.merchandise.product.tags
+          : [];
+      const subtotalBeforeDiscount = applyPendingPreviewAmounts
+        ? parseMoneyAmount(pendingPreview?.priceAmount)
+        : getLineSubtotalBeforeDiscount(line);
+      const subtotalAfterDiscount = applyPendingPreviewAmounts
+        ? parseMoneyAmount(pendingPreview?.priceAmount)
+        : getLineSubtotalAfterDiscount(line);
+
+      return {
+        merchandiseId: line.merchandise.id,
+        quantity: line.quantity ?? 1,
+        tags,
+        hasServerDiscount:
+          !applyPendingPreviewAmounts &&
+          subtotalBeforeDiscount > subtotalAfterDiscount + 0.0001,
+      };
+    });
+
+    const cartMerchandiseIds = new Set(
+      (cart?.lines?.nodes ?? []).map((line) => line.merchandise.id),
+    );
+    for (const preview of pendingLinePreviews) {
+      if (cartMerchandiseIds.has(preview.merchandiseId)) continue;
+      effectiveLines.push({
+        merchandiseId: preview.merchandiseId,
+        quantity: 1,
+        tags: preview.productTags ?? [],
+        hasServerDiscount: false,
+      });
+    }
+
+    const printQuantity = effectiveLines.reduce(
+      (runningTotal, line) =>
+        runningTotal + (isPrintLine(line.tags) ? line.quantity : 0),
+      0,
+    );
+    const stockClipQuantity = effectiveLines.reduce(
+      (runningTotal, line) =>
+        runningTotal + (isStockClipLine(line.tags) ? line.quantity : 0),
+      0,
+    );
+    const qualifiesForPrintBulkDiscount = printQuantity >= 3;
+    const qualifiesForStockClipBulkDiscount = stockClipQuantity >= 4;
+
+    const discountMap = new Map<string, number>();
+    for (const line of effectiveLines) {
+      if (line.hasServerDiscount) continue;
+
+      const qualifiesForPrint =
+        qualifiesForPrintBulkDiscount && isPrintLine(line.tags);
+      const qualifiesForStockClip =
+        qualifiesForStockClipBulkDiscount && isStockClipLine(line.tags);
+      if (qualifiesForPrint || qualifiesForStockClip) {
+        discountMap.set(line.merchandiseId, 15);
+      }
+    }
+
+    return discountMap;
+  }, [cart?.lines?.nodes, hasPendingLines, pendingLinePreviews]);
   const linesCount = Boolean((cart?.lines?.nodes?.length || 0) || hasPendingLines);
   const withDiscount =
     cart &&
@@ -105,6 +237,9 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
           cart={cart as DefaultCart}
           cartHasItems={cartHasItems}
           pendingLinePreviews={pendingLinePreviews}
+          provisionalDiscountPercentByMerchandiseId={
+            provisionalDiscountPercentByMerchandiseId
+          }
         />
       )}
       {currentURL != '/cart' && (
@@ -115,6 +250,9 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
           cartHasItems={cartHasItems}
           className={className}
           pendingLinePreviews={pendingLinePreviews}
+          provisionalDiscountPercentByMerchandiseId={
+            provisionalDiscountPercentByMerchandiseId
+          }
         />
       )}
     </>

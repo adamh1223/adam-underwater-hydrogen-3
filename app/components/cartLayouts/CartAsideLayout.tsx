@@ -13,6 +13,7 @@ interface CartPageLayoutProps {
   cartHasItems: boolean;
   className: string;
   pendingLinePreviews: CartPendingLinePreview[];
+  provisionalDiscountPercentByMerchandiseId: Map<string, number>;
 }
 
 export function CartAsideLayout({
@@ -22,6 +23,7 @@ export function CartAsideLayout({
   cartHasItems,
   className,
   pendingLinePreviews,
+  provisionalDiscountPercentByMerchandiseId,
 }: CartPageLayoutProps) {
   const cartLines = cart?.lines?.nodes ?? [];
   const isLineOptimistic = (line: (typeof cartLines)[number]) =>
@@ -62,6 +64,11 @@ export function CartAsideLayout({
                     key={preview.previewId}
                     preview={preview}
                     layout={layout}
+                    provisionalDiscountPercentage={
+                      provisionalDiscountPercentByMerchandiseId.get(
+                        preview.merchandiseId,
+                      ) ?? 0
+                    }
                   />
                 ))}
                 {visibleCartLines.map((line) => (
@@ -72,6 +79,11 @@ export function CartAsideLayout({
                     pendingPreview={pendingPreviewByMerchandiseId.get(
                       line.merchandise.id,
                     )}
+                    provisionalDiscountPercentage={
+                      provisionalDiscountPercentByMerchandiseId.get(
+                        line.merchandise.id,
+                      ) ?? 0
+                    }
                   />
                 ))}
               </ul>
@@ -80,7 +92,11 @@ export function CartAsideLayout({
           {cartHasItems && (
             <>
               <div className="mx-2">
-                <CartSummary cart={cart} layout={layout} />
+                <CartSummary
+                  cart={cart}
+                  layout={layout}
+                  pendingLinePreviews={pendingLinePreviews}
+                />
               </div>
             </>
           )}
