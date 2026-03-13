@@ -42,6 +42,9 @@ function HeroPrints() {
               </p>
             </div>
             <div>
+              <p className="statement">Gallery Wrapped</p>
+            </div>
+            <div>
               <p className="statement">Handcrafted in San Diego, CA</p>
             </div>
             <div>

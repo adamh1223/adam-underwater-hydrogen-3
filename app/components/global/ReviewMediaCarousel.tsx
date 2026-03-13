@@ -88,7 +88,7 @@ export const ReviewMediaCarousel = ({
                     key={idx}
                   >
                     <div
-                      className={`flex items-center justify-center w-[95%]
+                      className={`flex items-center justify-center w-[93%]
 
                         `}
                     >

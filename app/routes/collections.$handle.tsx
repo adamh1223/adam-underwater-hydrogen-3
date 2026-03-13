@@ -546,16 +546,23 @@ function NotchedSlider({
 function PrintsFiltersPopover({
   filterState,
   setFilterState,
+  mostPopularFilterState,
+  setMostPopularFilterState,
   open,
   onOpenChange,
 }: {
   filterState: 'All' | 'Horizontal' | 'Vertical';
   setFilterState: (value: 'All' | 'Horizontal' | 'Vertical') => void;
+  mostPopularFilterState: 'All' | 'Most Popular Only';
+  setMostPopularFilterState: (value: 'All' | 'Most Popular Only') => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const isFiltered = filterState !== 'All';
-  const handleReset = () => setFilterState('All');
+  const isFiltered = filterState !== 'All' || mostPopularFilterState !== 'All';
+  const handleReset = () => {
+    setFilterState('All');
+    setMostPopularFilterState('All');
+  };
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -653,6 +660,37 @@ function PrintsFiltersPopover({
               Many horizontal prints <strong>are also available</strong> in
               vertical on the product page
             </p>
+            <div className="border-t border-border pt-2">
+              <p className="text-sm font-medium text-foreground mb-3">
+                Most Popular
+              </p>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                value={mostPopularFilterState}
+                onValueChange={(value) => {
+                  if (value) {
+                    setMostPopularFilterState(
+                      value as 'All' | 'Most Popular Only',
+                    );
+                  }
+                }}
+                className="w-full cursor-pointer"
+              >
+                <ToggleGroupItem
+                  value="All"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Most Popular Only"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  Most Popular Only
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </div>
       </PopoverContent>
     </Popover>
@@ -666,6 +704,8 @@ function StockFiltersPopover({
   setResolutionFilterIndex,
   frameRateFilter,
   setFrameRateFilter,
+  artistPickFilterState,
+  setArtistPickFilterState,
   open,
   onOpenChange,
 }: {
@@ -675,18 +715,22 @@ function StockFiltersPopover({
   setResolutionFilterIndex: (v: number) => void;
   frameRateFilter: FrameRateFilter;
   setFrameRateFilter: (v: FrameRateFilter) => void;
+  artistPickFilterState: 'All' | "Artist's Pick Only";
+  setArtistPickFilterState: (v: 'All' | "Artist's Pick Only") => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const isFiltered =
     durationFilterIndex !== DEFAULT_DURATION_FILTER_INDEX ||
     resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX ||
-    frameRateFilter !== DEFAULT_FRAME_RATE_FILTER;
+    frameRateFilter !== DEFAULT_FRAME_RATE_FILTER ||
+    artistPickFilterState !== 'All';
 
   const handleReset = () => {
     setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
     setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
     setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
+    setArtistPickFilterState('All');
   };
 
   return (
@@ -788,6 +832,37 @@ function StockFiltersPopover({
                   className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
                   Slowmo
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            <div className="border-t border-border pt-2">
+              <p className="text-sm font-medium text-foreground mb-3">
+                Artist&apos;s Pick
+              </p>
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                value={artistPickFilterState}
+                onValueChange={(value) => {
+                  if (value) {
+                    setArtistPickFilterState(
+                      value as 'All' | "Artist's Pick Only",
+                    );
+                  }
+                }}
+                className="w-full cursor-pointer"
+              >
+                <ToggleGroupItem
+                  value="All"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Artist's Pick Only"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  Artist&apos;s Pick Only
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -1030,14 +1105,19 @@ export default function Collection() {
     setSearchText('');
   }, [collection?.handle]);
   type PrintsFilterState = 'All' | 'Horizontal' | 'Vertical';
+  type PrintsMostPopularFilterState = 'All' | 'Most Popular Only';
+  type StockArtistPickFilterState = 'All' | "Artist's Pick Only";
   type StockFilterState = 'All Clips' | 'Discounted Bundles';
 
   const LAYOUT_STORAGE_KEY = 'collection-layout-mode';
   const PRINTS_FILTER_STORAGE_KEY = 'collection-prints-filter-mode';
+  const PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY =
+    'collection-prints-most-popular-filter-mode';
   const STOCK_FILTER_STORAGE_KEY = 'collection-stock-filter-mode';
   const STOCK_DURATION_FILTER_KEY = 'collection-stock-duration-filter';
   const STOCK_RESOLUTION_FILTER_KEY = 'collection-stock-resolution-filter';
   const STOCK_FRAME_RATE_FILTER_KEY = 'collection-stock-frame-rate-filter';
+  const STOCK_ARTIST_PICK_FILTER_KEY = 'collection-stock-artist-pick-filter';
   const [layout, setLayout] = useState('grid');
   const [durationFilterIndex, setDurationFilterIndex] = useState(
     DEFAULT_DURATION_FILTER_INDEX,
@@ -1048,6 +1128,8 @@ export default function Collection() {
   const [frameRateFilter, setFrameRateFilter] = useState<FrameRateFilter>(
     DEFAULT_FRAME_RATE_FILTER,
   ); // default: "all"
+  const [artistPickFilterState, setArtistPickFilterState] =
+    useState<StockArtistPickFilterState>('All');
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
   const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
     useState(false);
@@ -1108,6 +1190,8 @@ export default function Collection() {
   type ShopifyImage = {url: string; altText: string};
   const queriesDatalistId = useId();
   const [filterState, setFilterState] = useState<PrintsFilterState>('All');
+  const [mostPopularFilterState, setMostPopularFilterState] =
+    useState<PrintsMostPopularFilterState>('All');
   const [stockFilterState, setStockFilterState] =
     useState<StockFilterState>('All Clips');
   const [productState, setProductState] = useState(collection?.products);
@@ -1181,8 +1265,21 @@ export default function Collection() {
       } else {
         setFilterState('All');
       }
+
+      const savedMostPopularFilter = window.localStorage.getItem(
+        PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
+      );
+      if (
+        savedMostPopularFilter === 'All' ||
+        savedMostPopularFilter === 'Most Popular Only'
+      ) {
+        setMostPopularFilterState(savedMostPopularFilter);
+      } else {
+        setMostPopularFilterState('All');
+      }
     } catch {
       setFilterState('All');
+      setMostPopularFilterState('All');
     } finally {
       setHasInitializedPrintsFilter(true);
     }
@@ -1192,10 +1289,19 @@ export default function Collection() {
     if (collection?.handle !== 'prints' || !hasInitializedPrintsFilter) return;
     try {
       window.localStorage.setItem(PRINTS_FILTER_STORAGE_KEY, filterState);
+      window.localStorage.setItem(
+        PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
+        mostPopularFilterState,
+      );
     } catch {
       // Ignore storage access errors (private mode, etc.)
     }
-  }, [collection?.handle, filterState, hasInitializedPrintsFilter]);
+  }, [
+    collection?.handle,
+    filterState,
+    mostPopularFilterState,
+    hasInitializedPrintsFilter,
+  ]);
 
   useEffect(() => {
     if (collection?.handle !== 'stock') {
@@ -1263,12 +1369,21 @@ export default function Collection() {
       ) {
         setFrameRateFilter(savedFrameRate);
       }
+      const savedArtistPickFilter = window.localStorage.getItem(
+        STOCK_ARTIST_PICK_FILTER_KEY,
+      );
+      if (
+        savedArtistPickFilter === 'All' ||
+        savedArtistPickFilter === "Artist's Pick Only"
+      ) {
+        setArtistPickFilterState(savedArtistPickFilter);
+      }
     } catch {
       // Ignore storage access errors
     }
   }, [collection?.handle]);
 
-  // Persist duration/resolution/frame-rate filter to localStorage
+  // Persist duration/resolution/frame-rate/artist-pick filters to localStorage
   useEffect(() => {
     if (collection?.handle !== 'stock') return;
     try {
@@ -1281,6 +1396,10 @@ export default function Collection() {
         String(resolutionFilterIndex),
       );
       window.localStorage.setItem(STOCK_FRAME_RATE_FILTER_KEY, frameRateFilter);
+      window.localStorage.setItem(
+        STOCK_ARTIST_PICK_FILTER_KEY,
+        artistPickFilterState,
+      );
     } catch {
       // Ignore storage access errors
     }
@@ -1289,6 +1408,7 @@ export default function Collection() {
     durationFilterIndex,
     resolutionFilterIndex,
     frameRateFilter,
+    artistPickFilterState,
   ]);
 
   useEffect(() => {
@@ -1299,6 +1419,11 @@ export default function Collection() {
 
     if (collection?.handle === 'prints') {
       filteredCollection = baseConnection.nodes?.filter((p: any) => {
+        const matchesMostPopularFilter =
+          mostPopularFilterState === 'All' || p.tags.includes('most-popular');
+
+        if (!matchesMostPopularFilter) return false;
+
         if (filterState === 'All') {
           return (
             p.tags.includes('horOnly') ||
@@ -1324,6 +1449,10 @@ export default function Collection() {
 
       filteredCollection = baseConnection.nodes?.filter((p: any) => {
         const isBundleProduct = p.tags.includes('Bundle');
+        const matchesArtistPickFilter =
+          artistPickFilterState === 'All' || p.tags.includes('artist-pick');
+
+        if (!matchesArtistPickFilter) return false;
 
         // Existing clip-type filter
         if (stockFilterState === 'All Clips') {
@@ -1376,10 +1505,12 @@ export default function Collection() {
     collection?.handle,
     collection?.products,
     filterState,
+    mostPopularFilterState,
     stockFilterState,
     durationFilterIndex,
     resolutionFilterIndex,
     frameRateFilter,
+    artistPickFilterState,
   ]);
 
   useEffect(() => {
@@ -1487,6 +1618,7 @@ export default function Collection() {
           setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
           setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
           setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
+          setArtistPickFilterState('All');
           return;
         }
       }
@@ -1513,6 +1645,7 @@ export default function Collection() {
         if (key === 'r') {
           event.preventDefault();
           setFilterState('All');
+          setMostPopularFilterState('All');
         }
       }
     };
@@ -1583,6 +1716,8 @@ export default function Collection() {
                   setResolutionFilterIndex={setResolutionFilterIndex}
                   frameRateFilter={frameRateFilter}
                   setFrameRateFilter={setFrameRateFilter}
+                  artistPickFilterState={artistPickFilterState}
+                  setArtistPickFilterState={setArtistPickFilterState}
                   open={isCollectionFiltersPopoverOpen}
                   onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
@@ -1591,6 +1726,8 @@ export default function Collection() {
                 <PrintsFiltersPopover
                   filterState={filterState}
                   setFilterState={setFilterState}
+                  mostPopularFilterState={mostPopularFilterState}
+                  setMostPopularFilterState={setMostPopularFilterState}
                   open={isCollectionFiltersPopoverOpen}
                   onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
@@ -1785,6 +1922,8 @@ export default function Collection() {
                       setResolutionFilterIndex={setResolutionFilterIndex}
                       frameRateFilter={frameRateFilter}
                       setFrameRateFilter={setFrameRateFilter}
+                      artistPickFilterState={artistPickFilterState}
+                      setArtistPickFilterState={setArtistPickFilterState}
                       open={isCollectionFiltersPopoverOpen}
                       onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />
@@ -1793,6 +1932,8 @@ export default function Collection() {
                     <PrintsFiltersPopover
                       filterState={filterState}
                       setFilterState={setFilterState}
+                      mostPopularFilterState={mostPopularFilterState}
+                      setMostPopularFilterState={setMostPopularFilterState}
                       open={isCollectionFiltersPopoverOpen}
                       onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />
