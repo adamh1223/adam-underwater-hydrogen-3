@@ -98,6 +98,8 @@ export async function loader({request, context}: LoaderFunctionArgs) {
 type SearchLayoutMode = 'grid' | 'list';
 type SearchProductFilter = 'all' | 'prints' | 'stock';
 type PrintsFilterState = 'All' | 'Horizontal' | 'Vertical';
+type PrintsMostPopularFilterState = 'All' | 'Most Popular Only';
+type StockArtistPickFilterState = 'All' | "Artist's Pick Only";
 type FrameRateFilter = 'all' | '24fps' | 'slowmo';
 
 const DURATION_NOTCHES = [
@@ -125,9 +127,12 @@ const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
 const SEARCH_LAYOUT_STORAGE_KEY = 'collection-layout-mode';
 const SEARCH_PRODUCT_FILTER_STORAGE_KEY = 'search-product-filter-mode';
 const SEARCH_PRINTS_FILTER_STORAGE_KEY = 'search-prints-filter-mode';
+const SEARCH_PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY =
+  'search-prints-most-popular-filter-mode';
 const SEARCH_STOCK_DURATION_FILTER_KEY = 'search-stock-duration-filter';
 const SEARCH_STOCK_RESOLUTION_FILTER_KEY = 'search-stock-resolution-filter';
 const SEARCH_STOCK_FRAME_RATE_FILTER_KEY = 'search-stock-frame-rate-filter';
+const SEARCH_STOCK_ARTIST_PICK_FILTER_KEY = 'search-stock-artist-pick-filter';
 
 const FILTER_ICON_BUTTON_CLASS_NAME =
   'relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-default disabled:opacity-50';
@@ -523,12 +528,16 @@ function SearchFiltersPopover({
   setProductFilter,
   printsFilterState,
   setPrintsFilterState,
+  printsMostPopularFilterState,
+  setPrintsMostPopularFilterState,
   durationFilterIndex,
   setDurationFilterIndex,
   resolutionFilterIndex,
   setResolutionFilterIndex,
   frameRateFilter,
   setFrameRateFilter,
+  stockArtistPickFilterState,
+  setStockArtistPickFilterState,
   open,
   onOpenChange,
 }: {
@@ -536,23 +545,36 @@ function SearchFiltersPopover({
   setProductFilter: (value: SearchProductFilter) => void;
   printsFilterState: PrintsFilterState;
   setPrintsFilterState: (value: PrintsFilterState) => void;
+  printsMostPopularFilterState: PrintsMostPopularFilterState;
+  setPrintsMostPopularFilterState: (value: PrintsMostPopularFilterState) => void;
   durationFilterIndex: number;
   setDurationFilterIndex: (value: number) => void;
   resolutionFilterIndex: number;
   setResolutionFilterIndex: (value: number) => void;
   frameRateFilter: FrameRateFilter;
   setFrameRateFilter: (value: FrameRateFilter) => void;
+  stockArtistPickFilterState: StockArtistPickFilterState;
+  setStockArtistPickFilterState: (value: StockArtistPickFilterState) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const isFiltered = productFilter !== 'all';
+  const isFiltered =
+    productFilter !== 'all' ||
+    printsFilterState !== 'All' ||
+    printsMostPopularFilterState !== 'All' ||
+    durationFilterIndex !== DEFAULT_DURATION_FILTER_INDEX ||
+    resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX ||
+    frameRateFilter !== DEFAULT_FRAME_RATE_FILTER ||
+    stockArtistPickFilterState !== 'All';
 
   const handleReset = () => {
     setProductFilter('all');
     setPrintsFilterState('All');
+    setPrintsMostPopularFilterState('All');
     setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
     setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
     setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
+    setStockArtistPickFilterState('All');
   };
 
   return (
@@ -659,6 +681,37 @@ function SearchFiltersPopover({
                 Many horizontal prints <strong>are also available</strong> in
                 vertical on the product page
               </p>
+              <div className="border-t border-border pt-2">
+                <p className="mb-3 text-sm font-medium text-foreground">
+                  Most Popular
+                </p>
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  value={printsMostPopularFilterState}
+                  onValueChange={(value) => {
+                    if (value) {
+                      setPrintsMostPopularFilterState(
+                        value as PrintsMostPopularFilterState,
+                      );
+                    }
+                  }}
+                  className="w-full cursor-pointer"
+                >
+                  <ToggleGroupItem
+                    value="All"
+                    className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  >
+                    All
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="Most Popular Only"
+                    className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  >
+                    Most Popular Only
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
             </div>
           )}
 
@@ -707,6 +760,37 @@ function SearchFiltersPopover({
                   >
                     Slowmo
                   </ToggleGroupItem>
+                  </ToggleGroup>
+              </div>
+              <div className="border-t border-border pt-2">
+                <p className="mb-3 text-sm font-medium text-foreground">
+                  Artist&apos;s Pick
+                </p>
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  value={stockArtistPickFilterState}
+                  onValueChange={(value) => {
+                    if (value) {
+                      setStockArtistPickFilterState(
+                        value as StockArtistPickFilterState,
+                      );
+                    }
+                  }}
+                  className="w-full cursor-pointer"
+                >
+                  <ToggleGroupItem
+                    value="All"
+                    className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  >
+                    All
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="Artist's Pick Only"
+                    className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                  >
+                    Artist&apos;s Pick Only
+                  </ToggleGroupItem>
                 </ToggleGroup>
               </div>
             </div>
@@ -741,6 +825,8 @@ export default function SearchPage() {
     useState<SearchProductFilter>('all');
   const [printsFilterState, setPrintsFilterState] =
     useState<PrintsFilterState>('All');
+  const [printsMostPopularFilterState, setPrintsMostPopularFilterState] =
+    useState<PrintsMostPopularFilterState>('All');
   const [durationFilterIndex, setDurationFilterIndex] = useState(
     DEFAULT_DURATION_FILTER_INDEX,
   );
@@ -750,6 +836,8 @@ export default function SearchPage() {
   const [frameRateFilter, setFrameRateFilter] = useState<FrameRateFilter>(
     DEFAULT_FRAME_RATE_FILTER,
   );
+  const [stockArtistPickFilterState, setStockArtistPickFilterState] =
+    useState<StockArtistPickFilterState>('All');
   const [hasHydratedControls, setHasHydratedControls] = useState(false);
   const [isSearchFiltersPopoverOpen, setIsSearchFiltersPopoverOpen] =
     useState(false);
@@ -838,6 +926,16 @@ export default function SearchPage() {
         setPrintsFilterState(savedPrintsFilter);
       }
 
+      const savedPrintsMostPopularFilter = window.localStorage.getItem(
+        SEARCH_PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
+      );
+      if (
+        savedPrintsMostPopularFilter === 'All' ||
+        savedPrintsMostPopularFilter === 'Most Popular Only'
+      ) {
+        setPrintsMostPopularFilterState(savedPrintsMostPopularFilter);
+      }
+
       const savedDuration = window.localStorage.getItem(
         SEARCH_STOCK_DURATION_FILTER_KEY,
       );
@@ -868,6 +966,16 @@ export default function SearchPage() {
       ) {
         setFrameRateFilter(savedFrameRate);
       }
+
+      const savedStockArtistPickFilter = window.localStorage.getItem(
+        SEARCH_STOCK_ARTIST_PICK_FILTER_KEY,
+      );
+      if (
+        savedStockArtistPickFilter === 'All' ||
+        savedStockArtistPickFilter === "Artist's Pick Only"
+      ) {
+        setStockArtistPickFilterState(savedStockArtistPickFilter);
+      }
     } catch {
       // Ignore storage access errors.
     } finally {
@@ -888,6 +996,10 @@ export default function SearchPage() {
         printsFilterState,
       );
       window.localStorage.setItem(
+        SEARCH_PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
+        printsMostPopularFilterState,
+      );
+      window.localStorage.setItem(
         SEARCH_STOCK_DURATION_FILTER_KEY,
         String(durationFilterIndex),
       );
@@ -899,6 +1011,10 @@ export default function SearchPage() {
         SEARCH_STOCK_FRAME_RATE_FILTER_KEY,
         frameRateFilter,
       );
+      window.localStorage.setItem(
+        SEARCH_STOCK_ARTIST_PICK_FILTER_KEY,
+        stockArtistPickFilterState,
+      );
     } catch {
       // Ignore storage access errors.
     }
@@ -908,9 +1024,29 @@ export default function SearchPage() {
     hasHydratedControls,
     layout,
     printsFilterState,
+    printsMostPopularFilterState,
     productFilter,
     resolutionFilterIndex,
+    stockArtistPickFilterState,
   ]);
+
+  useEffect(() => {
+    return () => {
+      try {
+        window.localStorage.removeItem(SEARCH_PRODUCT_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(SEARCH_PRINTS_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(
+          SEARCH_PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
+        );
+        window.localStorage.removeItem(SEARCH_STOCK_DURATION_FILTER_KEY);
+        window.localStorage.removeItem(SEARCH_STOCK_RESOLUTION_FILTER_KEY);
+        window.localStorage.removeItem(SEARCH_STOCK_FRAME_RATE_FILTER_KEY);
+        window.localStorage.removeItem(SEARCH_STOCK_ARTIST_PICK_FILTER_KEY);
+      } catch {
+        // Ignore storage access errors.
+      }
+    };
+  }, []);
 
   const gridColumnCount =
     windowWidth != undefined
@@ -1011,6 +1147,11 @@ export default function SearchPage() {
 
     if (productFilter === 'prints') {
       filteredProducts = filteredProducts.filter(isPrintProduct);
+      if (printsMostPopularFilterState === 'Most Popular Only') {
+        filteredProducts = filteredProducts.filter((product) =>
+          product.tags.includes('most-popular'),
+        );
+      }
       if (printsFilterState === 'Horizontal') {
         filteredProducts = filteredProducts.filter(
           (product) =>
@@ -1037,6 +1178,11 @@ export default function SearchPage() {
         if (!isStockProduct(product)) return false;
 
         const isBundleProduct = product.tags.includes('Bundle');
+        const matchesArtistPickFilter =
+          stockArtistPickFilterState === 'All' ||
+          product.tags.includes('artist-pick');
+
+        if (!matchesArtistPickFilter) return false;
 
         if (maxDuration !== Infinity) {
           if (isBundleProduct) {
@@ -1077,8 +1223,10 @@ export default function SearchPage() {
     durationFilterIndex,
     frameRateFilter,
     printsFilterState,
+    printsMostPopularFilterState,
     productFilter,
     resolutionFilterIndex,
+    stockArtistPickFilterState,
   ]);
 
   const predictiveQueries = predictiveResult.items.queries ?? [];
@@ -1157,12 +1305,18 @@ export default function SearchPage() {
                   setProductFilter={setProductFilter}
                   printsFilterState={printsFilterState}
                   setPrintsFilterState={setPrintsFilterState}
+                  printsMostPopularFilterState={printsMostPopularFilterState}
+                  setPrintsMostPopularFilterState={
+                    setPrintsMostPopularFilterState
+                  }
                   durationFilterIndex={durationFilterIndex}
                   setDurationFilterIndex={setDurationFilterIndex}
                   resolutionFilterIndex={resolutionFilterIndex}
                   setResolutionFilterIndex={setResolutionFilterIndex}
                   frameRateFilter={frameRateFilter}
                   setFrameRateFilter={setFrameRateFilter}
+                  stockArtistPickFilterState={stockArtistPickFilterState}
+                  setStockArtistPickFilterState={setStockArtistPickFilterState}
                   open={isSearchFiltersPopoverOpen}
                   onOpenChange={setIsSearchFiltersPopoverOpen}
                 />
@@ -1269,12 +1423,18 @@ export default function SearchPage() {
                     setProductFilter={setProductFilter}
                     printsFilterState={printsFilterState}
                     setPrintsFilterState={setPrintsFilterState}
+                    printsMostPopularFilterState={printsMostPopularFilterState}
+                    setPrintsMostPopularFilterState={
+                      setPrintsMostPopularFilterState
+                    }
                     durationFilterIndex={durationFilterIndex}
                     setDurationFilterIndex={setDurationFilterIndex}
                     resolutionFilterIndex={resolutionFilterIndex}
                     setResolutionFilterIndex={setResolutionFilterIndex}
                     frameRateFilter={frameRateFilter}
                     setFrameRateFilter={setFrameRateFilter}
+                    stockArtistPickFilterState={stockArtistPickFilterState}
+                    setStockArtistPickFilterState={setStockArtistPickFilterState}
                     open={isSearchFiltersPopoverOpen}
                     onOpenChange={setIsSearchFiltersPopoverOpen}
                   />

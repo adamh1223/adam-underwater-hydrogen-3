@@ -1412,6 +1412,23 @@ export default function Collection() {
   ]);
 
   useEffect(() => {
+    return () => {
+      try {
+        window.localStorage.removeItem(PRINTS_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(
+          PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
+        );
+        window.localStorage.removeItem(STOCK_DURATION_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_RESOLUTION_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_FRAME_RATE_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_ARTIST_PICK_FILTER_KEY);
+      } catch {
+        // Ignore storage access errors (private mode, etc.)
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const baseConnection = collection?.products;
     if (!baseConnection) return;
 
