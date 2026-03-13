@@ -80,6 +80,11 @@ function isStockClipLine(tags: string[]) {
   return loweredTags.includes('video') && !loweredTags.includes('bundle');
 }
 
+function isStockBundleLine(tags: string[]) {
+  const loweredTags = tags.map((tag) => tag.toLowerCase());
+  return loweredTags.includes('video') && loweredTags.includes('bundle');
+}
+
 /**
  * The main cart component that displays the cart items and summary.
  * It is used by both the /cart route and the cart aside dialog.
@@ -202,8 +207,14 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
         runningTotal + (isStockClipLine(line.tags) ? line.quantity : 0),
       0,
     );
+    const stockBundleQuantity = effectiveLines.reduce(
+      (runningTotal, line) =>
+        runningTotal + (isStockBundleLine(line.tags) ? line.quantity : 0),
+      0,
+    );
     const qualifiesForPrintBulkDiscount = printQuantity >= 3;
     const qualifiesForStockClipBulkDiscount = stockClipQuantity >= 4;
+    const qualifiesForStockBundleBulkDiscount = stockBundleQuantity >= 3;
 
     const discountMap = new Map<string, number>();
     for (const line of effectiveLines) {
@@ -213,7 +224,13 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
         qualifiesForPrintBulkDiscount && isPrintLine(line.tags);
       const qualifiesForStockClip =
         qualifiesForStockClipBulkDiscount && isStockClipLine(line.tags);
-      if (qualifiesForPrint || qualifiesForStockClip) {
+      const qualifiesForStockBundle =
+        qualifiesForStockBundleBulkDiscount && isStockBundleLine(line.tags);
+      if (qualifiesForPrint || qualifiesForStockClip || qualifiesForStockBundle) {
+        if (qualifiesForStockBundle) {
+          discountMap.set(line.merchandiseId, 18);
+          continue;
+        }
         discountMap.set(line.merchandiseId, 15);
       }
     }

@@ -111,12 +111,11 @@ export function Aside({
 
       <aside className="border-l" ref={asideRef}>
         <div className="pb-6">
-          <div className="flex justify-end pe-[6px]">
+          <div className="flex justify-end pe-2 pt-2">
             <Button
               type="button"
               variant="secondary"
               size="iconsmall"
-              className="mt-1"
               onClick={close}
               aria-label="Close"
             >

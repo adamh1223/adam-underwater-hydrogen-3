@@ -119,7 +119,7 @@ export function ProductForm({
   const productTypeLabel = isPrint
     ? 'Framed Canvas Print'
     : isVideoBundle
-      ? 'Stock Footage Video Bundle'
+      ? 'Stock Footage Bundle'
       : 'Stock Footage Video';
   const pendingProductTags = isPrint
     ? ['Prints']

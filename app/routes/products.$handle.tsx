@@ -2009,7 +2009,7 @@ export default function Product() {
                 {isVideo && (
                   <p className="text-muted-foreground">
                     {isBundle
-                      ? 'Stock Footage Video Bundle'
+                      ? 'Stock Footage Bundle'
                       : 'Stock Footage Video'}
                   </p>
                 )}
@@ -2144,7 +2144,7 @@ export default function Product() {
                     {isVideo && (
                       <p className="text-muted-foreground">
                         {isBundle
-                          ? 'Stock Footage Video Bundle'
+                          ? 'Stock Footage Bundle'
                           : 'Stock Footage Video'}
                       </p>
                     )}
@@ -2278,7 +2278,7 @@ export default function Product() {
                     {isVideo && (
                       <p className="text-muted-foreground">
                         {isBundle
-                          ? 'Stock Footage Video Bundle'
+                          ? 'Stock Footage Bundle'
                           : 'Stock Footage Video'}
                       </p>
                     )}

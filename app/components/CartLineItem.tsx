@@ -367,6 +367,7 @@ export function CartLineItem({
     windowWidth !== undefined &&
     windowWidth > 600 &&
     usesStockLayout;
+  const CartLineBodyComponent = isMobileView ? 'div' : CardContent;
   const showFooterDescription = isMobileView && Boolean(cartDescription);
   const showInlineDescription = !showFooterDescription;
   const hasResolvedProductIdentity = Boolean(
@@ -413,7 +414,7 @@ export function CartLineItem({
 
   return (
     <Card className="mb-2">
-      <CardContent>
+      <CartLineBodyComponent className={isMobileView ? 'p-2' : undefined}>
           <li
           key={id}
           className={`${
@@ -445,18 +446,19 @@ export function CartLineItem({
                         className="cart-line-stock-product-img rounded-md"
                       />
                     )}
-                    <div className="ps-[8px] cart-line-text min-w-0 flex-1">
+                    <div className="ps-[6px] cart-line-text min-w-0 flex-1">
                       <div className="product-title">{product.title}</div>
+                      <div className='cart-description'>{cartDescription}</div>
                       <div className="product-price">
                         {linePrice}
                       </div>
                     </div>
                   </div>
-                  <div>
+                  {/* <div>
                     {showInlineDescription && cartDescription && (
                       <div className="cart-description">{cartDescription}</div>
                     )}
-                  </div>
+                  </div> */}
                 </Link>
               </div>
               {!hasOnlyDefaultTitle && (
@@ -580,6 +582,7 @@ export function CartLineItem({
                       )}
                       <div className="ps-2 cart-line-text min-w-0 flex-1">
                         <div className='product-title'>{product.title}</div>
+                        <div className='cart-description'>{cartDescription}</div>
                         <div className='product-price'>
 
                         {linePrice}
@@ -591,9 +594,7 @@ export function CartLineItem({
 
                 {!hasOnlyDefaultTitle && (
                   <div className="pt-1">
-                    {showInlineDescription && cartDescription && (
-                      <div className="cart-description">{cartDescription}</div>
-                    )}
+                    
                     <CartLineOptionSelectors line={normalizedLine} />
                   </div>
                 )}
@@ -738,12 +739,12 @@ export function CartLineItem({
           )}
           hideQuantityButtons={!!hasPrintTag}
           discountText={lineDiscountText}
-          footerDescription={showFooterDescription ? cartDescription : null}
+          footerDescription={null}
           isMobile={isMobileView}
           isTabletStockLayout={isTabletStockLayout}
           isStockClipLine={isStockClip}
         />
-      </CardContent>
+      </CartLineBodyComponent>
     </Card>
   );
 }

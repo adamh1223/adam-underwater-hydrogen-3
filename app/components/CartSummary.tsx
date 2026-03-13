@@ -130,6 +130,11 @@ function isStockClipLine(tags: string[]) {
   return loweredTags.includes('video') && !loweredTags.includes('bundle');
 }
 
+function isStockBundleLine(tags: string[]) {
+  const loweredTags = tags.map((tag) => tag.toLowerCase());
+  return loweredTags.includes('video') && loweredTags.includes('bundle');
+}
+
 export function CartSummary({
   cart,
   layout,
@@ -219,8 +224,14 @@ export function CartSummary({
       runningTotal + (isStockClipLine(lineItem.tags) ? lineItem.quantity : 0),
     0,
   );
+  const stockBundleQuantity = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) =>
+      runningTotal + (isStockBundleLine(lineItem.tags) ? lineItem.quantity : 0),
+    0,
+  );
   const qualifiesForPrintBulkDiscount = printQuantity >= 3;
   const qualifiesForStockBulkDiscount = stockClipQuantity >= 4;
+  const qualifiesForStockBundleBulkDiscount = stockBundleQuantity >= 3;
 
   const provisionalPrintPendingSavings = effectiveSummaryLines.reduce(
     (runningTotal, lineItem) => {
@@ -250,8 +261,24 @@ export function CartSummary({
     },
     0,
   );
+  const provisionalStockBundlePendingSavings = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) => {
+      if (lineItem.hasServerDiscount) return runningTotal;
+
+      const qualifiesForStockBundle =
+        qualifiesForStockBundleBulkDiscount && isStockBundleLine(lineItem.tags);
+      if (!qualifiesForStockBundle) return runningTotal;
+
+      return (
+        runningTotal + lineItem.subtotalBeforeDiscount * lineItem.quantity * 0.18
+      );
+    },
+    0,
+  );
   const provisionalPendingSavings =
-    provisionalPrintPendingSavings + provisionalStockPendingSavings;
+    provisionalPrintPendingSavings +
+    provisionalStockPendingSavings +
+    provisionalStockBundlePendingSavings;
 
   const subtotalAfterDiscount = Math.max(
     0,
@@ -287,6 +314,7 @@ export function CartSummary({
   ).discountAllocations ?? []) as CartDiscountAllocation[];
   const printDiscountLabel = 'Buy 3 prints get 15% off';
   const stockDiscountLabel = 'Buy 4 stock footage clips get 15% off';
+  const stockBundleDiscountLabel = 'Buy 3 Stock Footage Bundles, get 18% off';
   const productDiscountLabelsFromCart = Array.from(
     new Set(
       allDiscountAllocations
@@ -345,10 +373,23 @@ export function CartSummary({
     );
     return runningTotal + lineSavings * lineItem.quantity;
   }, 0);
+  const stockBundleServerSavings = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) => {
+      if (!isStockBundleLine(lineItem.tags)) return runningTotal;
+      const lineSavings = Math.max(
+        0,
+        lineItem.subtotalBeforeDiscount - lineItem.subtotalAfterDiscount,
+      );
+      return runningTotal + lineSavings * lineItem.quantity;
+    },
+    0,
+  );
   const effectivePrintDiscountSavings =
     printServerSavings + provisionalPrintPendingSavings;
   const effectiveStockDiscountSavings =
     stockServerSavings + provisionalStockPendingSavings;
+  const effectiveStockBundleDiscountSavings =
+    stockBundleServerSavings + provisionalStockBundlePendingSavings;
 
   if (
     qualifiesForPrintBulkDiscount &&
@@ -370,13 +411,29 @@ export function CartSummary({
       isShipping: false,
     });
   }
+  if (
+    qualifiesForStockBundleBulkDiscount &&
+    effectiveStockBundleDiscountSavings > 0.0001
+  ) {
+    addActiveDiscountEntry({
+      label: stockBundleDiscountLabel,
+      savingsAmount: effectiveStockBundleDiscountSavings,
+      isShipping: false,
+    });
+  }
+
+  const knownProductDiscountLabels = new Set([
+    printDiscountLabel,
+    stockDiscountLabel,
+    stockBundleDiscountLabel,
+  ]);
 
   for (const allocation of allDiscountAllocations) {
     const label = getDiscountLabel(allocation);
     if (!label) continue;
     if (
-      label === printDiscountLabel ||
-      label === stockDiscountLabel
+      knownProductDiscountLabels.has(label) &&
+      activeDiscountSavingsByLabel.has(label)
     ) {
       continue;
     }

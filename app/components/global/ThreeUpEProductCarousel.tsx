@@ -63,7 +63,7 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                       {/* Title */}
                       <p className="text-center text-muted-foreground px-2">
                         {product.isBundle
-                          ? 'Stock Footage Video Bundle:'
+                          ? 'Stock Footage Bundle:'
                           : 'Stock Footage Video:'}
                       </p>
                       <div className="flex justify-center mb-2">
@@ -110,7 +110,7 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                     <Card className="group w-full max-w-[420px] mx-2 p-3 overflow-visible flex flex-col">
                       <p className="text-center text-muted-foreground px-2">
                         {product.isBundle
-                          ? 'Stock Footage Video Bundle:'
+                          ? 'Stock Footage Bundle:'
                           : 'Stock Footage Video:'}
                       </p>
                       <div className="flex justify-center mb-2">
@@ -155,7 +155,7 @@ export function ThreeUpEProductCarousel({products}: ThreeUpCarouselProps) {
                     <Card className="group w-full max-w-[420px] mx-2 p-3 overflow-visible flex flex-col">
                       <p className="text-center text-muted-foreground px-2">
                         {product.isBundle
-                          ? 'Stock Footage Video Bundle:'
+                          ? 'Stock Footage Bundle:'
                           : 'Stock Footage Video:'}
                       </p>
                       <div className="flex justify-center mb-2">

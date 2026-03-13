@@ -79,7 +79,7 @@ function createPurchaseEmailHtml({
           <h3 style="margin:0; font-size:24px; color:#ffffff; text-align:center;">${title}</h3>
           <p style="margin:6px 0 0 0; color:#9cb3d2; text-align:center;">${
             item.isBundle
-              ? 'Stock Footage Video Bundle'
+              ? 'Stock Footage Bundle'
               : 'Stock Footage Video'
           }</p>
           ${imageMarkup}

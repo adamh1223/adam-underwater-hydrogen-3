@@ -10,7 +10,7 @@ export function generateCartDescription(tags: string[] = []) {
     return 'Framed Canvas Print';
   }
   if (tags.includes('Video') && tags.includes('Bundle')) {
-    return 'Stock Footage Video Bundle';
+    return 'Stock Footage Bundle';
   }
   if (tags.includes('Video')) {
     return 'Stock Footage Video';

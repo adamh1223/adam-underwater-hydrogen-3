@@ -271,7 +271,7 @@ function SearchResultsPredictiveProducts({
                 <div className="mx-2 mb-2">
                   <div className="flex justify-center pb-2">
                     {isBundle
-                      ? 'Stock Footage Video Bundle:'
+                      ? 'Stock Footage Bundle:'
                       : 'Stock Footage Clip:'}
                   </div>
                   <EProductsContainer

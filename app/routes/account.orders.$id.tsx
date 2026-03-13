@@ -724,7 +724,7 @@ function OrderLineRow({
           {isStockClip && (
             <p className="text-muted-foreground">
               {isBundleFromTags
-                ? 'Stock Footage Video Bundle'
+                ? 'Stock Footage Bundle'
                 : 'Stock Footage Video'}
             </p>
           )}

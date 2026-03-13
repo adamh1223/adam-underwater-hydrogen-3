@@ -754,7 +754,7 @@ button.reset:hover:not(:has(> *)) {
     font-size: 12px;
   }
   .cart-description {
-    font-size: 12px;
+    font-size: 12.4px;
   }
 }
 @media (min-width: 601px) and (max-width: 1023px) {
@@ -784,18 +784,18 @@ button.reset:hover:not(:has(> *)) {
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: break-word;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
   }
   .product-price {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 400;
   }
   .cart-description .input-text {
     font-size: 13px;
   }
   .cart-description {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
 
