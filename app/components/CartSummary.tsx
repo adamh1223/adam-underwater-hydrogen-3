@@ -427,6 +427,9 @@ export function CartSummary({
 
   const activeDiscountCount = activeDiscountEntries.length;
   const hasActiveDiscountEntries = activeDiscountCount > 0;
+  const showFreeShippingOnlyMessage = hasEffectiveFreeShippingUnlocked;
+  const showActiveDiscountTable =
+    hasActiveDiscountEntries && !showFreeShippingOnlyMessage;
 
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
@@ -494,7 +497,14 @@ export function CartSummary({
                 )}
               </div>
             </div>
-            {hasActiveDiscountEntries && (
+            {showFreeShippingOnlyMessage ? (
+              <div className="mt-2">
+                <p className="text-sm font-medium text-primary">
+                  Free shipping unlocked!
+                </p>
+              </div>
+            ) : null}
+            {showActiveDiscountTable && (
               <div className="mt-2 space-y-2">
                 <Table
                   className="cart-active-discounts-table text-sm text-primary"
@@ -525,12 +535,16 @@ export function CartSummary({
                           {entry.label}
                         </TableCell>
                         <TableCell className="p-2 text-right">
-                          <Money
-                            data={createMoneyValue(
-                              Math.max(0, entry.savingsAmount),
-                              subtotalCurrencyCode,
-                            )}
-                          />
+                          {entry.isShipping ? (
+                            'Shipping'
+                          ) : (
+                            <Money
+                              data={createMoneyValue(
+                                Math.max(0, entry.savingsAmount),
+                                subtotalCurrencyCode,
+                              )}
+                            />
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
