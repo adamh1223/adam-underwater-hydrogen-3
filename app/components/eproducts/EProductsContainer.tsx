@@ -25,6 +25,7 @@ import {toast} from 'sonner';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import type {CartPendingLinePreviewPayload} from '~/lib/cartPendingLine';
 
 type shopifyImage = {url: string; altText: string};
 
@@ -203,13 +204,133 @@ function EProductsContainer({
     getHighestResolutionVariantFromProduct(product);
   const selectedVariantForCard = (highestResolutionVariant ??
     (product as any)?.selectedOrFirstAvailableVariant ??
-    null) as {id: string; price?: any; compareAtPrice?: any} | null;
+    null) as {
+    id: string;
+    price?: {amount?: string | null; currencyCode?: string | null} | null;
+    compareAtPrice?: {
+      amount?: string | null;
+      currencyCode?: string | null;
+    } | null;
+    image?: {url?: string | null; altText?: string | null} | null;
+  } | null;
   const selectedVariantId =
     selectedVariantForCard?.id ?? product?.selectedOrFirstAvailableVariant?.id;
   const displayCardPrice =
     selectedVariantForCard?.price ?? product?.priceRange?.minVariantPrice;
   const displayCardCompareAtPrice =
     selectedVariantForCard?.compareAtPrice ?? null;
+  const pendingOptionValuesByName = useMemo(() => {
+    const optionValuesByName: Record<string, string[]> = {};
+    const productOptions = Array.isArray(product.options) ? product.options : [];
+
+    for (const option of productOptions) {
+      const optionName = option?.name;
+      if (!optionName) continue;
+      const optionValues = Array.from(
+        new Set(
+          (option?.optionValues ?? [])
+            .map((optionValue) => optionValue?.name)
+            .filter((optionValueName): optionValueName is string =>
+              Boolean(optionValueName),
+            ),
+        ),
+      );
+
+      if (optionValues.length) {
+        optionValuesByName[optionName] = optionValues;
+      }
+    }
+
+    return optionValuesByName;
+  }, [product.options]);
+  const pendingSelectedOptions = useMemo(() => {
+    if (!selectedVariantId) return [];
+
+    const productOptions = Array.isArray(product.options) ? product.options : [];
+    return productOptions
+      .map((option) => {
+        const optionName = option?.name;
+        if (!optionName) return null;
+
+        const selectedOptionValue = (option?.optionValues ?? []).find(
+          (optionValue) =>
+            optionValue?.firstSelectableVariant?.id === selectedVariantId,
+        )?.name;
+        if (!selectedOptionValue) return null;
+
+        return {
+          name: optionName,
+          value: selectedOptionValue,
+        };
+      })
+      .filter(
+        (
+          option,
+        ): option is {
+          name: string;
+          value: string;
+        } => Boolean(option?.name && option?.value),
+      );
+  }, [product.options, selectedVariantId]);
+  const productTypeLabel = isBundle
+    ? 'Stock Footage Bundle'
+    : 'Stock Footage Video';
+  const pendingProductTags = useMemo(() => {
+    const baseTags = isBundle ? ['Video', 'Bundle'] : ['Video'];
+    const sourceTags = Array.isArray(product.tags) ? product.tags : [];
+    const mergedTags = [...baseTags, ...sourceTags];
+    return Array.from(new Set(mergedTags));
+  }, [isBundle, product.tags]);
+  const pendingLinePreview = useMemo<CartPendingLinePreviewPayload | null>(() => {
+    if (!selectedVariantId) return null;
+
+    return {
+      merchandiseId: selectedVariantId,
+      productId: product.id,
+      productHandle: product.handle,
+      productTitle: product.title,
+      productTags: pendingProductTags,
+      optionValuesByName: pendingOptionValuesByName,
+      productTypeLabel,
+      imageUrl:
+        selectedVariantForCard?.image?.url ??
+        product?.images?.nodes?.[0]?.url ??
+        product?.featuredImage?.url ??
+        null,
+      priceAmount: displayCardPrice?.amount ?? null,
+      priceCurrencyCode: displayCardPrice?.currencyCode ?? null,
+      compareAtAmount: displayCardCompareAtPrice?.amount ?? null,
+      selectedOptions: pendingSelectedOptions,
+      showQuantityButtons: false,
+      isVerticalImage: false,
+    };
+  }, [
+    displayCardCompareAtPrice?.amount,
+    displayCardPrice?.amount,
+    displayCardPrice?.currencyCode,
+    pendingOptionValuesByName,
+    pendingProductTags,
+    pendingSelectedOptions,
+    product.featuredImage?.url,
+    product.handle,
+    product.id,
+    product.images?.nodes,
+    product.title,
+    productTypeLabel,
+    selectedVariantForCard?.image?.url,
+    selectedVariantId,
+  ]);
+  const addToCartLines = useMemo(() => {
+    if (!selectedVariantId) return [];
+
+    return [
+      {
+        merchandiseId: selectedVariantId,
+        quantity: 1,
+        __preview: pendingLinePreview,
+      },
+    ];
+  }, [pendingLinePreview, selectedVariantId]);
   const disableButton = useIsVideoInCart(selectedVariantId, cart);
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
@@ -784,12 +905,7 @@ function EProductsContainer({
                       >
                         <AddToCartButton
                           cart={cart}
-                          lines={[
-                            {
-                              merchandiseId: selectedVariantId,
-                              quantity: 1,
-                            },
-                          ]}
+                          lines={addToCartLines}
                           disabled={disableButton}
                           onClick={() => {
                             open('cart', 'eproducts-grid-add-to-cart-primary');
@@ -923,12 +1039,7 @@ function EProductsContainer({
                         >
                           <AddToCartButton
                             cart={cart}
-                            lines={[
-                              {
-                                merchandiseId: selectedVariantId,
-                                quantity: 1,
-                              },
-                            ]}
+                            lines={addToCartLines}
                             disabled={disableButton}
                             onClick={() => {
                               open('cart', 'eproducts-grid-add-to-cart-compact');
@@ -1198,12 +1309,7 @@ function EProductsContainer({
                     >
                       <AddToCartButton
                         cart={cart}
-                        lines={[
-                          {
-                            merchandiseId: selectedVariantId,
-                            quantity: 1,
-                          },
-                        ]}
+                        lines={addToCartLines}
                         disabled={disableButton}
                         onClick={() => {
                           open('cart', 'eproducts-list-add-to-cart-compact');
@@ -1483,12 +1589,7 @@ function EProductsContainer({
                       >
                         <AddToCartButton
                           cart={cart}
-                          lines={[
-                            {
-                              merchandiseId: selectedVariantId,
-                              quantity: 1,
-                            },
-                          ]}
+                          lines={addToCartLines}
                           disabled={disableButton}
                           onClick={() => {
                             open('cart', 'eproducts-list-add-to-cart-expanded');

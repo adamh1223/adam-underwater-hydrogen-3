@@ -122,17 +122,23 @@ function lineTags(line: CartLineNode) {
 }
 
 function isPrintLine(tags: string[]) {
-  return tags.some((tag) => tag?.toLowerCase?.() === 'prints');
+  return tags.some((tag) => {
+    const loweredTag = tag?.toLowerCase?.() ?? '';
+    return loweredTag === 'prints' || loweredTag.includes('print');
+  });
 }
 
 function isStockClipLine(tags: string[]) {
+  if (isPrintLine(tags)) return false;
   const loweredTags = tags.map((tag) => tag.toLowerCase());
-  return loweredTags.includes('video') && !loweredTags.includes('bundle');
+  if (loweredTags.includes('bundle')) return false;
+  return true;
 }
 
 function isStockBundleLine(tags: string[]) {
+  if (isPrintLine(tags)) return false;
   const loweredTags = tags.map((tag) => tag.toLowerCase());
-  return loweredTags.includes('video') && loweredTags.includes('bundle');
+  return loweredTags.includes('bundle');
 }
 
 export function CartSummary({
@@ -357,64 +363,66 @@ export function CartSummary({
     });
   }
 
-  const printServerSavings = effectiveSummaryLines.reduce((runningTotal, lineItem) => {
-    if (!isPrintLine(lineItem.tags)) return runningTotal;
-    const lineSavings = Math.max(
-      0,
-      lineItem.subtotalBeforeDiscount - lineItem.subtotalAfterDiscount,
-    );
-    return runningTotal + lineSavings * lineItem.quantity;
-  }, 0);
-  const stockServerSavings = effectiveSummaryLines.reduce((runningTotal, lineItem) => {
-    if (!isStockClipLine(lineItem.tags)) return runningTotal;
-    const lineSavings = Math.max(
-      0,
-      lineItem.subtotalBeforeDiscount - lineItem.subtotalAfterDiscount,
-    );
-    return runningTotal + lineSavings * lineItem.quantity;
-  }, 0);
-  const stockBundleServerSavings = effectiveSummaryLines.reduce(
-    (runningTotal, lineItem) => {
-      if (!isStockBundleLine(lineItem.tags)) return runningTotal;
-      const lineSavings = Math.max(
+  const serverDiscountSavingsBuckets = effectiveSummaryLines.reduce(
+    (runningBuckets, lineItem) => {
+      const lineSavingsPerQuantity = Math.max(
         0,
         lineItem.subtotalBeforeDiscount - lineItem.subtotalAfterDiscount,
       );
-      return runningTotal + lineSavings * lineItem.quantity;
+      if (lineSavingsPerQuantity <= 0.0001) return runningBuckets;
+
+      const lineSavingsTotal = lineSavingsPerQuantity * lineItem.quantity;
+      const lineDiscountPercent =
+        lineItem.subtotalBeforeDiscount > 0.0001
+          ? Math.round(
+              (lineSavingsPerQuantity / lineItem.subtotalBeforeDiscount) * 100,
+            )
+          : 0;
+
+      if (isPrintLine(lineItem.tags)) {
+        runningBuckets.print += lineSavingsTotal;
+        return runningBuckets;
+      }
+
+      // Bundles discounted at 18% are tracked as the bundle discount row.
+      if (lineDiscountPercent >= 18) {
+        runningBuckets.stockBundle += lineSavingsTotal;
+        return runningBuckets;
+      }
+
+      // Any other non-print discounted stock line belongs to the stock discount row.
+      runningBuckets.stock += lineSavingsTotal;
+      return runningBuckets;
     },
-    0,
+    {
+      print: 0,
+      stock: 0,
+      stockBundle: 0,
+    },
   );
   const effectivePrintDiscountSavings =
-    printServerSavings + provisionalPrintPendingSavings;
+    serverDiscountSavingsBuckets.print + provisionalPrintPendingSavings;
   const effectiveStockDiscountSavings =
-    stockServerSavings + provisionalStockPendingSavings;
+    serverDiscountSavingsBuckets.stock + provisionalStockPendingSavings;
   const effectiveStockBundleDiscountSavings =
-    stockBundleServerSavings + provisionalStockBundlePendingSavings;
+    serverDiscountSavingsBuckets.stockBundle +
+    provisionalStockBundlePendingSavings;
 
-  if (
-    qualifiesForPrintBulkDiscount &&
-    effectivePrintDiscountSavings > 0.0001
-  ) {
+  if (effectivePrintDiscountSavings > 0.0001) {
     addActiveDiscountEntry({
       label: printDiscountLabel,
       savingsAmount: effectivePrintDiscountSavings,
       isShipping: false,
     });
   }
-  if (
-    qualifiesForStockBulkDiscount &&
-    effectiveStockDiscountSavings > 0.0001
-  ) {
+  if (effectiveStockDiscountSavings > 0.0001) {
     addActiveDiscountEntry({
       label: stockDiscountLabel,
       savingsAmount: effectiveStockDiscountSavings,
       isShipping: false,
     });
   }
-  if (
-    qualifiesForStockBundleBulkDiscount &&
-    effectiveStockBundleDiscountSavings > 0.0001
-  ) {
+  if (effectiveStockBundleDiscountSavings > 0.0001) {
     addActiveDiscountEntry({
       label: stockBundleDiscountLabel,
       savingsAmount: effectiveStockBundleDiscountSavings,

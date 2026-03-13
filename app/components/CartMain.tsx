@@ -72,17 +72,23 @@ function getLineSubtotalAfterDiscount(
 }
 
 function isPrintLine(tags: string[]) {
-  return tags.some((tag) => tag?.toLowerCase?.() === 'prints');
+  return tags.some((tag) => {
+    const loweredTag = tag?.toLowerCase?.() ?? '';
+    return loweredTag === 'prints' || loweredTag.includes('print');
+  });
 }
 
 function isStockClipLine(tags: string[]) {
+  if (isPrintLine(tags)) return false;
   const loweredTags = tags.map((tag) => tag.toLowerCase());
-  return loweredTags.includes('video') && !loweredTags.includes('bundle');
+  if (loweredTags.includes('bundle')) return false;
+  return true;
 }
 
 function isStockBundleLine(tags: string[]) {
+  if (isPrintLine(tags)) return false;
   const loweredTags = tags.map((tag) => tag.toLowerCase());
-  return loweredTags.includes('video') && loweredTags.includes('bundle');
+  return loweredTags.includes('bundle');
 }
 
 /**
