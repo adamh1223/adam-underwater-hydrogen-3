@@ -11,6 +11,14 @@ import {
 import {Card, CardContent} from './ui/card';
 import {Input} from './ui/input';
 import {Button} from './ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table';
 import StockForm from './form/StockForm';
 import type {RootLoader} from '~/root';
 
@@ -29,6 +37,11 @@ type EffectiveSummaryLine = {
   subtotalAfterDiscount: number;
   compareAtPerQuantity: number;
   hasServerDiscount: boolean;
+};
+type ActiveDiscountEntry = {
+  label: string;
+  savingsAmount: number;
+  isShipping: boolean;
 };
 
 type CartDiscountAllocation = {
@@ -209,15 +222,13 @@ export function CartSummary({
   const qualifiesForPrintBulkDiscount = printQuantity >= 3;
   const qualifiesForStockBulkDiscount = stockClipQuantity >= 4;
 
-  const provisionalPendingSavings = effectiveSummaryLines.reduce(
+  const provisionalPrintPendingSavings = effectiveSummaryLines.reduce(
     (runningTotal, lineItem) => {
       if (lineItem.hasServerDiscount) return runningTotal;
 
       const qualifiesForPrint =
         qualifiesForPrintBulkDiscount && isPrintLine(lineItem.tags);
-      const qualifiesForStockClip =
-        qualifiesForStockBulkDiscount && isStockClipLine(lineItem.tags);
-      if (!qualifiesForPrint && !qualifiesForStockClip) return runningTotal;
+      if (!qualifiesForPrint) return runningTotal;
 
       return (
         runningTotal + lineItem.subtotalBeforeDiscount * lineItem.quantity * 0.15
@@ -225,6 +236,22 @@ export function CartSummary({
     },
     0,
   );
+  const provisionalStockPendingSavings = effectiveSummaryLines.reduce(
+    (runningTotal, lineItem) => {
+      if (lineItem.hasServerDiscount) return runningTotal;
+
+      const qualifiesForStockClip =
+        qualifiesForStockBulkDiscount && isStockClipLine(lineItem.tags);
+      if (!qualifiesForStockClip) return runningTotal;
+
+      return (
+        runningTotal + lineItem.subtotalBeforeDiscount * lineItem.quantity * 0.15
+      );
+    },
+    0,
+  );
+  const provisionalPendingSavings =
+    provisionalPrintPendingSavings + provisionalStockPendingSavings;
 
   const subtotalAfterDiscount = Math.max(
     0,
@@ -258,6 +285,8 @@ export function CartSummary({
   const allDiscountAllocations = ((
     cart as unknown as {discountAllocations?: CartDiscountAllocation[]}
   ).discountAllocations ?? []) as CartDiscountAllocation[];
+  const printDiscountLabel = 'Buy 3 prints get 15% off';
+  const stockDiscountLabel = 'Buy 4 stock footage clips get 15% off';
   const productDiscountLabelsFromCart = Array.from(
     new Set(
       allDiscountAllocations
@@ -265,23 +294,6 @@ export function CartSummary({
         .map((allocation) => getDiscountLabel(allocation))
         .filter(Boolean),
     ),
-  );
-  const provisionalProductDiscountLabels = [
-    qualifiesForPrintBulkDiscount ? 'Buy 3 prints get 15% off' : null,
-    qualifiesForStockBulkDiscount ? 'Buy 4 stock footage clips get 15% off' : null,
-  ].filter((label): label is string => Boolean(label));
-  const shouldUseProvisionalDiscountLabels =
-    provisionalPendingSavings > 0.0001 ||
-    (hasProductDiscountSavings &&
-      productDiscountLabelsFromCart.length === 0 &&
-      provisionalProductDiscountLabels.length > 0);
-  const productDiscountLabels = Array.from(
-    new Set([
-      ...productDiscountLabelsFromCart,
-      ...(shouldUseProvisionalDiscountLabels
-        ? provisionalProductDiscountLabels
-        : []),
-    ]),
   );
   const hasFreeShippingUnlocked = allDiscountAllocations.some((allocation) =>
     isShippingDiscount(allocation),
@@ -292,9 +304,129 @@ export function CartSummary({
   const hasEffectiveFreeShippingUnlocked =
     !hasAnyNonShippingDiscount &&
     (hasFreeShippingUnlocked || hasProvisionalFreeShippingUnlocked);
-  const productDiscountAppliedText = productDiscountLabels.length
-    ? `${productDiscountLabels.join(', ')} applied!`
-    : 'Discount applied!';
+
+  const activeDiscountSavingsByLabel = new Map<string, ActiveDiscountEntry>();
+  function addActiveDiscountEntry({
+    label,
+    savingsAmount,
+    isShipping,
+  }: ActiveDiscountEntry) {
+    const normalizedLabel = label.trim();
+    if (!normalizedLabel) return;
+    const existingEntry = activeDiscountSavingsByLabel.get(normalizedLabel);
+    if (existingEntry) {
+      activeDiscountSavingsByLabel.set(normalizedLabel, {
+        ...existingEntry,
+        savingsAmount: existingEntry.savingsAmount + savingsAmount,
+        isShipping: existingEntry.isShipping || isShipping,
+      });
+      return;
+    }
+    activeDiscountSavingsByLabel.set(normalizedLabel, {
+      label: normalizedLabel,
+      savingsAmount,
+      isShipping,
+    });
+  }
+
+  const printServerSavings = effectiveSummaryLines.reduce((runningTotal, lineItem) => {
+    if (!isPrintLine(lineItem.tags)) return runningTotal;
+    const lineSavings = Math.max(
+      0,
+      lineItem.subtotalBeforeDiscount - lineItem.subtotalAfterDiscount,
+    );
+    return runningTotal + lineSavings * lineItem.quantity;
+  }, 0);
+  const stockServerSavings = effectiveSummaryLines.reduce((runningTotal, lineItem) => {
+    if (!isStockClipLine(lineItem.tags)) return runningTotal;
+    const lineSavings = Math.max(
+      0,
+      lineItem.subtotalBeforeDiscount - lineItem.subtotalAfterDiscount,
+    );
+    return runningTotal + lineSavings * lineItem.quantity;
+  }, 0);
+  const effectivePrintDiscountSavings =
+    printServerSavings + provisionalPrintPendingSavings;
+  const effectiveStockDiscountSavings =
+    stockServerSavings + provisionalStockPendingSavings;
+
+  if (
+    qualifiesForPrintBulkDiscount &&
+    effectivePrintDiscountSavings > 0.0001
+  ) {
+    addActiveDiscountEntry({
+      label: printDiscountLabel,
+      savingsAmount: effectivePrintDiscountSavings,
+      isShipping: false,
+    });
+  }
+  if (
+    qualifiesForStockBulkDiscount &&
+    effectiveStockDiscountSavings > 0.0001
+  ) {
+    addActiveDiscountEntry({
+      label: stockDiscountLabel,
+      savingsAmount: effectiveStockDiscountSavings,
+      isShipping: false,
+    });
+  }
+
+  for (const allocation of allDiscountAllocations) {
+    const label = getDiscountLabel(allocation);
+    if (!label) continue;
+    if (
+      label === printDiscountLabel ||
+      label === stockDiscountLabel
+    ) {
+      continue;
+    }
+    addActiveDiscountEntry({
+      label,
+      savingsAmount: parseMoneyAmount(allocation.discountedAmount?.amount),
+      isShipping: isShippingDiscount(allocation),
+    });
+  }
+
+  let activeDiscountEntries = Array.from(
+    activeDiscountSavingsByLabel.values(),
+  ).filter((entry) =>
+    hasEffectiveFreeShippingUnlocked ? true : !entry.isShipping,
+  );
+
+  if (hasProductDiscountSavings) {
+    const hasNonShippingEntry = activeDiscountEntries.some(
+      (entry) => !entry.isShipping,
+    );
+    if (!hasNonShippingEntry) {
+      activeDiscountEntries = [
+        {
+          label: 'Discount applied',
+          savingsAmount: subtotalSavings,
+          isShipping: false,
+        },
+        ...activeDiscountEntries,
+      ];
+    }
+  }
+
+  if (
+    hasEffectiveFreeShippingUnlocked &&
+    !activeDiscountEntries.some((entry) => entry.isShipping)
+  ) {
+    activeDiscountEntries.push({
+      label: 'Free shipping unlocked!',
+      savingsAmount: 0,
+      isShipping: true,
+    });
+  }
+
+  activeDiscountEntries.sort((entryA, entryB) => {
+    if (entryA.isShipping === entryB.isShipping) return 0;
+    return entryA.isShipping ? 1 : -1;
+  });
+
+  const activeDiscountCount = activeDiscountEntries.length;
+  const hasActiveDiscountEntries = activeDiscountCount > 0;
 
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
@@ -362,19 +494,57 @@ export function CartSummary({
                 )}
               </div>
             </div>
-            {(hasProductDiscountSavings || hasEffectiveFreeShippingUnlocked) && (
-              <div className="mt-2 space-y-1">
+            {hasActiveDiscountEntries && (
+              <div className="mt-2 space-y-2">
+                <Table
+                  className="cart-active-discounts-table text-sm text-primary"
+                  containerClassName="!overflow-visible"
+                >
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="h-8 px-2 text-primary">
+                        <span className="inline-flex items-center gap-2">
+                          <span>Active Discounts</span>
+                          <span className="cart-active-discount-count">
+                            {activeDiscountCount}x
+                          </span>
+                        </span>
+                      </TableHead>
+                      <TableHead className="h-8 px-2 text-right text-primary">
+                        Savings
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {activeDiscountEntries.map((entry) => (
+                      <TableRow
+                        key={`active-discount-${entry.label}`}
+                        className="hover:bg-transparent"
+                      >
+                        <TableCell className="p-2 whitespace-normal break-words">
+                          {entry.label}
+                        </TableCell>
+                        <TableCell className="p-2 text-right">
+                          <Money
+                            data={createMoneyValue(
+                              Math.max(0, entry.savingsAmount),
+                              subtotalCurrencyCode,
+                            )}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
                 {hasProductDiscountSavings && (
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium text-primary">
-                    <p>{productDiscountAppliedText}</p>
-                    <p>
-                      Savings: <Money data={subtotalSavingsMoney} />
-                    </p>
-                  </div>
-                )}
-                {hasEffectiveFreeShippingUnlocked && (
-                  <p className="text-sm font-medium text-primary">
-                    Free shipping unlocked!
+                  <p className="inline-flex items-center gap-1 whitespace-nowrap text-sm font-medium text-primary">
+                    <span>Total Discount Savings:</span>
+                    <strong>
+                      <Money
+                        data={subtotalSavingsMoney}
+                        className="cart-combined-savings-glow"
+                      />
+                    </strong>
                   </p>
                 )}
               </div>

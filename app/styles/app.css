@@ -811,6 +811,98 @@ button.reset:hover:not(:has(> *)) {
   row-gap: 0.125rem;
 }
 
+.cart-active-discount-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--primary) / 0.92);
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.55),
+    0 0 16px hsl(var(--primary) / 0.34);
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.cart-active-discounts-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: disc;
+  display: grid;
+  row-gap: 0.35rem;
+}
+
+.cart-active-discounts-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+}
+
+.cart-active-discounts-item-label {
+  font-weight: 600;
+}
+
+.cart-active-discounts-item-savings {
+  font-weight: 500;
+}
+
+.cart-combined-savings-glow {
+  color: hsl(var(--primary));
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .cart-combined-savings-glow {
+    background-image:
+      linear-gradient(
+        110deg,
+        hsl(var(--primary) / 0) 0%,
+        hsl(var(--primary) / 0) 32%,
+        rgb(255 255 255 / 0.9) 42%,
+        rgb(255 255 255 / 1) 50%,
+        rgb(255 255 255 / 0.9) 58%,
+        hsl(var(--primary) / 0) 68%,
+        hsl(var(--primary) / 0) 100%
+      ),
+      linear-gradient(hsl(var(--primary) / 1), hsl(var(--primary) / 1));
+    background-size:
+      240% 100%,
+      100% 100%;
+    background-repeat: no-repeat, no-repeat;
+    background-position:
+      300% 0,
+      0 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: cart-combined-savings-glisten 3.6s linear infinite;
+  }
+}
+
+@keyframes cart-combined-savings-glisten {
+  0% {
+    background-position:
+      280% 0,
+      0 0;
+  }
+  100% {
+    background-position:
+      -280% 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-combined-savings-glow {
+    animation: none;
+    background-position:
+      300% 0,
+      0 0;
+  }
+}
+
 @media (max-width: 600px) {
   .cart-subtotal {
     display: grid;

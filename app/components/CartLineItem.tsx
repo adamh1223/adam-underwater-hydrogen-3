@@ -1056,6 +1056,10 @@ function CartLineQuantity({
   const nextQuantity = Number((quantity + 1).toFixed(0));
   const hasDiscountText = Boolean(discountText);
   const hasFooterDescription = Boolean(isMobile && footerDescription);
+  const usesStockFooterLayout = Boolean(isStockClipLine && !hideQuantityButtons);
+  const hasStockInlineDiscount = Boolean(
+    usesStockFooterLayout && hasDiscountText,
+  );
   const useTabletPrintGrid = Boolean(
     hideQuantityButtons &&
       windowWidth !== undefined &&
@@ -1065,7 +1069,9 @@ function CartLineQuantity({
     hideQuantityButtons && (isTabletStockLayout || isMobile);
   const hasInlineDiscountWithControls = Boolean(
     hasDiscountText &&
-      (isStockClipLine || useTabletPrintGrid || (isMobile && usesStackedQuantityLayout)),
+      (hasStockInlineDiscount ||
+        useTabletPrintGrid ||
+        (isMobile && usesStackedQuantityLayout)),
   );
   const hasInlineMobileDiscount = Boolean(isMobile && hasInlineDiscountWithControls);
   const footerClassName = [
@@ -1169,7 +1175,26 @@ function CartLineQuantity({
 
       <div className={quantityClassName}>
         <div className={quantityContentClassName}>
-          {useTabletPrintGrid ? (
+          {usesStockFooterLayout ? (
+            <>
+              <div className="cart-line-quantity-row">
+                <div className="cart-subheader cart-line-quantity-label">
+                  <span>Quantity:</span>
+                  <span className="text-md font-bold cart-quantity">{quantity}</span>
+                </div>
+                <CartLineRemoveButton
+                  lineIds={[lineId]}
+                  disabled={disableControlsForOptimistic}
+                  visualOnly={shouldKeepPrintControlsEnabled}
+                />
+                {hasStockInlineDiscount ? (
+                  <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
+                    {discountText}
+                  </p>
+                ) : null}
+              </div>
+            </>
+          ) : useTabletPrintGrid ? (
             <>
               <div className="cart-subheader cart-line-quantity-label">
                 <span>Quantity:</span>
