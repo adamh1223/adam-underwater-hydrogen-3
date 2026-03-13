@@ -371,6 +371,11 @@ button.reset:hover:not(:has(> *)) {
     object-fit: cover;
   }
 }
+@media (max-width: 600px) {
+  .cart-line-vertical-product {
+    grid-template-rows: auto auto;
+  }
+}
 @media (min-width: 1280px) {
   .cart-line-horizontal-product {
     display: grid;
@@ -779,15 +784,18 @@ button.reset:hover:not(:has(> *)) {
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: break-word;
+    font-size: 16px;
+    font-weight: 600;
   }
   .product-price {
-    min-width: 0;
+    font-size: 16px;
+    font-weight: 400;
   }
   .cart-description .input-text {
     font-size: 13px;
   }
   .cart-description {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 
@@ -3505,15 +3513,9 @@ span {
 }
 @media (min-width: 1351px) {
   .product-carousel-container {
-    padding: 0;
-  }
-
-  /* Keep the bundle detail carousel width stable past 1350px.
-   * Without this override, the base container drops side padding to 0 at 1351px,
-   * causing a visible iframe/carousel lateral jump.
-   */
-  .bundle-detail-carousel-container.product-carousel-container {
-    padding-left: 16px;
-    padding-right: 16px;
+    /* Keep container padding consistent above 1350px so print carousels and
+     * How it's Made media do not jump in size at this breakpoint.
+     */
+    padding: 0 16px;
   }
 }

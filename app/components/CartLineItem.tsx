@@ -422,94 +422,7 @@ export function CartLineItem({
             isVerticalProduct && 'cart-line-vertical-product'
           }`}
         >
-          {/* ✔0-600px landscape print in cart */}
-          {/* {windowWidth != undefined &&
-            windowWidth <= 600 &&
-            isHorizontalProduct && (
-              <>
-                <div>
-                  <Link
-                    prefetch="intent"
-                    to={lineItemUrl}
-                    onClick={() => {
-                      if (layout === 'aside') {
-                        close();
-                      }
-                    }}
-                  >
-                    <div className="flex flex-row">
-                      {isHorizontalProduct && (
-                        <img
-                          alt={title}
-                          src={image?.url}
-                          loading="lazy"
-                          className="cart-line-horizontal-product-img rounded-md"
-                        />
-                      )}
-                      <div className="ps-3">
-                        <div className='product-title'>{product.title}</div>
-                        <div className='product-price'>
-                          {linePrice}
-                          </div>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-
-                {!hasOnlyDefaultTitle && (
-                  <div className="pt-1">
-                    {showInlineDescription && cartDescription && (
-                      <div className="cart-description">{cartDescription}</div>
-                    )}
-                    <CartLineOptionSelectors line={normalizedLine} />
-                  </div>
-                )}
-              </>
-            )} */}
-          {/* ✔601px+ landscape print in cart */}
-          {/* {windowWidth != undefined &&
-            windowWidth > 600 &&
-            isHorizontalProduct && (
-              <>
-                <div>
-                  <Link
-                    prefetch="intent"
-                    to={lineItemUrl}
-                    onClick={() => {
-                      if (layout === 'aside') {
-                        close();
-                      }
-                    }}
-                  >
-                    <div className="flex flex-row">
-                      {isHorizontalProduct && (
-                        <img
-                          alt={title}
-                          src={image?.url}
-                          loading="lazy"
-                          className="cart-line-horizontal-product-img rounded-md"
-                        />
-                      )}
-                      <div className="ps-3 cart-line-text">
-                        <strong>{product.title}</strong>
-                        {showInlineDescription && cartDescription && (
-                          <div className="cart-description">
-                            {cartDescription}
-                          </div>
-                        )}
-                        {linePrice}
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-
-                {!hasOnlyDefaultTitle && (
-                  <div>
-                    <CartLineOptionSelectors line={normalizedLine} className="pt-3" />
-                  </div>
-                )}
-              </>
-            )} */}
+         
           {/* ✔0px-600px stock clip OR horizontal print in cart */}
           {windowWidth != undefined && windowWidth <= 600 && usesStockLayout && (
             <>
@@ -665,9 +578,12 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img rounded-md"
                         />
                       )}
-                      <div className="ps-3 cart-line-text min-w-0 flex-1">
-                        <strong>{product.title}</strong>
+                      <div className="ps-2 cart-line-text min-w-0 flex-1">
+                        <div className='product-title'>{product.title}</div>
+                        <div className='product-price'>
+
                         {linePrice}
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -708,14 +624,17 @@ export function CartLineItem({
                           className="cart-line-vertical-product-img rounded-md"
                         />
                       )}
-                      <div className="ps-3 cart-line-text min-w-0 flex-1">
-                        <strong>{product.title}</strong>
+                      <div className="ps-2 cart-line-text min-w-0 flex-1">
+                        <div className='product-title'>{product.title}</div>
                         {showInlineDescription && cartDescription && (
                           <div className="cart-description">
                             {cartDescription}
                           </div>
                         )}
+                        <div className='product-price'>
+
                         {linePrice}
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -887,7 +806,7 @@ function CartLineOptionSelectors({
                 id={inputId}
                 value={currentValue}
                 disabled={isUpdatingLine}
-                className="cart-option-select cursor-pointer rounded-md border border-[#2a8fd6] bg-secondary px-2 py-1 text-white text-sm text-start focus:outline-none focus:ring-2 focus:ring-[#29abe2]"
+                className="cart-option-select cursor-pointer rounded-md border border-primary bg-secondary px-2 py-1 text-white text-sm text-start focus:outline-none focus:ring-2 focus:ring-primary/50"
                 onChange={(event) => {
                   const nextValue = event.currentTarget.value;
 

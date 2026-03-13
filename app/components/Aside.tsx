@@ -1,4 +1,5 @@
 import {useLocation} from '@remix-run/react';
+import {XIcon} from 'lucide-react';
 import {
   createContext,
   type ReactNode,
@@ -7,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import {Button} from './ui/button';
 import {emitAsideDebug} from '~/lib/asideDebugClient';
 
 type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
@@ -109,14 +111,17 @@ export function Aside({
 
       <aside className="border-l" ref={asideRef}>
         <div className="pb-6">
-          <div className="flex justify-end pe-4">
-            <button
-              className="close reset cursor-pointer text-xl"
+          <div className="flex justify-end pe-[6px]">
+            <Button
+              type="button"
+              variant="secondary"
+              size="iconsmall"
+              className="mt-1"
               onClick={close}
               aria-label="Close"
             >
-              &times;
-            </button>
+              <XIcon className="size-4" />
+            </Button>
           </div>
 
           {(imageSource || heading) && (
@@ -132,7 +137,7 @@ export function Aside({
                           ? 'Search'
                           : ''
                     }
-                    className="pt-3 h-[70px] lg:h-[90px]"
+                    className="h-[70px] lg:h-[90px]"
                   />
                 ) : (
                   <h2 className="py-4 text-lg">{heading}</h2>
