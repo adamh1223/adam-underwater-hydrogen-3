@@ -1,4 +1,10 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '~/components/ui/tooltip';
+import {Kbd} from '~/components/ui/kbd';
 
 const STOCK_SWIPE_ASSET_BASE_URL =
   'https://downloads.adamunderwater.com/shared/stock-swipe';
@@ -71,7 +77,72 @@ export default function VideoResolutionSwipeSection({
   const [resolvedHigherResolutionLabel, setResolvedHigherResolutionLabel] =
     useState<string | null>(null);
   const [dividerPercentage, setDividerPercentage] = useState(50);
+  const [zoomLevel, setZoomLevel] = useState(2.25);
+  const [mode, setMode] = useState<'swipe' | 'pan'>('swipe');
+  const [originX, setOriginX] = useState(50);
+  const [originY, setOriginY] = useState(50);
+  const [isPanning, setIsPanning] = useState(false);
   const compareRef = useRef<HTMLDivElement | null>(null);
+
+  const ZOOM_MIN = 1;
+  const ZOOM_MAX = 4;
+  const ZOOM_STEP = 0.5;
+
+  const handleZoomIn = useCallback((e: React.PointerEvent | React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setZoomLevel((prev) => Math.min(ZOOM_MAX, +(prev + ZOOM_STEP).toFixed(2)));
+  }, []);
+
+  const handleZoomOut = useCallback((e: React.PointerEvent | React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setZoomLevel((prev) => Math.max(ZOOM_MIN, +(prev - ZOOM_STEP).toFixed(2)));
+  }, []);
+
+  const handleToggleMode = useCallback((e: React.PointerEvent | React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setMode((prev) => (prev === 'swipe' ? 'pan' : 'swipe'));
+  }, []);
+
+  const handlePanPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setIsPanning(true);
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startOriginX = originX;
+      const startOriginY = originY;
+      const container = compareRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+
+      const handlePanMove = (moveEvent: PointerEvent) => {
+        const deltaX = moveEvent.clientX - startX;
+        const deltaY = moveEvent.clientY - startY;
+        const percentX = (deltaX / rect.width) * 100;
+        const percentY = (deltaY / rect.height) * 100;
+        const zoom = zoomLevel;
+        const range = ((zoom - 1) / zoom) * 50;
+        const clamp = (v: number) => Math.min(50 + range, Math.max(50 - range, v));
+        setOriginX(clamp(startOriginX - percentX));
+        setOriginY(clamp(startOriginY - percentY));
+      };
+
+      const handlePanUp = () => {
+        setIsPanning(false);
+        window.removeEventListener('pointermove', handlePanMove);
+        window.removeEventListener('pointerup', handlePanUp);
+        window.removeEventListener('pointercancel', handlePanUp);
+      };
+
+      window.addEventListener('pointermove', handlePanMove);
+      window.addEventListener('pointerup', handlePanUp);
+      window.addEventListener('pointercancel', handlePanUp);
+    },
+    [originX, originY, zoomLevel],
+  );
 
   const leftCandidates = useMemo(
     () => buildSwipeImageCandidates('4k', vidKey),
@@ -165,6 +236,30 @@ export default function VideoResolutionSwipeSection({
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      if (e.key === 'h') {
+        setMode((prev) => (prev === 'swipe' ? 'pan' : 'swipe'));
+      } else if (e.key === '=') {
+        setZoomLevel((prev) => Math.min(ZOOM_MAX, +(prev + ZOOM_STEP).toFixed(2)));
+      } else if (e.key === '-') {
+        setZoomLevel((prev) => Math.max(ZOOM_MIN, +(prev - ZOOM_STEP).toFixed(2)));
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   if (!leftImageUrl || !rightImageUrl || !resolvedHigherResolutionLabel)
     return null;
 
@@ -188,8 +283,9 @@ export default function VideoResolutionSwipeSection({
             <div className="mx-auto mt-5 w-full max-w-6xl px-[20px] lg:px-[35px]">
               <div
                 ref={compareRef}
-                className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none cursor-col-resize"
-                onPointerDown={handlePointerDown}
+                className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none"
+                style={{cursor: mode === 'pan' ? (isPanning ? 'grabbing' : 'grab') : 'col-resize'}}
+                onPointerDown={mode === 'pan' ? handlePanPointerDown : handlePointerDown}
               >
                 <div className="absolute inset-0 overflow-hidden">
                   <img
@@ -198,8 +294,9 @@ export default function VideoResolutionSwipeSection({
                     className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                     style={{
-                      transform: 'scale(1.5)',
-                      transformOrigin: 'center center',
+                      transform: `scale(${zoomLevel})`,
+                      transformOrigin: `${originX}% ${originY}%`,
+                      transition: 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)',
                     }}
                   />
                 </div>
@@ -213,8 +310,9 @@ export default function VideoResolutionSwipeSection({
                     className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                     style={{
-                      transform: 'scale(1.5)',
-                      transformOrigin: 'center center',
+                      transform: `scale(${zoomLevel})`,
+                      transformOrigin: `${originX}% ${originY}%`,
+                      transition: 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)',
                     }}
                   />
                 </div>
@@ -242,6 +340,81 @@ export default function VideoResolutionSwipeSection({
                   <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-black">
                     Swipe
                   </span>
+                </div>
+
+                {/* Mode toggle + Zoom +/- control */}
+                <div className="absolute bottom-4 right-4 z-30 flex flex-col items-center gap-2">
+                  {/* Standalone toggle button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex items-center justify-center rounded-full bg-[#444] hover:bg-[#555] active:bg-[#333] text-white transition-colors"
+                        style={{width: 40, height: 40, boxShadow: '0 2px 8px rgba(0,0,0,0.4)', cursor: 'pointer'}}
+                        onPointerDown={handleToggleMode}
+                        aria-label={mode === 'swipe' ? 'Switch to pan mode' : 'Switch to swipe mode'}
+                      >
+                        {mode === 'swipe' ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 11V3.5a1.5 1.5 0 0 0-3 0V11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M15 9.4V5.5a1.5 1.5 0 0 0-3 0v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M12 10.5V7.5a1.5 1.5 0 0 0-3 0v7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M9 14.5V11.5a1.5 1.5 0 0 0-3 0v3.5a7 7 0 0 0 14 0v-4a1.5 1.5 0 0 0-3 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M8 12h8M8 12l2-2M8 12l2 2M16 12l-2-2M16 12l-2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="text-sm z-[1001]">
+                      Toggle Hand: <Kbd>h</Kbd>
+                    </TooltipContent>
+                  </Tooltip>
+                  {/* Zoom +/- pill */}
+                  <div
+                    className="flex flex-col overflow-hidden rounded-full"
+                    style={{boxShadow: '0 2px 8px rgba(0,0,0,0.4)', cursor: 'pointer'}}
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center bg-[#444] hover:bg-[#555] active:bg-[#333] text-white transition-colors"
+                          style={{width: 40, height: 40, cursor: 'pointer'}}
+                          onPointerDown={handleZoomIn}
+                          aria-label="Zoom in"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M9 3v12M3 9h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="text-sm z-[1001]">
+                        Zoom in: <Kbd>=</Kbd>
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="h-px bg-[#333]" />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center bg-[#444] hover:bg-[#555] active:bg-[#333] text-white transition-colors"
+                          style={{width: 40, height: 40, cursor: 'pointer'}}
+                          onPointerDown={handleZoomOut}
+                          aria-label="Zoom out"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M3 9h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="text-sm z-[1001]">
+                        Zoom out: <Kbd>-</Kbd>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </div>
               </div>
             </div>
@@ -287,8 +460,9 @@ export default function VideoResolutionSwipeSection({
               </div>
               <div
                 ref={compareRef}
-                className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none cursor-col-resize"
-                onPointerDown={handlePointerDown}
+                className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none"
+                style={{cursor: mode === 'pan' ? (isPanning ? 'grabbing' : 'grab') : 'col-resize'}}
+                onPointerDown={mode === 'pan' ? handlePanPointerDown : handlePointerDown}
               >
                 <div className="absolute inset-0 overflow-hidden">
                   <img
@@ -297,8 +471,9 @@ export default function VideoResolutionSwipeSection({
                     className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                     style={{
-                      transform: 'scale(1.5)',
-                      transformOrigin: 'center center',
+                      transform: `scale(${zoomLevel})`,
+                      transformOrigin: `${originX}% ${originY}%`,
+                      transition: 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)',
                     }}
                   />
                 </div>
@@ -312,8 +487,9 @@ export default function VideoResolutionSwipeSection({
                     className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                     draggable={false}
                     style={{
-                      transform: 'scale(1.5)',
-                      transformOrigin: 'center center',
+                      transform: `scale(${zoomLevel})`,
+                      transformOrigin: `${originX}% ${originY}%`,
+                      transition: 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)',
                     }}
                   />
                 </div>
@@ -341,6 +517,81 @@ export default function VideoResolutionSwipeSection({
                   <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-black">
                     Swipe
                   </span>
+                </div>
+
+                {/* Mode toggle + Zoom +/- control */}
+                <div className="absolute bottom-4 right-4 z-30 flex flex-col items-center gap-2">
+                  {/* Standalone toggle button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex items-center justify-center rounded-full bg-[#444] hover:bg-[#555] active:bg-[#333] text-white transition-colors"
+                        style={{width: 40, height: 40, boxShadow: '0 2px 8px rgba(0,0,0,0.4)', cursor: 'pointer'}}
+                        onPointerDown={handleToggleMode}
+                        aria-label={mode === 'swipe' ? 'Switch to pan mode' : 'Switch to swipe mode'}
+                      >
+                        {mode === 'swipe' ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 11V3.5a1.5 1.5 0 0 0-3 0V11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M15 9.4V5.5a1.5 1.5 0 0 0-3 0v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M12 10.5V7.5a1.5 1.5 0 0 0-3 0v7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M9 14.5V11.5a1.5 1.5 0 0 0-3 0v3.5a7 7 0 0 0 14 0v-4a1.5 1.5 0 0 0-3 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M8 12h8M8 12l2-2M8 12l2 2M16 12l-2-2M16 12l-2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="text-sm z-[1001]">
+                      Toggle Hand: <Kbd>h</Kbd>
+                    </TooltipContent>
+                  </Tooltip>
+                  {/* Zoom +/- pill */}
+                  <div
+                    className="flex flex-col overflow-hidden rounded-full"
+                    style={{boxShadow: '0 2px 8px rgba(0,0,0,0.4)', cursor: 'pointer'}}
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center bg-[#444] hover:bg-[#555] active:bg-[#333] text-white transition-colors"
+                          style={{width: 40, height: 40, cursor: 'pointer'}}
+                          onPointerDown={handleZoomIn}
+                          aria-label="Zoom in"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M9 3v12M3 9h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="text-sm z-[1001]">
+                        Zoom in: <Kbd>=</Kbd>
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="h-px bg-[#333]" />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center bg-[#444] hover:bg-[#555] active:bg-[#333] text-white transition-colors"
+                          style={{width: 40, height: 40, cursor: 'pointer'}}
+                          onPointerDown={handleZoomOut}
+                          aria-label="Zoom out"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M3 9h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="text-sm z-[1001]">
+                        Zoom out: <Kbd>-</Kbd>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </div>
               </div>
               <div className="nk-list-container shrink-0">

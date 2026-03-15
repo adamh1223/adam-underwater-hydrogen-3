@@ -1017,6 +1017,9 @@ function CartLineQuantity({
     : 'cart-line-quantity-stack';
   const shouldKeepPrintControlsEnabled =
     showPendingPrintControlLook && hideQuantityButtons;
+  const shouldShowVisualOnlyRemoveButton =
+    shouldKeepPrintControlsEnabled ||
+    (Boolean(isOptimistic) && usesStockFooterLayout);
   const disableControlsForOptimistic = !!isOptimistic && !shouldKeepPrintControlsEnabled;
   const quantityButtonsInner = hideQuantityButtons ? (
     shouldKeepPrintControlsEnabled ? (
@@ -1105,7 +1108,7 @@ function CartLineQuantity({
                 <CartLineRemoveButton
                   lineIds={[lineId]}
                   disabled={disableControlsForOptimistic}
-                  visualOnly={shouldKeepPrintControlsEnabled}
+                  visualOnly={shouldShowVisualOnlyRemoveButton}
                 />
                 {hasStockInlineDiscount ? (
                   <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">
@@ -1126,7 +1129,7 @@ function CartLineQuantity({
                   <CartLineRemoveButton
                     lineIds={[lineId]}
                     disabled={disableControlsForOptimistic}
-                    visualOnly={shouldKeepPrintControlsEnabled}
+                    visualOnly={shouldShowVisualOnlyRemoveButton}
                   />
                 </div>
                 {hasDiscountText ? (
@@ -1149,7 +1152,7 @@ function CartLineQuantity({
                     <CartLineRemoveButton
                       lineIds={[lineId]}
                       disabled={disableControlsForOptimistic}
-                      visualOnly={shouldKeepPrintControlsEnabled}
+                      visualOnly={shouldShowVisualOnlyRemoveButton}
                     />
                   </div>
                   {hasInlineMobileDiscount ? (
@@ -1164,7 +1167,7 @@ function CartLineQuantity({
                   <CartLineRemoveButton
                     lineIds={[lineId]}
                     disabled={disableControlsForOptimistic}
-                    visualOnly={shouldKeepPrintControlsEnabled}
+                    visualOnly={shouldShowVisualOnlyRemoveButton}
                   />
                   {hasInlineDiscountWithControls ? (
                     <p className="cart-line-footer-discount cart-line-footer-discount-inline text-primary text-sm">

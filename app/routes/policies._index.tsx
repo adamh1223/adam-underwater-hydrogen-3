@@ -126,7 +126,7 @@ export default function Policies() {
             alt="Policies"
           />
         </div>
-        <div className="flex justify-center policy-container-small flex-wrap px-5 mt-4">
+        <div className="flex justify-center policy-container-small flex-wrap mt-4">
           {policies.map((policy) => {
             const isSelected = policy.handle === selectedPolicyHandle;
             return (
