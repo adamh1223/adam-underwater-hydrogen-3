@@ -406,6 +406,27 @@ export async function action({request, context}: ActionFunctionArgs) {
       // Combine discount codes already applied on cart
       discountCodes.push(...inputs.discountCodes);
 
+      // WELCOME15 requires the user to be logged in
+      const hasWelcome15 = discountCodes.some(
+        (code) => code.toUpperCase() === 'WELCOME15',
+      );
+      if (hasWelcome15) {
+        let isLoggedIn = false;
+        try {
+          isLoggedIn = await context.customerAccount.isLoggedIn();
+        } catch {
+          isLoggedIn = false;
+        }
+        if (!isLoggedIn) {
+          return data(
+            {
+              error: 'You must be logged in to use the WELCOME15 discount code.',
+            },
+            {status: 401},
+          );
+        }
+      }
+
       result = await cart.updateDiscountCodes(discountCodes);
       break;
     }

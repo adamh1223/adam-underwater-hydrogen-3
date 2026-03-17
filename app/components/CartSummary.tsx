@@ -287,9 +287,25 @@ export function CartSummary({
     provisionalStockPendingSavings +
     provisionalStockBundlePendingSavings;
 
+  // Calculate order-level code discount savings (e.g. WELCOME15) from CART-level
+  // discountAllocations. Order-level discount codes don't populate per-line
+  // discountAllocations or reduce line-level cost.totalAmount — they only appear
+  // at the cart level.
+  const allCartAllocations = ((
+    cart as unknown as {discountAllocations?: CartDiscountAllocation[]}
+  ).discountAllocations ?? []) as CartDiscountAllocation[];
+  const codeDiscountSavings = allCartAllocations.reduce(
+    (total, allocation) => {
+      if (allocation?.__typename !== 'CartCodeDiscountAllocation') return total;
+      if (isShippingDiscount(allocation)) return total;
+      return total + parseMoneyAmount(allocation?.discountedAmount?.amount);
+    },
+    0,
+  );
+
   const subtotalAfterDiscount = Math.max(
     0,
-    subtotalAfterServerDiscount - provisionalPendingSavings,
+    subtotalAfterServerDiscount - provisionalPendingSavings - codeDiscountSavings,
   );
   const subtotalSavings = Math.max(0, subtotalBeforeDiscount - subtotalAfterDiscount);
   const subtotalCompareAt = effectiveSummaryLines.reduce(
@@ -316,9 +332,7 @@ export function CartSummary({
     subtotalCurrencyCode,
   );
 
-  const allDiscountAllocations = ((
-    cart as unknown as {discountAllocations?: CartDiscountAllocation[]}
-  ).discountAllocations ?? []) as CartDiscountAllocation[];
+  const allDiscountAllocations = allCartAllocations;
   const printDiscountLabel = 'Buy 3 prints get 15% off';
   const stockDiscountLabel = 'Buy 4 stock footage clips get 15% off';
   const stockBundleDiscountLabel = 'Buy 3 Stock Footage Bundles, get 18% off';
@@ -710,7 +724,7 @@ function CartDiscounts({
       {/* Have existing discount, display it with a remove option */}
       <dl hidden={!codes.length}>
         <div>
-          <dt>Applied Discounts:</dt>
+          <dt>Applied Discount Codes:</dt>
           <UpdateDiscountForm>
             <div className="cart-discount py-3">
               <code>{codes?.join(', ')}</code>
@@ -759,7 +773,14 @@ function UpdateDiscountForm({
         discountCodes: discountCodes || [],
       }}
     >
-      {children}
+      {(fetcher: FetcherWithComponents<any>) => (
+        <>
+          {children}
+          {fetcher.data?.error ? (
+            <p className="text-xs text-red-500 mt-1">{fetcher.data.error}</p>
+          ) : null}
+        </>
+      )}
     </CartForm>
   );
 }

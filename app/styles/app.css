@@ -1416,6 +1416,153 @@ button.reset:hover:not(:has(> *)) {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Account profile two-column layout ── */
+
+.account-profile .card-wrapper,
+.account-profile > [data-slot="card"] {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 860px) {
+  .account-profile .card-wrapper,
+  .account-profile > [data-slot="card"] {
+    grid-template-columns: 1fr auto 1fr;
+  }
+}
+
+.account-profile-discount-divider {
+  display: none;
+}
+
+@media (min-width: 860px) {
+  .account-profile-discount-divider {
+    display: block;
+    width: 1px;
+    background-color: hsl(var(--border));
+    margin: 1rem 0;
+  }
+}
+
+.account-profile-discount-section {
+  padding: 1.25rem 1.5rem;
+}
+
+@media (max-width: 859px) {
+  .account-profile-discount-section {
+    border-top: 1px solid hsl(var(--border));
+  }
+}
+
+/* ── Invisible ink effect for discount code ── */
+
+.invisible-ink-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: default;
+}
+
+.invisible-ink-text {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: hsl(var(--primary));
+  filter: blur(12px);
+  user-select: none;
+  transition: filter 1s ease-out;
+}
+
+.invisible-ink-text--large {
+  font-size: 1.75rem;
+}
+
+.invisible-ink-text--revealed {
+  filter: blur(0);
+  user-select: auto;
+}
+
+.invisible-ink-overlay {
+  position: absolute;
+  inset: -4px -8px;
+  border-radius: 6px;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 1.2s ease-out;
+}
+
+.invisible-ink-overlay--revealed {
+  opacity: 0;
+}
+
+.invisible-ink-overlay::before,
+.invisible-ink-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.invisible-ink-overlay::before {
+  background:
+    radial-gradient(circle 2px at 10% 20%,  hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 1px at 25% 65%,  hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 2px at 40% 35%,  hsl(var(--primary) / 0.7) 0%, transparent 100%),
+    radial-gradient(circle 1px at 55% 80%,  hsl(var(--primary) / 0.4) 0%, transparent 100%),
+    radial-gradient(circle 2px at 70% 15%,  hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 1px at 85% 55%,  hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 2px at 15% 80%,  hsl(var(--primary) / 0.3) 0%, transparent 100%),
+    radial-gradient(circle 1px at 60% 45%,  hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 2px at 90% 30%,  hsl(var(--primary) / 0.4) 0%, transparent 100%),
+    radial-gradient(circle 1px at 35% 10%,  hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 2px at 50% 60%,  hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 1px at 75% 75%,  hsl(var(--primary) / 0.4) 0%, transparent 100%),
+    radial-gradient(circle 2px at 20% 45%,  hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 1px at 80% 90%,  hsl(var(--primary) / 0.3) 0%, transparent 100%),
+    radial-gradient(circle 2px at 45% 25%,  hsl(var(--primary) / 0.7) 0%, transparent 100%);
+  animation: invisible-ink-shimmer-a 3s ease-in-out infinite alternate;
+}
+
+.invisible-ink-overlay::after {
+  background:
+    radial-gradient(circle 1px at 5% 50%,   hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 2px at 18% 10%,  hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 1px at 32% 85%,  hsl(var(--primary) / 0.4) 0%, transparent 100%),
+    radial-gradient(circle 2px at 48% 50%,  hsl(var(--primary) / 0.7) 0%, transparent 100%),
+    radial-gradient(circle 1px at 62% 20%,  hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 2px at 78% 65%,  hsl(var(--primary) / 0.3) 0%, transparent 100%),
+    radial-gradient(circle 1px at 92% 40%,  hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 2px at 28% 30%,  hsl(var(--primary) / 0.4) 0%, transparent 100%),
+    radial-gradient(circle 1px at 55% 70%,  hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 2px at 72% 5%,   hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 1px at 42% 90%,  hsl(var(--primary) / 0.3) 0%, transparent 100%),
+    radial-gradient(circle 2px at 88% 15%,  hsl(var(--primary) / 0.5) 0%, transparent 100%),
+    radial-gradient(circle 1px at 8% 75%,   hsl(var(--primary) / 0.4) 0%, transparent 100%),
+    radial-gradient(circle 2px at 65% 40%,  hsl(var(--primary) / 0.6) 0%, transparent 100%),
+    radial-gradient(circle 1px at 38% 55%,  hsl(var(--primary) / 0.5) 0%, transparent 100%);
+  animation: invisible-ink-shimmer-b 2.5s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes invisible-ink-shimmer-a {
+  0%   { transform: translateX(-2px) translateY(-1px); opacity: 0.8; }
+  50%  { transform: translateX(2px) translateY(1px);  opacity: 1;   }
+  100% { transform: translateX(-1px) translateY(2px); opacity: 0.7; }
+}
+
+@keyframes invisible-ink-shimmer-b {
+  0%   { transform: translateX(1px) translateY(2px);  opacity: 1;   }
+  50%  { transform: translateX(-2px) translateY(-1px); opacity: 0.7; }
+  100% { transform: translateX(2px) translateY(-2px); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .invisible-ink-overlay::before,
+  .invisible-ink-overlay::after {
+    animation: none;
+  }
+}
 /* .logo {
   width: 95%;
 }

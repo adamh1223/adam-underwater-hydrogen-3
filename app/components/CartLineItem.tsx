@@ -235,12 +235,14 @@ export function CartLineItem({
   pendingPreview = null,
   provisionalDiscountPercentage = 0,
   suppressOptimisticSkeleton = false,
+  codeDiscountAmount = 0,
 }: {
   layout: CartLayout;
   line: CartLineWithPendingMetadata;
   pendingPreview?: CartPendingLinePreview | null;
   provisionalDiscountPercentage?: number;
   suppressOptimisticSkeleton?: boolean;
+  codeDiscountAmount?: number;
 }) {
   const normalizedLine = normalizePendingLineWithPreview({line, pendingPreview});
   const {id, merchandise} = normalizedLine;
@@ -327,19 +329,37 @@ export function CartLineItem({
   );
   const lineTotalAmount = parseMoneyAmount(normalizedLine?.cost?.totalAmount?.amount);
   const hasServerLineDiscount = lineSubtotalAmount > lineTotalAmount + 0.0001;
+
+  // Order-level discount codes (e.g. WELCOME15) don't reduce line-level
+  // totalAmount or populate per-line discountAllocations. The amount is passed
+  // down from the parent as `codeDiscountAmount`, calculated proportionally
+  // from cart-level discountAllocations.
+  const codeDiscountAllocationTotal = codeDiscountAmount;
+  const hasCodeDiscountAllocation = codeDiscountAllocationTotal > 0.0001;
+  const hasAnyServerDiscount = hasServerLineDiscount || hasCodeDiscountAllocation;
+
   const canApplyProvisionalDiscount =
-    provisionalDiscountPercentage > 0 && !hasServerLineDiscount;
+    provisionalDiscountPercentage > 0 && !hasAnyServerDiscount;
   const effectivePreDiscountAmount =
     lineSubtotalAmount > 0.0001 ? lineSubtotalAmount : lineTotalAmount;
+
+  // For order-level code discounts, subtract the allocation from the line total
+  const lineAmountAfterCodeDiscount = hasCodeDiscountAllocation
+    ? Math.max(0, lineTotalAmount - codeDiscountAllocationTotal)
+    : lineTotalAmount;
+  const effectiveLineTotalAfterAllDiscounts = hasServerLineDiscount
+    ? lineTotalAmount
+    : lineAmountAfterCodeDiscount;
+
   const provisionalDiscountedAmount = canApplyProvisionalDiscount
     ? Math.max(
         0,
         effectivePreDiscountAmount * (1 - provisionalDiscountPercentage / 100),
       )
-    : lineTotalAmount;
+    : effectiveLineTotalAfterAllDiscounts;
   const effectiveLineTotalAmount = canApplyProvisionalDiscount
     ? provisionalDiscountedAmount
-    : lineTotalAmount;
+    : effectiveLineTotalAfterAllDiscounts;
   const displayPriceMoney = normalizedLine?.cost?.totalAmount
     ? createMoneyValue(effectiveLineTotalAmount, currencyCode)
     : normalizedLine?.cost?.totalAmount;
@@ -349,14 +369,20 @@ export function CartLineItem({
           ((lineSubtotalAmount - lineTotalAmount) / lineSubtotalAmount) * 100,
         )
       : 0
-    : canApplyProvisionalDiscount
-      ? provisionalDiscountPercentage
-      : 0;
+    : hasCodeDiscountAllocation
+      ? effectivePreDiscountAmount > 0
+        ? Math.round(
+            (codeDiscountAllocationTotal / effectivePreDiscountAmount) * 100,
+          )
+        : 0
+      : canApplyProvisionalDiscount
+        ? provisionalDiscountPercentage
+        : 0;
   const preDiscountPrice =
-    hasServerLineDiscount || canApplyProvisionalDiscount
+    hasAnyServerDiscount || canApplyProvisionalDiscount
       ? createMoneyValue(effectivePreDiscountAmount, currencyCode)
       : null;
-  const hasLineDiscount = hasServerLineDiscount || canApplyProvisionalDiscount;
+  const hasLineDiscount = hasAnyServerDiscount || canApplyProvisionalDiscount;
   const lineDiscountText = hasLineDiscount
     ? lineDiscountPercent > 0
       ? `${lineDiscountPercent}% discount applied!`

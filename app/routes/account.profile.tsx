@@ -21,6 +21,7 @@ import {
 import {
   Form,
   useActionData,
+  useLoaderData,
   useNavigation,
   useOutletContext,
   type MetaFunction,
@@ -262,8 +263,70 @@ export const meta: MetaFunction = () => {
   return buildIconLinkPreviewMeta('Adam Underwater | My Profile');
 };
 
+const CUSTOMER_ID_QUERY = `#graphql
+  query CustomerIdQuery {
+    customer {
+      id
+    }
+  }
+` as const;
+
 export async function loader({context}: LoaderFunctionArgs) {
-  return {};
+  let welcome15Used = false;
+
+  try {
+    const {data: customerData} = await context.customerAccount.query(
+      CUSTOMER_ID_QUERY,
+    );
+    const customerId = customerData?.customer?.id;
+    if (!customerId) return {welcome15Used};
+
+    const numericId = customerId.replace(/\D/g, '');
+    const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
+    const storeDomain = context.env.PUBLIC_STORE_DOMAIN;
+    const adminDomainEnv = context.env.SHOPIFY_ADMIN_DOMAIN;
+
+    if (adminToken && storeDomain) {
+      const sanitizedStoreDomain = storeDomain.replace(/^https?:\/\//, '');
+      const adminDomain =
+        adminDomainEnv?.replace(/^https?:\/\//, '') ??
+        (sanitizedStoreDomain.includes('myshopify.com')
+          ? sanitizedStoreDomain
+          : null);
+
+      if (adminDomain) {
+        const adminEndpoint = `https://${adminDomain}/admin/api/2025-01/graphql.json`;
+        const response = await fetch(adminEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': adminToken,
+          },
+          body: JSON.stringify({
+            query: `{
+              orders(first: 1, query: "discount_code:WELCOME15 customer_id:${numericId}") {
+                edges {
+                  node {
+                    id
+                  }
+                }
+              }
+            }`,
+          }),
+        });
+
+        if (response.ok) {
+          const json: any = await response.json();
+          const orders = json?.data?.orders?.edges ?? [];
+          welcome15Used = orders.length > 0;
+        }
+      }
+    }
+  } catch {
+    // Silently fail — default to not used
+  }
+
+  return {welcome15Used};
 }
 
 export async function action({request, context}: ActionFunctionArgs) {
@@ -514,6 +577,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 }
 
 export default function AccountProfile() {
+  const {welcome15Used} = useLoaderData<typeof loader>();
   const {customer} = useOutletContext<{customer: CustomerFragment | null}>();
   const navigation = useNavigation();
   const {state} = navigation;
@@ -674,8 +738,8 @@ export default function AccountProfile() {
         <Card className="mx-2 mt-3 w-[95%]">
 
           <Form method="PUT" onSubmit={handleSubmit}>
-            <div className="ps-4">
-              <legend>Account information</legend>
+            <div className="ps-4 pt-4">
+              <h3 className="text-lg font-semibold mb-3">Account Information</h3>
             </div>
             <CardContent className="ps-4">
               <fieldset>
@@ -887,6 +951,52 @@ export default function AccountProfile() {
               </Button>
             </CardAction>
           </Form>
+
+          <div className="account-profile-discount-divider" />
+
+          <div className="account-profile-discount-section">
+            <h3 className="text-lg font-semibold mb-3">Discount Code</h3>
+            {marketingEmail && marketingSmsOnFile ? (
+              <>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Thanks for subscribing! Here&rsquo;s your exclusive discount
+                  code:
+                </p>
+                <div className="invisible-ink-wrapper">
+                  <span className="invisible-ink-text invisible-ink-text--revealed invisible-ink-text--large">
+                    WELCOME15
+                  </span>
+                </div>
+                <li className="text-xs text-muted-foreground mt-2">
+                  Uses remaining: {welcome15Used ? '0' : '1'}
+                </li>
+                <li className="text-xs text-muted-foreground mt-2">
+                  15% off your entire order. Enter this code at checkout. One
+                  use per customer.
+                </li>
+                <li className="text-xs text-muted-foreground mt-2">
+                  Cannot be combined with other discounts
+                </li>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Subscribe to marketing emails and SMS to reveal!
+                </p>
+                <div className="invisible-ink-wrapper">
+                  <span className="invisible-ink-text invisible-ink-text--large">WELCOME15</span>
+                  <div className="invisible-ink-overlay" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Uses remaining: {welcome15Used ? '0' : '1'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Check both marketing boxes above and hit Update to unlock your
+                  discount code.
+                </p>
+              </>
+            )}
+          </div>
         </Card>
       </div>
     </>

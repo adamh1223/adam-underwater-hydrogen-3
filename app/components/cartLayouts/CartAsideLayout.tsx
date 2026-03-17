@@ -51,6 +51,36 @@ export function CartAsideLayout({
     pendingPreviewByMerchandiseId.set(preview.merchandiseId, preview);
   }
 
+  // Calculate per-line code discount amounts from cart-level allocations.
+  // Order-level discount codes (e.g. WELCOME15) only appear in cart-level
+  // discountAllocations, not per-line. Distribute proportionally by line cost.
+  const cartDiscountAllocations = (
+    (cart as any)?.discountAllocations ?? []
+  ) as any[];
+  const totalCodeDiscountSavings = cartDiscountAllocations.reduce(
+    (total: number, allocation: any) => {
+      if (allocation?.__typename !== 'CartCodeDiscountAllocation') return total;
+      const label = (allocation?.code ?? '').toLowerCase();
+      if (label.includes('free shipping')) return total;
+      return total + (Number(allocation?.discountedAmount?.amount) || 0);
+    },
+    0,
+  );
+  const totalLineCosts = visibleCartLines.reduce(
+    (total, line) =>
+      total + (Number(line?.cost?.totalAmount?.amount) || 0),
+    0,
+  );
+  const codeDiscountByLineId = new Map<string, number>();
+  if (totalCodeDiscountSavings > 0.0001 && totalLineCosts > 0.0001) {
+    for (const line of visibleCartLines) {
+      const lineTotal = Number(line?.cost?.totalAmount?.amount) || 0;
+      const lineShare =
+        (lineTotal / totalLineCosts) * totalCodeDiscountSavings;
+      codeDiscountByLineId.set(line.id, lineShare);
+    }
+  }
+
   return (
     <>
       <div className={className}>
@@ -83,6 +113,9 @@ export function CartAsideLayout({
                       provisionalDiscountPercentByMerchandiseId.get(
                         line.merchandise.id,
                       ) ?? 0
+                    }
+                    codeDiscountAmount={
+                      codeDiscountByLineId.get(line.id) ?? 0
                     }
                   />
                 ))}
