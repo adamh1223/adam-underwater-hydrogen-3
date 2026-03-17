@@ -37,7 +37,7 @@ import {
   InputGroupInput,
 } from '~/components/ui/input-group';
 import {LuSearch, LuZoomIn, LuZoomOut} from 'react-icons/lu';
-import {Popover, PopoverAnchor, PopoverContent} from '~/components/ui/popover';
+import {FilterDropdown} from '~/components/ui/popover';
 import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
 import {Tooltip, TooltipContent, TooltipTrigger} from '~/components/ui/tooltip';
 import {Kbd} from '~/components/ui/kbd';
@@ -578,8 +578,7 @@ function SearchFiltersPopover({
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverAnchor asChild>
+    <div className="relative inline-flex">
         <div className="inline-flex">
           <HoverOnlyTooltip
             content={
@@ -596,13 +595,12 @@ function SearchFiltersPopover({
             />
           </HoverOnlyTooltip>
         </div>
-      </PopoverAnchor>
-      <PopoverContent
-        align="start"
-        sideOffset={8}
-        className="z-[1000] w-90 px-2 py-2"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
+        <FilterDropdown
+          open={open}
+          onOpenChange={onOpenChange}
+          sideOffset={8}
+          className="w-90 px-2 py-2"
+        >
         <div className="space-y-4">
           <div className="border-b border-border pb-3">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -796,8 +794,8 @@ function SearchFiltersPopover({
             </div>
           )}
         </div>
-      </PopoverContent>
-    </Popover>
+        </FilterDropdown>
+    </div>
   );
 }
 

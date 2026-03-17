@@ -33,7 +33,7 @@ import React, {
   useState,
 } from 'react';
 import {LuSearch, LuZoomIn, LuZoomOut} from 'react-icons/lu';
-import {Popover, PopoverAnchor, PopoverContent} from '~/components/ui/popover';
+import {FilterDropdown} from '~/components/ui/popover';
 import {
   applyHighestResolutionVariantToProducts,
   parseResolutionValue,
@@ -565,8 +565,7 @@ function PrintsFiltersPopover({
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverAnchor asChild>
+    <div className="relative inline-flex">
         <div className="inline-flex">
           <HoverOnlyTooltip
             content={
@@ -584,12 +583,11 @@ function PrintsFiltersPopover({
             />
           </HoverOnlyTooltip>
         </div>
-      </PopoverAnchor>
-        <PopoverContent
-          align="start"
+        <FilterDropdown
+          open={open}
+          onOpenChange={onOpenChange}
           sideOffset={8}
-          className="z-[1000] w-80 p-2"
-          onOpenAutoFocus={(event) => event.preventDefault()}
+          className="w-80 p-2"
         >
           <div className="space-y-4">
             <div>
@@ -692,8 +690,8 @@ function PrintsFiltersPopover({
               </ToggleGroup>
             </div>
           </div>
-      </PopoverContent>
-    </Popover>
+        </FilterDropdown>
+    </div>
   );
 }
 
@@ -734,8 +732,7 @@ function StockFiltersPopover({
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverAnchor asChild>
+    <div className="relative inline-flex">
         <div className="inline-flex">
           <HoverOnlyTooltip
             content={
@@ -753,12 +750,11 @@ function StockFiltersPopover({
             />
           </HoverOnlyTooltip>
         </div>
-      </PopoverAnchor>
-        <PopoverContent
-          align="start"
+        <FilterDropdown
+          open={open}
+          onOpenChange={onOpenChange}
           sideOffset={8}
-          className="z-[1000] w-80 p-3"
-          onOpenAutoFocus={(event) => event.preventDefault()}
+          className="w-80 p-3"
         >
           <div className="space-y-4">
             <NotchedSlider
@@ -867,8 +863,8 @@ function StockFiltersPopover({
               </ToggleGroup>
             </div>
           </div>
-      </PopoverContent>
-    </Popover>
+        </FilterDropdown>
+    </div>
   );
 }
 
@@ -1009,16 +1005,136 @@ function getHighestResolutionNumber(product: {
   return 4; // default — all products have at least 4K
 }
 
+function applyPrintCollectionFilters<
+  TProduct extends {tags: string[]},
+>(
+  products: TProduct[],
+  filterState: 'All' | 'Horizontal' | 'Vertical',
+  mostPopularFilterState: 'All' | 'Most Popular Only',
+) {
+  return products.filter((product) => {
+    const matchesMostPopularFilter =
+      mostPopularFilterState === 'All' ||
+      product.tags.includes('most-popular');
+
+    if (!matchesMostPopularFilter) return false;
+
+    if (filterState === 'Horizontal') {
+      return (
+        product.tags.includes('horOnly') ||
+        product.tags.includes('horPrimary')
+      );
+    }
+
+    if (filterState === 'Vertical') {
+      return (
+        product.tags.includes('vertOnly') ||
+        product.tags.includes('vertPrimary')
+      );
+    }
+
+    return (
+      product.tags.includes('horOnly') ||
+      product.tags.includes('horPrimary') ||
+      product.tags.includes('vertOnly') ||
+      product.tags.includes('vertPrimary')
+    );
+  });
+}
+
+function applyStockCollectionFilters<
+  TProduct extends {
+    tags: string[];
+    options?: {name?: string; optionValues?: {name?: string}[]}[];
+  },
+>(
+  products: TProduct[],
+  {
+    stockFilterState,
+    durationFilterIndex,
+    resolutionFilterIndex,
+    frameRateFilter,
+    artistPickFilterState,
+  }: {
+    stockFilterState: 'All Clips' | 'Discounted Bundles';
+    durationFilterIndex: number;
+    resolutionFilterIndex: number;
+    frameRateFilter: FrameRateFilter;
+    artistPickFilterState: 'All' | "Artist's Pick Only";
+  },
+) {
+  const maxDuration = DURATION_NOTCHES[durationFilterIndex]?.value ?? Infinity;
+  const minResolution = RESOLUTION_NOTCHES[resolutionFilterIndex]?.value ?? 4;
+
+  return products.filter((product) => {
+    const isBundleProduct = product.tags.includes('Bundle');
+    const matchesArtistPickFilter =
+      artistPickFilterState === 'All' ||
+      product.tags.includes('artist-pick');
+
+    if (!matchesArtistPickFilter) return false;
+
+    if (stockFilterState === 'All Clips') {
+      if (!(product.tags.includes('Video') && !isBundleProduct)) return false;
+    } else if (stockFilterState === 'Discounted Bundles') {
+      if (!isBundleProduct) return false;
+    }
+
+    if (maxDuration !== Infinity) {
+      if (isBundleProduct) {
+        if (!bundleMatchesDuration(product.tags, maxDuration)) return false;
+      } else {
+        const seconds = parseDurationSeconds(product);
+        if (seconds !== null && seconds > maxDuration) return false;
+      }
+    }
+
+    if (minResolution > 4) {
+      if (isBundleProduct) {
+        if (!bundleMatchesResolution(product, minResolution)) return false;
+      } else {
+        const highest = getHighestResolutionNumber(product);
+        if (highest < minResolution) return false;
+      }
+    }
+
+    if (frameRateFilter !== 'all') {
+      if (isBundleProduct) {
+        if (!bundleMatchesFrameRate(product.tags, frameRateFilter))
+          return false;
+      } else if (frameRateFilter === '24fps') {
+        if (product.tags.includes('slowmo')) return false;
+      } else if (frameRateFilter === 'slowmo') {
+        if (!product.tags.includes('slowmo')) return false;
+      }
+    }
+
+    return true;
+  });
+}
+
 function getFilteredCollectionSearchProducts({
   products,
   collectionHandle,
   collectionTitle,
+  filterState,
+  mostPopularFilterState,
   stockFilterState,
+  durationFilterIndex,
+  resolutionFilterIndex,
+  frameRateFilter,
+  artistPickFilterState,
 }: {
   products: EnhancedPartialSearchResult[];
   collectionHandle?: string;
   collectionTitle?: string | null;
+  filterState: 'All' | 'Horizontal' | 'Vertical';
+  mostPopularFilterState: 'All' | 'Most Popular Only';
   stockFilterState: 'All Clips' | 'Discounted Bundles';
+  durationFilterIndex: number;
+  resolutionFilterIndex: number;
+  frameRateFilter: FrameRateFilter;
+  artistPickFilterState: 'All' | "Artist's Pick Only";
 }) {
   const extraTags: string[] = [];
   const collectionName = capitalizeFirstLetter(collectionTitle ?? '');
@@ -1041,20 +1157,24 @@ function getFilteredCollectionSearchProducts({
     ...extraFilteredProducts,
   ];
 
+  if (collectionHandle === 'prints') {
+    return applyPrintCollectionFilters(
+      combinedProductSearches,
+      filterState,
+      mostPopularFilterState,
+    );
+  }
+
   if (collectionHandle !== 'stock') {
     return combinedProductSearches;
   }
 
-  return combinedProductSearches.filter((product) => {
-    if (stockFilterState === 'All Clips') {
-      return product.tags.includes('Video') && !product.tags.includes('Bundle');
-    }
-
-    if (stockFilterState === 'Discounted Bundles') {
-      return product.tags.includes('Bundle');
-    }
-
-    return true;
+  return applyStockCollectionFilters(combinedProductSearches, {
+    stockFilterState,
+    durationFilterIndex,
+    resolutionFilterIndex,
+    frameRateFilter,
+    artistPickFilterState,
   });
 }
 
@@ -1209,13 +1329,25 @@ export default function Collection() {
           : []) as EnhancedPartialSearchResult[],
         collectionHandle: collection?.handle,
         collectionTitle: collection?.title,
+        filterState,
+        mostPopularFilterState,
         stockFilterState,
+        durationFilterIndex,
+        resolutionFilterIndex,
+        frameRateFilter,
+        artistPickFilterState,
       }),
     [
       searchFetcher.data,
       collection?.handle,
       collection?.title,
+      filterState,
+      mostPopularFilterState,
       stockFilterState,
+      durationFilterIndex,
+      resolutionFilterIndex,
+      frameRateFilter,
+      artistPickFilterState,
     ],
   );
   const predictiveQueries =
@@ -1435,83 +1567,27 @@ export default function Collection() {
     let filteredCollection = baseConnection.nodes;
 
     if (collection?.handle === 'prints') {
-      filteredCollection = baseConnection.nodes?.filter((p: any) => {
-        const matchesMostPopularFilter =
-          mostPopularFilterState === 'All' || p.tags.includes('most-popular');
-
-        if (!matchesMostPopularFilter) return false;
-
-        if (filterState === 'All') {
-          return (
-            p.tags.includes('horOnly') ||
-            p.tags.includes('horPrimary') ||
-            p.tags.includes('vertOnly') ||
-            p.tags.includes('vertPrimary')
-          );
-        }
-        if (filterState === 'Horizontal') {
-          return p.tags.includes('horOnly') || p.tags.includes('horPrimary');
-        }
-        if (filterState === 'Vertical') {
-          return p.tags.includes('vertOnly') || p.tags.includes('vertPrimary');
-        }
-      });
+      filteredCollection = applyPrintCollectionFilters(
+        baseConnection.nodes as Array<{tags: string[]}>,
+        filterState,
+        mostPopularFilterState,
+      );
     }
 
     if (collection?.handle === 'stock') {
-      const maxDuration =
-        DURATION_NOTCHES[durationFilterIndex]?.value ?? Infinity;
-      const minResolution =
-        RESOLUTION_NOTCHES[resolutionFilterIndex]?.value ?? 4;
-
-      filteredCollection = baseConnection.nodes?.filter((p: any) => {
-        const isBundleProduct = p.tags.includes('Bundle');
-        const matchesArtistPickFilter =
-          artistPickFilterState === 'All' || p.tags.includes('artist-pick');
-
-        if (!matchesArtistPickFilter) return false;
-
-        // Existing clip-type filter
-        if (stockFilterState === 'All Clips') {
-          if (!(p.tags.includes('Video') && !isBundleProduct)) return false;
-        } else if (stockFilterState === 'Discounted Bundles') {
-          if (!isBundleProduct) return false;
-        }
-
-        // Duration filter
-        if (maxDuration !== Infinity) {
-          if (isBundleProduct) {
-            if (!bundleMatchesDuration(p.tags, maxDuration)) return false;
-          } else {
-            const seconds = parseDurationSeconds(p);
-            // If no duration tag, include the product (don't exclude unknown durations)
-            if (seconds !== null && seconds > maxDuration) return false;
-          }
-        }
-
-        // Resolution filter
-        if (minResolution > 4) {
-          if (isBundleProduct) {
-            if (!bundleMatchesResolution(p, minResolution)) return false;
-          } else {
-            const highest = getHighestResolutionNumber(p);
-            if (highest < minResolution) return false;
-          }
-        }
-
-        // Frame rate filter
-        if (frameRateFilter !== 'all') {
-          if (isBundleProduct) {
-            if (!bundleMatchesFrameRate(p.tags, frameRateFilter)) return false;
-          } else if (frameRateFilter === '24fps') {
-            if (p.tags.includes('slowmo')) return false;
-          } else if (frameRateFilter === 'slowmo') {
-            if (!p.tags.includes('slowmo')) return false;
-          }
-        }
-
-        return true;
-      });
+      filteredCollection = applyStockCollectionFilters(
+        baseConnection.nodes as Array<{
+          tags: string[];
+          options?: {name?: string; optionValues?: {name?: string}[]}[];
+        }>,
+        {
+          stockFilterState,
+          durationFilterIndex,
+          resolutionFilterIndex,
+          frameRateFilter,
+          artistPickFilterState,
+        },
+      );
     }
 
     setProductState({

@@ -86,7 +86,11 @@ export const ProductCarousel = ({
   isLoggedIn: Promise<boolean> | boolean | undefined;
   compactHighlightGlow?: boolean;
   disableFocusWithinHighlight?: boolean;
-  renderContext?: 'default' | 'aside-search' | 'search-page-all';
+  renderContext?:
+    | 'default'
+    | 'aside-search'
+    | 'search-page-all'
+    | 'you-may-also-like';
 }) => {
   // If caller passed a string id by mistake, bail out gracefully
   if (typeof product === 'string') {
@@ -112,6 +116,7 @@ export const ProductCarousel = ({
     prod as collectionProduct;
   const isAsideSearch = renderContext === 'aside-search';
   const isSearchPageAll = renderContext === 'search-page-all';
+  const isYouMayAlsoLike = renderContext === 'you-may-also-like';
 
   // Persistent "held" highlight on print cards should only come from touch drag logic,
   // not from mouse click/focus states.
@@ -733,7 +738,11 @@ export const ProductCarousel = ({
               </div>
             )}
             {totalItems > 1 && layout === 'list' && isHorizontal && (
-              <div className="carousel-preview-dots-list absolute bottom-[4px] left-0 right-0 z-50 pointer-events-none flex items-end justify-center gap-3 h-28 pt-[28px]">
+              <div
+                className={`carousel-preview-dots-list absolute left-0 right-0 z-50 pointer-events-none flex items-end justify-center gap-3 h-28 pt-[28px] ${
+                  isYouMayAlsoLike ? 'bottom-[8px]' : 'bottom-[4px]'
+                }`}
+              >
                 {Array.from({length: totalItems}).map((_, idx) => (
                   <button
                     key={idx}

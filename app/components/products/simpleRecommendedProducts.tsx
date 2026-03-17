@@ -165,6 +165,7 @@ function SimpleRecommendedProducts({
                                     isLoggedIn={isLoggedInPromise}
                                     compactHighlightGlow
                                     disableFocusWithinHighlight
+                                    renderContext="you-may-also-like"
                                   />
                                 )}
                               </div>
