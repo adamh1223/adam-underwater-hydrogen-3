@@ -1134,7 +1134,7 @@ button.reset:hover:not(:has(> *)) {
   flex-wrap: wrap;
   max-width: 100%;
   row-gap: 0.125rem;
-  column-gap: 0.5rem;
+  column-gap: 0.3rem;
 }
 
 .product-price-on-sale s {
