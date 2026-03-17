@@ -774,14 +774,56 @@ function UpdateDiscountForm({
       }}
     >
       {(fetcher: FetcherWithComponents<any>) => (
-        <>
+        <DiscountCodeErrorMessage fetcher={fetcher}>
           {children}
-          {fetcher.data?.error ? (
-            <p className="text-xs text-red-500 mt-1">{fetcher.data.error}</p>
-          ) : null}
-        </>
+        </DiscountCodeErrorMessage>
       )}
     </CartForm>
+  );
+}
+
+const WELCOME15_LOGIN_ERROR =
+  'You must be logged in to use the WELCOME15 discount code.';
+
+function DiscountCodeErrorMessage({
+  fetcher,
+  children,
+}: {
+  fetcher: FetcherWithComponents<any>;
+  children: React.ReactNode;
+}) {
+  const currentError =
+    typeof fetcher.data?.error === 'string' ? fetcher.data.error : null;
+  const [visibleError, setVisibleError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (fetcher.state !== 'idle') return;
+
+    if (!currentError) {
+      setVisibleError(null);
+      return;
+    }
+
+    setVisibleError(currentError);
+
+    if (currentError !== WELCOME15_LOGIN_ERROR) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setVisibleError((previousError) =>
+        previousError === currentError ? null : previousError,
+      );
+    }, 5000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [currentError, fetcher.state]);
+
+  return (
+    <>
+      {children}
+      {visibleError ? (
+        <p className="text-xs text-red-500 mt-1">{visibleError}</p>
+      ) : null}
+    </>
   );
 }
 

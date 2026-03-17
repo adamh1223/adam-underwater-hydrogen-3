@@ -8,6 +8,8 @@ import {Kbd} from '~/components/ui/kbd';
 
 const STOCK_SWIPE_ASSET_BASE_URL =
   'https://downloads.adamunderwater.com/shared/stock-swipe';
+const HAND_TOGGLE_ICON_URL =
+  'https://downloads.adamunderwater.com/store-1-au/public/hand-icon.png';
 
 const STOCK_SWIPE_IMAGE_EXTENSIONS = [
   'jpg',
@@ -355,14 +357,15 @@ export default function VideoResolutionSwipeSection({
                         aria-label={mode === 'swipe' ? 'Switch to pan mode' : 'Switch to swipe mode'}
                       >
                         {mode === 'swipe' ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 11V3.5a1.5 1.5 0 0 0-3 0V11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M15 9.4V5.5a1.5 1.5 0 0 0-3 0v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M12 10.5V7.5a1.5 1.5 0 0 0-3 0v7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M9 14.5V11.5a1.5 1.5 0 0 0-3 0v3.5a7 7 0 0 0 14 0v-4a1.5 1.5 0 0 0-3 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <img
+                            src={HAND_TOGGLE_ICON_URL}
+                            alt=""
+                            aria-hidden="true"
+                            className="pointer-events-none h-6 w-6 -translate-x-0.249 object-contain"
+                            draggable={false}
+                          />
                         ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                             <path d="M8 12h8M8 12l2-2M8 12l2 2M16 12l-2-2M16 12l-2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
@@ -532,14 +535,15 @@ export default function VideoResolutionSwipeSection({
                         aria-label={mode === 'swipe' ? 'Switch to pan mode' : 'Switch to swipe mode'}
                       >
                         {mode === 'swipe' ? (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M18 11V3.5a1.5 1.5 0 0 0-3 0V11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M15 9.4V5.5a1.5 1.5 0 0 0-3 0v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M12 10.5V7.5a1.5 1.5 0 0 0-3 0v7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M9 14.5V11.5a1.5 1.5 0 0 0-3 0v3.5a7 7 0 0 0 14 0v-4a1.5 1.5 0 0 0-3 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <img
+                            src={HAND_TOGGLE_ICON_URL}
+                            alt=""
+                            aria-hidden="true"
+                            className="pointer-events-none h-6 w-6 -translate-x-0.249 object-contain"
+                            draggable={false}
+                          />
                         ) : (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                             <path d="M8 12h8M8 12l2-2M8 12l2 2M16 12l-2-2M16 12l-2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
