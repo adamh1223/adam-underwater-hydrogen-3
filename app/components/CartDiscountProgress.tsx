@@ -1,3 +1,6 @@
+import {Link} from '@remix-run/react';
+import {useAside} from './Aside';
+import {Button} from './ui/button';
 import {Progress} from './ui/progress';
 
 type DiscountProgressConfig = {
@@ -6,6 +9,7 @@ type DiscountProgressConfig = {
   itemLabelSingular: string;
   itemLabelPlural: string;
   discountPercent: number;
+  collectionPath: string;
 };
 
 function DiscountProgressBar({
@@ -14,7 +18,9 @@ function DiscountProgressBar({
   itemLabelSingular,
   itemLabelPlural,
   discountPercent,
+  collectionPath,
 }: DiscountProgressConfig) {
+  const {close} = useAside();
   const remaining = Math.max(0, requiredCount - currentCount);
   const progressPercent = Math.min(
     100,
@@ -38,9 +44,15 @@ function DiscountProgressBar({
           {discountPercent}% off {itemLabelPlural} applied!
         </p>
       ) : (
-        <p className="text-xs text-center text-primary/80">
-          Add {remaining} more {itemLabel} for a {discountPercent}% discount!
-        </p>
+        <Button
+          asChild
+          variant="secondary"
+          className="h-auto w-full whitespace-normal px-2 py-1 text-xs font-normal text-primary/80 hover:text-primary/80"
+        >
+          <Link to={collectionPath} onClick={close} prefetch="viewport">
+            Add {remaining} more {itemLabel} for a {discountPercent}% discount!
+          </Link>
+        </Button>
       )}
     </div>
   );
@@ -71,6 +83,7 @@ export function CartDiscountProgress({
       itemLabelSingular: 'print',
       itemLabelPlural: 'prints',
       discountPercent: 15,
+      collectionPath: '/collections/prints',
     });
   }
 
@@ -81,6 +94,7 @@ export function CartDiscountProgress({
       itemLabelSingular: 'stock footage clip',
       itemLabelPlural: 'stock footage clips',
       discountPercent: 15,
+      collectionPath: '/collections/stock',
     });
   }
 
