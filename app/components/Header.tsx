@@ -1019,7 +1019,7 @@ function HeaderCtas({
                     to="/account/login"
                     onClick={() => setAccountMenuOpen(false)}
                   >
-                    <Button variant="ghost" className="mb-3 cursor-pointer">
+                    <Button variant="ghost" className=" cursor-pointer">
                       <div className="flex justify-start items-center me-3">
                         <img
                           src={cloudflarePublicAssetUrl('signup-icon.png')}

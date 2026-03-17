@@ -21,6 +21,7 @@ import {
 } from './ui/table';
 import StockForm from './form/StockForm';
 import type {RootLoader} from '~/root';
+import {CartDiscountProgress} from './CartDiscountProgress';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -562,6 +563,13 @@ export function CartSummary({
                 )}
               </div>
             </div>
+            <CartDiscountProgress
+              printQuantity={printQuantity}
+              stockClipQuantity={stockClipQuantity}
+              stockBundleQuantity={stockBundleQuantity}
+              qualifiesForPrintDiscount={qualifiesForPrintBulkDiscount}
+              qualifiesForStockClipDiscount={qualifiesForStockBulkDiscount}
+            />
             {showFreeShippingOnlyMessage ? (
               <div className="mt-2">
                 <p className="text-sm font-medium text-primary">
