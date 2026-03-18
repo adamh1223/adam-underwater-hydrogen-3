@@ -450,8 +450,8 @@ export function CartLineItem({
           }`}
         >
          
-          {/* ✔0px-600px stock clip OR horizontal print in cart */}
-          {windowWidth != undefined && windowWidth <= 600 && usesStockLayout && (
+          {/* ✔0px-650px stock clip OR horizontal print in cart */}
+          {windowWidth != undefined && windowWidth <= 650 && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -494,52 +494,8 @@ export function CartLineItem({
               )}
             </>
           )}
-          {/* ✔601px-1023px stock clip OR horizontal print in cart */}
-          {windowWidth != undefined && windowWidth > 600 && windowWidth < 1024 && usesStockLayout && (
-            <>
-              <div>
-                <Link
-                  prefetch="intent"
-                  to={lineItemUrl}
-                  onClick={() => {
-                    if (layout === 'aside') {
-                      close();
-                    }
-                  }}
-                >
-                  <div className="flex flex-row min-w-0">
-                    {usesStockLayout && (
-                      <img
-                        alt={title}
-                        src={image?.url}
-                        loading="lazy"
-                        className="cart-line-stock-product-img rounded-md"
-                      />
-                    )}
-                    <div className="ps-1 cart-line-text min-w-0 flex-1">
-                      <div className='product-title'>{product.title}</div>
-                      {showInlineDescription && cartDescription && (
-                        <div className="cart-description">
-                          {cartDescription}
-                        </div>
-                      )}
-                      <div className='product-price'>
-                        {linePrice}
-                        </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {!hasOnlyDefaultTitle && (
-                <div>
-                  <CartLineOptionSelectors line={normalizedLine} className="pt-2" />
-                </div>
-              )}
-            </>
-          )}
-          {/* ✔1024px+ stock clip OR horizontal print in cart */}
-          {windowWidth != undefined && windowWidth >= 1024 && usesStockLayout && (
+          {/* ✔651px+ stock clip OR horizontal print in aside cart only (stacked) */}
+          {windowWidth != undefined && windowWidth > 650 && layout === 'aside' && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -580,6 +536,52 @@ export function CartLineItem({
                   <CartLineOptionSelectors line={normalizedLine} className="pt-2" />
                 </div>
               )}
+            </>
+          )}
+          {/* ✔651px+ stock clip OR horizontal print in cart page (side-by-side) */}
+          {windowWidth != undefined && windowWidth > 650 && usesStockLayout && layout === 'page' && (
+            <>
+              <div className="flex flex-row min-w-0 gap-4 items-start">
+                <div className="min-w-0 flex-1">
+                  <Link
+                    prefetch="intent"
+                    to={lineItemUrl}
+                    onClick={() => {
+                      if (layout === 'aside') {
+                        close();
+                      }
+                    }}
+                  >
+                    <div className="flex flex-row min-w-0">
+                      {usesStockLayout && (
+                        <img
+                          alt={title}
+                          src={image?.url}
+                          loading="lazy"
+                          className="cart-line-stock-product-img rounded-md"
+                        />
+                      )}
+                      <div className="ps-2 cart-line-text min-w-0 flex-1">
+                        <div className='product-title'>{product.title}</div>
+                        {showInlineDescription && cartDescription && (
+                          <div className="cart-description">
+                            {cartDescription}
+                          </div>
+                        )}
+                        <div className='product-price'>
+                          {linePrice}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+
+                {!hasOnlyDefaultTitle && (
+                  <div className="flex-shrink-0">
+                    <CartLineOptionSelectors line={normalizedLine} />
+                  </div>
+                )}
+              </div>
             </>
           )}
           {/* {windowWidth != undefined && windowWidth > 1023 && usesStockLayout && (
@@ -625,9 +627,9 @@ export function CartLineItem({
               )}
             </>
           )} */}
-          {/* ✔0px-600px vertical print in cart */}
+          {/* ✔0px-650px vertical print in cart */}
           {windowWidth != undefined &&
-            windowWidth <= 600 &&
+            windowWidth <= 650 &&
             isVerticalProduct && (
               <>
                 <div>
@@ -669,10 +671,10 @@ export function CartLineItem({
                 )}
               </>
             )}
-          {/* ✔601px-1279px vertical print in cart */}
+          {/* ✔651px+ vertical print in aside cart only (stacked) */}
           {windowWidth != undefined &&
-            windowWidth < 1280 &&
-            windowWidth > 600 &&
+            windowWidth > 650 &&
+            layout === 'aside' &&
             isVerticalProduct && (
               <>
                 <div>
@@ -702,7 +704,6 @@ export function CartLineItem({
                           </div>
                         )}
                         <div className='product-price'>
-
                         {linePrice}
                         </div>
                       </div>
@@ -717,48 +718,101 @@ export function CartLineItem({
                 )}
               </>
             )}
-          {/* ✔1280px+ vertical print in cart */}
+          {/* ✔651px-1279px vertical print in cart page (side-by-side) */}
+          {windowWidth != undefined &&
+            windowWidth > 650 &&
+            windowWidth < 1280 &&
+            isVerticalProduct &&
+            layout === 'page' && (
+              <>
+                <div className="flex flex-row min-w-0 gap-4 items-start">
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      prefetch="intent"
+                      to={lineItemUrl}
+                      onClick={() => {
+                        if (layout === 'aside') {
+                          close();
+                        }
+                      }}
+                    >
+                      <div className="flex flex-row min-w-0">
+                        {isVerticalProduct && (
+                          <img
+                            alt={title}
+                            src={image?.url}
+                            loading="lazy"
+                            className="cart-line-vertical-product-img rounded-md"
+                          />
+                        )}
+                        <div className="ps-2 cart-line-text min-w-0 flex-1">
+                          <div className='product-title'>{product.title}</div>
+                          {showInlineDescription && cartDescription && (
+                            <div className="cart-description">
+                              {cartDescription}
+                            </div>
+                          )}
+                          <div className='product-price'>
+                          {linePrice}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+
+                  {!hasOnlyDefaultTitle && (
+                    <div className="flex-shrink-0">
+                      <CartLineOptionSelectors line={normalizedLine} />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          {/* ✔1280px+ vertical print in cart (side-by-side, page only) */}
           {windowWidth != undefined &&
             windowWidth >= 1280 &&
-            isVerticalProduct && (
+            isVerticalProduct &&
+            layout === 'page' && (
               <>
-                <div>
-                  <Link
-                    prefetch="intent"
-                    to={lineItemUrl}
-                    onClick={() => {
-                      if (layout === 'aside') {
-                        close();
-                      }
-                    }}
-                  >
-                    <div className="flex flex-row min-w-0">
-                      {isVerticalProduct && (
-                        <img
-                          alt={title}
-                          src={image?.url}
-                          loading="lazy"
-                          className="cart-line-vertical-product-img rounded-md"
-                        />
-                      )}
-                      <div className="ps-3 cart-line-text min-w-0 flex-1">
-                        <strong>{product.title}</strong>
-                        {showInlineDescription && cartDescription && (
-                          <div className="cart-description">
-                            {cartDescription}
-                          </div>
+                <div className="flex flex-row min-w-0 gap-4 items-start">
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      prefetch="intent"
+                      to={lineItemUrl}
+                      onClick={() => {
+                        if (layout === 'aside') {
+                          close();
+                        }
+                      }}
+                    >
+                      <div className="flex flex-row min-w-0">
+                        {isVerticalProduct && (
+                          <img
+                            alt={title}
+                            src={image?.url}
+                            loading="lazy"
+                            className="cart-line-vertical-product-img rounded-md"
+                          />
                         )}
-                        {linePrice}
+                        <div className="ps-3 cart-line-text min-w-0 flex-1">
+                          <strong>{product.title}</strong>
+                          {showInlineDescription && cartDescription && (
+                            <div className="cart-description">
+                              {cartDescription}
+                            </div>
+                          )}
+                          {linePrice}
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </div>
-
-                {!hasOnlyDefaultTitle && (
-                  <div>
-                    <CartLineOptionSelectors line={normalizedLine} className="pt-3" />
+                    </Link>
                   </div>
-                )}
+
+                  {!hasOnlyDefaultTitle && (
+                    <div className="flex-shrink-0">
+                      <CartLineOptionSelectors line={normalizedLine} />
+                    </div>
+                  )}
+                </div>
               </>
             )}
           {/* 1280px+ All products */}

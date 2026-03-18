@@ -1787,6 +1787,19 @@ button.reset:hover:not(:has(> *)) {
     column-gap: 0.45rem;
   }
 }
+@media (min-width: 651px) {
+  .cart-details .cart-option-grid {
+    grid-template-columns: auto auto;
+    width: auto;
+  }
+  .cart-details .cart-option-select {
+    width: auto;
+    min-width: 10rem;
+  }
+  .cart-details .cart-line-vertical-product {
+    grid-template-rows: auto;
+  }
+}
 @media (min-width: 601px) {
   .cart-quantity {
     font-size: 16px;
