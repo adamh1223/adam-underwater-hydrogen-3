@@ -440,7 +440,7 @@ export function CartLineItem({
 
   return (
     <Card className="mb-2">
-      <CartLineBodyComponent className={isMobileView ? 'p-2' : undefined}>
+      <CartLineBodyComponent className={windowWidth != undefined && windowWidth < 1024 ? 'ps-2 py-2 pe-[6px]' : undefined}>
           <li
           key={id}
           className={`${
@@ -495,7 +495,51 @@ export function CartLineItem({
             </>
           )}
           {/* ✔601px-1023px stock clip OR horizontal print in cart */}
-          {windowWidth != undefined && windowWidth > 600 && usesStockLayout && (
+          {windowWidth != undefined && windowWidth > 600 && windowWidth < 1024 && usesStockLayout && (
+            <>
+              <div>
+                <Link
+                  prefetch="intent"
+                  to={lineItemUrl}
+                  onClick={() => {
+                    if (layout === 'aside') {
+                      close();
+                    }
+                  }}
+                >
+                  <div className="flex flex-row min-w-0">
+                    {usesStockLayout && (
+                      <img
+                        alt={title}
+                        src={image?.url}
+                        loading="lazy"
+                        className="cart-line-stock-product-img rounded-md"
+                      />
+                    )}
+                    <div className="ps-1 cart-line-text min-w-0 flex-1">
+                      <div className='product-title'>{product.title}</div>
+                      {showInlineDescription && cartDescription && (
+                        <div className="cart-description">
+                          {cartDescription}
+                        </div>
+                      )}
+                      <div className='product-price'>
+                        {linePrice}
+                        </div>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {!hasOnlyDefaultTitle && (
+                <div>
+                  <CartLineOptionSelectors line={normalizedLine} className="pt-2" />
+                </div>
+              )}
+            </>
+          )}
+          {/* ✔1024px+ stock clip OR horizontal print in cart */}
+          {windowWidth != undefined && windowWidth >= 1024 && usesStockLayout && (
             <>
               <div>
                 <Link
@@ -538,7 +582,6 @@ export function CartLineItem({
               )}
             </>
           )}
-          {/* ✔1024px+ stock clip OR horizontal print in cart */}
           {/* {windowWidth != undefined && windowWidth > 1023 && usesStockLayout && (
             <>
               <div>
@@ -759,6 +802,7 @@ export function CartLineItem({
         </li>
         <CartLineQuantity
           line={normalizedLine}
+          layout={layout}
           windowWidth={windowWidth}
           showPendingPrintControlLook={Boolean(
             pendingPreview && normalizedLine.isOptimistic,
@@ -977,6 +1021,7 @@ function toOptionInputId(value: string) {
  */
 function CartLineQuantity({
   line,
+  layout,
   windowWidth,
   showPendingPrintControlLook,
   hideQuantityButtons,
@@ -987,6 +1032,7 @@ function CartLineQuantity({
   isStockClipLine,
 }: {
   line: CartLineWithPendingMetadata;
+  layout: CartLayout;
   windowWidth?: number;
   showPendingPrintControlLook: boolean;
   hideQuantityButtons: boolean;
@@ -1031,6 +1077,7 @@ function CartLineQuantity({
     .join(' ');
   const quantityClassName = [
     'cart-line-quantity',
+    layout === 'page' ? 'is-cart-page-layout' : '',
     isTabletStockLayout ? 'is-tablet-stock-layout' : '',
     isStockClipLine ? 'is-stock-clip-line' : '',
   ]

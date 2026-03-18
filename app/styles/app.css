@@ -493,6 +493,14 @@ button.reset:hover:not(:has(> *)) {
   align-self: center;
 }
 
+.cart-line-quantity.is-cart-page-layout.is-stock-clip-line
+  .cart-line-footer-discount-inline {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  line-height: 1;
+}
+
 .cart-line-footer-discount {
   margin: 0;
   line-height: 1.2;
