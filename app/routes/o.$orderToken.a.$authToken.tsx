@@ -1,12 +1,19 @@
-import {type LoaderFunctionArgs, type MetaFunction} from '@shopify/remix-oxygen';
-import {useLoaderData, Link} from '@remix-run/react';
+import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
+import {Card, CardContent} from '~/components/ui/card';
+import {Button} from '~/components/ui/button';
+import {useEffect, useState} from 'react';
+import {ArrowLeft} from 'lucide-react';
+import Sectiontitle from '~/components/global/Sectiontitle';
 
 const PICKUP_ADDRESS_TEXT = '1080 8th Ave, San Diego, CA 92101';
-const PICKUP_ADDRESS_MAP_URL = `https://maps.apple.com/?q=${encodeURIComponent(
+const PICKUP_ADDRESS_APPLE_MAPS_URL = `https://maps.apple.com/?q=${encodeURIComponent(
   PICKUP_ADDRESS_TEXT,
 )}`;
+
+const DOWNLOAD_TAG_PREFIXES = ['r2:', 'r2key:', 'r2-key:', 'r2/'] as const;
 
 const ADMIN_ORDER_BY_TOKEN_QUERY = `#graphql
   query AdminOrderByToken($query: String!) {
@@ -58,10 +65,17 @@ const ADMIN_ORDER_BY_TOKEN_QUERY = `#graphql
         }
         lineItems(first: 50) {
           nodes {
+            id
             title
             quantity
             variantTitle
             originalTotalSet {
+              shopMoney {
+                amount
+                currencyCode
+              }
+            }
+            discountedTotalSet {
               shopMoney {
                 amount
                 currencyCode
@@ -72,6 +86,16 @@ const ADMIN_ORDER_BY_TOKEN_QUERY = `#graphql
               altText
               width
               height
+            }
+            variant {
+              id
+              title
+              product {
+                id
+                title
+                handle
+                tags
+              }
             }
           }
         }
@@ -84,6 +108,31 @@ const ADMIN_ORDER_BY_TOKEN_QUERY = `#graphql
     }
   }
 ` as const;
+
+type AdminLineItem = {
+  id: string;
+  title: string;
+  quantity: number;
+  variantTitle: string | null;
+  originalTotalSet: {shopMoney: {amount: string; currencyCode: string}};
+  discountedTotalSet: {shopMoney: {amount: string; currencyCode: string}};
+  image: {
+    url: string;
+    altText: string | null;
+    width: number;
+    height: number;
+  } | null;
+  variant: {
+    id: string;
+    title: string | null;
+    product: {
+      id: string;
+      title: string;
+      handle: string;
+      tags: string[];
+    } | null;
+  } | null;
+};
 
 type AdminOrderNode = {
   id: string;
@@ -111,25 +160,14 @@ type AdminOrderNode = {
     country?: string | null;
   } | null;
   lineItems: {
-    nodes: Array<{
-      title: string;
-      quantity: number;
-      variantTitle: string | null;
-      originalTotalSet: {shopMoney: {amount: string; currencyCode: string}};
-      image: {
-        url: string;
-        altText: string | null;
-        width: number;
-        height: number;
-      } | null;
-    }>;
+    nodes: AdminLineItem[];
   };
   events: {
     nodes: Array<{message: string | null}>;
   };
 };
 
-function isPickupOrder(
+function isPickupOrderPurchaseMethod(
   shippingLine?: AdminOrderNode['shippingLine'],
 ): boolean {
   if (!shippingLine) return false;
@@ -151,85 +189,64 @@ function isPickupOrder(
   );
 }
 
-function getPickupStatusFromEvents(
-  events: Array<{message: string | null}>,
-): string | null {
-  for (const event of events) {
-    const msg = event.message?.toLowerCase().trim() ?? '';
-    if (!msg) continue;
+function getPickupStatusFromOrderEvents(
+  eventMessages: Array<string | null | undefined>,
+): 'READY_FOR_PICKUP' | 'PICKED_UP' | null {
+  for (const message of eventMessages) {
+    const normalizedMessage = message?.toLowerCase().trim() ?? '';
+    if (!normalizedMessage) continue;
 
     if (
-      msg.includes('marked as picked up') ||
-      msg.includes('mark as picked up') ||
-      (msg.includes('picked up') &&
-        (msg.includes('order') || msg.includes('pickup')))
+      normalizedMessage.includes('marked as picked up') ||
+      normalizedMessage.includes('mark as picked up') ||
+      (normalizedMessage.includes('picked up') &&
+        (normalizedMessage.includes('order') ||
+          normalizedMessage.includes('pickup')))
     ) {
       return 'PICKED_UP';
     }
 
-    if (msg.includes('ready for pickup')) {
+    if (normalizedMessage.includes('ready for pickup')) {
       return 'READY_FOR_PICKUP';
     }
   }
+
   return null;
 }
 
-function getDisplayStatus(
-  fulfillmentStatus: string | null,
-  events: Array<{message: string | null}>,
-): string {
-  const pickupStatus = getPickupStatusFromEvents(events);
-  const status = (
-    pickupStatus ??
-    fulfillmentStatus ??
-    ''
-  )
-    .trim()
-    .toUpperCase();
+function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string {
+  const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
+  if (!normalizedStatus) return 'Preparing Shipment';
 
-  switch (status) {
-    case 'FULFILLED':
+  switch (normalizedStatus) {
     case 'SUCCESS':
     case 'DELIVERED':
+    case 'FULFILLED':
       return 'Shipped';
     case 'READY_FOR_PICKUP':
-      return 'Ready for Pickup';
+      return 'Ready for pickup';
     case 'PICKED_UP':
-      return 'Picked Up';
-    case 'IN_TRANSIT':
-      return 'In Transit';
+      return 'Picked up in store';
     case 'CANCELLED':
       return 'Cancelled';
-    case 'UNFULFILLED':
-      return 'Preparing';
-    case 'PARTIALLY_FULFILLED':
-      return 'Partially Fulfilled';
+    case 'ERROR':
+    case 'FAILURE':
+    case 'THERE_WAS_A_PROBLEM':
+      return 'There Was a Problem';
     default:
-      return status ? status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : 'Processing';
+      return 'Preparing Shipment';
   }
 }
 
-function getPaymentStatus(financialStatus: string | null): string {
-  const status = (financialStatus ?? '').trim().toUpperCase();
-  switch (status) {
-    case 'PAID':
-      return 'Paid';
-    case 'PENDING':
-      return 'Payment Pending';
-    case 'REFUNDED':
-      return 'Refunded';
-    case 'PARTIALLY_REFUNDED':
-      return 'Partially Refunded';
-    case 'VOIDED':
-      return 'Voided';
-    default:
-      return status ? status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : 'Pending';
-  }
+function hasDownloadTag(tags: string[]): boolean {
+  return tags.some((tag) =>
+    DOWNLOAD_TAG_PREFIXES.some((prefix) => tag.trim().startsWith(prefix)),
+  );
 }
 
 function formatMoney(amount: string, currencyCode: string): string {
   const num = parseFloat(amount);
-  if (isNaN(num)) return `$0.00 ${currencyCode}`;
+  if (isNaN(num)) return '$0.00';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currencyCode,
@@ -270,31 +287,59 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     throw new Response('Order not found', {status: 404});
   }
 
-  const pickup = isPickupOrder(order.shippingLine);
-  const fulfillmentDisplay = getDisplayStatus(
-    order.displayFulfillmentStatus,
-    order.events.nodes,
+  const eventMessages = order.events.nodes.map((e) => e.message);
+  const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
+  const adminFulfillmentStatus =
+    pickupStatusFromEvents ?? order.displayFulfillmentStatus;
+  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
+    adminFulfillmentStatus,
   );
-  const paymentDisplay = getPaymentStatus(order.displayFinancialStatus);
+  const isPickupOrder = isPickupOrderPurchaseMethod(order.shippingLine);
+
+  // Determine which line items have downloads (e-products)
+  const lineItemHasDownload: Record<string, boolean> = {};
+  for (const lineItem of order.lineItems.nodes) {
+    const tags = lineItem.variant?.product?.tags ?? [];
+    lineItemHasDownload[lineItem.id] = hasDownloadTag(tags);
+  }
+
+  // Build the encoded order ID for the account order page redirect after sign-in
+  // Admin API order ID is gid://shopify/Order/{numericId} — same format used by Customer Account API
+  const encodedOrderId = btoa(order.id);
+  const accountOrderPath = `/account/orders/${encodedOrderId}`;
 
   return {
     order,
-    isPickup: pickup,
-    fulfillmentDisplay,
-    paymentDisplay,
+    displayFulfillmentStatus,
+    isPickupOrder,
+    lineItemHasDownload,
+    accountOrderPath,
   };
 }
 
-export default function OrderStatusPage() {
-  const {order, isPickup, fulfillmentDisplay, paymentDisplay} =
-    useLoaderData<typeof loader>();
+export default function OrderTokenStatusPage() {
+  const {
+    order,
+    displayFulfillmentStatus,
+    isPickupOrder,
+    lineItemHasDownload,
+    accountOrderPath,
+  } = useLoaderData<typeof loader>();
+
+  const signInUrl = `/account/login?redirectTo=${encodeURIComponent(accountOrderPath)}`;
+
+  const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const lineItems = order.lineItems.nodes;
-  const createdAt = new Date(order.createdAt).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
 
   const subtotal = formatMoney(
     order.subtotalPriceSet.shopMoney.amount,
@@ -308,9 +353,7 @@ export default function OrderStatusPage() {
     order.totalPriceSet.shopMoney.amount,
     order.totalPriceSet.shopMoney.currencyCode,
   );
-  const discountAmount = parseFloat(
-    order.totalDiscountsSet.shopMoney.amount,
-  );
+  const discountAmount = parseFloat(order.totalDiscountsSet.shopMoney.amount);
   const discount =
     discountAmount > 0
       ? formatMoney(
@@ -320,144 +363,382 @@ export default function OrderStatusPage() {
       : null;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold">Order {order.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Placed on {createdAt}
-        </p>
-      </div>
-
-      {/* Status badges */}
-      <div className="mb-8 flex flex-wrap justify-center gap-3">
-        <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-          {fulfillmentDisplay}
-        </span>
-        <span className="inline-flex items-center rounded-full bg-muted px-4 py-1.5 text-sm font-medium">
-          {paymentDisplay}
-        </span>
-      </div>
-
-      {/* Pickup / Shipping address */}
-      <div className="mb-6 rounded-lg border p-4">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {isPickup ? 'Pickup Location' : 'Shipping Address'}
-        </h2>
-        {isPickup ? (
-          <a
-            href={PICKUP_ADDRESS_MAP_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="text-primary font-medium hover:underline underline-offset-4"
-          >
-            {PICKUP_ADDRESS_TEXT}
-          </a>
-        ) : order.shippingAddress ? (
-          <address className="not-italic leading-relaxed">
-            {order.shippingAddress.name && (
-              <p>{order.shippingAddress.name}</p>
-            )}
-            {order.shippingAddress.address1 && (
-              <p>{order.shippingAddress.address1}</p>
-            )}
-            {order.shippingAddress.address2 && (
-              <p>{order.shippingAddress.address2}</p>
-            )}
-            <p>
-              {[
-                order.shippingAddress.city,
-                order.shippingAddress.provinceCode,
-                order.shippingAddress.zip,
-              ]
-                .filter(Boolean)
-                .join(', ')}
-            </p>
-          </address>
-        ) : (
-          <p className="text-muted-foreground">No address available</p>
-        )}
-      </div>
-
-      {/* Line items */}
-      <div className="mb-6 rounded-lg border">
-        <h2 className="border-b p-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Items
-        </h2>
-        <ul className="divide-y">
-          {lineItems.map((item, index) => (
-            <li key={index} className="flex gap-4 p-4">
-              {item.image?.url ? (
-                <img
-                  src={`${item.image.url}&width=120`}
-                  alt={item.image.altText ?? item.title}
-                  width={60}
-                  height={60}
-                  className="h-[60px] w-[60px] rounded-md object-cover"
-                />
-              ) : (
-                <div className="flex h-[60px] w-[60px] items-center justify-center rounded-md bg-muted">
-                  <span className="text-xs text-muted-foreground">
-                    No image
-                  </span>
-                </div>
-              )}
-              <div className="flex flex-1 flex-col justify-center min-w-0">
-                <p className="font-medium leading-snug">{item.title}</p>
-                {item.variantTitle &&
-                  item.variantTitle !== 'Default Title' && (
-                    <p className="text-sm text-muted-foreground">
-                      {item.variantTitle}
-                    </p>
-                  )}
-                <p className="text-sm text-muted-foreground">
-                  Qty: {item.quantity}
-                </p>
-              </div>
-              <div className="flex items-center">
-                <p className="font-medium">
-                  {formatMoney(
-                    item.originalTotalSet.shopMoney.amount,
-                    item.originalTotalSet.shopMoney.currencyCode,
-                  )}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Totals */}
-      <div className="mb-8 rounded-lg border p-4">
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Subtotal</span>
-            <span>{subtotal}</span>
-          </div>
-          {discount && (
-            <div className="flex justify-between text-sm">
-              <span>Discount</span>
-              <span className="text-green-600">-{discount}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span>Tax</span>
-            <span>{tax}</span>
-          </div>
-          <div className="flex justify-between border-t pt-2 font-semibold">
-            <span>Total</span>
-            <span>{total}</span>
-          </div>
+    <div>
+      <Sectiontitle text="Order Details" />
+      <div className="mx-3 mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
+        <Button asChild variant="secondary" className="self-center gap-2">
+          <Link to={signInUrl}>
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to All Orders</span>
+          </Link>
+        </Button>
+        <div className="min-w-0 self-center">
+          <p>
+            <strong>Order {order.name}</strong>
+          </p>
+          <p>Placed on {new Date(order.createdAt).toDateString()}</p>
         </div>
       </div>
 
-      {/* Link to store */}
-      <div className="text-center">
+      <div className="account-order">
+        <CardContent>
+          <div>
+            {windowWidth && windowWidth >= 605 ? (
+              <div className="upper-part-large grid grid-cols-1 gap-3 lg:grid-cols-2">
+                <div>
+                  {lineItems.length <= 1 ? (
+                    <Card className="p-3">
+                      <div>
+                        {lineItems.map((lineItem, index) => (
+                          <TokenOrderLineRow
+                            key={lineItem.id ?? index}
+                            lineItem={lineItem}
+                            hasDownload={
+                              lineItemHasDownload[lineItem.id] ?? false
+                            }
+                            signInUrl={signInUrl}
+                            windowWidth={windowWidth}
+                          />
+                        ))}
+                      </div>
+                    </Card>
+                  ) : (
+                    <div className="space-y-5">
+                      {lineItems.map((lineItem, index) => (
+                        <Card key={lineItem.id ?? index} className="p-3">
+                          <TokenOrderLineRow
+                            lineItem={lineItem}
+                            hasDownload={
+                              lineItemHasDownload[lineItem.id] ?? false
+                            }
+                            signInUrl={signInUrl}
+                            windowWidth={windowWidth}
+                          />
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="lower-part">
+                  <Card className="p-3">
+                    <div className="grid grid-cols-2 gap-6 items-start">
+                      <div className="min-w-0">
+                        <h3 className="pb-3">
+                          <strong>
+                            {isPickupOrder
+                              ? 'Pickup Address:'
+                              : 'Shipping Address:'}
+                          </strong>
+                        </h3>
+                        {isPickupOrder ? (
+                          <a
+                            href={PICKUP_ADDRESS_APPLE_MAPS_URL}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary font-medium hover:underline underline-offset-4"
+                          >
+                            {PICKUP_ADDRESS_TEXT}
+                          </a>
+                        ) : order.shippingAddress ? (
+                          <address>
+                            {order.shippingAddress.name && (
+                              <p>{order.shippingAddress.name}</p>
+                            )}
+                            {order.shippingAddress.address1 && (
+                              <p>{order.shippingAddress.address1}</p>
+                            )}
+                            {order.shippingAddress.address2 && (
+                              <p>{order.shippingAddress.address2}</p>
+                            )}
+                            <p>
+                              {[
+                                order.shippingAddress.city,
+                                order.shippingAddress.provinceCode,
+                                order.shippingAddress.zip,
+                              ]
+                                .filter(Boolean)
+                                .join(', ')}
+                            </p>
+                          </address>
+                        ) : (
+                          <p>N/A</p>
+                        )}
+                      </div>
+                      <div className="min-w-0 text-left">
+                        <h3 className="pb-3">
+                          <strong>Status:</strong>
+                        </h3>
+                        <p className="cart-combined-savings-glow">
+                          {displayFulfillmentStatus}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                  <div className="pt-3 totals flex justify-end items-end">
+                    <Card className="grid grid-cols-1 w-full h-[60%] w-[50%] pe-6">
+                      {discount && (
+                        <div className="tr flex justify-between">
+                          <div className="flex justify-center items-center">
+                            <div className="th">
+                              <p>Discounts</p>
+                            </div>
+                          </div>
+                          <div className="flex justify-center items-center">
+                            <div className="td">
+                              <span>-{discount}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="tr flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <div className="th">
+                            <p>Subtotal</p>
+                          </div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <div className="td">{subtotal}</div>
+                        </div>
+                      </div>
+                      <div className="tr flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <div className="th">Tax</div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <div className="td">{tax}</div>
+                        </div>
+                      </div>
+                      <div className="tr flex justify-between">
+                        <div className="flex justify-center items-center">
+                          <div className="th">Total</div>
+                        </div>
+                        <div className="flex justify-center items-center">
+                          <div className="td">{total}</div>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Mobile layout */
+              <div>
+                {lineItems.map((lineItem, index) => (
+                  <Card key={lineItem.id ?? index} className="p-3 mb-3">
+                    <TokenOrderLineRow
+                      lineItem={lineItem}
+                      hasDownload={lineItemHasDownload[lineItem.id] ?? false}
+                      signInUrl={signInUrl}
+                      windowWidth={windowWidth}
+                    />
+                  </Card>
+                ))}
+
+                <Card className="p-3 mb-3">
+                  <div>
+                    <h3 className="pb-3">
+                      <strong>
+                        {isPickupOrder
+                          ? 'Pickup Address:'
+                          : 'Shipping Address:'}
+                      </strong>
+                    </h3>
+                    {isPickupOrder ? (
+                      <a
+                        href={PICKUP_ADDRESS_APPLE_MAPS_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary font-medium hover:underline underline-offset-4"
+                      >
+                        {PICKUP_ADDRESS_TEXT}
+                      </a>
+                    ) : order.shippingAddress ? (
+                      <address>
+                        {order.shippingAddress.name && (
+                          <p>{order.shippingAddress.name}</p>
+                        )}
+                        {order.shippingAddress.address1 && (
+                          <p>{order.shippingAddress.address1}</p>
+                        )}
+                        {order.shippingAddress.address2 && (
+                          <p>{order.shippingAddress.address2}</p>
+                        )}
+                        <p>
+                          {[
+                            order.shippingAddress.city,
+                            order.shippingAddress.provinceCode,
+                            order.shippingAddress.zip,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </p>
+                      </address>
+                    ) : (
+                      <p>N/A</p>
+                    )}
+                  </div>
+                  <div className="pt-3">
+                    <h3 className="pb-3">
+                      <strong>Status:</strong>
+                    </h3>
+                    <p className="cart-combined-savings-glow">
+                      {displayFulfillmentStatus}
+                    </p>
+                  </div>
+                </Card>
+
+                <Card className="p-3">
+                  {discount && (
+                    <div className="flex justify-between pb-2">
+                      <span>Discounts</span>
+                      <span>-{discount}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between pb-2">
+                    <span>Subtotal</span>
+                    <span>{subtotal}</span>
+                  </div>
+                  <div className="flex justify-between pb-2">
+                    <span>Tax</span>
+                    <span>{tax}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t font-semibold">
+                    <span>Total</span>
+                    <span>{total}</span>
+                  </div>
+                </Card>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </div>
+
+      <div className="flex justify-center pt-6 pb-10">
         <Link
           to="/"
           className="text-primary font-medium hover:underline underline-offset-4"
         >
           Visit our store
         </Link>
+      </div>
+    </div>
+  );
+}
+
+function TokenOrderLineRow({
+  lineItem,
+  hasDownload,
+  signInUrl,
+  windowWidth,
+}: {
+  lineItem: AdminLineItem;
+  hasDownload: boolean;
+  signInUrl: string;
+  windowWidth: number | undefined;
+}) {
+  const tags = lineItem.variant?.product?.tags ?? [];
+  const isStockClip = tags.includes('Video');
+  const isPrint = tags.includes('Prints') && !isStockClip;
+
+  const imageUrl = lineItem.image?.url ?? '';
+  const isHorizontalProductFromImage =
+    imageUrl.includes('horPrimary') || imageUrl.includes('horOnly');
+  const isVerticalProductFromImage =
+    imageUrl.includes('vertOnly') || imageUrl.includes('vertPrimary');
+  const isPrintFromImage =
+    isHorizontalProductFromImage || isVerticalProductFromImage;
+
+  const hasTypeFromTags = isStockClip || isPrint;
+  const resolvedIsPrint = hasTypeFromTags ? isPrint : isPrintFromImage;
+  const resolvedIsStockClip = hasTypeFromTags
+    ? isStockClip
+    : !isPrintFromImage;
+  const isBundleFromTags = tags.includes('Bundle');
+
+  const variantTitle = lineItem.variantTitle;
+  const showVariant = variantTitle && variantTitle !== 'Default Title';
+
+  const originalAmount = parseFloat(
+    lineItem.originalTotalSet.shopMoney.amount,
+  );
+  const discountedAmount = parseFloat(
+    lineItem.discountedTotalSet.shopMoney.amount,
+  );
+  const discountAmount = originalAmount - discountedAmount;
+  const currencyCode = lineItem.originalTotalSet.shopMoney.currencyCode;
+
+  return (
+    <div className="account-order-line-row">
+      <div className="td pb-2">
+        <div>
+          <div className="grid grid-cols-1 pb-3">
+            <div className="flex justify-center">
+              <p>
+                <strong>{lineItem.title}</strong>
+              </p>
+            </div>
+            <div className="flex justify-center">
+              {resolvedIsPrint && (
+                <p className="text-muted-foreground">Framed Canvas Print</p>
+              )}
+              {resolvedIsStockClip && (
+                <p className="text-muted-foreground">
+                  {isBundleFromTags
+                    ? 'Stock Footage Bundle'
+                    : 'Stock Footage Video'}
+                </p>
+              )}
+            </div>
+            {showVariant && (
+              <div className="flex justify-center">
+                <small>{variantTitle}</small>
+              </div>
+            )}
+          </div>
+          {lineItem.image?.url ? (
+            <div className="flex justify-center">
+              <img
+                src={lineItem.image.url}
+                alt={
+                  lineItem.image.altText ?? lineItem.title ?? 'Ordered item'
+                }
+                className="max-h-[250px] rounded object-cover"
+              />
+            </div>
+          ) : null}
+        </div>
+
+        <div className="price-quantity-total ps-3 pt-3">
+          <div className="flex justify-start">
+            Price: &nbsp;
+            {formatMoney(
+              (originalAmount / lineItem.quantity).toFixed(2),
+              currencyCode,
+            )}
+          </div>
+          <div className="flex justify-start">
+            Quantity: &nbsp;{lineItem.quantity}
+          </div>
+          {discountAmount > 0.01 && (
+            <div className="flex justify-start">
+              Discount: &nbsp; -{formatMoney(discountAmount.toFixed(2), currencyCode)}
+            </div>
+          )}
+          <div className="flex justify-start">
+            Total: &nbsp;{formatMoney(discountedAmount.toFixed(2), currencyCode)}
+          </div>
+        </div>
+
+        {/* Download button - triggers sign in */}
+        {hasDownload && (
+          <div className="td pt-3">
+            <div className="flex justify-center align-center">
+              <Button variant="outline" className="mb-5" asChild>
+                <Link to={signInUrl}>Sign in to Download ↓</Link>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
