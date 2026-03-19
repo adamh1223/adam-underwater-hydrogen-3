@@ -4,9 +4,10 @@ import {Money, flattenConnection} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
-import {Card, CardContent, CardHeader} from '~/components/ui/card';
+import {Card, CardContent} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
 import {useCallback, useEffect, useMemo, useState} from 'react';
+import {ArrowLeft} from 'lucide-react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {ProductCarousel} from '~/components/products/productCarousel';
@@ -96,8 +97,109 @@ const ORDER_LINE_ITEM_VARIANT_DETAILS_QUERY = `#graphql
   }
 ` as const;
 
+const PICKUP_ADDRESS_TEXT = '1080 8th Ave, San Diego, CA 92101';
+const PICKUP_ADDRESS_APPLE_MAPS_URL = `https://maps.apple.com/?q=${encodeURIComponent(
+  PICKUP_ADDRESS_TEXT,
+)}`;
+
+const ADMIN_ORDER_DETAIL_PICKUP_STATUS_QUERY = `#graphql
+  query AdminOrderDetailPickupStatus($id: ID!) {
+    node(id: $id) {
+      ... on Order {
+        id
+        displayFulfillmentStatus
+        shippingLine {
+          title
+          code
+          source
+          shippingRateHandle
+        }
+        events(first: 15, reverse: true) {
+          nodes {
+            message
+          }
+        }
+      }
+    }
+  }
+` as const;
+
 const ACCOUNT_LOGGED_IN_PROMISE = Promise.resolve(true);
 type LineItemSelectedOption = {name: string; value: string};
+
+function getPickupStatusFromOrderEvents(
+  eventMessages: Array<string | null | undefined>,
+): 'READY_FOR_PICKUP' | 'PICKED_UP' | null {
+  for (const message of eventMessages) {
+    const normalizedMessage = message?.toLowerCase().trim() ?? '';
+    if (!normalizedMessage) continue;
+
+    if (
+      normalizedMessage.includes('marked as picked up') ||
+      normalizedMessage.includes('mark as picked up') ||
+      (normalizedMessage.includes('picked up') &&
+        (normalizedMessage.includes('order') ||
+          normalizedMessage.includes('pickup')))
+    ) {
+      return 'PICKED_UP';
+    }
+
+    if (normalizedMessage.includes('ready for pickup')) {
+      return 'READY_FOR_PICKUP';
+    }
+  }
+
+  return null;
+}
+
+function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string {
+  const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
+  if (!normalizedStatus) return 'Preparing Shipment';
+
+  switch (normalizedStatus) {
+    case 'SUCCESS':
+    case 'DELIVERED':
+    case 'FULFILLED':
+      return 'Shipped';
+    case 'READY_FOR_PICKUP':
+      return 'Ready for pickup';
+    case 'PICKED_UP':
+      return 'Picked up in store';
+    case 'CANCELLED':
+      return 'Cancelled';
+    case 'ERROR':
+    case 'FAILURE':
+    case 'THERE_WAS_A_PROBLEM':
+      return 'There Was a Problem';
+    default:
+      return 'Preparing Shipment';
+  }
+}
+
+function isPickupOrderPurchaseMethod(shippingLine?: {
+  title?: string | null;
+  code?: string | null;
+  source?: string | null;
+  shippingRateHandle?: string | null;
+}): boolean {
+  const title = shippingLine?.title?.trim() ?? '';
+  const code = shippingLine?.code?.trim() ?? '';
+  const source = shippingLine?.source?.trim().toLowerCase() ?? '';
+  const shippingRateHandle =
+    shippingLine?.shippingRateHandle?.trim().toLowerCase() ?? '';
+
+  const titleLooksLikeAddress =
+    /\d/.test(title) &&
+    /\b(ave|avenue|st|street|rd|road|blvd|boulevard|dr|drive|ln|lane|way|ct|court|pl|place)\b/i.test(
+      title,
+    );
+
+  return (
+    source === 'shopify' &&
+    title.length > 0 &&
+    (code === title || titleLooksLikeAddress || shippingRateHandle.includes('pickup'))
+  );
+}
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const orderName =
@@ -134,6 +236,48 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const fulfillmentStatus =
     //@ts-expect-error order is any
     flattenConnection(order.fulfillments)[0]?.status ?? 'N/A';
+  let adminFulfillmentStatus: string | null = null;
+  let isPickupOrder = false;
+  try {
+    const adminStatusResponse = await adminGraphql<{
+      data?: {
+        node?: {
+          displayFulfillmentStatus?: string | null;
+          shippingLine?: {
+            title?: string | null;
+            code?: string | null;
+            source?: string | null;
+            shippingRateHandle?: string | null;
+          } | null;
+          events?: {
+            nodes?: Array<{message?: string | null} | null> | null;
+          } | null;
+        } | null;
+      };
+    }>({
+      env: context.env,
+      query: ADMIN_ORDER_DETAIL_PICKUP_STATUS_QUERY,
+      variables: {id: order.id},
+    });
+    const eventMessages = Array.isArray(adminStatusResponse?.data?.node?.events?.nodes)
+      ? adminStatusResponse.data.node.events.nodes.map((eventNode) => eventNode?.message)
+      : [];
+    const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
+    const fallbackAdminStatus =
+      typeof adminStatusResponse?.data?.node?.displayFulfillmentStatus === 'string'
+        ? adminStatusResponse.data.node.displayFulfillmentStatus
+        : null;
+    adminFulfillmentStatus = pickupStatusFromEvents ?? fallbackAdminStatus;
+    isPickupOrder = isPickupOrderPurchaseMethod(
+      adminStatusResponse?.data?.node?.shippingLine ?? undefined,
+    );
+  } catch {
+    adminFulfillmentStatus = null;
+    isPickupOrder = false;
+  }
+  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
+    adminFulfillmentStatus ?? fulfillmentStatus,
+  );
   //@ts-expect-error order is any
   const firstDiscount = discountApplications[0]?.value;
 
@@ -365,7 +509,8 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     lineItems,
     discountValue,
     discountPercentage,
-    fulfillmentStatus,
+    displayFulfillmentStatus,
+    isPickupOrder,
     downloadLinksByLineItemId,
     lineItemTagsByLineItemId,
     lineItemProductsByLineItemId,
@@ -381,7 +526,8 @@ export default function OrderRoute() {
     lineItems,
     discountValue,
     discountPercentage,
-    fulfillmentStatus,
+    displayFulfillmentStatus,
+    isPickupOrder,
     downloadLinksByLineItemId,
     lineItemTagsByLineItemId,
     customer,
@@ -427,17 +573,25 @@ export default function OrderRoute() {
 
   return (
     <>
-      <Sectiontitle text="My Orders" />
-      <div className="">
-        <div className="account-order">
-          <CardHeader>
-            <p className="ms-2">
+      <div>
+        <Sectiontitle text="My Orders" />
+        <div className="mx-3 mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
+          <Button asChild variant="secondary" className="self-center gap-2">
+            <Link to="/account/orders">
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to All Orders</span>
+            </Link>
+          </Button>
+          <div className="min-w-0 self-center">
+            <p>
               <strong>Order {order.name}</strong>
             </p>
-            <p className="ms-2">
-              Placed on {new Date(order.processedAt!).toDateString()}
-            </p>
-          </CardHeader>
+            <p>Placed on {new Date(order.processedAt!).toDateString()}</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div className="account-order">
           <CardContent>
             <div>
               {windowWidth && windowWidth >= 605 && (
@@ -522,9 +676,22 @@ export default function OrderRoute() {
                         <div className="grid grid-cols-2 gap-6 items-start">
                           <div className="min-w-0">
                             <h3 className="pb-3">
-                              <strong>Shipping Address:</strong>
+                              <strong>
+                                {isPickupOrder
+                                  ? 'Pickup Address:'
+                                  : 'Shipping Address:'}
+                              </strong>
                             </h3>
-                            {order?.shippingAddress ? (
+                            {isPickupOrder ? (
+                              <a
+                                href={PICKUP_ADDRESS_APPLE_MAPS_URL}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-primary font-medium hover:underline underline-offset-4"
+                              >
+                                {PICKUP_ADDRESS_TEXT}
+                              </a>
+                            ) : order?.shippingAddress ? (
                               <address>
                                 <p>{order.shippingAddress.name}</p>
                                 {order.shippingAddress.formatted ? (
@@ -545,10 +712,8 @@ export default function OrderRoute() {
                             <h3 className="pb-3">
                               <strong>Status:</strong>
                             </h3>
-                            <p>
-                              {fulfillmentStatus === 'SUCCESS'
-                                ? 'Shipped'
-                                : 'Preparing Shipment'}
+                            <p className="cart-combined-savings-glow">
+                              {displayFulfillmentStatus}
                             </p>
                           </div>
                         </div>
@@ -650,7 +815,7 @@ export default function OrderRoute() {
                         {lineItems.map((lineItem, lineItemIndex) => (
                           <Card
                             key={`${lineItem.id ?? lineItemIndex}`}
-                            className="p-3 mb-5"
+                            className="p-3 mb-3"
                           >
                             <OrderLineRow
                               lineItem={
@@ -687,8 +852,19 @@ export default function OrderRoute() {
                     <Card className="p-3">
                       <div className="grid grid-cols-2 gap-6 items-start">
                         <div className="min-w-0">
-                          <h3 className="pb-3">Shipping Address:</h3>
-                          {order?.shippingAddress ? (
+                          <h3 className="pb-3">
+                            {isPickupOrder ? 'Pickup Address:' : 'Shipping Address:'}
+                          </h3>
+                          {isPickupOrder ? (
+                            <a
+                              href={PICKUP_ADDRESS_APPLE_MAPS_URL}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-primary font-medium hover:underline underline-offset-4"
+                            >
+                              {PICKUP_ADDRESS_TEXT}
+                            </a>
+                          ) : order?.shippingAddress ? (
                             <address>
                               <p>{order.shippingAddress.name}</p>
                               {order.shippingAddress.formatted ? (
@@ -708,10 +884,8 @@ export default function OrderRoute() {
                         <div className="min-w-0 text-left">
                           <h3 className="pb-3">Status:</h3>
                           <div>
-                            <p>
-                              {fulfillmentStatus === 'SUCCESS'
-                                ? 'Shipped'
-                                : 'Preparing Shipment'}
+                            <p className="cart-combined-savings-glow">
+                              {displayFulfillmentStatus}
                             </p>
                           </div>
                         </div>

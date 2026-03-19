@@ -28,7 +28,6 @@ import {Input} from '~/components/ui/input';
 import {Label} from '~/components/ui/label';
 import {
   Card,
-  CardAction,
   CardContent,
   CardHeader,
 } from '~/components/ui/card';
@@ -78,6 +77,22 @@ const ADMIN_ORDER_ASSIGN_CUSTOMER_MUTATION = `#graphql
   }
 ` as const;
 
+const ADMIN_ORDER_PICKUP_STATUS_QUERY = `#graphql
+  query AdminOrderPickupStatus($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Order {
+        id
+        displayFulfillmentStatus
+        events(first: 15, reverse: true) {
+          nodes {
+            message
+          }
+        }
+      }
+    }
+  }
+` as const;
+
 type OrderLookupActionData = {
   ok: boolean;
   error?: string;
@@ -91,6 +106,12 @@ type AdminOrderLookupNode = {
   customer?: {id?: string | null; email?: string | null} | null;
   shippingAddress?: {address1?: string | null; address2?: string | null} | null;
   billingAddress?: {address1?: string | null; address2?: string | null} | null;
+};
+
+type AdminOrderPickupStatusNode = {
+  id?: string | null;
+  displayFulfillmentStatus?: string | null;
+  events?: {nodes?: Array<{message?: string | null} | null> | null} | null;
 };
 
 function normalizeOrderNumber(value: string): string {
@@ -134,6 +155,58 @@ function doesOrderMatchLookupProof(
   return emailMatches || addressMatches;
 }
 
+function getPickupStatusFromOrderEvents(
+  eventMessages: Array<string | null | undefined>,
+): 'READY_FOR_PICKUP' | 'PICKED_UP' | null {
+  for (const message of eventMessages) {
+    const normalizedMessage = message?.toLowerCase().trim() ?? '';
+    if (!normalizedMessage) continue;
+
+    if (
+      normalizedMessage.includes('marked as picked up') ||
+      normalizedMessage.includes('mark as picked up') ||
+      (normalizedMessage.includes('picked up') &&
+        (normalizedMessage.includes('order') ||
+          normalizedMessage.includes('pickup')))
+    ) {
+      return 'PICKED_UP';
+    }
+
+    if (normalizedMessage.includes('ready for pickup')) {
+      return 'READY_FOR_PICKUP';
+    }
+  }
+
+  return null;
+}
+
+function getAdminOrderFulfillmentStatusMap(
+  adminNodes: Array<AdminOrderPickupStatusNode | null | undefined>,
+) {
+  const statusByOrderId = new Map<string, string>();
+
+  for (const node of adminNodes) {
+    const orderId = typeof node?.id === 'string' ? node.id : null;
+    if (!orderId) continue;
+
+    const eventMessages = Array.isArray(node?.events?.nodes)
+      ? node.events!.nodes!.map((eventNode) => eventNode?.message)
+      : [];
+    const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
+    const fallbackAdminStatus =
+      typeof node?.displayFulfillmentStatus === 'string'
+        ? node.displayFulfillmentStatus
+        : null;
+    const resolvedStatus = pickupStatusFromEvents ?? fallbackAdminStatus;
+
+    if (resolvedStatus) {
+      statusByOrderId.set(orderId, resolvedStatus);
+    }
+  }
+
+  return statusByOrderId;
+}
+
 export const meta: MetaFunction = () => {
   return buildIconLinkPreviewMeta('Adam Underwater | My Orders');
 };
@@ -162,7 +235,53 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     return {customer: null, isLoggedIn};
   }
 
-  return {customer: data.customer, isLoggedIn};
+  const orderNodes = Array.isArray(data.customer.orders?.nodes)
+    ? data.customer.orders.nodes
+    : [];
+  const orderIds = orderNodes
+    .map((orderNode) => orderNode?.id)
+    .filter((orderId): orderId is string => typeof orderId === 'string');
+  const adminOrderStatusById = new Map<string, string>();
+
+  if (orderIds.length) {
+    try {
+      const adminStatusResponse = await adminGraphql<{
+        data?: {
+          nodes?: Array<AdminOrderPickupStatusNode | null> | null;
+        };
+      }>({
+        env: context.env,
+        query: ADMIN_ORDER_PICKUP_STATUS_QUERY,
+        variables: {ids: orderIds},
+      });
+
+      const adminStatusNodes = Array.isArray(adminStatusResponse?.data?.nodes)
+        ? adminStatusResponse.data.nodes
+        : [];
+      const resolvedStatusMap = getAdminOrderFulfillmentStatusMap(
+        adminStatusNodes,
+      );
+
+      for (const [orderId, status] of resolvedStatusMap.entries()) {
+        adminOrderStatusById.set(orderId, status);
+      }
+    } catch (error) {
+      console.error('Failed to load Admin order pickup statuses', error);
+    }
+  }
+
+  const customerWithOrderStatuses = {
+    ...data.customer,
+    orders: {
+      ...data.customer.orders,
+      nodes: orderNodes.map((orderNode) => ({
+        ...orderNode,
+        adminFulfillmentStatus: adminOrderStatusById.get(orderNode.id) ?? null,
+      })),
+    },
+  };
+
+  return {customer: customerWithOrderStatuses, isLoggedIn};
 }
 
 export async function action({request, context}: ActionFunctionArgs) {
@@ -375,7 +494,7 @@ export default function Orders() {
     <>
       <Sectiontitle text="My Orders" />
       <section className="orders w-full pt-3">
-        <div className="mx-5 mb-4 rounded-md border border-input bg-background p-4">
+        <div className="mx-4 mb-2 rounded-xl border border-input bg-background p-4">
           <p className="text-sm">
             Don&apos;t see your order? Look up your order made before signing
             up.
@@ -529,6 +648,54 @@ function EmptyOrders() {
   );
 }
 
+function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string {
+  const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
+  if (!normalizedStatus) return 'Preparing Shipment';
+
+  switch (normalizedStatus) {
+    case 'SUCCESS':
+    case 'DELIVERED':
+    case 'FULFILLED':
+      return 'Shipped';
+    case 'OPEN':
+    case 'PENDING':
+    case 'UNFULFILLED':
+    case 'IN_PROGRESS':
+    case 'PARTIALLY_FULFILLED':
+    case 'PREPARING_FOR_SHIPPING':
+    case 'CONFIRMED':
+    case 'IN_TRANSIT':
+    case 'ON_ITS_WAY':
+    case 'OUT_FOR_DELIVERY':
+    case 'ATTEMPTED_TO_DELIVER':
+    case 'MULTIPLE_SHIPMENTS':
+      return 'Preparing Shipment';
+    case 'READY_FOR_PICKUP':
+      return 'Ready for pickup';
+    case 'PICKED_UP':
+      return 'Picked up in store';
+    case 'CANCELLED':
+      return 'Cancelled';
+    case 'ERROR':
+    case 'FAILURE':
+    case 'THERE_WAS_A_PROBLEM':
+      return 'There Was a Problem';
+    default:
+      return 'Preparing Shipment';
+  }
+}
+
+function getDisplayOrderProcessedAt(processedAt: string) {
+  const date = new Date(processedAt);
+  return {
+    dateLabel: date.toLocaleDateString('en-US'),
+    timeLabel: date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    }),
+  };
+}
+
 function OrderItem({order}: {order: OrderItemFragment}) {
   const navigate = useNavigate();
   const touchCardId = `order-card:${String(order.id)}`;
@@ -538,13 +705,23 @@ function OrderItem({order}: {order: OrderItemFragment}) {
   const touchCardEffects =
     'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
   const fulfillmentStatus = flattenConnection(order.fulfillments)[0]?.status;
+  const adminFulfillmentStatus = (
+    order as unknown as {adminFulfillmentStatus?: string | null}
+  ).adminFulfillmentStatus;
+  const orderLevelFulfillmentStatus = (
+    order as unknown as {fulfillmentStatus?: string | null}
+  ).fulfillmentStatus;
+  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
+    adminFulfillmentStatus ?? fulfillmentStatus ?? orderLevelFulfillmentStatus,
+  );
+  const {dateLabel, timeLabel} = getDisplayOrderProcessedAt(order.processedAt);
   const orderPath = `/account/orders/${btoa(order.id)}`;
 
   return (
-    <div>
-      <fieldset>
+    <div className="h-full">
+      <fieldset className="h-full">
         <Card
-          className={`cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] ${isTouchHighlighted ? touchCardEffects : ''}`}
+          className={`h-full cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] ${isTouchHighlighted ? touchCardEffects : ''}`}
           style={{touchAction: 'pan-y'}}
           data-touch-highlight-card-id={touchCardId}
           {...touchHighlightHandlers}
@@ -567,25 +744,34 @@ function OrderItem({order}: {order: OrderItemFragment}) {
             >
               <strong>Order#: {order.number}</strong>
             </Link>
-            <p>{new Date(order.processedAt).toDateString()}</p>
+            <div className="text-muted-foreground text-sm flex items-center gap-2">
+              <span>{dateLabel}</span>
+              <span>{timeLabel}</span>
+            </div>
           </CardHeader>
 
-          <CardContent className="ms-3">
-            <p>{order.financialStatus}</p>
-            {fulfillmentStatus && <p>{fulfillmentStatus}</p>}
-            <Money data={order.totalPrice} />
+          <CardContent>
+              <div className="flex items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <p>{order.financialStatus}</p>
+                  <p className="cart-combined-savings-glow">
+                    {displayFulfillmentStatus}
+                  </p>
+                  <Money data={order.totalPrice} />
+                </div>
+              <div className="shrink-0">
+                <Button
+                  variant="default"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    navigate(orderPath);
+                  }}
+                >
+                  View Order →
+                </Button>
+              </div>
+            </div>
           </CardContent>
-          <CardAction className="m-5">
-            <Button
-              variant="default"
-              onClick={(event) => {
-                event.stopPropagation();
-                navigate(orderPath);
-              }}
-            >
-              View Order →
-            </Button>
-          </CardAction>
         </Card>
       </fieldset>
     </div>
