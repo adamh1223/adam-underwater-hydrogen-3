@@ -1,6 +1,6 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
-import {adminGraphql} from '~/lib/shopify-admin.server';
+import {adminGraphql, getShopifyAdminConfig} from '~/lib/shopify-admin.server';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 import {Card, CardContent} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
@@ -15,99 +15,136 @@ const PICKUP_ADDRESS_APPLE_MAPS_URL = `https://maps.apple.com/?q=${encodeURIComp
 
 const DOWNLOAD_TAG_PREFIXES = ['r2:', 'r2key:', 'r2-key:', 'r2/'] as const;
 
-const ADMIN_ORDER_BY_TOKEN_QUERY = `#graphql
-  query AdminOrderByToken($query: String!) {
-    orders(first: 1, query: $query) {
-      nodes {
-        id
+const ADMIN_ORDER_BY_ID_QUERY = `#graphql
+  query AdminOrderById($id: ID!) {
+    order(id: $id) {
+      id
+      name
+      createdAt
+      displayFinancialStatus
+      displayFulfillmentStatus
+      totalPriceSet {
+        shopMoney {
+          amount
+          currencyCode
+        }
+      }
+      subtotalPriceSet {
+        shopMoney {
+          amount
+          currencyCode
+        }
+      }
+      totalTaxSet {
+        shopMoney {
+          amount
+          currencyCode
+        }
+      }
+      totalDiscountsSet {
+        shopMoney {
+          amount
+          currencyCode
+        }
+      }
+      shippingLine {
+        title
+        code
+        source
+        shippingRateHandle
+      }
+      shippingAddress {
         name
-        createdAt
-        displayFinancialStatus
-        displayFulfillmentStatus
-        totalPriceSet {
-          shopMoney {
-            amount
-            currencyCode
-          }
-        }
-        subtotalPriceSet {
-          shopMoney {
-            amount
-            currencyCode
-          }
-        }
-        totalTaxSet {
-          shopMoney {
-            amount
-            currencyCode
-          }
-        }
-        totalDiscountsSet {
-          shopMoney {
-            amount
-            currencyCode
-          }
-        }
-        shippingLine {
+        address1
+        address2
+        city
+        provinceCode
+        zip
+        country
+      }
+      lineItems(first: 50) {
+        nodes {
+          id
           title
-          code
-          source
-          shippingRateHandle
-        }
-        shippingAddress {
-          name
-          address1
-          address2
-          city
-          provinceCode
-          zip
-          country
-        }
-        lineItems(first: 50) {
-          nodes {
+          quantity
+          variantTitle
+          originalTotalSet {
+            shopMoney {
+              amount
+              currencyCode
+            }
+          }
+          discountedTotalSet {
+            shopMoney {
+              amount
+              currencyCode
+            }
+          }
+          image {
+            url
+            altText
+            width
+            height
+          }
+          variant {
             id
             title
-            quantity
-            variantTitle
-            originalTotalSet {
-              shopMoney {
-                amount
-                currencyCode
-              }
-            }
-            discountedTotalSet {
-              shopMoney {
-                amount
-                currencyCode
-              }
-            }
-            image {
-              url
-              altText
-              width
-              height
-            }
-            variant {
+            product {
               id
               title
-              product {
-                id
-                title
-                handle
-                tags
-              }
+              handle
+              tags
             }
           }
         }
-        events(first: 15, reverse: true) {
-          nodes {
-            message
-          }
+      }
+      events(first: 15, reverse: true) {
+        nodes {
+          message
         }
       }
     }
   }
 ` as const;
+
+/**
+ * Look up a Shopify order by its token using the REST Admin API.
+ * The GraphQL Admin API does not support filtering orders by token,
+ * so we use REST to find the order ID, then fetch full details via GraphQL.
+ */
+async function findOrderIdByToken(
+  env: Env,
+  orderToken: string,
+): Promise<string | null> {
+  const {adminEndpoint, adminToken} = getShopifyAdminConfig(env);
+  // Derive the REST base URL from the GraphQL endpoint
+  const restBase = adminEndpoint.replace('/graphql.json', '');
+
+  const response = await fetch(
+    `${restBase}/orders.json?status=any&fields=id,token&limit=250`,
+    {
+      headers: {
+        'X-Shopify-Access-Token': adminToken,
+        'Content-Type': 'application/json',
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Shopify Admin REST API error (${response.status}): ${await response.text()}`,
+    );
+  }
+
+  const data = (await response.json()) as {
+    orders?: Array<{id: number; token: string}>;
+  };
+
+  const match = data.orders?.find((o) => o.token === orderToken);
+  if (!match) return null;
+
+  return `gid://shopify/Order/${match.id}`;
+}
 
 type AdminLineItem = {
   id: string;
@@ -269,19 +306,24 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     throw new Response('Order not found', {status: 404});
   }
 
+  // Step 1: Find the order ID by token via REST API
+  const orderGid = await findOrderIdByToken(context.env, orderToken);
+  if (!orderGid) {
+    throw new Response('Order not found', {status: 404});
+  }
+
+  // Step 2: Fetch full order details via GraphQL using the order ID
   const result = await adminGraphql<{
     data?: {
-      orders?: {
-        nodes?: AdminOrderNode[];
-      };
+      order?: AdminOrderNode;
     };
   }>({
     env: context.env,
-    query: ADMIN_ORDER_BY_TOKEN_QUERY,
-    variables: {query: `token:${orderToken}`},
+    query: ADMIN_ORDER_BY_ID_QUERY,
+    variables: {id: orderGid},
   });
 
-  const order = result?.data?.orders?.nodes?.[0];
+  const order = result?.data?.order;
 
   if (!order) {
     throw new Response('Order not found', {status: 404});
