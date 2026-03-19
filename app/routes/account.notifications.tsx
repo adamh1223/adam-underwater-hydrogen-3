@@ -22,6 +22,10 @@ import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetails
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {GET_REVIEW_QUERY} from '~/lib/homeQueries';
 import {getCustomerReviewLocation} from '~/lib/reviews';
+import {
+  parseReviewMediaDiscountReward,
+  type ReviewMediaDiscountReward,
+} from '~/lib/reviewMediaDiscountReward';
 import {toast} from 'sonner';
 
 type RecommendedProduct = {
@@ -125,6 +129,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
   let customerName: string | null = null;
   let customerState: string | null = null;
   let customerCountry: string | null = null;
+  let reviewMediaDiscountReward: ReviewMediaDiscountReward | null = null;
   let wishlistProducts: string[] = [];
   if (loggedIn) {
     const customerResponse = await context.customerAccount
@@ -143,6 +148,9 @@ export async function loader({context, request}: LoaderFunctionArgs) {
       const location = getCustomerReviewLocation(customer);
       customerState = location.customerState ?? null;
       customerCountry = location.customerCountry ?? null;
+      reviewMediaDiscountReward = parseReviewMediaDiscountReward(
+        (customer as any)?.reviewMediaDiscountReward?.value,
+      );
     }
 
     const wishlistResponse = await context.customerAccount
@@ -238,6 +246,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
     customerName,
     customerState,
     customerCountry,
+    reviewMediaDiscountReward,
     wishlistProducts,
     selectedLeaveReviewOrder,
     selectedLeaveReviewUserReviews,
@@ -413,6 +422,8 @@ function NotificationDetail({
   customerName,
   customerState,
   customerCountry,
+  reviewMediaDiscountReward,
+  onReviewMediaDiscountRewardChange,
   wishlistProducts,
   userReviewsByProductId,
   isLoadingOrderDetails,
@@ -429,6 +440,10 @@ function NotificationDetail({
   customerName?: string | null;
   customerState?: string | null;
   customerCountry?: string | null;
+  reviewMediaDiscountReward?: ReviewMediaDiscountReward | null;
+  onReviewMediaDiscountRewardChange?: (
+    reward: ReviewMediaDiscountReward | null,
+  ) => void;
   wishlistProducts?: string[];
   userReviewsByProductId?: Record<string, Review | null> | null;
   isLoadingOrderDetails?: boolean;
@@ -449,6 +464,8 @@ function NotificationDetail({
   const [localUserReviewsByProductId, setLocalUserReviewsByProductId] = useState<
     Record<string, Review | null>
   >(() => userReviewsByProductId ?? {});
+  const [localReviewMediaDiscountReward, setLocalReviewMediaDiscountReward] =
+    useState<ReviewMediaDiscountReward | null>(() => reviewMediaDiscountReward ?? null);
   const isFeaturedReviewStackedTabletDesktop =
     typeof viewportWidth === 'number' &&
     viewportWidth >= 861 &&
@@ -457,6 +474,17 @@ function NotificationDetail({
   useEffect(() => {
     setLocalUserReviewsByProductId(userReviewsByProductId ?? {});
   }, [notification.id, userReviewsByProductId]);
+
+  useEffect(() => {
+    setLocalReviewMediaDiscountReward(reviewMediaDiscountReward ?? null);
+  }, [reviewMediaDiscountReward]);
+
+  const handleReviewMediaDiscountRewardChange = (
+    reward: ReviewMediaDiscountReward | null,
+  ) => {
+    setLocalReviewMediaDiscountReward(reward);
+    onReviewMediaDiscountRewardChange?.(reward);
+  };
 
   const handleRemoveReview = async (productId: string, reviewToRemove: Review) => {
     if (!resolvedCustomerId || !reviewToRemove?.createdAt) return;
@@ -733,6 +761,13 @@ function NotificationDetail({
                                   : undefined,
                               }}
                               submittedMessage="Review Submitted"
+                              showDiscountPromo
+                              reviewMediaDiscountReward={
+                                localReviewMediaDiscountReward
+                              }
+                              onReviewMediaDiscountRewardChange={
+                                handleReviewMediaDiscountRewardChange
+                              }
                             />
                           )
                         ) : null}
@@ -876,6 +911,7 @@ export default function AccountNotifications() {
     customerName,
     customerState,
     customerCountry,
+    reviewMediaDiscountReward: initialReviewMediaDiscountReward,
     wishlistProducts,
     selectedLeaveReviewOrder,
     selectedLeaveReviewUserReviews,
@@ -889,6 +925,14 @@ export default function AccountNotifications() {
   }, [notifications]);
 
   const [clientTimeZone, setClientTimeZone] = useState<string | null>(null);
+  const [reviewMediaDiscountReward, setReviewMediaDiscountReward] = useState<
+    ReviewMediaDiscountReward | null
+  >(initialReviewMediaDiscountReward ?? null);
+
+  useEffect(() => {
+    setReviewMediaDiscountReward(initialReviewMediaDiscountReward ?? null);
+  }, [initialReviewMediaDiscountReward]);
+
   useEffect(() => {
     setClientTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone ?? null);
   }, []);
@@ -1307,6 +1351,10 @@ export default function AccountNotifications() {
 	                customerName={customerName}
                   customerState={customerState}
                   customerCountry={customerCountry}
+                  reviewMediaDiscountReward={reviewMediaDiscountReward}
+                  onReviewMediaDiscountRewardChange={
+                    setReviewMediaDiscountReward
+                  }
 	              />
             ) : (
               <div className="rounded border p-4 text-sm text-muted-foreground">
@@ -1396,6 +1444,10 @@ export default function AccountNotifications() {
 	                            customerName={customerName}
                               customerState={customerState}
                               customerCountry={customerCountry}
+                              reviewMediaDiscountReward={reviewMediaDiscountReward}
+                              onReviewMediaDiscountRewardChange={
+                                setReviewMediaDiscountReward
+                              }
 	                            isLoadingOrderDetails={isLoadingOrderDetails}
 	                            featuredReviewDetail={accordionFeaturedReviewDetail}
 	                            isLoadingFeaturedReviewDetail={isLoadingFeaturedReviewDetail}

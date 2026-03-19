@@ -6,6 +6,7 @@ import Sectiontitle from '../global/Sectiontitle';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {Link} from '@remix-run/react';
 import {toast} from 'sonner';
+import type {ReviewMediaDiscountReward} from '~/lib/reviewMediaDiscountReward';
 
 const REVIEW_CHAR_LIMIT = 200;
 
@@ -29,6 +30,9 @@ function ReviewForm({
   isBlocked,
   successToast,
   submittedMessage,
+  showDiscountPromo = false,
+  reviewMediaDiscountReward = null,
+  onReviewMediaDiscountRewardChange,
 }: {
   productId: string;
   productName: string;
@@ -41,6 +45,11 @@ function ReviewForm({
   updateExistingReviews: (reviews: any[]) => void;
   successToast?: ReviewFormSuccessToast;
   submittedMessage?: string;
+  showDiscountPromo?: boolean;
+  reviewMediaDiscountReward?: ReviewMediaDiscountReward | null;
+  onReviewMediaDiscountRewardChange?: (
+    reward: ReviewMediaDiscountReward | null,
+  ) => void;
 }) {
   const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
   const [review, setReview] = useState('');
@@ -55,6 +64,37 @@ function ReviewForm({
 
   const [reviewSubmittedMessage, setReviewSubmittedMessage] =
     useState<string>();
+  const [customerReviewMediaDiscountReward, setCustomerReviewMediaDiscountReward] =
+    useState<ReviewMediaDiscountReward | null>(reviewMediaDiscountReward);
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  useEffect(() => {
+    setCustomerReviewMediaDiscountReward(reviewMediaDiscountReward);
+  }, [reviewMediaDiscountReward]);
+
+  const rewardForCurrentProduct =
+    customerReviewMediaDiscountReward?.productId === productId
+      ? customerReviewMediaDiscountReward
+      : null;
+  const shouldShowDiscountPromo =
+    showDiscountPromo &&
+    (!customerReviewMediaDiscountReward || Boolean(rewardForCurrentProduct));
+
+  useEffect(() => {
+    setDiscountCode(rewardForCurrentProduct?.discountCode ?? null);
+  }, [rewardForCurrentProduct]);
+
+  const discountRevealed = Boolean(discountCode);
+  const hasQueuedMedia = Boolean(
+    selectedImage || selectedVideo || imagePreview || videoPreview,
+  );
+  const showPromoBesideUploads =
+    shouldShowDiscountPromo && !reviewSubmittedMessage && !hasQueuedMedia;
+  const showPromoBelowSubmit =
+    shouldShowDiscountPromo && !reviewSubmittedMessage && hasQueuedMedia;
+  const showPromoAfterSubmission =
+    shouldShowDiscountPromo && Boolean(reviewSubmittedMessage);
 
   useEffect(() => {
     if (reviewSubmittedMessage) {
@@ -142,10 +182,25 @@ function ReviewForm({
         return;
       }
 
-      const json = await response.json();
-      updateExistingReviews(json.reviews);
+      const json = (await response.json()) as {
+        reviews?: any[];
+        discountCode?: string | null;
+        reviewMediaDiscountReward?: ReviewMediaDiscountReward | null;
+      };
+      updateExistingReviews(json.reviews ?? []);
 
-      // Reset
+      const returnedReward = json.reviewMediaDiscountReward ?? null;
+      setCustomerReviewMediaDiscountReward(returnedReward);
+      onReviewMediaDiscountRewardChange?.(returnedReward);
+
+      // Capture discount code if returned
+      const returnedDiscountCode =
+        returnedReward?.productId === productId
+          ? returnedReward.discountCode
+          : (json.discountCode ?? null);
+      setDiscountCode(returnedDiscountCode);
+
+      // Reset form fields
       setFileError('');
       setPendingReviewSubmit(false);
       setReview('');
@@ -153,13 +208,20 @@ function ReviewForm({
       setTitle('');
       setSelectedImage(null);
       setImagePreview(null);
-      setReviewSubmittedMessage(submittedMessage ?? 'Review Submitted!');
+      setSelectedVideo(null);
+      setVideoPreview(null);
 
-      const toastMessage = successToast?.message ?? 'Review Posted';
-      if (successToast?.action) {
-        toast.success(toastMessage, {action: successToast.action});
+      if (returnedDiscountCode) {
+        setReviewSubmittedMessage('Review Submitted!');
+        toast.success('Review posted! Your discount code has been revealed.');
       } else {
-        toast.success(toastMessage);
+        setReviewSubmittedMessage(submittedMessage ?? 'Review Submitted!');
+        const toastMessage = successToast?.message ?? 'Review Posted';
+        if (successToast?.action) {
+          toast.success(toastMessage, {action: successToast.action});
+        } else {
+          toast.success(toastMessage);
+        }
       }
     } catch (err) {
       setPendingReviewSubmit(false);
@@ -167,35 +229,96 @@ function ReviewForm({
     }
   };
 
+  const renderDiscountPromoCard = (extraClassName = '') => (
+    <div className={`review-discount-promo-card ${extraClassName}`.trim()}>
+      <p className="text-sm text-muted-foreground mb-3">
+        Leave a review with an image and/or video to reveal a one time $20
+        discount
+      </p>
+      <div className="invisible-ink-wrapper">
+        <span
+          className={`invisible-ink-text invisible-ink-text--large${
+            discountRevealed ? ' invisible-ink-text--revealed' : ''
+          }`}
+        >
+          {discountCode || 'REVIEW-XXXXXXXX'}
+        </span>
+        {!discountRevealed && <div className="invisible-ink-overlay" />}
+        {discountRevealed && (
+          <div className="invisible-ink-overlay invisible-ink-overlay--revealed" />
+        )}
+      </div>
+      {discountRevealed && (
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (discountCode) {
+                navigator.clipboard.writeText(discountCode);
+                setCodeCopied(true);
+                setTimeout(() => setCodeCopied(false), 2000);
+              }
+            }}
+            className={`review-discount-copy-btn${
+              codeCopied ? ' review-discount-copy-btn--copied' : ''
+            }`}
+          >
+            {codeCopied ? 'Copied!' : 'Copy Code'}
+          </button>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground mt-2">
+        {discountRevealed
+          ? 'Apply this code at checkout for $20 off your next order.'
+          : 'One use per customer. Submit a review with media to unlock.'}
+      </p>
+    </div>
+  );
+
+  const renderSubmitButton = () => (
+    <Button
+      onClick={handleSubmit}
+      disabled={!isLoggedIn || disableSubmitButton}
+      className="cursor-pointer"
+    >
+      {pendingReviewSubmit ? (
+        <ReloadIcon className="animate-spin" />
+      ) : (
+        'Submit'
+      )}
+    </Button>
+  );
+
   return (
     <>
-    <br/>
+   <div className='my-2'>
+
       <Sectiontitle text="Leave Product Review"/>
-      <br />
+   </div>
+      
 
       {!reviewSubmittedMessage ? (
         <>
-          <div className="leave-review-container flex justify-center">
-            <div className="leave-review">
-              {/* Stars */}
-              <div className="flex items-center mb-5">
-                <Rating value={stars} onValueChange={setStars}>
-                  {Array.from({length: 5}).map((_, index) => (
-                    <RatingButton key={index} className="stars" />
-                  ))}
-                </Rating>
+          <div className="leave-review-container w-full min-w-0 flex justify-center">
+            <div className="leave-review w-full min-w-0">
+              <div className="review-form-rating-title-row mb-2">
+                <div className="review-form-stars-wrap">
+                  <Rating value={stars} onValueChange={setStars}>
+                    {Array.from({length: 5}).map((_, index) => (
+                      <RatingButton key={index} className="stars" />
+                    ))}
+                  </Rating>
+                </div>
+                <div className="review-form-title-wrap">
+                  <Input
+                    name="title"
+                    placeholder="title here"
+                    onChange={handleChange}
+                    disabled={!isLoggedIn}
+                    value={title}
+                  />
+                </div>
               </div>
-
-              {/* Title */}
-              <Input
-                name="title"
-                placeholder="title here"
-                onChange={handleChange}
-                disabled={!isLoggedIn}
-                value={title}
-              />
-
-              <br />
 
               {/* Review */}
               <Input
@@ -221,94 +344,111 @@ function ReviewForm({
 
               <br />
               {fileError && <h2>{fileError}</h2>}
-              {/* Upload */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-                disabled={!isLoggedIn}
-              />
-
-              <div className="flex items-center gap-3 mb-5">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={triggerFileSelect}
-                  disabled={!isLoggedIn}
-                  className="cursor-pointer"
-                >
-                  Upload image
-                </Button>
-
-                {imagePreview && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <img
-                      src={imagePreview}
-                      alt="Selected"
-                      className="h-12 w-12 object-cover rounded"
-                    />
-                    <span className="truncate max-w-[160px]">
-                      {selectedImage?.name}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <input
-                ref={fileVideoInputRef}
-                type="file"
-                accept="video/mp4,.mov"
-                className="hidden"
-                onChange={handleVideoFileChange}
-                disabled={!isLoggedIn}
-              />
-
-              <div className="flex items-center gap-3 mb-5">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={triggerVideoFileSelect}
-                  disabled={!isLoggedIn}
-                  className="cursor-pointer"
-                >
-                  Upload Video
-                </Button>
-                {videoPreview && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <video
-                      className="home-video__player"
-                      controls
-                      playsInline
-                      preload="metadata"
-                    >
-                      <source src={`${videoPreview}#t=0.001`} />
-                      <track
-                        kind="captions"
-                        srcLang="en"
-                        label="English captions"
-                        src="data:text/vtt,WEBVTT"
-                      />
-                    </video>
-                    <span className="truncate max-w-[160px]">
-                      {selectedVideo?.name}
-                    </span>
-                  </div>
-                )}
-              </div>
-              {/* Submit */}
-              <Button
-                onClick={handleSubmit}
-                disabled={!isLoggedIn || disableSubmitButton}
-                className="cursor-pointer"
+              <div
+                className={`review-form-upload-zone ${
+                  showPromoBesideUploads
+                    ? 'review-form-upload-zone--with-promo'
+                    : ''
+                }`}
               >
-                {pendingReviewSubmit ? (
-                  <ReloadIcon className="animate-spin" />
-                ) : (
-                  'Submit'
+                <div
+                  className={
+                    showPromoBesideUploads
+                      ? 'review-form-upload-controls'
+                      : 'min-w-0'
+                  }
+                >
+                  {/* Upload */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    disabled={!isLoggedIn}
+                  />
+
+                  <div className="flex items-center gap-3 mb-5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={triggerFileSelect}
+                      disabled={!isLoggedIn}
+                      className="cursor-pointer"
+                    >
+                      Upload image
+                    </Button>
+
+                    {imagePreview && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <img
+                          src={imagePreview}
+                          alt="Selected"
+                          className="h-12 w-12 object-cover rounded"
+                        />
+                        <span className="truncate max-w-[160px]">
+                          {selectedImage?.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    ref={fileVideoInputRef}
+                    type="file"
+                    accept="video/mp4,.mov"
+                    className="hidden"
+                    onChange={handleVideoFileChange}
+                    disabled={!isLoggedIn}
+                  />
+
+                  <div className="flex items-center gap-3 mb-5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={triggerVideoFileSelect}
+                      disabled={!isLoggedIn}
+                      className="cursor-pointer"
+                    >
+                      Upload Video
+                    </Button>
+                    {videoPreview && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <video
+                          className="home-video__player"
+                          controls
+                          playsInline
+                          preload="metadata"
+                        >
+                          <source src={`${videoPreview}#t=0.001`} />
+                          <track
+                            kind="captions"
+                            srcLang="en"
+                            label="English captions"
+                            src="data:text/vtt,WEBVTT"
+                          />
+                        </video>
+                        <span className="truncate max-w-[160px]">
+                          {selectedVideo?.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {showPromoBesideUploads && renderSubmitButton()}
+                </div>
+                {showPromoBesideUploads && (
+                  <div className="review-form-upload-inline-promo hidden md:block">
+                    {renderDiscountPromoCard('review-discount-promo-card--inline')}
+                  </div>
                 )}
-              </Button>
+              </div>
+              {!showPromoBesideUploads && renderSubmitButton()}
+              {showPromoBesideUploads && (
+                <div className="mt-5 md:hidden">{renderDiscountPromoCard()}</div>
+              )}
+              {showPromoBelowSubmit && (
+                <div className="mt-5">{renderDiscountPromoCard()}</div>
+              )}
               {!isLoggedIn && (
                 <>
                   <div className="pt-2 sign-in-link">
@@ -329,7 +469,16 @@ function ReviewForm({
           </div>
         </>
       ) : (
-        <div>{reviewSubmittedMessage}</div>
+        <div className="text-center">
+          <p className="text-lg font-semibold mb-2">{reviewSubmittedMessage}</p>
+        </div>
+      )}
+
+      {/* Discount promo card - after submission state */}
+      {showPromoAfterSubmission && (
+        <div className="flex justify-end mt-5">
+          {renderDiscountPromoCard()}
+        </div>
       )}
     </>
   );

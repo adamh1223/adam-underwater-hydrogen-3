@@ -23,6 +23,12 @@ export const CUSTOMER_FRAGMENT = `#graphql
     birthday: metafield(namespace: "custom", key: "birthday") {
       value
     }
+    reviewMediaDiscountReward: metafield(
+      namespace: "custom"
+      key: "review_media_discount_reward"
+    ) {
+      value
+    }
     tags
   }
   fragment Address on CustomerAddress {

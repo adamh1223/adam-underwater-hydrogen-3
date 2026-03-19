@@ -3,14 +3,21 @@ import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
 import {Money, flattenConnection} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
+import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {ProductCarousel} from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
+import ReviewForm from '~/components/form/ReviewForm';
+import {adminGraphql} from '~/lib/shopify-admin.server';
+import {
+  parseReviewMediaDiscountReward,
+  type ReviewMediaDiscountReward,
+} from '~/lib/reviewMediaDiscountReward';
 
 const ORDER_LINE_ITEM_VARIANT_DETAILS_QUERY = `#graphql
   query OrderLineItemVariantDetails($id: ID!) {
@@ -261,6 +268,98 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     return acc;
   }, {});
 
+  // Fetch customer data for review forms
+  type CustomerInfo = {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    defaultAddress?: {
+      zoneCode?: string | null;
+      territoryCode?: string | null;
+    } | null;
+    reviewMediaDiscountReward?: {
+      value?: string | null;
+    } | null;
+  };
+  let customer: CustomerInfo | null = null;
+  try {
+    const customerResult = await context.customerAccount.query(
+      CUSTOMER_DETAILS_QUERY,
+    );
+    if (!customerResult.errors?.length && customerResult.data?.customer) {
+      const c = customerResult.data.customer as any;
+      customer = {
+        id: c.id,
+        firstName: c.firstName ?? null,
+        lastName: c.lastName ?? null,
+        defaultAddress: c.defaultAddress
+          ? {
+              zoneCode: c.defaultAddress.zoneCode ?? null,
+              territoryCode: c.defaultAddress.territoryCode ?? null,
+            }
+          : null,
+        reviewMediaDiscountReward: c.reviewMediaDiscountReward ?? null,
+      };
+    }
+  } catch {
+    customer = null;
+  }
+
+  // Collect unique print product IDs to check for existing reviews
+  const printProductIds = new Set<string>();
+  for (const lineItem of lineItems) {
+    const lineItemId = typeof (lineItem as any)?.id === 'string' ? (lineItem as any).id : '';
+    const product = lineItemProductsByLineItemId[lineItemId];
+    if (!product?.id) continue;
+    const tags = Array.isArray(product.tags) ? product.tags : [];
+    const isPrint = tags.includes('Prints') && !tags.includes('Video');
+    if (isPrint) {
+      printProductIds.add(product.id);
+    }
+  }
+
+  // Fetch existing reviews for print products to check if user already reviewed
+  const existingReviewsByProductId: Record<string, any[]> = {};
+  if (printProductIds.size > 0 && customer?.id) {
+    const reviewQueries = Array.from(printProductIds).map(async (productId) => {
+      try {
+        const result = await adminGraphql<{
+          data?: {
+            product?: {
+              metafield?: {value?: string | null} | null;
+            } | null;
+          };
+        }>({
+          env: context.env,
+          query: `
+            query GetProductReviews($id: ID!) {
+              product(id: $id) {
+                metafield(namespace: "custom", key: "reviews") {
+                  value
+                }
+              }
+            }
+          `,
+          variables: {id: productId},
+        });
+        const metafieldValue = result?.data?.product?.metafield?.value;
+        if (metafieldValue) {
+          try {
+            const reviews = JSON.parse(metafieldValue);
+            if (Array.isArray(reviews)) {
+              existingReviewsByProductId[productId] = reviews;
+            }
+          } catch {
+            // ignore parse errors
+          }
+        }
+      } catch {
+        // ignore fetch errors
+      }
+    });
+    await Promise.all(reviewQueries);
+  }
+
   return {
     order,
     lineItems,
@@ -271,6 +370,8 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     lineItemTagsByLineItemId,
     lineItemProductsByLineItemId,
     lineItemSelectedOptionsByLineItemId,
+    customer,
+    existingReviewsByProductId,
   };
 }
 
@@ -283,11 +384,27 @@ export default function OrderRoute() {
     fulfillmentStatus,
     downloadLinksByLineItemId,
     lineItemTagsByLineItemId,
+    customer,
+    existingReviewsByProductId: initialReviewsByProductId,
     lineItemProductsByLineItemId,
     lineItemSelectedOptionsByLineItemId,
   } = useLoaderData<typeof loader>();
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+  const [reviewsByProductId, setReviewsByProductId] = useState<
+    Record<string, any[]>
+  >(initialReviewsByProductId ?? {});
+  const initialReviewMediaDiscountReward = useMemo(
+    () =>
+      parseReviewMediaDiscountReward(
+        customer?.reviewMediaDiscountReward?.value ?? null,
+      ),
+    [customer?.reviewMediaDiscountReward?.value],
+  );
+  const [reviewMediaDiscountReward, setReviewMediaDiscountReward] = useState<
+    ReviewMediaDiscountReward | null
+  >(initialReviewMediaDiscountReward);
+
   useEffect(() => {
     function handleResize() {
       setWindowWidth(window.innerWidth);
@@ -297,11 +414,22 @@ export default function OrderRoute() {
     return () => window.removeEventListener('resize', handleResize);
   });
 
+  useEffect(() => {
+    setReviewMediaDiscountReward(initialReviewMediaDiscountReward);
+  }, [initialReviewMediaDiscountReward]);
+
+  const handleReviewsUpdate = useCallback(
+    (productId: string, reviews: any[]) => {
+      setReviewsByProductId((prev) => ({...prev, [productId]: reviews}));
+    },
+    [],
+  );
+
   return (
     <>
       <Sectiontitle text="My Orders" />
-      <div className="mx-5 mt-3">
-        <Card className="account-order p-[10px]">
+      <div className="mx-3 mt-3">
+        <Card className="account-order">
           <CardHeader>
             <p className="ms-2">
               <strong>Order {order.name}</strong>
@@ -314,7 +442,7 @@ export default function OrderRoute() {
             <div>
               {windowWidth && windowWidth >= 605 && (
                 <>
-                  <div className="upper-part-large grid grid-cols-2">
+                  <div className="upper-part-large grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <div>
                       {/* <table> */}
                       {lineItems.length <= 1 ? (
@@ -337,6 +465,15 @@ export default function OrderRoute() {
                                 }
                                 lineItemSelectedOptionsByLineItemId={
                                   lineItemSelectedOptionsByLineItemId
+                                }
+                                customer={customer}
+                                reviewsByProductId={reviewsByProductId}
+                                onReviewsUpdate={handleReviewsUpdate}
+                                reviewMediaDiscountReward={
+                                  reviewMediaDiscountReward
+                                }
+                                onReviewMediaDiscountRewardChange={
+                                  setReviewMediaDiscountReward
                                 }
                               />
                             ))}
@@ -365,137 +502,140 @@ export default function OrderRoute() {
                                 lineItemSelectedOptionsByLineItemId={
                                   lineItemSelectedOptionsByLineItemId
                                 }
+                                customer={customer}
+                                reviewsByProductId={reviewsByProductId}
+                                onReviewsUpdate={handleReviewsUpdate}
+                                reviewMediaDiscountReward={
+                                  reviewMediaDiscountReward
+                                }
+                                onReviewMediaDiscountRewardChange={
+                                  setReviewMediaDiscountReward
+                                }
                               />
                             </Card>
                           ))}
                         </div>
                       )}
                     </div>
-                    {windowWidth && windowWidth >= 604 && (
-                      <>
-                        <div className="lower-part">
-                          <Card className="ms-5 p-5">
-                            <h3 className="pb-3">
-                              <strong>Shipping Address:</strong>
-                            </h3>
-                            {order?.shippingAddress ? (
-                              <address>
-                                <p>{order.shippingAddress.name}</p>
-                                {order.shippingAddress.formatted ? (
-                                  <>
-                                    <p>{order.shippingAddress.formatted[1]}</p>
-                                    <p>{order.shippingAddress.formatted[2]}</p>
-                                    <p>{order.shippingAddress.formatted[3]}</p>
-                                  </>
-                                ) : (
-                                  ''
-                                )}
-                              </address>
+                    <div className="lower-part">
+                      <Card className="p-5">
+                        <h3 className="pb-3">
+                          <strong>Shipping Address:</strong>
+                        </h3>
+                        {order?.shippingAddress ? (
+                          <address>
+                            <p>{order.shippingAddress.name}</p>
+                            {order.shippingAddress.formatted ? (
+                              <>
+                                <p>{order.shippingAddress.formatted[1]}</p>
+                                <p>{order.shippingAddress.formatted[2]}</p>
+                                <p>{order.shippingAddress.formatted[3]}</p>
+                              </>
                             ) : (
-                              <p>N/A</p>
+                              ''
                             )}
-                            <h3 className="pt-3">
-                              <strong>Status:</strong>
-                            </h3>
-                            <div>
-                              <p>
-                                {fulfillmentStatus === 'SUCCESS'
-                                  ? 'Shipped'
-                                  : 'Preparing Shipment'}
-                              </p>
-                            </div>
-                          </Card>
-                          <div className="pt-3 ps-5 totals flex justify-end items-end">
-                            <Card className="grid grid-cols-1 w-full h-[60%] pe-6">
-                              {((discountValue && discountValue.amount) ||
-                                discountPercentage) && (
-                                <div className="tr flex justify-between">
-                                  {/* <tr className="flex justify-between"> */}
-                                  <div className="flex justify-center items-center">
-                                    <div className="th">
-                                      {/* <th scope="row" colSpan={2}> */}
-                                      <p>Discounts</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex justify-center items-center">
-                                    <div className="td">
-                                      {/* <td> */}
-                                      {discountPercentage ? (
-                                        <span>-{discountPercentage}% OFF</span>
-                                      ) : (
-                                        discountValue && (
-                                          <Money data={discountValue!} />
-                                        )
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                              <div className="tr flex justify-between">
-                                {/* <tr className="flex justify-between"> */}
-                                <div className="flex justify-center items-center">
-                                  <div className="th">
-                                    {/* <th scope="row" colSpan={2}> */}
-                                    <p>Subtotal</p>
-                                  </div>
-                                </div>
-                                <div className="flex justify-center items-center">
-                                  <div className="td">
-                                    {/* <td> */}
-                                    <Money data={order.subtotal!} />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="tr flex justify-between">
-                                {/*  <tr className="flex justify-between"> */}
-                                <div className="flex justify-center items-center">
-                                  <div className="th">Tax</div>
-                                  {/* <th scope="row" colSpan={2}>
-                                    Tax
-                                  </th> */}
-                                </div>
-                                <div className="flex justify-center items-center">
-                                  <div className="td">
-                                    <Money data={order.totalTax!} />
-                                  </div>
-                                  {/* <td>
-                                    <Money data={order.totalTax!} />
-                                  </td> */}
-                                </div>
-                              </div>
-                              <div className="tr flex justify-between">
-                                {/* <tr className="flex justify-between"> */}
-                                <div className="flex justify-center items-center">
-                                  <div className="th">Total</div>
-                                  {/* <th scope="row" colSpan={2}>
-                                    Total
-                                  </th> */}
-                                </div>
-                                <div className="flex justify-center items-center">
-                                  <div className="td">
-                                    <Money data={order.totalPrice!} />
-                                  </div>
-                                  {/* <td>
-                                    <Money data={order.totalPrice!} />
-                                  </td> */}
-                                </div>
-                              </div>
-                            </Card>
-                          </div>
-                          <div className="flex justify-end items-end">
-                            <Button variant="default" className="m-5">
-                              <Link to={order.statusPageUrl} rel="noreferrer">
-                                View Order Status →
-                              </Link>
-                            </Button>
-                          </div>
+                          </address>
+                        ) : (
+                          <p>N/A</p>
+                        )}
+                        <h3 className="pt-3">
+                          <strong>Status:</strong>
+                        </h3>
+                        <div>
+                          <p>
+                            {fulfillmentStatus === 'SUCCESS'
+                              ? 'Shipped'
+                              : 'Preparing Shipment'}
+                          </p>
                         </div>
-                      </>
-                    )}
+                      </Card>
+                      <div className="pt-3 totals flex justify-end items-end">
+                        <Card className="grid grid-cols-1 w-full h-[60%] pe-6">
+                          {((discountValue && discountValue.amount) ||
+                            discountPercentage) && (
+                            <div className="tr flex justify-between">
+                              {/* <tr className="flex justify-between"> */}
+                              <div className="flex justify-center items-center">
+                                <div className="th">
+                                  {/* <th scope="row" colSpan={2}> */}
+                                  <p>Discounts</p>
+                                </div>
+                              </div>
+                              <div className="flex justify-center items-center">
+                                <div className="td">
+                                  {/* <td> */}
+                                  {discountPercentage ? (
+                                    <span>-{discountPercentage}% OFF</span>
+                                  ) : (
+                                    discountValue && <Money data={discountValue!} />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          <div className="tr flex justify-between">
+                            {/* <tr className="flex justify-between"> */}
+                            <div className="flex justify-center items-center">
+                              <div className="th">
+                                {/* <th scope="row" colSpan={2}> */}
+                                <p>Subtotal</p>
+                              </div>
+                            </div>
+                            <div className="flex justify-center items-center">
+                              <div className="td">
+                                {/* <td> */}
+                                <Money data={order.subtotal!} />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="tr flex justify-between">
+                            {/*  <tr className="flex justify-between"> */}
+                            <div className="flex justify-center items-center">
+                              <div className="th">Tax</div>
+                              {/* <th scope="row" colSpan={2}>
+                                Tax
+                              </th> */}
+                            </div>
+                            <div className="flex justify-center items-center">
+                              <div className="td">
+                                <Money data={order.totalTax!} />
+                              </div>
+                              {/* <td>
+                                <Money data={order.totalTax!} />
+                              </td> */}
+                            </div>
+                          </div>
+                          <div className="tr flex justify-between">
+                            {/* <tr className="flex justify-between"> */}
+                            <div className="flex justify-center items-center">
+                              <div className="th">Total</div>
+                              {/* <th scope="row" colSpan={2}>
+                                Total
+                              </th> */}
+                            </div>
+                            <div className="flex justify-center items-center">
+                              <div className="td">
+                                <Money data={order.totalPrice!} />
+                              </div>
+                              {/* <td>
+                                <Money data={order.totalPrice!} />
+                              </td> */}
+                            </div>
+                          </div>
+                        </Card>
+                      </div>
+                      <div className="flex justify-end items-end">
+                        <Button variant="default" className="m-0 mt-5 lg:m-5">
+                          <Link to={order.statusPageUrl} rel="noreferrer">
+                            View Order Status →
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
-              {windowWidth && windowWidth < 604 && (
+              {windowWidth && windowWidth <= 604 && (
                 <>
                   <div className="upper-part-small grid grid-cols-1 flex justify-start">
                     <div className="table">
@@ -523,6 +663,15 @@ export default function OrderRoute() {
                               }
                               lineItemSelectedOptionsByLineItemId={
                                 lineItemSelectedOptionsByLineItemId
+                              }
+                              customer={customer}
+                              reviewsByProductId={reviewsByProductId}
+                              onReviewsUpdate={handleReviewsUpdate}
+                              reviewMediaDiscountReward={
+                                reviewMediaDiscountReward
+                              }
+                              onReviewMediaDiscountRewardChange={
+                                setReviewMediaDiscountReward
                               }
                             />
                           </Card>
@@ -657,6 +806,11 @@ function OrderLineRow({
   lineItemTagsByLineItemId = {},
   lineItemProductsByLineItemId = {},
   lineItemSelectedOptionsByLineItemId = {},
+  customer = null,
+  reviewsByProductId = {},
+  onReviewsUpdate,
+  reviewMediaDiscountReward = null,
+  onReviewMediaDiscountRewardChange,
 }: {
   lineItem: OrderLineItemFullFragment;
   downloadLinksByLineItemId?: Record<string, string>;
@@ -666,6 +820,24 @@ function OrderLineRow({
     string,
     LineItemSelectedOption[]
   >;
+  customer?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    defaultAddress?: {
+      zoneCode?: string | null;
+      territoryCode?: string | null;
+    } | null;
+    reviewMediaDiscountReward?: {
+      value?: string | null;
+    } | null;
+  } | null;
+  reviewsByProductId?: Record<string, any[]>;
+  onReviewsUpdate?: (productId: string, reviews: any[]) => void;
+  reviewMediaDiscountReward?: ReviewMediaDiscountReward | null;
+  onReviewMediaDiscountRewardChange?: (
+    reward: ReviewMediaDiscountReward | null,
+  ) => void;
 }) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const downloadUrl = downloadLinksByLineItemId[lineItem.id];
@@ -889,6 +1061,91 @@ function OrderLineRow({
           )}
         </>
       )}
+
+      {/* Review form for print products only */}
+      {isPrint && lineItemProduct?.id && (
+        <OrderLineReviewForm
+          productId={lineItemProduct.id}
+          productName={
+            lineItemProduct.title ?? lineItem.title ?? 'Print'
+          }
+          customer={customer}
+          existingReviews={reviewsByProductId[lineItemProduct.id] ?? []}
+          onReviewsUpdate={onReviewsUpdate}
+          reviewMediaDiscountReward={reviewMediaDiscountReward}
+          onReviewMediaDiscountRewardChange={onReviewMediaDiscountRewardChange}
+        />
+      )}
+    </div>
+  );
+}
+
+function OrderLineReviewForm({
+  productId,
+  productName,
+  customer,
+  existingReviews,
+  onReviewsUpdate,
+  reviewMediaDiscountReward = null,
+  onReviewMediaDiscountRewardChange,
+}: {
+  productId: string;
+  productName: string;
+  customer?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    defaultAddress?: {
+      zoneCode?: string | null;
+      territoryCode?: string | null;
+    } | null;
+  } | null;
+  existingReviews: any[];
+  onReviewsUpdate?: (productId: string, reviews: any[]) => void;
+  reviewMediaDiscountReward?: ReviewMediaDiscountReward | null;
+  onReviewMediaDiscountRewardChange?: (
+    reward: ReviewMediaDiscountReward | null,
+  ) => void;
+}) {
+  const customerId = customer?.id ?? undefined;
+  const customerName = [customer?.firstName, customer?.lastName]
+    .filter(Boolean)
+    .join(' ') || undefined;
+  const customerState = customer?.defaultAddress?.zoneCode ?? undefined;
+  const customerCountry = customer?.defaultAddress?.territoryCode ?? undefined;
+
+  const userReviewExists = Boolean(
+    customerId &&
+      existingReviews.some(
+        (review) => review.customerId === customerId,
+      ),
+  );
+
+  const handleReviewsUpdate = useCallback(
+    (reviews: any[]) => {
+      onReviewsUpdate?.(productId, reviews);
+    },
+    [productId, onReviewsUpdate],
+  );
+
+  return (
+    <div className="border-t border-primary/20">
+      <ReviewForm
+        productId={productId}
+        productName={productName}
+        customerId={customerId}
+        customerName={customerName}
+        customerState={customerState}
+        customerCountry={customerCountry}
+        userReviewExists={userReviewExists}
+        isBlocked={false}
+        updateExistingReviews={handleReviewsUpdate}
+        successToast={{message: 'Review submitted!'}}
+        submittedMessage="Thank you for your review!"
+        showDiscountPromo
+        reviewMediaDiscountReward={reviewMediaDiscountReward}
+        onReviewMediaDiscountRewardChange={onReviewMediaDiscountRewardChange}
+      />
     </div>
   );
 }

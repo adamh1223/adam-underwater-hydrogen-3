@@ -80,6 +80,7 @@ import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {getCustomerReviewLocation} from '~/lib/reviews';
+import {parseReviewMediaDiscountReward} from '~/lib/reviewMediaDiscountReward';
 import ProductPageSkeleton from '~/components/skeletons/ProductPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 
@@ -845,6 +846,9 @@ export default function Product() {
   const customerName = `${customerFirstName} ${customerLastName}`.trim();
   const {customerState, customerCountry} = getCustomerReviewLocation(
     customer?.customer,
+  );
+  const reviewMediaDiscountReward = parseReviewMediaDiscountReward(
+    customer?.customer?.reviewMediaDiscountReward?.value,
   );
 
   // Optimistically selects a variant with given available variant information
@@ -2701,6 +2705,8 @@ export default function Product() {
                   updateExistingReviews={updateExistingReviews}
                   userReviewExists={userReviewExists}
                   isBlocked={isBlocked}
+                  reviewMediaDiscountReward={reviewMediaDiscountReward}
+                  showDiscountPromo
                 />
               </div>
             </section>

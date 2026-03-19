@@ -6,17 +6,13 @@ import {
 } from '~/lib/email-provider.server';
 import {formatReviewLocation} from '~/lib/reviews';
 import {uploadReviewMedia} from '~/lib/review-media.server';
-function arrayBufferToBase64(buffer: ArrayBuffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-
-  return btoa(binary);
-}
+import {
+  parseReviewMediaDiscountReward,
+  REVIEW_MEDIA_DISCOUNT_KEY,
+  REVIEW_MEDIA_DISCOUNT_NAMESPACE,
+  serializeReviewMediaDiscountReward,
+  type ReviewMediaDiscountReward,
+} from '~/lib/reviewMediaDiscountReward';
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
@@ -45,6 +41,60 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     if (!adminToken) {
       return json({error: 'SHOPIFY_ADMIN_TOKEN not found'}, {status: 500});
+    }
+
+    let customerReviewMediaDiscountReward: ReviewMediaDiscountReward | null =
+      null;
+    if (customerId) {
+      const rewardResponse = await fetch(
+        `https://${shop}/admin/api/2024-10/graphql.json`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Access-Token': adminToken,
+          },
+          body: JSON.stringify({
+            query: `
+              query GetCustomerReviewMediaDiscountReward($id: ID!) {
+                customer(id: $id) {
+                  metafield(
+                    namespace: "${REVIEW_MEDIA_DISCOUNT_NAMESPACE}"
+                    key: "${REVIEW_MEDIA_DISCOUNT_KEY}"
+                  ) {
+                    value
+                  }
+                }
+              }
+            `,
+            variables: {id: customerId},
+          }),
+        },
+      );
+      if (!rewardResponse.ok) {
+        const rewardResponseText = await rewardResponse.text();
+        console.error(
+          'Failed to read customer review media discount reward metafield:',
+          rewardResponse.status,
+          rewardResponseText,
+        );
+      } else {
+        const rewardResponseText = await rewardResponse.text();
+        try {
+          const rewardJson = JSON.parse(rewardResponseText) as {
+            data?: {customer?: {metafield?: {value?: string | null} | null} | null};
+          };
+          customerReviewMediaDiscountReward = parseReviewMediaDiscountReward(
+            rewardJson?.data?.customer?.metafield?.value,
+          );
+        } catch (error) {
+          console.error(
+            'Failed to parse customer review media discount reward JSON:',
+            error,
+            rewardResponseText,
+          );
+        }
+      }
     }
 
     // 1️⃣ Fetch existing reviews metafield
@@ -132,12 +182,14 @@ export async function action({request, context}: ActionFunctionArgs) {
       customerVideo = await uploadReviewMedia(context.env, videoFile);
     }
 
+    const createdAt = new Date().toISOString();
+
     // Append new review
     const updatedReviews = [
       ...existingReviews,
       {
         text: reviewText,
-        createdAt: new Date().toISOString(),
+        createdAt,
         customerId,
         stars,
         productId,
@@ -201,6 +253,167 @@ export async function action({request, context}: ActionFunctionArgs) {
       console.error('Admin API errors:', errors);
       return json({error: errors}, {status: 500});
     }
+
+    // 3️⃣ Auto-generate $20 discount code if review includes image or video
+    let discountCode: string | null = null;
+    const hasMedia = Boolean(customerImage || customerVideo);
+    const hasEligibleCustomer = Boolean(customerId);
+
+    if (hasMedia && hasEligibleCustomer && !customerReviewMediaDiscountReward) {
+      try {
+        const randomChars = Array.from(crypto.getRandomValues(new Uint8Array(5)))
+          .map((b) => b.toString(36).padStart(2, '0'))
+          .join('')
+          .toUpperCase()
+          .slice(0, 8);
+        const code = `REVIEW-${randomChars}`;
+
+        const discountResponse = await fetch(
+          `https://${shop}/admin/api/2024-10/graphql.json`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Access-Token': adminToken,
+            },
+            body: JSON.stringify({
+              query: `
+                mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
+                  discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
+                    codeDiscountNode {
+                      codeDiscount {
+                        ... on DiscountCodeBasic {
+                          codes(first: 1) {
+                            nodes {
+                              code
+                            }
+                          }
+                        }
+                      }
+                    }
+                    userErrors {
+                      field
+                      message
+                    }
+                  }
+                }
+              `,
+              variables: {
+                basicCodeDiscount: {
+                  title: `Review Reward - ${customerName || 'Customer'}`,
+                  code,
+                  startsAt: new Date().toISOString(),
+                  usageLimit: 1,
+                  customerSelection: {all: true},
+                  customerGets: {
+                    value: {discountAmount: {amount: '20.0', appliesOnEachItem: false}},
+                    items: {all: true},
+                  },
+                  combinesWith: {
+                    orderDiscounts: true,
+                    productDiscounts: true,
+                    shippingDiscounts: true,
+                  },
+                },
+              },
+            }),
+          },
+        );
+
+        const discountJson = await discountResponse.json() as any;
+        const discountErrors =
+          discountJson?.data?.discountCodeBasicCreate?.userErrors ?? [];
+
+        if (discountErrors.length > 0) {
+          console.error('Discount code creation errors:', discountErrors);
+        } else {
+          const createdCode =
+            discountJson?.data?.discountCodeBasicCreate?.codeDiscountNode
+              ?.codeDiscount?.codes?.nodes?.[0]?.code;
+          discountCode = createdCode || code;
+        }
+      } catch (discountError) {
+        console.error('Failed to create discount code:', discountError);
+      }
+    }
+
+    if (
+      hasMedia &&
+      hasEligibleCustomer &&
+      !customerReviewMediaDiscountReward &&
+      discountCode &&
+      customerId
+    ) {
+      const rewardToPersist: ReviewMediaDiscountReward = {
+        productId,
+        discountCode,
+        reviewCreatedAt: createdAt,
+        awardedAt: createdAt,
+      };
+      customerReviewMediaDiscountReward = rewardToPersist;
+
+      try {
+        const rewardMutationResponse = await fetch(
+          `https://${shop}/admin/api/2024-10/graphql.json`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Access-Token': adminToken,
+            },
+            body: JSON.stringify({
+              query: ADMIN_METAFIELD_SET,
+              variables: {
+                metafields: [
+                  {
+                    ownerId: customerId,
+                    namespace: REVIEW_MEDIA_DISCOUNT_NAMESPACE,
+                    key: REVIEW_MEDIA_DISCOUNT_KEY,
+                    type: 'json',
+                    value: serializeReviewMediaDiscountReward(rewardToPersist),
+                  },
+                ],
+              },
+            }),
+          },
+        );
+
+        const rewardMutationText = await rewardMutationResponse.text();
+        let rewardMutationJson: any = {};
+        try {
+          rewardMutationJson = JSON.parse(rewardMutationText);
+        } catch (error) {
+          console.error(
+            'Failed to parse customer review media discount reward mutation response:',
+            error,
+            rewardMutationText,
+          );
+          rewardMutationJson = {};
+        }
+
+        const rewardErrors =
+          rewardMutationJson?.data?.metafieldsSet?.userErrors ??
+          rewardMutationJson?.errors ??
+          null;
+        if (rewardErrors && rewardErrors.length > 0) {
+          console.error(
+            'Customer review media discount reward mutation errors:',
+            rewardErrors,
+          );
+        }
+      } catch (rewardMutationError) {
+        console.error(
+          'Failed to persist customer review media discount reward:',
+          rewardMutationError,
+        );
+      }
+    }
+
+    const responseDiscountCode =
+      customerReviewMediaDiscountReward?.productId === productId
+        ? customerReviewMediaDiscountReward.discountCode
+        : null;
+
     try {
       await sendDirectEmail({
         env: context.env,
@@ -220,6 +433,7 @@ export async function action({request, context}: ActionFunctionArgs) {
           `Review: ${reviewText}`,
           `Image: ${customerImage ?? 'none'}`,
           `Video: ${customerVideo ?? 'none'}`,
+          `Discount Code: ${responseDiscountCode ?? 'none (no media)'}`,
         ].join('\n'),
         html: `
           <h2>New review submitted</h2>
@@ -236,12 +450,18 @@ export async function action({request, context}: ActionFunctionArgs) {
           <p><strong>Review:</strong><br />${reviewText}</p>
           <p><strong>Image:</strong> ${customerImage ? `<a href="${customerImage}">${customerImage}</a>` : 'none'}</p>
           <p><strong>Video:</strong> ${customerVideo ? `<a href="${customerVideo}">${customerVideo}</a>` : 'none'}</p>
+          <p><strong>Discount Code:</strong> ${responseDiscountCode ?? 'none (no media)'}</p>
         `,
       });
     } catch (error) {
       console.error(error);
     }
-    return json({success: true, reviews: updatedReviews});
+    return json({
+      success: true,
+      reviews: updatedReviews,
+      discountCode: responseDiscountCode,
+      reviewMediaDiscountReward: customerReviewMediaDiscountReward,
+    });
   } catch (error) {
     console.error(error, '111111');
     return json({error: 'Request failed'}, {status: 500});

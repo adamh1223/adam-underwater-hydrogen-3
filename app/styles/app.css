@@ -1704,6 +1704,41 @@ button.reset:hover:not(:has(> *)) {
     animation: none;
   }
 }
+
+/* Review discount promo card */
+.review-discount-promo-card {
+  padding: 16px 20px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  background: hsl(var(--card));
+  max-width: 340px;
+  text-align: center;
+}
+
+.review-discount-copy-btn {
+  padding: 5px 14px;
+  background: hsl(var(--primary) / 0.15);
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  color: hsl(var(--primary));
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.review-discount-copy-btn:hover {
+  background: hsl(var(--primary) / 0.25);
+}
+
+.review-discount-copy-btn--copied {
+  background: hsl(142 76% 36% / 0.2);
+  border-color: hsl(142 76% 36%);
+  color: hsl(142 76% 36%);
+}
+
 /* .logo {
   width: 95%;
 }
@@ -2882,7 +2917,101 @@ span {
 }
 
 .leave-review {
-  width: 75vw;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.leave-review-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-top: 12px;
+}
+
+.review-form-upload-zone {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.review-form-rating-title-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  gap: 0.75rem;
+}
+
+.review-form-stars-wrap,
+.review-form-title-wrap {
+  min-width: 0;
+}
+
+@media (min-width: 500px) {
+  .review-form-rating-title-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .review-form-stars-wrap {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    height: 2.25rem;
+  }
+
+  .review-form-title-wrap {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    height: 2.25rem;
+  }
+
+  .review-form-stars-wrap [role='radiogroup'] {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+}
+
+.review-form-upload-controls {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.review-form-upload-inline-promo {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.review-discount-promo-card--inline {
+  width: 100%;
+  max-width: 550px;
+}
+
+@media (min-width: 768px) {
+  .review-form-upload-zone--with-promo {
+    display: flex;
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .review-form-upload-controls {
+    flex: 0 0 auto;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .review-form-upload-inline-promo {
+    display: flex;
+    flex: 1 1 0%;
+    justify-content: flex-end;
+  }
 }
 
 @media (max-width: 460px) {

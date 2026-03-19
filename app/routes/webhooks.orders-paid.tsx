@@ -2,6 +2,7 @@ import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {createEmailDownloadToken} from '~/lib/email-download-token.server';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {sendPurchaseDownloadEmail} from '~/lib/purchase-email.server';
+import {sendReviewRequestEmail} from '~/lib/review-email.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 
 type ShopifyOrderPaidWebhookPayload = {
@@ -288,8 +289,22 @@ export async function action({request, context}: ActionFunctionArgs) {
       (item): item is NonNullable<typeof item> => Boolean(item),
     );
 
-    if (!downloadItems.length) {
-      return json({ok: true, skipped: 'No downloadable line items'});
+    // Collect print items for review request email
+    const printItems = lineItems
+      .filter((lineItem) => {
+        const tags = lineItem.variant?.product?.tags ?? [];
+        return tags.includes('Prints') && !tags.includes('Video');
+      })
+      .map((lineItem) => ({
+        title:
+          lineItem.variant?.product?.title?.trim() ||
+          lineItem.title?.trim() ||
+          'Print',
+        imageUrl: lineItem.variant?.image?.url ?? null,
+      }));
+
+    if (!downloadItems.length && !printItems.length) {
+      return json({ok: true, skipped: 'No downloadable or print line items'});
     }
 
     const customerEmail =
@@ -311,18 +326,38 @@ export async function action({request, context}: ActionFunctionArgs) {
         ? `Order #${payload.order_number}`
         : 'Order');
 
-    await sendPurchaseDownloadEmail({
-      env: context.env,
-      toEmail: customerEmail,
-      orderName,
-      processedAt: payload.created_at ?? order.createdAt ?? null,
-      shippingAddress: toShippingAddressLabel(payload.shipping_address),
-      status: payload.fulfillment_status || 'Paid',
-      subtotal: payload.subtotal_price ?? null,
-      tax: payload.total_tax ?? null,
-      total: payload.total_price ?? null,
-      downloadItems,
-    });
+    // Send download email if there are downloadable items
+    if (downloadItems.length) {
+      await sendPurchaseDownloadEmail({
+        env: context.env,
+        toEmail: customerEmail,
+        orderName,
+        processedAt: payload.created_at ?? order.createdAt ?? null,
+        shippingAddress: toShippingAddressLabel(payload.shipping_address),
+        status: payload.fulfillment_status || 'Paid',
+        subtotal: payload.subtotal_price ?? null,
+        tax: payload.total_tax ?? null,
+        total: payload.total_price ?? null,
+        downloadItems,
+      });
+    }
+
+    // Send review request email if there are print items
+    if (printItems.length) {
+      try {
+        const encodedOrderId = encodeURIComponent(btoa(order.id));
+        const orderUrl = `${siteUrl}/account/orders/${encodedOrderId}`;
+        await sendReviewRequestEmail({
+          env: context.env,
+          toEmail: customerEmail,
+          orderName,
+          orderUrl,
+          printItems,
+        });
+      } catch (reviewEmailError) {
+        console.error('Failed to send review request email', reviewEmailError);
+      }
+    }
 
     const metafieldMutation = await adminGraphql<{
       data?: {
@@ -351,7 +386,12 @@ export async function action({request, context}: ActionFunctionArgs) {
       console.error('Unable to persist download email sent marker', userErrors);
     }
 
-    return json({ok: true, sent: true, downloadItemCount: downloadItems.length});
+    return json({
+      ok: true,
+      sent: true,
+      downloadItemCount: downloadItems.length,
+      reviewEmailSent: printItems.length > 0,
+    });
   } catch (error) {
     console.error('orders-paid webhook failed', error);
     return json({ok: false, error: 'Webhook handler failed'}, {status: 500});
