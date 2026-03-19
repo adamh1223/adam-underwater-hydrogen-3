@@ -2695,6 +2695,8 @@ export default function Product() {
                   onEdit={handleEditReview}
                   isAdmin={isAdmin}
                 />
+                <div className='mx-3'>
+
                 <ReviewForm
                   productId={product.id}
                   productName={product.title}
@@ -2708,6 +2710,7 @@ export default function Product() {
                   reviewMediaDiscountReward={reviewMediaDiscountReward}
                   showDiscountPromo
                 />
+                </div>
               </div>
             </section>
           )}
