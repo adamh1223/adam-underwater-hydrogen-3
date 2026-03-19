@@ -66,8 +66,10 @@ function ReviewForm({
     useState<string>();
   const [customerReviewMediaDiscountReward, setCustomerReviewMediaDiscountReward] =
     useState<ReviewMediaDiscountReward | null>(reviewMediaDiscountReward);
-  const [discountCode, setDiscountCode] = useState<string | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [discountUsesRemaining, setDiscountUsesRemaining] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     setCustomerReviewMediaDiscountReward(reviewMediaDiscountReward);
@@ -80,10 +82,7 @@ function ReviewForm({
   const shouldShowDiscountPromo =
     showDiscountPromo &&
     (!customerReviewMediaDiscountReward || Boolean(rewardForCurrentProduct));
-
-  useEffect(() => {
-    setDiscountCode(rewardForCurrentProduct?.discountCode ?? null);
-  }, [rewardForCurrentProduct]);
+  const discountCode = rewardForCurrentProduct?.discountCode ?? null;
 
   const discountRevealed = Boolean(discountCode);
   const hasQueuedMedia = Boolean(
@@ -105,6 +104,53 @@ function ReviewForm({
       return () => clearTimeout(timer);
     }
   }, [reviewSubmittedMessage]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const resolveUsage = async () => {
+      if (!discountCode || !customerId) {
+        setDiscountUsesRemaining(null);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/review-discount-usage?code=${encodeURIComponent(discountCode)}`,
+          {
+            headers: {Accept: 'application/json'},
+          },
+        );
+
+        if (!response.ok) {
+          if (!isCancelled) {
+            setDiscountUsesRemaining(null);
+          }
+          return;
+        }
+
+        const json = (await response.json()) as {
+          usesRemaining?: number;
+        };
+        if (isCancelled) return;
+        if (typeof json.usesRemaining === 'number') {
+          setDiscountUsesRemaining(json.usesRemaining);
+        } else {
+          setDiscountUsesRemaining(null);
+        }
+      } catch {
+        if (!isCancelled) {
+          setDiscountUsesRemaining(null);
+        }
+      }
+    };
+
+    resolveUsage();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [customerId, discountCode]);
 
   const isLoggedIn = Boolean(customerId);
 
@@ -198,7 +244,6 @@ function ReviewForm({
         returnedReward?.productId === productId
           ? returnedReward.discountCode
           : (json.discountCode ?? null);
-      setDiscountCode(returnedDiscountCode);
 
       // Reset form fields
       setFileError('');
@@ -232,7 +277,7 @@ function ReviewForm({
   const renderDiscountPromoCard = (extraClassName = '') => (
     <div className={`review-discount-promo-card ${extraClassName}`.trim()}>
       <p className="text-sm text-muted-foreground mb-3">
-        Leave a review with an image and/or video to reveal a one time $20
+        Leave a review with an image and/or video to claim a one time $20
         discount
       </p>
       <div className="invisible-ink-wrapper">
@@ -249,7 +294,7 @@ function ReviewForm({
         )}
       </div>
       {discountRevealed && (
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-3 flex items-center justify-center gap-2">
           <button
             type="button"
             onClick={() => {
@@ -266,6 +311,11 @@ function ReviewForm({
             {codeCopied ? 'Copied!' : 'Copy Code'}
           </button>
         </div>
+      )}
+      {discountRevealed && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Uses remaining: {discountUsesRemaining === 0 ? 0 : 1}
+        </p>
       )}
       <p className="text-xs text-muted-foreground mt-2">
         {discountRevealed
@@ -437,15 +487,12 @@ function ReviewForm({
                   {showPromoBesideUploads && renderSubmitButton()}
                 </div>
                 {showPromoBesideUploads && (
-                  <div className="review-form-upload-inline-promo hidden md:block">
+                  <div className="review-form-upload-inline-promo">
                     {renderDiscountPromoCard('review-discount-promo-card--inline')}
                   </div>
                 )}
               </div>
               {!showPromoBesideUploads && renderSubmitButton()}
-              {showPromoBesideUploads && (
-                <div className="mt-5 md:hidden">{renderDiscountPromoCard()}</div>
-              )}
               {showPromoBelowSubmit && (
                 <div className="mt-5">{renderDiscountPromoCard()}</div>
               )}

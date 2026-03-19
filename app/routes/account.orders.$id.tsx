@@ -446,7 +446,7 @@ export default function OrderRoute() {
                     <div>
                       {/* <table> */}
                       {lineItems.length <= 1 ? (
-                        <Card className="p-5">
+                        <Card className="p-3">
                           <div>
                             {lineItems.map((lineItem, lineItemIndex) => (
                               <OrderLineRow
@@ -918,7 +918,7 @@ function OrderLineRow({
   );
 
   return (
-    <div key={lineItem.id} className="tr account-order-line-row">
+    <div key={lineItem.id} className="account-order-line-row">
       <div className="td pb-5">
         <div className="pb-3">
           {lineItemProduct && isPrint ? (

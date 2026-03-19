@@ -57,7 +57,11 @@ import {
 import {ThreeUpCarousel} from '~/components/global/ThreeUpCarousel';
 import {ThreeUpEProductCarousel} from '~/components/global/ThreeUpEProductCarousel';
 import {Button} from '~/components/ui/button';
-import {GET_REVIEW_QUERY, RECOMMENDED_PRODUCTS_QUERY} from '~/lib/homeQueries';
+import {
+  ADMIN_METAFIELD_SET,
+  GET_REVIEW_QUERY,
+  RECOMMENDED_PRODUCTS_QUERY,
+} from '~/lib/homeQueries';
 import SimpleRecommendedProducts from '~/components/products/simpleRecommendedProducts';
 import {FaHeart, FaRegHeart} from 'react-icons/fa';
 import {
@@ -80,7 +84,13 @@ import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {getCustomerReviewLocation} from '~/lib/reviews';
-import {parseReviewMediaDiscountReward} from '~/lib/reviewMediaDiscountReward';
+import {adminGraphql} from '~/lib/shopify-admin.server';
+import {
+  parseReviewMediaDiscountReward,
+  REVIEW_MEDIA_DISCOUNT_KEY,
+  REVIEW_MEDIA_DISCOUNT_NAMESPACE,
+  serializeReviewMediaDiscountReward,
+} from '~/lib/reviewMediaDiscountReward';
 import ProductPageSkeleton from '~/components/skeletons/ProductPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 
@@ -767,6 +777,171 @@ async function loadCriticalData({
       wishlistProducts = JSON.parse(customerMetafieldValue) as string[];
     } else {
       wishlistProducts = [];
+    }
+
+    const customerNode = (customer as any)?.customer as
+      | {id?: string; firstName?: string; lastName?: string; reviewMediaDiscountReward?: {value?: string | null}}
+      | undefined;
+    const existingReward = parseReviewMediaDiscountReward(
+      customerNode?.reviewMediaDiscountReward?.value,
+    );
+
+    if (!existingReward && customerNode?.id && reviews?.product?.metafield?.value) {
+      let parsedProductReviews: any[] = [];
+      try {
+        const parsed = JSON.parse(reviews.product.metafield.value);
+        parsedProductReviews = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        parsedProductReviews = [];
+      }
+
+      const latestMediaReview = parsedProductReviews
+        .filter(
+          (review) =>
+            review?.customerId === customerNode.id &&
+            review?.productId === product.id &&
+            Boolean(review?.customerImage || review?.customerVideo),
+        )
+        .sort((a, b) =>
+          String(b?.createdAt ?? '').localeCompare(String(a?.createdAt ?? '')),
+        )[0];
+
+      if (latestMediaReview) {
+        let resolvedDiscountCode: string | null = null;
+        const randomChars = Array.from(crypto.getRandomValues(new Uint8Array(5)))
+          .map((byte) => byte.toString(36).padStart(2, '0'))
+          .join('')
+          .toUpperCase()
+          .slice(0, 8);
+        const generatedCode = `REVIEW-${randomChars}`;
+        const customerDisplayName = [customerNode.firstName, customerNode.lastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+
+        try {
+          const discountResult = await adminGraphql<{
+            data?: {
+              discountCodeBasicCreate?: {
+                codeDiscountNode?: {
+                  codeDiscount?: {
+                    codes?: {nodes?: Array<{code?: string | null}> | null} | null;
+                  } | null;
+                } | null;
+                userErrors?: Array<{field?: string[]; message?: string}> | null;
+              } | null;
+            };
+          }>({
+            env: context.env,
+            query: `
+              mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
+                discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
+                  codeDiscountNode {
+                    codeDiscount {
+                      ... on DiscountCodeBasic {
+                        codes(first: 1) {
+                          nodes {
+                            code
+                          }
+                        }
+                      }
+                    }
+                  }
+                  userErrors {
+                    field
+                    message
+                  }
+                }
+              }
+            `,
+            variables: {
+              basicCodeDiscount: {
+                title: `Review Reward - ${customerDisplayName || 'Customer'}`,
+                code: generatedCode,
+                startsAt: new Date().toISOString(),
+                usageLimit: 1,
+                customerSelection: {all: true},
+                customerGets: {
+                  value: {
+                    discountAmount: {amount: '20.0', appliesOnEachItem: false},
+                  },
+                  items: {all: true},
+                },
+                combinesWith: {
+                  orderDiscounts: true,
+                  productDiscounts: true,
+                  shippingDiscounts: true,
+                },
+              },
+            },
+          });
+
+          const userErrors =
+            discountResult?.data?.discountCodeBasicCreate?.userErrors ?? [];
+          if (userErrors.length > 0) {
+            console.error('Backfill review discount creation errors:', userErrors);
+          } else {
+            const createdCode =
+              discountResult?.data?.discountCodeBasicCreate?.codeDiscountNode
+                ?.codeDiscount?.codes?.nodes?.[0]?.code;
+            resolvedDiscountCode = createdCode || generatedCode;
+          }
+        } catch (error) {
+          console.error('Failed to backfill review discount code', error);
+        }
+
+        if (resolvedDiscountCode) {
+          const backfilledReward = {
+            productId: product.id,
+            discountCode: resolvedDiscountCode,
+            reviewCreatedAt:
+              typeof latestMediaReview?.createdAt === 'string'
+                ? latestMediaReview.createdAt
+                : undefined,
+            awardedAt: new Date().toISOString(),
+          };
+
+          try {
+            const metafieldResult = await adminGraphql<{
+              data?: {
+                metafieldsSet?: {
+                  userErrors?: Array<{field?: string[]; message?: string}> | null;
+                } | null;
+              };
+            }>({
+              env: context.env,
+              query: ADMIN_METAFIELD_SET,
+              variables: {
+                metafields: [
+                  {
+                    ownerId: customerNode.id,
+                    namespace: REVIEW_MEDIA_DISCOUNT_NAMESPACE,
+                    key: REVIEW_MEDIA_DISCOUNT_KEY,
+                    type: 'json',
+                    value: serializeReviewMediaDiscountReward(backfilledReward),
+                  },
+                ],
+              },
+            });
+
+            const metafieldErrors = metafieldResult?.data?.metafieldsSet?.userErrors ?? [];
+            if (metafieldErrors.length > 0) {
+              console.error(
+                'Backfill review discount reward metafield errors:',
+                metafieldErrors,
+              );
+            }
+          } catch (error) {
+            console.error('Failed to persist backfilled review reward', error);
+          }
+
+          if ((customer as any)?.customer) {
+            (customer as any).customer.reviewMediaDiscountReward = {
+              value: serializeReviewMediaDiscountReward(backfilledReward),
+            };
+          }
+        }
+      }
     }
   }
   return {

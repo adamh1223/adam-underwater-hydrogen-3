@@ -1707,7 +1707,7 @@ button.reset:hover:not(:has(> *)) {
 
 /* Review discount promo card */
 .review-discount-promo-card {
-  padding: 16px 20px;
+  padding: 6px 8px;
   border: 1px solid hsl(var(--border));
   border-radius: 14px;
   background: hsl(var(--card));
@@ -2987,6 +2987,9 @@ span {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  display: flex;
+  flex: 1 1 0%;
+  justify-content: flex-end;
 }
 
 .review-discount-promo-card--inline {
@@ -2994,24 +2997,16 @@ span {
   max-width: 550px;
 }
 
-@media (min-width: 768px) {
-  .review-form-upload-zone--with-promo {
-    display: flex;
-    align-items: start;
-    gap: 1rem;
-  }
+.review-form-upload-zone--with-promo {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+}
 
-  .review-form-upload-controls {
-    flex: 0 0 auto;
-    width: fit-content;
-    max-width: 100%;
-  }
-
-  .review-form-upload-inline-promo {
-    display: flex;
-    flex: 1 1 0%;
-    justify-content: flex-end;
-  }
+.review-form-upload-controls {
+  flex: 0 0 auto;
+  width: fit-content;
+  max-width: 100%;
 }
 
 @media (max-width: 460px) {
