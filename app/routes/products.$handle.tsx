@@ -87,6 +87,7 @@ import {getCustomerReviewLocation} from '~/lib/reviews';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 import {
   parseReviewMediaDiscountReward,
+  REVIEW_MEDIA_DISCOUNT_CODE,
   REVIEW_MEDIA_DISCOUNT_KEY,
   REVIEW_MEDIA_DISCOUNT_NAMESPACE,
   serializeReviewMediaDiscountReward,
@@ -807,139 +808,56 @@ async function loadCriticalData({
         )[0];
 
       if (latestMediaReview) {
-        let resolvedDiscountCode: string | null = null;
-        const randomChars = Array.from(crypto.getRandomValues(new Uint8Array(5)))
-          .map((byte) => byte.toString(36).padStart(2, '0'))
-          .join('')
-          .toUpperCase()
-          .slice(0, 8);
-        const generatedCode = `REVIEW-${randomChars}`;
-        const customerDisplayName = [customerNode.firstName, customerNode.lastName]
-          .filter(Boolean)
-          .join(' ')
-          .trim();
+        const resolvedDiscountCode = REVIEW_MEDIA_DISCOUNT_CODE;
+
+        const backfilledReward = {
+          productId: product.id,
+          discountCode: resolvedDiscountCode,
+          reviewCreatedAt:
+            typeof latestMediaReview?.createdAt === 'string'
+              ? latestMediaReview.createdAt
+              : undefined,
+          awardedAt: new Date().toISOString(),
+        };
 
         try {
-          const discountResult = await adminGraphql<{
+          const metafieldResult = await adminGraphql<{
             data?: {
-              discountCodeBasicCreate?: {
-                codeDiscountNode?: {
-                  codeDiscount?: {
-                    codes?: {nodes?: Array<{code?: string | null}> | null} | null;
-                  } | null;
-                } | null;
+              metafieldsSet?: {
                 userErrors?: Array<{field?: string[]; message?: string}> | null;
               } | null;
             };
           }>({
             env: context.env,
-            query: `
-              mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
-                discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
-                  codeDiscountNode {
-                    codeDiscount {
-                      ... on DiscountCodeBasic {
-                        codes(first: 1) {
-                          nodes {
-                            code
-                          }
-                        }
-                      }
-                    }
-                  }
-                  userErrors {
-                    field
-                    message
-                  }
-                }
-              }
-            `,
+            query: ADMIN_METAFIELD_SET,
             variables: {
-              basicCodeDiscount: {
-                title: `Review Reward - ${customerDisplayName || 'Customer'}`,
-                code: generatedCode,
-                startsAt: new Date().toISOString(),
-                usageLimit: 1,
-                customerSelection: {all: true},
-                customerGets: {
-                  value: {
-                    discountAmount: {amount: '20.0', appliesOnEachItem: false},
-                  },
-                  items: {all: true},
+              metafields: [
+                {
+                  ownerId: customerNode.id,
+                  namespace: REVIEW_MEDIA_DISCOUNT_NAMESPACE,
+                  key: REVIEW_MEDIA_DISCOUNT_KEY,
+                  type: 'json',
+                  value: serializeReviewMediaDiscountReward(backfilledReward),
                 },
-                combinesWith: {
-                  orderDiscounts: true,
-                  productDiscounts: true,
-                  shippingDiscounts: true,
-                },
-              },
+              ],
             },
           });
 
-          const userErrors =
-            discountResult?.data?.discountCodeBasicCreate?.userErrors ?? [];
-          if (userErrors.length > 0) {
-            console.error('Backfill review discount creation errors:', userErrors);
-          } else {
-            const createdCode =
-              discountResult?.data?.discountCodeBasicCreate?.codeDiscountNode
-                ?.codeDiscount?.codes?.nodes?.[0]?.code;
-            resolvedDiscountCode = createdCode || generatedCode;
+          const metafieldErrors = metafieldResult?.data?.metafieldsSet?.userErrors ?? [];
+          if (metafieldErrors.length > 0) {
+            console.error(
+              'Backfill review discount reward metafield errors:',
+              metafieldErrors,
+            );
           }
         } catch (error) {
-          console.error('Failed to backfill review discount code', error);
+          console.error('Failed to persist backfilled review reward', error);
         }
 
-        if (resolvedDiscountCode) {
-          const backfilledReward = {
-            productId: product.id,
-            discountCode: resolvedDiscountCode,
-            reviewCreatedAt:
-              typeof latestMediaReview?.createdAt === 'string'
-                ? latestMediaReview.createdAt
-                : undefined,
-            awardedAt: new Date().toISOString(),
+        if ((customer as any)?.customer) {
+          (customer as any).customer.reviewMediaDiscountReward = {
+            value: serializeReviewMediaDiscountReward(backfilledReward),
           };
-
-          try {
-            const metafieldResult = await adminGraphql<{
-              data?: {
-                metafieldsSet?: {
-                  userErrors?: Array<{field?: string[]; message?: string}> | null;
-                } | null;
-              };
-            }>({
-              env: context.env,
-              query: ADMIN_METAFIELD_SET,
-              variables: {
-                metafields: [
-                  {
-                    ownerId: customerNode.id,
-                    namespace: REVIEW_MEDIA_DISCOUNT_NAMESPACE,
-                    key: REVIEW_MEDIA_DISCOUNT_KEY,
-                    type: 'json',
-                    value: serializeReviewMediaDiscountReward(backfilledReward),
-                  },
-                ],
-              },
-            });
-
-            const metafieldErrors = metafieldResult?.data?.metafieldsSet?.userErrors ?? [];
-            if (metafieldErrors.length > 0) {
-              console.error(
-                'Backfill review discount reward metafield errors:',
-                metafieldErrors,
-              );
-            }
-          } catch (error) {
-            console.error('Failed to persist backfilled review reward', error);
-          }
-
-          if ((customer as any)?.customer) {
-            (customer as any).customer.reviewMediaDiscountReward = {
-              value: serializeReviewMediaDiscountReward(backfilledReward),
-            };
-          }
         }
       }
     }

@@ -8,6 +8,7 @@ import {formatReviewLocation} from '~/lib/reviews';
 import {uploadReviewMedia} from '~/lib/review-media.server';
 import {
   parseReviewMediaDiscountReward,
+  REVIEW_MEDIA_DISCOUNT_CODE,
   REVIEW_MEDIA_DISCOUNT_KEY,
   REVIEW_MEDIA_DISCOUNT_NAMESPACE,
   serializeReviewMediaDiscountReward,
@@ -254,87 +255,13 @@ export async function action({request, context}: ActionFunctionArgs) {
       return json({error: errors}, {status: 500});
     }
 
-    // 3️⃣ Auto-generate $20 discount code if review includes image or video
+    // 3️⃣ Assign REVIEW15 reward if review includes image or video
     let discountCode: string | null = null;
     const hasMedia = Boolean(customerImage || customerVideo);
     const hasEligibleCustomer = Boolean(customerId);
 
     if (hasMedia && hasEligibleCustomer && !customerReviewMediaDiscountReward) {
-      try {
-        const randomChars = Array.from(crypto.getRandomValues(new Uint8Array(5)))
-          .map((b) => b.toString(36).padStart(2, '0'))
-          .join('')
-          .toUpperCase()
-          .slice(0, 8);
-        const code = `REVIEW-${randomChars}`;
-
-        const discountResponse = await fetch(
-          `https://${shop}/admin/api/2024-10/graphql.json`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Shopify-Access-Token': adminToken,
-            },
-            body: JSON.stringify({
-              query: `
-                mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
-                  discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
-                    codeDiscountNode {
-                      codeDiscount {
-                        ... on DiscountCodeBasic {
-                          codes(first: 1) {
-                            nodes {
-                              code
-                            }
-                          }
-                        }
-                      }
-                    }
-                    userErrors {
-                      field
-                      message
-                    }
-                  }
-                }
-              `,
-              variables: {
-                basicCodeDiscount: {
-                  title: `Review Reward - ${customerName || 'Customer'}`,
-                  code,
-                  startsAt: new Date().toISOString(),
-                  usageLimit: 1,
-                  customerSelection: {all: true},
-                  customerGets: {
-                    value: {discountAmount: {amount: '20.0', appliesOnEachItem: false}},
-                    items: {all: true},
-                  },
-                  combinesWith: {
-                    orderDiscounts: true,
-                    productDiscounts: true,
-                    shippingDiscounts: true,
-                  },
-                },
-              },
-            }),
-          },
-        );
-
-        const discountJson = await discountResponse.json() as any;
-        const discountErrors =
-          discountJson?.data?.discountCodeBasicCreate?.userErrors ?? [];
-
-        if (discountErrors.length > 0) {
-          console.error('Discount code creation errors:', discountErrors);
-        } else {
-          const createdCode =
-            discountJson?.data?.discountCodeBasicCreate?.codeDiscountNode
-              ?.codeDiscount?.codes?.nodes?.[0]?.code;
-          discountCode = createdCode || code;
-        }
-      } catch (discountError) {
-        console.error('Failed to create discount code:', discountError);
-      }
+      discountCode = REVIEW_MEDIA_DISCOUNT_CODE;
     }
 
     if (

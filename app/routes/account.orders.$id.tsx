@@ -428,8 +428,8 @@ export default function OrderRoute() {
   return (
     <>
       <Sectiontitle text="My Orders" />
-      <div className="mx-3 mt-3">
-        <Card className="account-order">
+      <div className="">
+        <div className="account-order">
           <CardHeader>
             <p className="ms-2">
               <strong>Order {order.name}</strong>
@@ -442,7 +442,7 @@ export default function OrderRoute() {
             <div>
               {windowWidth && windowWidth >= 605 && (
                 <>
-                  <div className="upper-part-large grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className="upper-part-large grid grid-cols-1 gap-3 lg:grid-cols-2">
                     <div>
                       {/* <table> */}
                       {lineItems.length <= 1 ? (
@@ -518,39 +518,43 @@ export default function OrderRoute() {
                       )}
                     </div>
                     <div className="lower-part">
-                      <Card className="p-5">
-                        <h3 className="pb-3">
-                          <strong>Shipping Address:</strong>
-                        </h3>
-                        {order?.shippingAddress ? (
-                          <address>
-                            <p>{order.shippingAddress.name}</p>
-                            {order.shippingAddress.formatted ? (
-                              <>
-                                <p>{order.shippingAddress.formatted[1]}</p>
-                                <p>{order.shippingAddress.formatted[2]}</p>
-                                <p>{order.shippingAddress.formatted[3]}</p>
-                              </>
+                      <Card className="p-3">
+                        <div className="grid grid-cols-2 gap-6 items-start">
+                          <div className="min-w-0">
+                            <h3 className="pb-3">
+                              <strong>Shipping Address:</strong>
+                            </h3>
+                            {order?.shippingAddress ? (
+                              <address>
+                                <p>{order.shippingAddress.name}</p>
+                                {order.shippingAddress.formatted ? (
+                                  <>
+                                    <p>{order.shippingAddress.formatted[1]}</p>
+                                    <p>{order.shippingAddress.formatted[2]}</p>
+                                    <p>{order.shippingAddress.formatted[3]}</p>
+                                  </>
+                                ) : (
+                                  ''
+                                )}
+                              </address>
                             ) : (
-                              ''
+                              <p>N/A</p>
                             )}
-                          </address>
-                        ) : (
-                          <p>N/A</p>
-                        )}
-                        <h3 className="pt-3">
-                          <strong>Status:</strong>
-                        </h3>
-                        <div>
-                          <p>
-                            {fulfillmentStatus === 'SUCCESS'
-                              ? 'Shipped'
-                              : 'Preparing Shipment'}
-                          </p>
+                          </div>
+                          <div className="min-w-0 text-left">
+                            <h3 className="pb-3">
+                              <strong>Status:</strong>
+                            </h3>
+                            <p>
+                              {fulfillmentStatus === 'SUCCESS'
+                                ? 'Shipped'
+                                : 'Preparing Shipment'}
+                            </p>
+                          </div>
                         </div>
                       </Card>
                       <div className="pt-3 totals flex justify-end items-end">
-                        <Card className="grid grid-cols-1 w-full h-[60%] pe-6">
+                        <Card className="grid grid-cols-1 w-full h-[60%] w-[50%] pe-6">
                           {((discountValue && discountValue.amount) ||
                             discountPercentage) && (
                             <div className="tr flex justify-between">
@@ -680,31 +684,37 @@ export default function OrderRoute() {
                     </div>
                   </div>
                   <div className="lower-part">
-                    <Card className="mt-3 p-5">
-                      <h3 className="pb-3">Shipping Address:</h3>
-                      {order?.shippingAddress ? (
-                        <address>
-                          <p>{order.shippingAddress.name}</p>
-                          {order.shippingAddress.formatted ? (
-                            <>
-                              <p>{order.shippingAddress.formatted[1]}</p>
-                              <p>{order.shippingAddress.formatted[2]}</p>
-                              <p>{order.shippingAddress.formatted[3]}</p>
-                            </>
+                    <Card className="p-3">
+                      <div className="grid grid-cols-2 gap-6 items-start">
+                        <div className="min-w-0">
+                          <h3 className="pb-3">Shipping Address:</h3>
+                          {order?.shippingAddress ? (
+                            <address>
+                              <p>{order.shippingAddress.name}</p>
+                              {order.shippingAddress.formatted ? (
+                                <>
+                                  <p>{order.shippingAddress.formatted[1]}</p>
+                                  <p>{order.shippingAddress.formatted[2]}</p>
+                                  <p>{order.shippingAddress.formatted[3]}</p>
+                                </>
+                              ) : (
+                                ''
+                              )}
+                            </address>
                           ) : (
-                            ''
+                            <p>N/A</p>
                           )}
-                        </address>
-                      ) : (
-                        <p>N/A</p>
-                      )}
-                      <h3 className="pt-3">Status:</h3>
-                      <div>
-                        <p>
-                          {fulfillmentStatus === 'SUCCESS'
-                            ? 'Shipped'
-                            : 'Preparing Shipment'}
-                        </p>
+                        </div>
+                        <div className="min-w-0 text-left">
+                          <h3 className="pb-3">Status:</h3>
+                          <div>
+                            <p>
+                              {fulfillmentStatus === 'SUCCESS'
+                                ? 'Shipped'
+                                : 'Preparing Shipment'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </Card>
                   </div>
@@ -794,7 +804,7 @@ export default function OrderRoute() {
               )}
             </div>
           </CardContent>
-        </Card>
+        </div>
       </div>
     </>
   );
@@ -919,8 +929,8 @@ function OrderLineRow({
 
   return (
     <div key={lineItem.id} className="account-order-line-row">
-      <div className="td pb-5">
-        <div className="pb-3">
+      <div className="td pb-2">
+        <div className="">
           {lineItemProduct && isPrint ? (
             <div className="mx-auto max-w-[900px]">
               <ProductCarousel
@@ -928,6 +938,7 @@ function OrderLineRow({
                 layout="list"
                 isInWishlist={false}
                 isLoggedIn={ACCOUNT_LOGGED_IN_PROMISE}
+                renderContext="account-orders-id"
               />
             </div>
           ) : null}

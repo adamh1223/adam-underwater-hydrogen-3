@@ -1,5 +1,6 @@
 export const REVIEW_MEDIA_DISCOUNT_NAMESPACE = 'custom';
 export const REVIEW_MEDIA_DISCOUNT_KEY = 'review_media_discount_reward';
+export const REVIEW_MEDIA_DISCOUNT_CODE = 'REVIEW15';
 
 export type ReviewMediaDiscountReward = {
   productId: string;
@@ -23,16 +24,14 @@ export function parseReviewMediaDiscountReward(
   try {
     const parsed = JSON.parse(rawValue) as Record<string, unknown>;
     const productId = toNonEmptyString(parsed?.productId);
-    const discountCode = toNonEmptyString(parsed?.discountCode);
-
-    if (!productId || !discountCode) return null;
+    if (!productId) return null;
 
     const reviewCreatedAt = toNonEmptyString(parsed?.reviewCreatedAt) ?? undefined;
     const awardedAt = toNonEmptyString(parsed?.awardedAt) ?? undefined;
 
     return {
       productId,
-      discountCode,
+      discountCode: REVIEW_MEDIA_DISCOUNT_CODE,
       reviewCreatedAt,
       awardedAt,
     };

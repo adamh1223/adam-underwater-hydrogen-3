@@ -90,7 +90,8 @@ export const ProductCarousel = ({
     | 'default'
     | 'aside-search'
     | 'search-page-all'
-    | 'you-may-also-like';
+    | 'you-may-also-like'
+    | 'account-orders-id';
 }) => {
   // If caller passed a string id by mistake, bail out gracefully
   if (typeof product === 'string') {
@@ -117,6 +118,7 @@ export const ProductCarousel = ({
   const isAsideSearch = renderContext === 'aside-search';
   const isSearchPageAll = renderContext === 'search-page-all';
   const isYouMayAlsoLike = renderContext === 'you-may-also-like';
+  const isAccountOrdersId = renderContext === 'account-orders-id';
 
   // Persistent "held" highlight on print cards should only come from touch drag logic,
   // not from mouse click/focus states.
@@ -650,6 +652,17 @@ export const ProductCarousel = ({
                         } ${layout === 'list' && 'px-2 py-1'} ${
                           isAsideSearch ? 'aside-search-print-image-wrap' : ''
                         }`}
+                        style={
+                          layout === 'list' &&
+                          isVertical &&
+                          isAccountOrdersId
+                            ? {
+                                width: '60%',
+                                paddingTop: '0.75rem',
+                                paddingBottom: '1rem',
+                              }
+                            : undefined
+                        }
                       >
                         <img
                           src={getOptimizedImageUrl(
@@ -669,6 +682,16 @@ export const ProductCarousel = ({
                               ? 'aside-search-print-image-horizontal'
                               : ''
                           }`}
+                          style={
+                            layout === 'list' &&
+                            isVertical &&
+                            isAccountOrdersId
+                              ? {
+                                  maxHeight:
+                                    'clamp(162px, calc(186px - 1.1vw), 182px)',
+                                }
+                              : undefined
+                          }
                         />
                       </div>
                         );

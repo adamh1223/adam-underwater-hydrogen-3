@@ -1478,7 +1478,7 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .invisible-ink-text--large {
-  font-size: 1.75rem;
+  font-size: 1.3rem;
 }
 
 .invisible-ink-text--revealed {
@@ -1716,6 +1716,10 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .review-discount-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 5px 14px;
   background: hsl(var(--primary) / 0.15);
   border: 1px solid hsl(var(--border));
@@ -1727,16 +1731,33 @@ button.reset:hover:not(:has(> *)) {
   transition:
     background 0.2s,
     border-color 0.2s;
+  position: relative;
+  isolation: isolate;
 }
 
 .review-discount-copy-btn:hover {
   background: hsl(var(--primary) / 0.25);
 }
 
-.review-discount-copy-btn--copied {
-  background: hsl(142 76% 36% / 0.2);
-  border-color: hsl(142 76% 36%);
-  color: hsl(142 76% 36%);
+.review-discount-copy-btn--splash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: product-card-nav-splash-wave 900ms ease-out 1 forwards;
+}
+
+.review-discount-copy-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.review-discount-revealed-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* .logo {
@@ -2994,7 +3015,6 @@ span {
 
 .review-discount-promo-card--inline {
   width: 100%;
-  max-width: 550px;
 }
 
 .review-form-upload-zone--with-promo {

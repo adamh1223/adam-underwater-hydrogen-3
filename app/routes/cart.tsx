@@ -16,6 +16,7 @@ import {CartMain} from '~/components/CartMain';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import CartPageSkeleton from '~/components/skeletons/CartPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+import {REVIEW_MEDIA_DISCOUNT_CODE} from '~/lib/reviewMediaDiscountReward';
 type VariantProductSummary = {
   productId: string;
   tags: string[];
@@ -406,11 +407,15 @@ export async function action({request, context}: ActionFunctionArgs) {
       // Combine discount codes already applied on cart
       discountCodes.push(...inputs.discountCodes);
 
-      // WELCOME15 requires the user to be logged in
-      const hasWelcome15 = discountCodes.some(
-        (code) => code.toUpperCase() === 'WELCOME15',
+      // REVIEW15 + WELCOME15 require the user to be logged in
+      const restrictedCodeSet = new Set([
+        'WELCOME15',
+        REVIEW_MEDIA_DISCOUNT_CODE,
+      ]);
+      const restrictedCode = discountCodes.find((code) =>
+        restrictedCodeSet.has(code.toUpperCase()),
       );
-      if (hasWelcome15) {
+      if (restrictedCode) {
         let isLoggedIn = false;
         try {
           isLoggedIn = await context.customerAccount.isLoggedIn();
@@ -420,7 +425,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         if (!isLoggedIn) {
           return data(
             {
-              error: 'You must be logged in to use the WELCOME15 discount code.',
+              error: `You must be logged in to use the ${restrictedCode.toUpperCase()} discount code.`,
             },
             {status: 401},
           );

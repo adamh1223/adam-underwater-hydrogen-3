@@ -4,8 +4,9 @@ import {Button} from '../ui/button';
 import {Rating, RatingButton} from 'components/ui/shadcn-io/rating';
 import Sectiontitle from '../global/Sectiontitle';
 import {ReloadIcon} from '@radix-ui/react-icons';
-import {Link} from '@remix-run/react';
+import {Link, useNavigate} from '@remix-run/react';
 import {toast} from 'sonner';
+import {LuCopy} from 'react-icons/lu';
 import type {ReviewMediaDiscountReward} from '~/lib/reviewMediaDiscountReward';
 
 const REVIEW_CHAR_LIMIT = 200;
@@ -61,19 +62,39 @@ function ReviewForm({
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const fileVideoInputRef = useRef<HTMLInputElement | null>(null);
+  const copyLabelTimerRef = useRef<number | null>(null);
+  const copySplashStartTimerRef = useRef<number | null>(null);
+  const copySplashStopTimerRef = useRef<number | null>(null);
 
   const [reviewSubmittedMessage, setReviewSubmittedMessage] =
     useState<string>();
   const [customerReviewMediaDiscountReward, setCustomerReviewMediaDiscountReward] =
     useState<ReviewMediaDiscountReward | null>(reviewMediaDiscountReward);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [copySplashActive, setCopySplashActive] = useState(false);
   const [discountUsesRemaining, setDiscountUsesRemaining] = useState<
     number | null
   >(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setCustomerReviewMediaDiscountReward(reviewMediaDiscountReward);
   }, [reviewMediaDiscountReward]);
+
+  useEffect(
+    () => () => {
+      if (copyLabelTimerRef.current) {
+        window.clearTimeout(copyLabelTimerRef.current);
+      }
+      if (copySplashStartTimerRef.current) {
+        window.clearTimeout(copySplashStartTimerRef.current);
+      }
+      if (copySplashStopTimerRef.current) {
+        window.clearTimeout(copySplashStopTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const rewardForCurrentProduct =
     customerReviewMediaDiscountReward?.productId === productId
@@ -276,40 +297,85 @@ function ReviewForm({
 
   const renderDiscountPromoCard = (extraClassName = '') => (
     <div className={`review-discount-promo-card ${extraClassName}`.trim()}>
-      <p className="text-sm text-muted-foreground mb-3">
-        Leave a review with an image and/or video to claim a one time $20
-        discount
+      <div className='flex justify-center'>
+
+      <p className="text-md font-bold text-start mb-2">
+        Claim a $15 discount!
       </p>
-      <div className="invisible-ink-wrapper">
-        <span
-          className={`invisible-ink-text invisible-ink-text--large${
-            discountRevealed ? ' invisible-ink-text--revealed' : ''
-          }`}
-        >
-          {discountCode || 'REVIEW-XXXXXXXX'}
-        </span>
-        {!discountRevealed && <div className="invisible-ink-overlay" />}
-        {discountRevealed && (
-          <div className="invisible-ink-overlay invisible-ink-overlay--revealed" />
-        )}
       </div>
-      {discountRevealed && (
-        <div className="mt-3 flex items-center justify-center gap-2">
+      <div className='flex justify-center'>
+
+      <p className="text-sm text-start text-muted-foreground mb-2">
+        Leave a review with an image and/or video
+      </p>
+      </div>
+      {discountRevealed ? (
+        <div className="review-discount-revealed-row">
+          <div className="invisible-ink-wrapper">
+            <span
+              className={`invisible-ink-text invisible-ink-text--large${
+                discountRevealed ? ' invisible-ink-text--revealed' : ''
+              }`}
+            >
+              {discountCode || 'REVIEW-XXXXXXXX'}
+            </span>
+            <div className="invisible-ink-overlay invisible-ink-overlay--revealed" />
+          </div>
           <button
             type="button"
             onClick={() => {
               if (discountCode) {
                 navigator.clipboard.writeText(discountCode);
                 setCodeCopied(true);
-                setTimeout(() => setCodeCopied(false), 2000);
+                setCopySplashActive(false);
+                if (copyLabelTimerRef.current) {
+                  window.clearTimeout(copyLabelTimerRef.current);
+                }
+                if (copySplashStartTimerRef.current) {
+                  window.clearTimeout(copySplashStartTimerRef.current);
+                }
+                if (copySplashStopTimerRef.current) {
+                  window.clearTimeout(copySplashStopTimerRef.current);
+                }
+                copySplashStartTimerRef.current = window.setTimeout(
+                  () => setCopySplashActive(true),
+                  0,
+                );
+                copySplashStopTimerRef.current = window.setTimeout(
+                  () => setCopySplashActive(false),
+                  900,
+                );
+                copyLabelTimerRef.current = window.setTimeout(
+                  () => setCodeCopied(false),
+                  3000,
+                );
+                toast.success('Copied to Clipboard!', {
+                  action: {
+                    label: 'Browse Products',
+                    onClick: () => navigate('/collections/prints'),
+                  },
+                });
               }
             }}
             className={`review-discount-copy-btn${
-              codeCopied ? ' review-discount-copy-btn--copied' : ''
+              copySplashActive ? ' review-discount-copy-btn--splash' : ''
+            }`}
+            aria-label="Copy discount code"
+          >
+            <LuCopy className="review-discount-copy-icon" aria-hidden="true" />
+            <span>{codeCopied ? 'Copied' : 'Copy'}</span>
+          </button>
+        </div>
+      ) : (
+        <div className="invisible-ink-wrapper">
+          <span
+            className={`invisible-ink-text invisible-ink-text--large${
+              discountRevealed ? ' invisible-ink-text--revealed' : ''
             }`}
           >
-            {codeCopied ? 'Copied!' : 'Copy Code'}
-          </button>
+            {discountCode || 'REVIEW-XXXXXXXX'}
+          </span>
+          <div className="invisible-ink-overlay" />
         </div>
       )}
       {discountRevealed && (
@@ -317,11 +383,14 @@ function ReviewForm({
           Uses remaining: {discountUsesRemaining === 0 ? 0 : 1}
         </p>
       )}
-      <p className="text-xs text-muted-foreground mt-2">
+      <div className='flex justify-center'>
+
+      <p className="text-xs text-start text-muted-foreground mt-2">
         {discountRevealed
-          ? 'Apply this code at checkout for $20 off your next order.'
+          ? 'Apply code at checkout for $15 off'
           : 'One use per customer. Submit a review with media to unlock.'}
       </p>
+      </div>
     </div>
   );
 
@@ -392,10 +461,10 @@ function ReviewForm({
                 </span>
               </div>
 
-              <br />
+              
               {fileError && <h2>{fileError}</h2>}
               <div
-                className={`review-form-upload-zone ${
+                className={`review-form-upload-zone mt-2 ${
                   showPromoBesideUploads
                     ? 'review-form-upload-zone--with-promo'
                     : ''

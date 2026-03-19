@@ -22,6 +22,7 @@ import {
 import StockForm from './form/StockForm';
 import type {RootLoader} from '~/root';
 import {CartDiscountProgress} from './CartDiscountProgress';
+import {REVIEW_MEDIA_DISCOUNT_CODE} from '~/lib/reviewMediaDiscountReward';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -784,6 +785,11 @@ function UpdateDiscountForm({
 
 const WELCOME15_LOGIN_ERROR =
   'You must be logged in to use the WELCOME15 discount code.';
+const REVIEW15_LOGIN_ERROR = `You must be logged in to use the ${REVIEW_MEDIA_DISCOUNT_CODE} discount code.`;
+const AUTO_DISMISS_LOGIN_ERRORS = new Set([
+  WELCOME15_LOGIN_ERROR,
+  REVIEW15_LOGIN_ERROR,
+]);
 
 function DiscountCodeErrorMessage({
   fetcher,
@@ -806,7 +812,7 @@ function DiscountCodeErrorMessage({
 
     setVisibleError(currentError);
 
-    if (currentError !== WELCOME15_LOGIN_ERROR) return;
+    if (!AUTO_DISMISS_LOGIN_ERRORS.has(currentError)) return;
 
     const timeoutId = window.setTimeout(() => {
       setVisibleError((previousError) =>
