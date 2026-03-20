@@ -34,6 +34,9 @@ function ReviewForm({
   showDiscountPromo = false,
   reviewMediaDiscountReward = null,
   onReviewMediaDiscountRewardChange,
+  showSignInToUseCode = false,
+  signInUrl,
+  precomputedDiscountUsesRemaining,
 }: {
   productId: string;
   productName: string;
@@ -51,6 +54,15 @@ function ReviewForm({
   onReviewMediaDiscountRewardChange?: (
     reward: ReviewMediaDiscountReward | null,
   ) => void;
+  /** When true, show a "Sign in to use code" link below the revealed discount code. */
+  showSignInToUseCode?: boolean;
+  /** URL for the sign-in link shown when `showSignInToUseCode` is true. */
+  signInUrl?: string;
+  /**
+   * Pre-computed discount uses remaining (0 or 1). When provided (not undefined),
+   * the component skips the authenticated `/api/review-discount-usage` call.
+   */
+  precomputedDiscountUsesRemaining?: number | null;
 }) {
   const [pendingReviewSubmit, setPendingReviewSubmit] = useState(false);
   const [review, setReview] = useState('');
@@ -80,6 +92,13 @@ function ReviewForm({
   useEffect(() => {
     setCustomerReviewMediaDiscountReward(reviewMediaDiscountReward);
   }, [reviewMediaDiscountReward]);
+
+  // Sync precomputed discount uses remaining from the parent (e.g. token page loader).
+  useEffect(() => {
+    if (typeof precomputedDiscountUsesRemaining === 'number') {
+      setDiscountUsesRemaining(precomputedDiscountUsesRemaining);
+    }
+  }, [precomputedDiscountUsesRemaining]);
 
   useEffect(
     () => () => {
@@ -130,6 +149,10 @@ function ReviewForm({
     let isCancelled = false;
 
     const resolveUsage = async () => {
+      // When a precomputed value is provided (token page), skip the
+      // authenticated API call entirely — it would return 401.
+      if (precomputedDiscountUsesRemaining !== undefined) return;
+
       if (!discountCode || !customerId) {
         setDiscountUsesRemaining(null);
         return;
@@ -171,7 +194,7 @@ function ReviewForm({
     return () => {
       isCancelled = true;
     };
-  }, [customerId, discountCode]);
+  }, [customerId, discountCode, precomputedDiscountUsesRemaining]);
 
   const isLoggedIn = Boolean(customerId);
 
@@ -278,6 +301,7 @@ function ReviewForm({
       setVideoPreview(null);
 
       if (returnedDiscountCode) {
+        setDiscountUsesRemaining(1); // Newly assigned code, never used
         setReviewSubmittedMessage('Review Submitted!');
         toast.success('Review posted! Your discount code has been revealed.');
       } else {
@@ -391,6 +415,16 @@ function ReviewForm({
           : 'One use per customer. Submit a review with media to unlock.'}
       </p>
       </div>
+      {discountRevealed && showSignInToUseCode && signInUrl && (
+        <div className="flex justify-center mt-1">
+          <Link
+            to={signInUrl}
+            className="text-xs text-primary underline"
+          >
+            Sign in to use code
+          </Link>
+        </div>
+      )}
     </div>
   );
 

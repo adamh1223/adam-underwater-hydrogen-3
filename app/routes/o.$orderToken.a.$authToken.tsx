@@ -11,6 +11,13 @@ import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {ProductCarousel} from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import ReviewForm from '~/components/form/ReviewForm';
+import {
+  parseReviewMediaDiscountReward,
+  REVIEW_MEDIA_DISCOUNT_CODE,
+  REVIEW_MEDIA_DISCOUNT_KEY,
+  REVIEW_MEDIA_DISCOUNT_NAMESPACE,
+  type ReviewMediaDiscountReward,
+} from '~/lib/reviewMediaDiscountReward';
 
 const PICKUP_ADDRESS_TEXT = '1080 8th Ave, San Diego, CA 92101';
 const PICKUP_ADDRESS_APPLE_MAPS_URL = `https://maps.apple.com/?q=${encodeURIComponent(
@@ -182,10 +189,42 @@ const ADMIN_ORDER_BY_ID_QUERY = `#graphql
           }
         }
       }
+      customer {
+        id
+        displayName
+      }
       events(first: 15, reverse: true) {
         nodes {
           message
         }
+      }
+    }
+  }
+` as const;
+
+const CUSTOMER_REWARD_AND_USAGE_QUERY = `#graphql
+  query CustomerRewardAndUsage($customerId: ID!) {
+    customer(id: $customerId) {
+      metafield(
+        namespace: "${REVIEW_MEDIA_DISCOUNT_NAMESPACE}"
+        key: "${REVIEW_MEDIA_DISCOUNT_KEY}"
+      ) {
+        value
+      }
+      orders(first: 50, reverse: true) {
+        nodes {
+          discountCodes
+        }
+      }
+    }
+  }
+` as const;
+
+const PRODUCT_REVIEWS_METAFIELD_QUERY = `#graphql
+  query ProductReviewsMetafield($id: ID!) {
+    product(id: $id) {
+      metafield(namespace: "custom", key: "reviews") {
+        value
       }
     }
   }
@@ -279,6 +318,10 @@ type AdminOrderNode = {
     provinceCode?: string | null;
     zip?: string | null;
     country?: string | null;
+  } | null;
+  customer: {
+    id: string;
+    displayName: string;
   } | null;
   lineItems: {
     nodes: AdminLineItem[];
@@ -553,6 +596,113 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     return acc;
   }, {});
 
+  // --- Customer data for review forms ---
+  const orderCustomerId = order.customer?.id ?? null;
+  const orderCustomerName = order.customer?.displayName ?? null;
+
+  let reviewMediaDiscountReward: ReviewMediaDiscountReward | null = null;
+  let discountUsesRemaining: number | null = null;
+  const userReviewExistsByProductId: Record<string, boolean> = {};
+
+  if (orderCustomerId) {
+    // Collect print product IDs from Admin order data
+    const printProductIds = new Set<string>();
+    for (const li of lineItems) {
+      const tags = li.variant?.product?.tags ?? [];
+      const isPrint = tags.includes('Prints') && !tags.includes('Video');
+      if (isPrint && li.variant?.product?.id) {
+        printProductIds.add(li.variant.product.id);
+      }
+    }
+
+    // Fetch customer reward + orders, and product reviews in parallel
+    try {
+      const [customerDataResult, productReviewsResults] = await Promise.all([
+        // Customer reward metafield and order discount codes
+        adminGraphql<{
+          data?: {
+            customer?: {
+              metafield?: {value?: string | null} | null;
+              orders?: {
+                nodes?: Array<{discountCodes?: string[]}>;
+              };
+            };
+          };
+        }>({
+          env: context.env,
+          query: CUSTOMER_REWARD_AND_USAGE_QUERY,
+          variables: {customerId: orderCustomerId},
+        }).catch(() => null),
+        // Product reviews for each print product
+        Promise.all(
+          Array.from(printProductIds).map(async (productId) => {
+            try {
+              const res = await adminGraphql<{
+                data?: {
+                  product?: {
+                    metafield?: {value?: string | null} | null;
+                  };
+                };
+              }>({
+                env: context.env,
+                query: PRODUCT_REVIEWS_METAFIELD_QUERY,
+                variables: {id: productId},
+              });
+              return {
+                productId,
+                reviewsJson:
+                  res?.data?.product?.metafield?.value ?? null,
+              };
+            } catch {
+              return {productId, reviewsJson: null as string | null};
+            }
+          }),
+        ),
+      ]);
+
+      // Parse customer reward metafield
+      const rewardValue =
+        customerDataResult?.data?.customer?.metafield?.value;
+      reviewMediaDiscountReward =
+        parseReviewMediaDiscountReward(rewardValue);
+
+      // Check discount code usage across customer's orders
+      if (reviewMediaDiscountReward) {
+        const orderNodes =
+          customerDataResult?.data?.customer?.orders?.nodes ?? [];
+        const targetCode = REVIEW_MEDIA_DISCOUNT_CODE.toLowerCase();
+        const hasUsed = orderNodes.some((o) =>
+          (o?.discountCodes ?? []).some(
+            (code) =>
+              typeof code === 'string' &&
+              code.toLowerCase() === targetCode,
+          ),
+        );
+        discountUsesRemaining = hasUsed ? 0 : 1;
+      }
+
+      // Check if customer has already reviewed each print product
+      for (const {productId, reviewsJson} of productReviewsResults) {
+        if (!reviewsJson) {
+          userReviewExistsByProductId[productId] = false;
+          continue;
+        }
+        try {
+          const reviews = JSON.parse(reviewsJson);
+          userReviewExistsByProductId[productId] = Array.isArray(reviews)
+            ? reviews.some(
+                (r: any) => r.customerId === orderCustomerId,
+              )
+            : false;
+        } catch {
+          userReviewExistsByProductId[productId] = false;
+        }
+      }
+    } catch {
+      // Silently continue — customer data is optional for the page
+    }
+  }
+
   // Determine pickup status — if no shipping line and no e-products, treat as pickup
   const hasAnyEProducts = Object.values(lineItemHasDownload).some(Boolean);
   const isPickupOrder = isPickupOrderPurchaseMethod(
@@ -582,6 +732,11 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     lineItemProductsByLineItemId,
     lineItemSelectedOptionsByLineItemId,
     accountOrderPath,
+    orderCustomerId,
+    orderCustomerName,
+    reviewMediaDiscountReward,
+    discountUsesRemaining,
+    userReviewExistsByProductId,
   };
 }
 
@@ -595,7 +750,17 @@ export default function OrderTokenStatusPage() {
     lineItemProductsByLineItemId,
     lineItemSelectedOptionsByLineItemId,
     accountOrderPath,
+    orderCustomerId,
+    orderCustomerName,
+    reviewMediaDiscountReward,
+    discountUsesRemaining,
+    userReviewExistsByProductId,
   } = useLoaderData<typeof loader>();
+
+  const [currentReviewReward, setCurrentReviewReward] =
+    useState<ReviewMediaDiscountReward | null>(
+      (reviewMediaDiscountReward as ReviewMediaDiscountReward | null) ?? null,
+    );
 
   const signInUrl = `/account/login?redirectTo=${encodeURIComponent(accountOrderPath)}`;
 
@@ -680,6 +845,12 @@ export default function OrderTokenStatusPage() {
                                 lineItemSelectedOptionsByLineItemId={
                                   lineItemSelectedOptionsByLineItemId
                                 }
+                                orderCustomerId={orderCustomerId}
+                                orderCustomerName={orderCustomerName}
+                                currentReviewReward={currentReviewReward}
+                                discountUsesRemaining={discountUsesRemaining as number | null}
+                                userReviewExistsByProductId={userReviewExistsByProductId as Record<string, boolean>}
+                                onReviewRewardChange={setCurrentReviewReward}
                               />
                             ))}
                           </div>
@@ -703,6 +874,12 @@ export default function OrderTokenStatusPage() {
                                 lineItemSelectedOptionsByLineItemId={
                                   lineItemSelectedOptionsByLineItemId
                                 }
+                                orderCustomerId={orderCustomerId}
+                                orderCustomerName={orderCustomerName}
+                                currentReviewReward={currentReviewReward}
+                                discountUsesRemaining={discountUsesRemaining as number | null}
+                                userReviewExistsByProductId={userReviewExistsByProductId as Record<string, boolean>}
+                                onReviewRewardChange={setCurrentReviewReward}
                               />
                             </Card>
                           ))}
@@ -837,6 +1014,12 @@ export default function OrderTokenStatusPage() {
                               lineItemSelectedOptionsByLineItemId={
                                 lineItemSelectedOptionsByLineItemId
                               }
+                              orderCustomerId={orderCustomerId}
+                              orderCustomerName={orderCustomerName}
+                              currentReviewReward={currentReviewReward}
+                              discountUsesRemaining={discountUsesRemaining as number | null}
+                              userReviewExistsByProductId={userReviewExistsByProductId as Record<string, boolean>}
+                              onReviewRewardChange={setCurrentReviewReward}
                             />
                           </Card>
                         ))}
@@ -958,6 +1141,12 @@ function TokenOrderLineRow({
   lineItemTagsByLineItemId = {},
   lineItemProductsByLineItemId = {},
   lineItemSelectedOptionsByLineItemId = {},
+  orderCustomerId,
+  orderCustomerName,
+  currentReviewReward,
+  discountUsesRemaining,
+  userReviewExistsByProductId = {},
+  onReviewRewardChange,
 }: {
   lineItem: AdminLineItem;
   hasDownload: boolean;
@@ -968,6 +1157,12 @@ function TokenOrderLineRow({
     string,
     LineItemSelectedOption[]
   >;
+  orderCustomerId?: string | null;
+  orderCustomerName?: string | null;
+  currentReviewReward?: ReviewMediaDiscountReward | null;
+  discountUsesRemaining?: number | null;
+  userReviewExistsByProductId?: Record<string, boolean>;
+  onReviewRewardChange?: (reward: ReviewMediaDiscountReward | null) => void;
 }) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
 
@@ -1194,7 +1389,7 @@ function TokenOrderLineRow({
         </>
       )}
 
-      {/* Review form for print products — not logged in so fields are disabled */}
+      {/* Review form for print products — customer ID from order enables the form */}
       {isPrint && lineItemProduct?.id && (
         <div className="border-t border-primary/20">
           <ReviewForm
@@ -1202,13 +1397,19 @@ function TokenOrderLineRow({
             productName={
               lineItemProduct.title ?? lineItem.title ?? 'Print'
             }
-            customerId={undefined}
-            customerName={undefined}
-            userReviewExists={false}
+            customerId={orderCustomerId ?? undefined}
+            customerName={orderCustomerName ?? undefined}
+            userReviewExists={
+              userReviewExistsByProductId[lineItemProduct.id] ?? false
+            }
             isBlocked={false}
             updateExistingReviews={() => {}}
             showDiscountPromo
-            reviewMediaDiscountReward={null}
+            reviewMediaDiscountReward={currentReviewReward ?? null}
+            onReviewMediaDiscountRewardChange={onReviewRewardChange}
+            showSignInToUseCode
+            signInUrl={signInUrl}
+            precomputedDiscountUsesRemaining={discountUsesRemaining ?? null}
           />
         </div>
       )}
