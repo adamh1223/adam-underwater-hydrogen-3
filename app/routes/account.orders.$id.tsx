@@ -176,17 +176,26 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
   }
 }
 
-function isPickupOrderPurchaseMethod(shippingLine?: {
-  title?: string | null;
-  code?: string | null;
-  source?: string | null;
-  shippingRateHandle?: string | null;
-}): boolean {
-  const title = shippingLine?.title?.trim() ?? '';
-  const code = shippingLine?.code?.trim() ?? '';
-  const source = shippingLine?.source?.trim().toLowerCase() ?? '';
+function isPickupOrderPurchaseMethod(
+  shippingLine?: {
+    title?: string | null;
+    code?: string | null;
+    source?: string | null;
+    shippingRateHandle?: string | null;
+  },
+  hasAnyEProducts?: boolean,
+): boolean {
+  // POS in-person orders have no shipping line — if the order also has no
+  // e-products, assume it was prints sold in person via pickup.
+  if (!shippingLine) {
+    return !hasAnyEProducts;
+  }
+
+  const title = shippingLine.title?.trim() ?? '';
+  const code = shippingLine.code?.trim() ?? '';
+  const source = shippingLine.source?.trim().toLowerCase() ?? '';
   const shippingRateHandle =
-    shippingLine?.shippingRateHandle?.trim().toLowerCase() ?? '';
+    shippingLine.shippingRateHandle?.trim().toLowerCase() ?? '';
 
   const titleLooksLikeAddress =
     /\d/.test(title) &&
@@ -199,6 +208,11 @@ function isPickupOrderPurchaseMethod(shippingLine?: {
     title.length > 0 &&
     (code === title || titleLooksLikeAddress || shippingRateHandle.includes('pickup'))
   );
+}
+
+function isFulfilledStatus(status?: string | null): boolean {
+  const s = (status ?? '').trim().toUpperCase();
+  return s === 'SUCCESS' || s === 'DELIVERED' || s === 'FULFILLED';
 }
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
@@ -237,7 +251,13 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     //@ts-expect-error order is any
     flattenConnection(order.fulfillments)[0]?.status ?? 'N/A';
   let adminFulfillmentStatus: string | null = null;
-  let isPickupOrder = false;
+  let pickupStatusFromEvents: string | null = null;
+  let adminShippingLine: {
+    title?: string | null;
+    code?: string | null;
+    source?: string | null;
+    shippingRateHandle?: string | null;
+  } | null = null;
   try {
     const adminStatusResponse = await adminGraphql<{
       data?: {
@@ -262,22 +282,16 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     const eventMessages = Array.isArray(adminStatusResponse?.data?.node?.events?.nodes)
       ? adminStatusResponse.data.node.events.nodes.map((eventNode) => eventNode?.message)
       : [];
-    const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
+    pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
     const fallbackAdminStatus =
       typeof adminStatusResponse?.data?.node?.displayFulfillmentStatus === 'string'
         ? adminStatusResponse.data.node.displayFulfillmentStatus
         : null;
     adminFulfillmentStatus = pickupStatusFromEvents ?? fallbackAdminStatus;
-    isPickupOrder = isPickupOrderPurchaseMethod(
-      adminStatusResponse?.data?.node?.shippingLine ?? undefined,
-    );
+    adminShippingLine = adminStatusResponse?.data?.node?.shippingLine ?? null;
   } catch {
     adminFulfillmentStatus = null;
-    isPickupOrder = false;
   }
-  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
-    adminFulfillmentStatus ?? fulfillmentStatus,
-  );
   //@ts-expect-error order is any
   const firstDiscount = discountApplications[0]?.value;
 
@@ -367,6 +381,25 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       return acc;
     },
     {},
+  );
+
+  // Determine pickup status — if no shipping line and no e-products, treat as pickup
+  const hasAnyEProducts = Object.keys(downloadLinksByLineItemId).length > 0;
+  const isPickupOrder = isPickupOrderPurchaseMethod(
+    adminShippingLine ?? undefined,
+    hasAnyEProducts,
+  );
+
+  // For pickup orders that are fulfilled (e.g. POS in-person sales),
+  // Shopify sets displayFulfillmentStatus to FULFILLED without pickup-specific
+  // event messages. Override to show "Picked up in store" instead of "Shipped".
+  const effectiveFulfillmentStatus = adminFulfillmentStatus ?? fulfillmentStatus;
+  const resolvedFulfillmentStatus =
+    isPickupOrder && !pickupStatusFromEvents && isFulfilledStatus(effectiveFulfillmentStatus)
+      ? 'PICKED_UP'
+      : effectiveFulfillmentStatus;
+  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
+    resolvedFulfillmentStatus,
   );
 
   const lineItemProductsByLineItemId = lineItems.reduce<Record<string, any>>(

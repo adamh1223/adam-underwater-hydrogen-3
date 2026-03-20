@@ -1,4 +1,4 @@
-import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {adminGraphql, getShopifyAdminConfig} from '~/lib/shopify-admin.server';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
@@ -290,8 +290,14 @@ type AdminOrderNode = {
 
 function isPickupOrderPurchaseMethod(
   shippingLine?: AdminOrderNode['shippingLine'],
+  hasAnyEProducts?: boolean,
 ): boolean {
-  if (!shippingLine) return false;
+  // POS in-person orders have no shipping line — if the order also has no
+  // e-products, assume it was prints sold in person via pickup.
+  if (!shippingLine) {
+    return !hasAnyEProducts;
+  }
+
   const title = shippingLine.title?.trim() ?? '';
   const code = shippingLine.code?.trim() ?? '';
   const source = shippingLine.source?.trim().toLowerCase() ?? '';
@@ -359,6 +365,11 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
   }
 }
 
+function isFulfilledStatus(status?: string | null): boolean {
+  const s = (status ?? '').trim().toUpperCase();
+  return s === 'SUCCESS' || s === 'DELIVERED' || s === 'FULFILLED';
+}
+
 function formatMoney(amount: string, currencyCode: string): string {
   const num = parseFloat(amount);
   if (isNaN(num)) return '$0.00';
@@ -390,6 +401,13 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     throw new Response('Order not found', {status: 404});
   }
 
+  // If the user is already logged in, redirect to the real account order page
+  const isLoggedIn = await context.customerAccount.isLoggedIn();
+  if (isLoggedIn) {
+    const encodedId = btoa(orderGid);
+    return redirect(`/account/orders/${encodedId}`);
+  }
+
   // Step 2: Fetch full order details via GraphQL using the order ID
   const result = await adminGraphql<{
     data?: {
@@ -411,10 +429,6 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
   const adminFulfillmentStatus =
     pickupStatusFromEvents ?? order.displayFulfillmentStatus;
-  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
-    adminFulfillmentStatus,
-  );
-  const isPickupOrder = isPickupOrderPurchaseMethod(order.shippingLine);
 
   // Step 3: Fetch product data from Storefront API for ProductCarousel / EProductsContainer
   const lineItems = order.lineItems.nodes;
@@ -538,6 +552,24 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     acc[lineItemId] = selectedOptions;
     return acc;
   }, {});
+
+  // Determine pickup status — if no shipping line and no e-products, treat as pickup
+  const hasAnyEProducts = Object.values(lineItemHasDownload).some(Boolean);
+  const isPickupOrder = isPickupOrderPurchaseMethod(
+    order.shippingLine,
+    hasAnyEProducts,
+  );
+
+  // For pickup orders that are fulfilled (e.g. POS in-person sales),
+  // Shopify sets displayFulfillmentStatus to FULFILLED without pickup-specific
+  // event messages. Override to show "Picked up in store" instead of "Shipped".
+  const resolvedFulfillmentStatus =
+    isPickupOrder && !pickupStatusFromEvents && isFulfilledStatus(adminFulfillmentStatus)
+      ? 'PICKED_UP'
+      : adminFulfillmentStatus;
+  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
+    resolvedFulfillmentStatus,
+  );
 
   const accountOrderPath = `/account/orders/${encodedOrderId}`;
 
