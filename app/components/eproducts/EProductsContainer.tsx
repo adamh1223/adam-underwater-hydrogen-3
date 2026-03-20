@@ -25,6 +25,7 @@ import {toast} from 'sonner';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import {navigateWithCardSplash} from '~/lib/cardNavigationSplash';
 import type {CartPendingLinePreviewPayload} from '~/lib/cartPendingLine';
 
 type shopifyImage = {url: string; altText: string};
@@ -574,8 +575,23 @@ function EProductsContainer({
     ) {
       return;
     }
-    navigate(`/products/${product.handle}`);
+    navigateWithCardSplash({
+      card: event.currentTarget,
+      navigate: () => navigate(`/products/${product.handle}`),
+    });
   };
+
+  /**
+   * Called by EProductBundlePreview when a user clicks the preview area.
+   * The preview finds its closest card ancestor from the DOM and passes it
+   * so we can apply the splash animation class.
+   */
+  const handleBundleNavigate = useCallback((cardElement: HTMLElement | null) => {
+    navigateWithCardSplash({
+      card: cardElement,
+      navigate: () => navigate(`/products/${product.handle}`),
+    });
+  }, [navigate, product.handle]);
 
   const addToFavorites = async () => {
     try {
@@ -792,6 +808,7 @@ function EProductsContainer({
                   <EProductBundlePreview
                     product={product}
                     onSlideChange={setActiveBundleClipIndex}
+                    onNavigate={handleBundleNavigate}
                   />
                 ) : (
                   <Link
@@ -1203,6 +1220,7 @@ function EProductsContainer({
                     <EProductBundlePreview
                       product={product}
                       onSlideChange={setActiveBundleClipIndex}
+                      onNavigate={handleBundleNavigate}
                     />
                   ) : (
                     <Link
@@ -1439,6 +1457,7 @@ function EProductsContainer({
                   <EProductBundlePreview
                     product={product}
                     onSlideChange={setActiveBundleClipIndex}
+                    onNavigate={handleBundleNavigate}
                   />
                 ) : (
                   <Link

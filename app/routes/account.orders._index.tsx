@@ -33,6 +33,7 @@ import {
 } from '~/components/ui/card';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import {navigateWithCardSplash} from '~/lib/cardNavigationSplash';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 import {useEffect, useRef, useState} from 'react';
@@ -83,6 +84,12 @@ const ADMIN_ORDER_PICKUP_STATUS_QUERY = `#graphql
       ... on Order {
         id
         displayFulfillmentStatus
+        shippingLine {
+          title
+          code
+          source
+          shippingRateHandle
+        }
         events(first: 15, reverse: true) {
           nodes {
             message
@@ -111,6 +118,12 @@ type AdminOrderLookupNode = {
 type AdminOrderPickupStatusNode = {
   id?: string | null;
   displayFulfillmentStatus?: string | null;
+  shippingLine?: {
+    title?: string | null;
+    code?: string | null;
+    source?: string | null;
+    shippingRateHandle?: string | null;
+  } | null;
   events?: {nodes?: Array<{message?: string | null} | null> | null} | null;
 };
 
@@ -180,6 +193,42 @@ function getPickupStatusFromOrderEvents(
   return null;
 }
 
+/**
+ * Detect whether an order was fulfilled via in-store pickup (POS) based on its
+ * shipping line. POS in-person orders either have no shipping line at all, or
+ * have a shipping line whose title looks like a physical address / pickup handle.
+ */
+function isPickupOrderPurchaseMethod(
+  shippingLine?: AdminOrderPickupStatusNode['shippingLine'],
+): boolean {
+  // POS in-person orders typically have no shipping line — treat as pickup.
+  if (!shippingLine) {
+    return true;
+  }
+
+  const title = shippingLine.title?.trim() ?? '';
+  const code = shippingLine.code?.trim() ?? '';
+  const source = shippingLine.source?.trim().toLowerCase() ?? '';
+  const handle = shippingLine.shippingRateHandle?.trim().toLowerCase() ?? '';
+
+  const titleLooksLikeAddress =
+    /\d/.test(title) &&
+    /\b(ave|avenue|st|street|rd|road|blvd|boulevard|dr|drive|ln|lane|way|ct|court|pl|place)\b/i.test(
+      title,
+    );
+
+  return (
+    source === 'shopify' &&
+    title.length > 0 &&
+    (code === title || titleLooksLikeAddress || handle.includes('pickup'))
+  );
+}
+
+function isFulfilledStatus(status?: string | null): boolean {
+  const s = (status ?? '').trim().toUpperCase();
+  return s === 'SUCCESS' || s === 'DELIVERED' || s === 'FULFILLED';
+}
+
 function getAdminOrderFulfillmentStatusMap(
   adminNodes: Array<AdminOrderPickupStatusNode | null | undefined>,
 ) {
@@ -197,7 +246,20 @@ function getAdminOrderFulfillmentStatusMap(
       typeof node?.displayFulfillmentStatus === 'string'
         ? node.displayFulfillmentStatus
         : null;
-    const resolvedStatus = pickupStatusFromEvents ?? fallbackAdminStatus;
+
+    // For POS in-person sales, Shopify sets displayFulfillmentStatus to
+    // FULFILLED without any pickup-specific event messages. Detect these by
+    // checking the shipping line and override to "PICKED_UP".
+    const isPickup = isPickupOrderPurchaseMethod(node?.shippingLine);
+    let resolvedStatus = pickupStatusFromEvents ?? fallbackAdminStatus;
+
+    if (
+      isPickup &&
+      !pickupStatusFromEvents &&
+      isFulfilledStatus(fallbackAdminStatus)
+    ) {
+      resolvedStatus = 'PICKED_UP';
+    }
 
     if (resolvedStatus) {
       statusByOrderId.set(orderId, resolvedStatus);
@@ -716,6 +778,14 @@ function OrderItem({order}: {order: OrderItemFragment}) {
   );
   const {dateLabel, timeLabel} = getDisplayOrderProcessedAt(order.processedAt);
   const orderPath = `/account/orders/${btoa(order.id)}`;
+  const navigateToOrderWithSplash = (
+    cardElement: HTMLElement | null | undefined,
+  ) => {
+    navigateWithCardSplash({
+      card: cardElement,
+      navigate: () => navigate(orderPath),
+    });
+  };
 
   return (
     <div className="h-full">
@@ -727,11 +797,13 @@ function OrderItem({order}: {order: OrderItemFragment}) {
           {...touchHighlightHandlers}
           role="link"
           tabIndex={0}
-          onClick={() => navigate(orderPath)}
+          onClick={(event) => {
+            navigateToOrderWithSplash(event.currentTarget);
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault();
-              navigate(orderPath);
+              navigateToOrderWithSplash(event.currentTarget);
             }
           }}
         >
@@ -739,7 +811,12 @@ function OrderItem({order}: {order: OrderItemFragment}) {
             <Link
               to={orderPath}
               onClick={(event) => {
+                event.preventDefault();
                 event.stopPropagation();
+                const cardElement = event.currentTarget.closest<HTMLElement>(
+                  '[data-slot="card"]',
+                );
+                navigateToOrderWithSplash(cardElement);
               }}
             >
               <strong>Order#: {order.number}</strong>
@@ -764,7 +841,10 @@ function OrderItem({order}: {order: OrderItemFragment}) {
                   variant="default"
                   onClick={(event) => {
                     event.stopPropagation();
-                    navigate(orderPath);
+                    const cardElement = event.currentTarget.closest<HTMLElement>(
+                      '[data-slot="card"]',
+                    );
+                    navigateToOrderWithSplash(cardElement);
                   }}
                 >
                   View Order →

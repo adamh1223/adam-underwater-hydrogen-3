@@ -204,9 +204,16 @@ function BundleClipPreview({
 function EProductBundlePreview({
   product,
   onSlideChange,
+  onNavigate,
 }: {
   product: ProductItemFragment & {images: {nodes: ShopifyImage[]}};
   onSlideChange?: (clipIndex: number) => void;
+  /**
+   * Optional callback for navigation — lets the parent control splash effects.
+   * Receives the closest `[data-slot="card"]` ancestor so the parent can apply
+   * the splash animation class to the card element.
+   */
+  onNavigate?: (cardElement: HTMLElement | null) => void;
 }) {
   const navigate = useNavigate();
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);
@@ -354,7 +361,14 @@ function EProductBundlePreview({
       return;
     }
 
-    navigate(`/products/${product.handle}`);
+    if (onNavigate) {
+      const card = (event.currentTarget as HTMLElement)?.closest<HTMLElement>(
+        '[data-slot="card"]',
+      );
+      onNavigate(card);
+    } else {
+      navigate(`/products/${product.handle}`);
+    }
   };
   useEffect(() => {
     if (!onSlideChange) return;
