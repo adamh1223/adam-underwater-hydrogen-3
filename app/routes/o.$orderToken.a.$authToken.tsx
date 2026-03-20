@@ -189,10 +189,6 @@ const ADMIN_ORDER_BY_ID_QUERY = `#graphql
           }
         }
       }
-      customer {
-        id
-        displayName
-      }
       events(first: 15, reverse: true) {
         nodes {
           message
@@ -230,21 +226,31 @@ const PRODUCT_REVIEWS_METAFIELD_QUERY = `#graphql
   }
 ` as const;
 
+type OrderTokenLookupResult = {
+  orderGid: string;
+  customerId: string | null;
+  customerName: string | null;
+};
+
 /**
  * Look up a Shopify order by its token using the REST Admin API.
  * The GraphQL Admin API does not support filtering orders by token,
  * so we use REST to find the order ID, then fetch full details via GraphQL.
+ *
+ * Also extracts customer data from the REST response — the REST API embeds
+ * customer info in the order object without requiring separate `read_customers`
+ * scope, unlike the GraphQL Admin API which requires Customer object access.
  */
 async function findOrderIdByToken(
   env: Env,
   orderToken: string,
-): Promise<string | null> {
+): Promise<OrderTokenLookupResult | null> {
   const {adminEndpoint, adminToken} = getShopifyAdminConfig(env);
   // Derive the REST base URL from the GraphQL endpoint
   const restBase = adminEndpoint.replace('/graphql.json', '');
 
   const response = await fetch(
-    `${restBase}/orders.json?status=any&fields=id,token&limit=250`,
+    `${restBase}/orders.json?status=any&fields=id,token,customer&limit=250`,
     {
       headers: {
         'X-Shopify-Access-Token': adminToken,
@@ -260,13 +266,33 @@ async function findOrderIdByToken(
   }
 
   const data = (await response.json()) as {
-    orders?: Array<{id: number; token: string}>;
+    orders?: Array<{
+      id: number;
+      token: string;
+      customer?: {
+        id?: number;
+        admin_graphql_api_id?: string;
+        first_name?: string;
+        last_name?: string;
+      } | null;
+    }>;
   };
 
   const match = data.orders?.find((o) => o.token === orderToken);
   if (!match) return null;
 
-  return `gid://shopify/Order/${match.id}`;
+  const orderGid = `gid://shopify/Order/${match.id}`;
+
+  // Extract customer GID from the REST response
+  const customerId = match.customer?.admin_graphql_api_id ?? null;
+
+  // Build customer display name from first/last name
+  const firstName = match.customer?.first_name?.trim() ?? '';
+  const lastName = match.customer?.last_name?.trim() ?? '';
+  const customerName =
+    [firstName, lastName].filter(Boolean).join(' ') || null;
+
+  return {orderGid, customerId, customerName};
 }
 
 type AdminLineItem = {
@@ -318,10 +344,6 @@ type AdminOrderNode = {
     provinceCode?: string | null;
     zip?: string | null;
     country?: string | null;
-  } | null;
-  customer: {
-    id: string;
-    displayName: string;
   } | null;
   lineItems: {
     nodes: AdminLineItem[];
@@ -439,13 +461,20 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   }
 
   // Step 1: Find the order ID by token via REST API
-  const orderGid = await findOrderIdByToken(context.env, orderToken);
-  if (!orderGid) {
+  const orderLookup = await findOrderIdByToken(context.env, orderToken);
+  if (!orderLookup) {
     throw new Response('Order not found', {status: 404});
   }
 
+  const {orderGid, customerId: restCustomerId, customerName: restCustomerName} = orderLookup;
+
   // If the user is already logged in, redirect to the real account order page
-  const isLoggedIn = await context.customerAccount.isLoggedIn();
+  let isLoggedIn = false;
+  try {
+    isLoggedIn = await context.customerAccount.isLoggedIn();
+  } catch {
+    // Customer account API may not be available; treat as logged-out.
+  }
   if (isLoggedIn) {
     const encodedId = btoa(orderGid);
     return redirect(`/account/orders/${encodedId}`);
@@ -597,8 +626,10 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   }, {});
 
   // --- Customer data for review forms ---
-  const orderCustomerId = order.customer?.id ?? null;
-  const orderCustomerName = order.customer?.displayName ?? null;
+  // Sourced from the REST Admin API (embedded in the order response) so we
+  // don't need separate `read_customers` GraphQL scope.
+  const orderCustomerId = restCustomerId;
+  const orderCustomerName = restCustomerName;
 
   let reviewMediaDiscountReward: ReviewMediaDiscountReward | null = null;
   let discountUsesRemaining: number | null = null;
