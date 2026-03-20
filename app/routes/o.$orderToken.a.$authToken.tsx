@@ -4,12 +4,13 @@ import {adminGraphql, getShopifyAdminConfig} from '~/lib/shopify-admin.server';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 import {Card, CardContent} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {ArrowLeft} from 'lucide-react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {ProductCarousel} from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
+import ReviewForm from '~/components/form/ReviewForm';
 
 const PICKUP_ADDRESS_TEXT = '1080 8th Ave, San Diego, CA 92101';
 const PICKUP_ADDRESS_APPLE_MAPS_URL = `https://maps.apple.com/?q=${encodeURIComponent(
@@ -603,7 +604,7 @@ export default function OrderTokenStatusPage() {
   return (
     <>
       <div>
-        <Sectiontitle text="My Orders" />
+        
         <div className="mx-3 mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
           <Button asChild variant="secondary" className="self-center gap-2">
             <Link to={signInUrl}>
@@ -1161,19 +1162,22 @@ function TokenOrderLineRow({
         </>
       )}
 
-      {/* Review placeholder for print products — sign-in prompt */}
+      {/* Review form for print products — not logged in so fields are disabled */}
       {isPrint && lineItemProduct?.id && (
         <div className="border-t border-primary/20">
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            Please{' '}
-            <Link
-              to={signInUrl}
-              className="text-primary font-medium hover:underline underline-offset-4"
-            >
-              sign in
-            </Link>{' '}
-            to leave a review
-          </div>
+          <ReviewForm
+            productId={lineItemProduct.id}
+            productName={
+              lineItemProduct.title ?? lineItem.title ?? 'Print'
+            }
+            customerId={undefined}
+            customerName={undefined}
+            userReviewExists={false}
+            isBlocked={false}
+            updateExistingReviews={() => {}}
+            showDiscountPromo
+            reviewMediaDiscountReward={null}
+          />
         </div>
       )}
     </div>
