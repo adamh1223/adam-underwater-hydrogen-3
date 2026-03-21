@@ -1,4 +1,4 @@
-@media (min-width: 670px) {
+@media (min-width: 669.02px) {
   .anchors {
     grid-template-columns: 1fr 1fr 1fr;
     display: flex;
@@ -91,7 +91,7 @@
   }
 }
 
-@media (min-width: 500px) and (max-width: 600px) {
+@media (min-width: 499.02px) and (max-width: 600px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 6px;
   }
@@ -100,7 +100,7 @@
   }
 }
 
-@media (min-width: 601px) and (max-width: 700px) {
+@media (min-width: 600.02px) and (max-width: 700px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 10px;
   }
@@ -109,7 +109,7 @@
   }
 }
 
-@media (min-width: 701px) and (max-width: 768px) {
+@media (min-width: 700.02px) and (max-width: 768px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 3px;
   }
@@ -118,7 +118,7 @@
   }
 }
 
-@media (min-width: 769px) and (max-width: 849px) {
+@media (min-width: 768.02px) and (max-width: 849px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 3px;
   }
@@ -127,7 +127,7 @@
   }
 }
 
-@media (min-width: 850px) and (max-width: 957px) {
+@media (min-width: 849.02px) and (max-width: 957px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 6px;
   }
@@ -136,7 +136,7 @@
   }
 }
 
-@media (min-width: 958px) and (max-width: 1049px) {
+@media (min-width: 957.02px) and (max-width: 1049px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 8px;
   }
@@ -145,7 +145,7 @@
   }
 }
 
-@media (min-width: 1050px) and (max-width: 1149px) {
+@media (min-width: 1049.02px) and (max-width: 1149px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 8px;
   }
@@ -154,7 +154,7 @@
   }
 }
 
-@media (min-width: 1150px) and (max-width: 1249px) {
+@media (min-width: 1149.02px) and (max-width: 1249px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 9px;
   }
@@ -163,7 +163,7 @@
   }
 }
 
-@media (min-width: 1250px) and (max-width: 1420px) {
+@media (min-width: 1249.02px) and (max-width: 1420px) {
   .left-arrow-carousel-grid-horizontal {
     margin: 0 0 0 12px;
   }
@@ -209,7 +209,7 @@
   }
 }
 
-@media (min-width: 670px) {
+@media (min-width: 669.02px) {
   .anchor {
     margin: 0 20px 20px 0;
   }
@@ -336,7 +336,7 @@ body {
     height: 70px;
   }
 }
-@media (min-width: 701px) {
+@media (min-width: 700.02px) {
   .hero-img,
   .featured-img {
     height: 80px;

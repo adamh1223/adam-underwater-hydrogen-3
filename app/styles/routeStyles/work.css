@@ -1,4 +1,4 @@
-@media (min-width: 601px) {
+@media (min-width: 600.02px) {
   .clip-wrapper {
     display: flex;
     margin: 0 0 10px 0;
@@ -21,25 +21,25 @@
     height: 24vh;
   }
 }
-@media (min-width: 500px) and (max-width: 599px) {
+@media (min-width: 499.02px) and (max-width: 599px) {
   .clip {
     width: 85vw;
     /* height: 30vh; */
   }
 }
-@media (min-width: 600px) and (max-width: 699px) {
+@media (min-width: 599.02px) and (max-width: 699px) {
   .clip {
     width: 85vw;
     /* height: 30vh; */
   }
 }
-@media (min-width: 700px) and (max-width: 828px) {
+@media (min-width: 699.02px) and (max-width: 828px) {
   .clip {
     width: 80vw;
     height: 35vh;
   }
 }
-@media (min-width: 829px) {
+@media (min-width: 828.02px) {
   .clip {
     width: 80vw;
     height: 45vh;
@@ -67,7 +67,7 @@
     height: 70px;
   }
 }
-@media (min-width: 701px) {
+@media (min-width: 700.02px) {
   .hero-img,
   .featured-img {
     height: 80px;

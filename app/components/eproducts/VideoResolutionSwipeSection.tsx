@@ -282,7 +282,7 @@ export default function VideoResolutionSwipeSection({
 
         {windowWidth != undefined && windowWidth <= 1250 && (
           <>
-            <div className="mx-auto mt-5 w-full max-w-6xl px-[20px] lg:px-[35px]">
+            <div className="mx-auto mt-5 w-full max-w-6xl px-[12px] lg:px-[35px]">
               <div
                 ref={compareRef}
                 className="relative mx-auto aspect-[16/9] w-full max-w-[52rem] overflow-hidden rounded-xl border border-border bg-black/20 shadow-sm select-none touch-none"
@@ -452,7 +452,7 @@ export default function VideoResolutionSwipeSection({
         )}
         {windowWidth != undefined && windowWidth > 1250 && (
           <>
-            <div className="mx-auto mt-5 flex w-full max-w-7xl items-center justify-center gap-8 px-[20px] lg:px-[35px]">
+            <div className="mx-auto mt-5 flex w-full max-w-7xl items-center justify-center gap-8 lg:px-[35px]">
               <div className="four-k-list-container shrink-0">
                 <div className="flex justify-center k-title">4k is best for:</div>
                 <li>Quick edits</li>

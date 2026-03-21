@@ -3,7 +3,7 @@
   grid-template-columns: 1fr 1fr;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 799.02px) {
   .address-container {
     display: grid;
     grid-template-columns: 1fr 1fr;

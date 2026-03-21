@@ -80,7 +80,7 @@ body {
     height: 65px;
   }
 }
-@media (min-width: 701px) {
+@media (min-width: 700.02px) {
   .hero-img,
   .featured-img {
     height: 80px;

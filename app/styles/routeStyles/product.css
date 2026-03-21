@@ -5,11 +5,11 @@
   .floating-zoom-window {
   }
 }
-@media (min-width: 700px) and (max-width: 1023px) {
+@media (min-width: 699.02px) and (max-width: 1023px) {
   .floating-zoom-window {
   }
 }
-@media (min-width: 1024px) {
+@media (min-width: 1023.02px) {
   .floating-zoom-window {
   }
 }
@@ -131,13 +131,13 @@
     margin-top: 5px;
   }
 }
-@media (min-width: 801px) {
+@media (min-width: 800.02px) {
   .description-html-card {
     margin-top: 5px;
   }
 }
 
-@media (min-width: 958px) {
+@media (min-width: 957.02px) {
   .description-html-card-list {
     font-size: 15px;
   }
@@ -147,7 +147,7 @@
     font-size: 13px;
   }
 }
-@media (min-width: 801px) {
+@media (min-width: 800.02px) {
   .description-html-card-list {
     margin-top: 4px;
   }
@@ -166,7 +166,7 @@
     width: 100%;
   }
 }
-@media (min-width: 700px) and (max-width: 800px) {
+@media (min-width: 699.02px) and (max-width: 800px) {
   .eproduct-bottom-part-card-list {
     display: grid;
     grid-template-columns: 1fr;
@@ -179,7 +179,7 @@
     padding: 0 0 0 0;
   }
 }
-@media (min-width: 601px) and (max-width: 699px) {
+@media (min-width: 600.02px) and (max-width: 699px) {
   .eproduct-bottom-part-card-list {
     display: flex;
     align-items: end;
@@ -245,7 +245,7 @@
 }
 
 /* Aside width is 350px in this band. */
-@media (min-width: 601px) and (max-width: 1023px) {
+@media (min-width: 600.02px) and (max-width: 1023px) {
   .aside-search-print-carousel {
     --aside-search-vertical-image-width: 13.5rem;
     --aside-search-vertical-arrow-outset: 16px;
@@ -253,7 +253,7 @@
 }
 
 /* Aside width is 400px in this band. */
-@media (min-width: 1024px) {
+@media (min-width: 1023.02px) {
   .aside-search-print-carousel {
     --aside-search-vertical-image-width: 15rem;
     --aside-search-vertical-arrow-outset: 18px;
@@ -328,14 +328,14 @@
     padding: 0 4px 6px 4px;
   }
 }
-@media (min-width: 801px) and (max-width: 1300px) {
+@media (min-width: 800.02px) and (max-width: 1300px) {
   .eproduct-bottom-part-card-inside-list {
     padding: 0 4px 6px 4px;
     display: flex;
     align-items: end;
   }
 }
-@media (min-width: 1301px) {
+@media (min-width: 1300.02px) {
   .eproduct-bottom-part-card-inside-list {
     display: grid;
     grid-template-columns: 4fr 1fr;
@@ -348,7 +348,7 @@
     padding: 8px 0 8px 8px;
   }
 }
-@media (min-width: 601px) {
+@media (min-width: 600.02px) {
   .eproduct-top-part-card-list {
     display: grid;
     grid-template-columns: 1fr;
@@ -387,7 +387,7 @@
     margin: 0 15px 0 0;
   }
 }
-@media (min-width: 500px) and (max-width: 600px) {
+@media (min-width: 499.02px) and (max-width: 600px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -2px;
   }
@@ -413,7 +413,7 @@
     margin: 0 40px 0 0;
   }
 }
-@media (min-width: 601px) and (max-width: 700px) {
+@media (min-width: 600.02px) and (max-width: 700px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -2px;
   }
@@ -439,7 +439,7 @@
     margin: 0 90px 0 0;
   }
 }
-@media (min-width: 701px) and (max-width: 768px) {
+@media (min-width: 700.02px) and (max-width: 768px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -465,7 +465,7 @@
     margin: 0 30px 0 0;
   }
 }
-@media (min-width: 769px) and (max-width: 849px) {
+@media (min-width: 768.02px) and (max-width: 849px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -491,7 +491,7 @@
     margin: 0 40px 0 0;
   }
 }
-@media (min-width: 850px) and (max-width: 957px) {
+@media (min-width: 849.02px) and (max-width: 957px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -517,7 +517,7 @@
     margin: 0 50px 0 0;
   }
 }
-@media (min-width: 958px) and (max-width: 1049px) {
+@media (min-width: 957.02px) and (max-width: 1049px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -543,7 +543,7 @@
     margin: 0 53px 0 0;
   }
 }
-@media (min-width: 1050px) and (max-width: 1149px) {
+@media (min-width: 1049.02px) and (max-width: 1149px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -569,7 +569,7 @@
     margin: 0 75px 0 0;
   }
 }
-@media (min-width: 1150px) and (max-width: 1249px) {
+@media (min-width: 1149.02px) and (max-width: 1249px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 -15px;
   }
@@ -596,7 +596,7 @@
   }
 }
 
-@media (min-width: 1250px) and (max-width: 1420px) {
+@media (min-width: 1249.02px) and (max-width: 1420px) {
   .left-arrow-carousel-list-horizontal {
     margin: 0 27px;
   }
@@ -736,7 +736,7 @@
  * recommended product cards narrower than other pages. Override the global
  * arrow insets for vertical grid prints so the arrows don't sit over the image.
  */
-@media (min-width: 861px) {
+@media (min-width: 860.02px) {
   .notifs-layout .notifs-recommendations .left-arrow-carousel-grid-vertical {
     margin: 0 0 0 8px;
   }
@@ -786,7 +786,7 @@
 .product-add-to-cart-container-list {
   padding: 55px 0 0 0;
 }
-@media (min-width: 601px) and (max-width: 1300px) {
+@media (min-width: 600.02px) and (max-width: 1300px) {
   .product-title-font-list {
     font-size: 16px;
   }
@@ -799,7 +799,7 @@
   }
 }
 
-@media (min-width: 1301px) {
+@media (min-width: 1300.02px) {
   .product-title-font-list {
     font-size: 16px;
   }
@@ -917,21 +917,21 @@
   padding-bottom: 4px;
 }
 
-@media (min-width: 1024px) and (max-width: 1200px) {
+@media (min-width: 1023.02px) and (max-width: 1200px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 25px;
   }
 }
-@media (min-width: 1201px) {
+@media (min-width: 1200.02px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 15px;
   }
 }
-@media (min-width: 1301px) {
+@media (min-width: 1300.02px) {
   .carousel-shortcuts-container-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
@@ -941,7 +941,7 @@
     padding-right: 40px;
   }
 }
-@media (min-width: 1201px) and (max-width: 1300px) {
+@media (min-width: 1200.02px) and (max-width: 1300px) {
   .carousel-shortcuts-container-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
@@ -952,7 +952,7 @@
   }
 }
 
-@media (min-width: 1121px) and (max-width: 1200px) {
+@media (min-width: 1120.02px) and (max-width: 1200px) {
   .carousel-shortcuts-container-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
@@ -960,7 +960,7 @@
     padding-bottom: 20px;
   }
 }
-@media (min-width: 1024px) and (max-width: 1120px) {
+@media (min-width: 1023.02px) and (max-width: 1120px) {
   .carousel-shortcuts-container-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -988,7 +988,7 @@
     padding-right: 170px;
   }
 }
-@media (min-width: 827px) and (max-width: 940px) {
+@media (min-width: 826.02px) and (max-width: 940px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -1024,7 +1024,7 @@
     padding-right: 90px;
   }
 }
-@media (min-width: 720px) and (max-width: 775px) {
+@media (min-width: 719.02px) and (max-width: 775px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -1042,7 +1042,7 @@
     padding-right: 60px;
   }
 }
-@media (min-width: 670px) and (max-width: 719px) {
+@media (min-width: 669.02px) and (max-width: 719px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -1060,7 +1060,7 @@
     padding-right: 35px;
   }
 }
-@media (min-width: 630px) and (max-width: 669px) {
+@media (min-width: 629.02px) and (max-width: 669px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -1078,7 +1078,7 @@
     padding-right: 20px;
   }
 }
-@media (min-width: 590px) and (max-width: 629px) {
+@media (min-width: 589.02px) and (max-width: 629px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -1094,7 +1094,7 @@
     padding-bottom: 20px;
   }
 }
-@media (min-width: 552px) and (max-width: 589px) {
+@media (min-width: 551.02px) and (max-width: 589px) {
   .carousel-shortcuts-container-horizontal {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -1170,7 +1170,7 @@
   --print-detail-arrow-gap: clamp(0.375rem, 1vw, 0.75rem);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1023.02px) {
   .print-carousel-individual-detail {
     --print-detail-arrow-gap: 0.25rem;
   }
@@ -1271,7 +1271,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1023.02px) {
   .individual-video-product-detail-media {
     /* Same idea as the vertical print carousel: keep the same baseline at
      * 1024px, then slow the iframe's width/height growth (~30%) as viewport
@@ -1387,7 +1387,7 @@
     display: block;
   }
 }
-@media (min-width: 500px) {
+@media (min-width: 499.02px) {
   .print-detail-shortcuts-outer {
     width: min(100%, clamp(280px, 90vw, 680px));
     margin-left: auto;

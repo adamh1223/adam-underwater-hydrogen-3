@@ -36,7 +36,7 @@
     padding: 0 30px 0 30px;
   }
 }
-@media (min-width: 670px) {
+@media (min-width: 669.02px) {
   .subheader-stock {
     font-size: 20px;
     width: 100%;
@@ -86,7 +86,7 @@
   }
 }
 
-@media (max-width: 1023px) and (min-width: 901px) {
+@media (max-width: 1023px) and (min-width: 900.02px) {
   .clip {
     width: 790px;
     height: 420px;
@@ -95,7 +95,7 @@
   }
 }
 
-@media (max-width: 900px) and (min-width: 750px) {
+@media (max-width: 900px) and (min-width: 749.02px) {
   .clip {
     width: 650px;
     height: 340px;
@@ -104,7 +104,7 @@
   }
 }
 
-@media (max-width: 749px) and (min-width: 650px) {
+@media (max-width: 749px) and (min-width: 649.02px) {
   .clip {
     width: 500px;
     height: 270px;
@@ -122,44 +122,44 @@
 } */
 
 /* Horizontal */
-/* @media (min-width: 1024px) and (max-width: 1270px) {
+/* @media (min-width: 1023.02px) and (max-width: 1270px) {
   .clip {
     width: 490px;
     height: 255px;
   }
 }
-@media (min-width: 1271px) and (max-width: 1461px) {
+@media (min-width: 1270.02px) and (max-width: 1461px) {
   .clip {
     width: 600px;
     height: 320px;
   }
 }
-@media (min-width: 1462px) and (max-width: 1650px) {
+@media (min-width: 1461.02px) and (max-width: 1650px) {
   .clip {
     width: 700px;
     height: 370px;
   }
 }
-@media (min-width: 1651px) and (max-width: 1850px) {
+@media (min-width: 1650.02px) and (max-width: 1850px) {
   .clip {
     width: 780px;
     height: 410px;
   }
 }
-@media (min-width: 1851px) and (max-width: 2100px) {
+@media (min-width: 1850.02px) and (max-width: 2100px) {
   .clip {
     width: 850px;
     height: 450px;
   }
 }
-@media (min-width: 2101px) {
+@media (min-width: 2100.02px) {
   .clip {
     width: 1000px;
     height: 535px;
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1023.02px) {
   .clip-wrapper {
     display: flex;
     align-items: center;
