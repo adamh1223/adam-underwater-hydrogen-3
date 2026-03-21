@@ -90,6 +90,15 @@ const ADMIN_ORDER_PICKUP_STATUS_QUERY = `#graphql
           source
           shippingRateHandle
         }
+        lineItems(first: 50) {
+          nodes {
+            variant {
+              product {
+                tags
+              }
+            }
+          }
+        }
         events(first: 15, reverse: true) {
           nodes {
             message
@@ -123,6 +132,11 @@ type AdminOrderPickupStatusNode = {
     code?: string | null;
     source?: string | null;
     shippingRateHandle?: string | null;
+  } | null;
+  lineItems?: {
+    nodes?: Array<{
+      variant?: {product?: {tags?: string[]} | null} | null;
+    } | null> | null;
   } | null;
   events?: {nodes?: Array<{message?: string | null} | null> | null} | null;
 };
@@ -224,9 +238,56 @@ function isPickupOrderPurchaseMethod(
   );
 }
 
-function isFulfilledStatus(status?: string | null): boolean {
+/** Returns true when the order has been fulfilled (shipped) or beyond. */
+function isFulfilledOrBeyond(status?: string | null): boolean {
   const s = (status ?? '').trim().toUpperCase();
-  return s === 'SUCCESS' || s === 'DELIVERED' || s === 'FULFILLED';
+  return (
+    s === 'FULFILLED' ||
+    s === 'SUCCESS' ||
+    s === 'DELIVERED' ||
+    s === 'IN_TRANSIT' ||
+    s === 'ON_ITS_WAY' ||
+    s === 'OUT_FOR_DELIVERY' ||
+    s === 'ATTEMPTED_TO_DELIVER' ||
+    s === 'PARTIALLY_FULFILLED' ||
+    s === 'MULTIPLE_SHIPMENTS'
+  );
+}
+
+/** Returns true when the carrier has confirmed delivery. */
+function isDeliveredStatus(status?: string | null): boolean {
+  const s = (status ?? '').trim().toUpperCase();
+  return s === 'SUCCESS' || s === 'DELIVERED';
+}
+
+type OrderComposition = 'eproduct-only' | 'mixed' | 'print-or-other';
+
+/**
+ * Determine the product composition of an order from its line item tags.
+ * - `eproduct-only`: all items are stock footage (Video), no prints
+ * - `mixed`: has both stock footage (Video) and physical prints (Prints)
+ * - `print-or-other`: only prints or unknown items
+ */
+function getOrderComposition(
+  node: AdminOrderPickupStatusNode | null | undefined,
+): OrderComposition {
+  const items = node?.lineItems?.nodes;
+  if (!Array.isArray(items) || items.length === 0) return 'print-or-other';
+
+  let hasEProduct = false;
+  let hasPrint = false;
+
+  for (const item of items) {
+    const tags = item?.variant?.product?.tags ?? [];
+    const isVideo = tags.includes('Video');
+    const isPrint = tags.includes('Prints') && !isVideo;
+    if (isVideo) hasEProduct = true;
+    if (isPrint) hasPrint = true;
+  }
+
+  if (hasEProduct && !hasPrint) return 'eproduct-only';
+  if (hasEProduct && hasPrint) return 'mixed';
+  return 'print-or-other';
 }
 
 function getAdminOrderFulfillmentStatusMap(
@@ -238,14 +299,35 @@ function getAdminOrderFulfillmentStatusMap(
     const orderId = typeof node?.id === 'string' ? node.id : null;
     if (!orderId) continue;
 
-    const eventMessages = Array.isArray(node?.events?.nodes)
-      ? node.events!.nodes!.map((eventNode) => eventNode?.message)
-      : [];
-    const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
+    const composition = getOrderComposition(node);
     const fallbackAdminStatus =
       typeof node?.displayFulfillmentStatus === 'string'
         ? node.displayFulfillmentStatus
         : null;
+
+    // Digital-only orders (all stock footage, no prints) → always "Delivered".
+    if (composition === 'eproduct-only') {
+      statusByOrderId.set(orderId, 'DELIVERED');
+      continue;
+    }
+
+    // Mixed orders (prints + stock footage) → status depends on print shipment.
+    if (composition === 'mixed') {
+      if (isDeliveredStatus(fallbackAdminStatus)) {
+        statusByOrderId.set(orderId, 'DELIVERED');
+      } else if (isFulfilledOrBeyond(fallbackAdminStatus)) {
+        statusByOrderId.set(orderId, 'MIXED_PRINTS_SHIPPED');
+      } else {
+        statusByOrderId.set(orderId, 'MIXED_PREPARING_PRINTS');
+      }
+      continue;
+    }
+
+    // Print-only / other orders — existing pickup + event logic.
+    const eventMessages = Array.isArray(node?.events?.nodes)
+      ? node.events!.nodes!.map((eventNode) => eventNode?.message)
+      : [];
+    const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
 
     // For POS in-person sales, Shopify sets displayFulfillmentStatus to
     // FULFILLED without any pickup-specific event messages. Detect these by
@@ -256,7 +338,7 @@ function getAdminOrderFulfillmentStatusMap(
     if (
       isPickup &&
       !pickupStatusFromEvents &&
-      isFulfilledStatus(fallbackAdminStatus)
+      isFulfilledOrBeyond(fallbackAdminStatus)
     ) {
       resolvedStatus = 'PICKED_UP';
     }
@@ -715,27 +797,43 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
   if (!normalizedStatus) return 'Preparing Shipment';
 
   switch (normalizedStatus) {
+    // Carrier confirmed delivery
     case 'SUCCESS':
     case 'DELIVERED':
+      return 'Delivered';
+    // Merchant marked as fulfilled (tracking number provided)
     case 'FULFILLED':
       return 'Shipped';
+    // Carrier-accurate statuses
+    case 'IN_TRANSIT':
+    case 'ON_ITS_WAY':
+      return 'In Transit';
+    case 'OUT_FOR_DELIVERY':
+      return 'Out for Delivery';
+    case 'ATTEMPTED_TO_DELIVER':
+      return 'Delivery Attempted';
+    case 'PARTIALLY_FULFILLED':
+      return 'Partially Shipped';
+    case 'MULTIPLE_SHIPMENTS':
+      return 'Shipped';
+    // Pre-fulfillment statuses
     case 'OPEN':
     case 'PENDING':
     case 'UNFULFILLED':
     case 'IN_PROGRESS':
-    case 'PARTIALLY_FULFILLED':
     case 'PREPARING_FOR_SHIPPING':
     case 'CONFIRMED':
-    case 'IN_TRANSIT':
-    case 'ON_ITS_WAY':
-    case 'OUT_FOR_DELIVERY':
-    case 'ATTEMPTED_TO_DELIVER':
-    case 'MULTIPLE_SHIPMENTS':
       return 'Preparing Shipment';
+    // Pickup statuses
     case 'READY_FOR_PICKUP':
       return 'Ready for pickup';
     case 'PICKED_UP':
       return 'Picked up in store';
+    // Mixed order synthetic statuses
+    case 'MIXED_PREPARING_PRINTS':
+      return 'Stock Footage Delivered, Preparing Prints';
+    case 'MIXED_PRINTS_SHIPPED':
+      return 'Stock Footage Delivered, Prints Shipped';
     case 'CANCELLED':
       return 'Cancelled';
     case 'ERROR':

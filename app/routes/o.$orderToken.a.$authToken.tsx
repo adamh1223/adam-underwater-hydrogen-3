@@ -411,14 +411,43 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
   if (!normalizedStatus) return 'Preparing Shipment';
 
   switch (normalizedStatus) {
+    // Carrier confirmed delivery
     case 'SUCCESS':
     case 'DELIVERED':
+      return 'Delivered';
+    // Merchant marked as fulfilled (tracking number provided)
     case 'FULFILLED':
       return 'Shipped';
+    // Carrier-accurate statuses
+    case 'IN_TRANSIT':
+    case 'ON_ITS_WAY':
+      return 'In Transit';
+    case 'OUT_FOR_DELIVERY':
+      return 'Out for Delivery';
+    case 'ATTEMPTED_TO_DELIVER':
+      return 'Delivery Attempted';
+    case 'PARTIALLY_FULFILLED':
+      return 'Partially Shipped';
+    case 'MULTIPLE_SHIPMENTS':
+      return 'Shipped';
+    // Pre-fulfillment statuses
+    case 'OPEN':
+    case 'PENDING':
+    case 'UNFULFILLED':
+    case 'IN_PROGRESS':
+    case 'PREPARING_FOR_SHIPPING':
+    case 'CONFIRMED':
+      return 'Preparing Shipment';
+    // Pickup statuses
     case 'READY_FOR_PICKUP':
       return 'Ready for pickup';
     case 'PICKED_UP':
       return 'Picked up in store';
+    // Mixed order synthetic statuses
+    case 'MIXED_PREPARING_PRINTS':
+      return 'Stock Footage Delivered, Preparing Prints';
+    case 'MIXED_PRINTS_SHIPPED':
+      return 'Stock Footage Delivered, Prints Shipped';
     case 'CANCELLED':
       return 'Cancelled';
     case 'ERROR':
@@ -430,9 +459,26 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
   }
 }
 
-function isFulfilledStatus(status?: string | null): boolean {
+/** Returns true when the order has been fulfilled (shipped) or beyond. */
+function isFulfilledOrBeyond(status?: string | null): boolean {
   const s = (status ?? '').trim().toUpperCase();
-  return s === 'SUCCESS' || s === 'DELIVERED' || s === 'FULFILLED';
+  return (
+    s === 'FULFILLED' ||
+    s === 'SUCCESS' ||
+    s === 'DELIVERED' ||
+    s === 'IN_TRANSIT' ||
+    s === 'ON_ITS_WAY' ||
+    s === 'OUT_FOR_DELIVERY' ||
+    s === 'ATTEMPTED_TO_DELIVER' ||
+    s === 'PARTIALLY_FULFILLED' ||
+    s === 'MULTIPLE_SHIPMENTS'
+  );
+}
+
+/** Returns true when the carrier has confirmed delivery. */
+function isDeliveredStatus(status?: string | null): boolean {
+  const s = (status ?? '').trim().toUpperCase();
+  return s === 'SUCCESS' || s === 'DELIVERED';
 }
 
 function formatMoney(amount: string, currencyCode: string): string {
@@ -734,20 +780,45 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     }
   }
 
-  // Determine pickup status — if no shipping line and no e-products, treat as pickup
+  // Determine order composition and pickup status
   const hasAnyEProducts = Object.values(lineItemHasDownload).some(Boolean);
+  const hasAnyPrints = lineItems.some((li) => {
+    const tags = li.variant?.product?.tags ?? [];
+    return tags.includes('Prints') && !tags.includes('Video');
+  });
+  const isEProductOnly = hasAnyEProducts && !hasAnyPrints;
+  const isMixedOrder = hasAnyEProducts && hasAnyPrints;
+
   const isPickupOrder = isPickupOrderPurchaseMethod(
     order.shippingLine,
     hasAnyEProducts,
   );
 
-  // For pickup orders that are fulfilled (e.g. POS in-person sales),
-  // Shopify sets displayFulfillmentStatus to FULFILLED without pickup-specific
-  // event messages. Override to show "Picked up in store" instead of "Shipped".
-  const resolvedFulfillmentStatus =
-    isPickupOrder && !pickupStatusFromEvents && isFulfilledStatus(adminFulfillmentStatus)
-      ? 'PICKED_UP'
-      : adminFulfillmentStatus;
+  // Resolve fulfillment status based on order composition:
+  // 1. E-product only → always "Delivered"
+  // 2. Mixed (prints + stock footage) → depends on print shipment progress
+  // 3. Print-only pickup → "Picked up in store"
+  // 4. Otherwise → use Shopify's status
+  let resolvedFulfillmentStatus: string | null;
+  if (isEProductOnly) {
+    resolvedFulfillmentStatus = 'DELIVERED';
+  } else if (isMixedOrder) {
+    if (isDeliveredStatus(adminFulfillmentStatus)) {
+      resolvedFulfillmentStatus = 'DELIVERED';
+    } else if (isFulfilledOrBeyond(adminFulfillmentStatus)) {
+      resolvedFulfillmentStatus = 'MIXED_PRINTS_SHIPPED';
+    } else {
+      resolvedFulfillmentStatus = 'MIXED_PREPARING_PRINTS';
+    }
+  } else if (
+    isPickupOrder &&
+    !pickupStatusFromEvents &&
+    isFulfilledOrBeyond(adminFulfillmentStatus)
+  ) {
+    resolvedFulfillmentStatus = 'PICKED_UP';
+  } else {
+    resolvedFulfillmentStatus = adminFulfillmentStatus;
+  }
   const displayFulfillmentStatus = getDisplayFulfillmentStatus(
     resolvedFulfillmentStatus,
   );
