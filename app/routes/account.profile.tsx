@@ -22,11 +22,13 @@ import {
   Form,
   useActionData,
   useLoaderData,
+  useNavigate,
   useNavigation,
   useOutletContext,
   type MetaFunction,
 } from '@remix-run/react';
 import {ChevronDown} from 'lucide-react';
+import {LuCopy} from 'react-icons/lu';
 import {
   type CountryCode,
   getCountries,
@@ -600,6 +602,12 @@ export default function AccountProfile() {
   );
   const [clientError, setClientError] = useState<string | null>(null);
   const shouldToastOnSuccessRef = useRef(false);
+  const navigate = useNavigate();
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [copySplashActive, setCopySplashActive] = useState(false);
+  const copyLabelTimerRef = useRef<number | null>(null);
+  const copySplashStartTimerRef = useRef<number | null>(null);
+  const copySplashStopTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     setMarketingSms(marketingSmsOnFile);
@@ -962,10 +970,62 @@ export default function AccountProfile() {
                   Thanks for subscribing! Here&rsquo;s your exclusive discount
                   code:
                 </p>
-                <div className="invisible-ink-wrapper">
-                  <span className="invisible-ink-text invisible-ink-text--revealed invisible-ink-text--large">
-                    WELCOME15
-                  </span>
+                <div className="review-discount-revealed-row">
+                  <div className="invisible-ink-wrapper">
+                    <span className="invisible-ink-text invisible-ink-text--revealed invisible-ink-text--large">
+                      WELCOME15
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText('WELCOME15');
+                      setCodeCopied(true);
+                      setCopySplashActive(false);
+
+                      if (copyLabelTimerRef.current) {
+                        window.clearTimeout(copyLabelTimerRef.current);
+                      }
+                      if (copySplashStartTimerRef.current) {
+                        window.clearTimeout(copySplashStartTimerRef.current);
+                      }
+                      if (copySplashStopTimerRef.current) {
+                        window.clearTimeout(copySplashStopTimerRef.current);
+                      }
+
+                      copySplashStartTimerRef.current = window.setTimeout(
+                        () => setCopySplashActive(true),
+                        0,
+                      );
+                      copySplashStopTimerRef.current = window.setTimeout(
+                        () => setCopySplashActive(false),
+                        900,
+                      );
+                      copyLabelTimerRef.current = window.setTimeout(
+                        () => setCodeCopied(false),
+                        3000,
+                      );
+
+                      toast.success('Copied to Clipboard!', {
+                        action: {
+                          label: 'Browse Products',
+                          onClick: () => navigate('/collections/prints'),
+                        },
+                      });
+                    }}
+                    className={`review-discount-copy-btn${
+                      copySplashActive
+                        ? ' review-discount-copy-btn--splash'
+                        : ''
+                    }`}
+                    aria-label="Copy discount code"
+                  >
+                    <LuCopy
+                      className="review-discount-copy-icon"
+                      aria-hidden="true"
+                    />
+                    <span>{codeCopied ? 'Copied' : 'Copy'}</span>
+                  </button>
                 </div>
                 <li className="text-xs text-muted-foreground mt-2">
                   Uses remaining: {welcome15Used ? '0' : '1'}

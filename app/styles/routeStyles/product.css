@@ -1489,6 +1489,8 @@
 }
 
 .bundle-detail-shortcuts-outer {
+  position: relative;
+  z-index: 10;
   width: min(calc(100% - 16px), 560px);
   margin-left: auto;
   margin-right: auto;

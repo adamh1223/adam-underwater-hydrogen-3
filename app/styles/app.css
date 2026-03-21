@@ -293,7 +293,7 @@ button.reset:hover:not(:has(> *)) {
     margin-right: 4px;
   }
 }
-@media (min-width: 501px) {
+@media (min-width: 500.02px) {
   .header-ctas {
     align-items: center;
     display: flex;
@@ -1039,7 +1039,7 @@ button.reset:hover:not(:has(> *)) {
   object-fit: cover;
 }
 
-@media (min-width: 701px) {
+@media (min-width: 700.02px) {
   .recommended-products-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3598,7 +3598,7 @@ span {
     z-index: 100;
   }
 }
-@media (min-width: 701px) and (max-width: 800px) {
+@media (min-width: 700.02px) and (max-width: 800px) {
   .artist-pick-grid {
     width: 140px;
     height: 30px;

@@ -493,7 +493,8 @@ function ServicesPage() {
                     </>
                   )}
                 </CarouselContent>
-
+                <CarouselPrevious inTheBox style={{left: '-24px'}} />
+                <CarouselNext inTheBox style={{right: '-24px'}} />
               </Carousel>
             )}
           </CarouselZoom>
