@@ -970,7 +970,7 @@ export default function AccountProfile() {
             {marketingEmail && marketingSmsOnFile ? (
               <>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Thanks for subscribing! Here&rsquo;s your exclusive discount
+                  Thanks for subscribing! Here&rsquo;s your exclusive one-time discount
                   code:
                 </p>
                 <div className="review-discount-revealed-row">

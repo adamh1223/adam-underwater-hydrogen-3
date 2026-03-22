@@ -15,7 +15,7 @@ function HeroPrints() {
 
   return (
     <section className="flex flex-col items-center justify-center text-center main">
-      <div className="title-wrapper">
+      <div className="title-wrapper-prints">
         <div className="flex justify-center font-extrabold text-3xl py-2">
           <Sectiontitle text="Framed Canvas Wall Art" />
         </div>

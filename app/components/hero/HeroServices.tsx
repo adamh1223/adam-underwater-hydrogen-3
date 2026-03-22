@@ -36,7 +36,7 @@ function HeroServices({onPosterLoad}: {onPosterLoad?: () => void}) {
       className="flex flex-col items-center justify-center main mb-3 "
       id="video"
     >
-      <div className="title-wrapper">
+      <div className="title-wrapper-services">
         <div className="flex justify-center font-extrabold text-3xl py-2">
           <Sectiontitle text="Underwater 8K Video" />
         </div>

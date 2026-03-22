@@ -87,9 +87,16 @@ body {
   }
 }
 
-.title-wrapper {
+.title-wrapper-prints {
   background-color: var(--color-background);
   border-radius: 10px;
   width: 390px;
   opacity: 95%;
+}
+.title-wrapper-services {
+  background-color: var(--color-background);
+  border-radius: 10px;
+  width: 420px;
+  opacity: 95%;
+  padding: 0 8px;
 }
