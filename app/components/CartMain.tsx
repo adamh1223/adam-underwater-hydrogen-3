@@ -301,7 +301,7 @@ export function CartEmpty({
       </div>
       <div className="flex justify-center">
         <Button variant="default">
-          <Link to="/collections/prints" onClick={close} prefetch="viewport">
+          <Link to="/prints" onClick={close} prefetch="viewport">
             Continue shopping →
           </Link>
         </Button>

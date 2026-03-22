@@ -1,5 +1,6 @@
 import type {LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {getSitemap} from '@shopify/hydrogen';
+import {getCollectionPathByHandle} from '~/lib/collectionPaths';
 
 export async function loader({
   request,
@@ -12,6 +13,11 @@ export async function loader({
     params,
     locales: ['EN-US', 'EN-CA', 'FR-CA'],
     getLink: ({type, baseUrl, handle, locale}) => {
+      if (type === 'collections') {
+        const collectionPath = getCollectionPathByHandle(handle);
+        if (!locale) return `${baseUrl}${collectionPath}`;
+        return `${baseUrl}/${locale}${collectionPath}`;
+      }
       if (!locale) return `${baseUrl}/${type}/${handle}`;
       return `${baseUrl}/${locale}/${type}/${handle}`;
     },

@@ -28,6 +28,7 @@ import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 import {navigateWithCardSplash} from '~/lib/cardNavigationSplash';
 import type {CartPendingLinePreviewPayload} from '~/lib/cartPendingLine';
+import {isStockCollectionPath} from '~/lib/collectionPaths';
 
 type shopifyImage = {url: string; altText: string};
 
@@ -164,7 +165,7 @@ function EProductsContainer({
   const location = useLocation();
   const shouldDisableFocusWithinHighlight =
     disableFocusWithinHighlight ||
-    location.pathname.startsWith('/collections/stock');
+    isStockCollectionPath(location.pathname);
   const focusWithinCardEffects = shouldDisableFocusWithinHighlight
     ? ''
     : compactHighlightGlow

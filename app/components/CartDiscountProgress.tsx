@@ -83,7 +83,7 @@ export function CartDiscountProgress({
       itemLabelSingular: 'print',
       itemLabelPlural: 'prints',
       discountPercent: 15,
-      collectionPath: '/collections/prints',
+      collectionPath: '/prints',
     });
   }
 
@@ -94,7 +94,7 @@ export function CartDiscountProgress({
       itemLabelSingular: 'stock footage clip',
       itemLabelPlural: 'stock footage clips',
       discountPercent: 15,
-      collectionPath: '/collections/stock',
+      collectionPath: '/stock',
     });
   }
 

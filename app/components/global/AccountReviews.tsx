@@ -249,7 +249,7 @@ const AccountReviews = ({
       <p className='text-center'>You haven&apos;t left any product reviews yet.</p>
       <div className="flex justify-center mt-4">
         <Button variant="default">
-          <Link to="/collections/prints">Start Shopping →</Link>
+          <Link to="/prints">Start Shopping →</Link>
         </Button>
       </div>
     </div>

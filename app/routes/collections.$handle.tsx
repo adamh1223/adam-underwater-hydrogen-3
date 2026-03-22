@@ -66,6 +66,11 @@ import {
   PRINT_SEARCH_HINT_WORDS,
   RandomizedSearchHint,
 } from '~/components/RandomizedSearchHint';
+import {
+  getCollectionPathByHandle,
+  getHandleFromCollectionPath,
+  getRedirectPathFromLegacyCollectionPath,
+} from '~/lib/collectionPaths';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const collection = data?.collection as
@@ -117,9 +122,10 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   const description =
     collection?.description?.trim() || 'Explore Adam Underwater collections.';
   const canonicalUrl =
-    data?.currentShareUrl ??
     data?.canonicalCollectionUrl ??
+    data?.currentShareUrl ??
     'https://adamunderwater.com/collections';
+  const ogUrl = data?.currentShareUrl ?? canonicalUrl;
 
   const hiddenCollections = ['product-sizes'];
   const shouldNoindex = hiddenCollections.includes(collectionHandle);
@@ -139,7 +145,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     {property: 'og:type', content: 'website'},
     {property: 'og:title', content: title},
     {property: 'og:description', content: description},
-    {property: 'og:url', content: canonicalUrl},
+    {property: 'og:url', content: ogUrl},
     {property: 'og:image', content: shareImage},
     {property: 'og:image:secure_url', content: shareImage},
     {
@@ -206,17 +212,25 @@ async function loadCriticalData({
   params,
   request,
 }: LoaderFunctionArgs) {
-  const {handle} = params;
   const {storefront, cart} = context;
 
   const url = new URL(request.url);
+  const handle =
+    params.handle?.toLowerCase() ?? getHandleFromCollectionPath(url.pathname);
   const searchTerm = url.searchParams.get('q')?.trim() || '';
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 250,
   });
 
   if (!handle) {
-    throw redirect('/collections');
+    throw redirect('/prints', 301);
+  }
+
+  const legacyRedirectPath = getRedirectPathFromLegacyCollectionPath(
+    url.pathname,
+  );
+  if (legacyRedirectPath) {
+    throw redirect(`${legacyRedirectPath}${url.search}`, 301);
   }
   const filters: {tag?: string; query?: string}[] = [];
   if (searchTerm) {
@@ -250,7 +264,7 @@ async function loadCriticalData({
     collection,
     searchTerm,
     cart: cart.get(),
-    canonicalCollectionUrl: `${url.origin}/collections/${handle}`,
+    canonicalCollectionUrl: `${url.origin}${getCollectionPathByHandle(handle)}`,
     currentShareUrl: `${url.origin}${url.pathname}${url.search}`,
   };
 }

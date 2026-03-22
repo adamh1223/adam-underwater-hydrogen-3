@@ -15,5 +15,9 @@ export default hydrogenRoutes([
   route('site.webmanifest', './routes/site[.]webmanifest.ts'),
 
   // ✅ Everything else (normal pages)
-  layout('./layout.tsx', await flatRoutes()),
+  layout('./layout.tsx', [
+    route('prints', './custom-routes/prints.tsx'),
+    route('stock', './custom-routes/stock.tsx'),
+    ...(await flatRoutes()),
+  ]),
 ]) satisfies RouteConfig;

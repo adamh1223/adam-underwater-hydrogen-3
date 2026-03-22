@@ -6,6 +6,7 @@ import {
   urlWithTrackingParams,
   type PredictiveSearchReturn,
 } from '~/lib/search';
+import {getCollectionPathByHandle} from '~/lib/collectionPaths';
 import {useAside} from './Aside';
 import {ProductCarousel} from './products/productCarousel';
 import {EnhancedPartialSearchResult} from '~/lib/types';
@@ -134,7 +135,7 @@ function SearchResultsPredictiveCollections({
       <ul>
         {collections.map((collection) => {
           const collectionUrl = urlWithTrackingParams({
-            baseUrl: `/collections/${collection.handle}`,
+            baseUrl: getCollectionPathByHandle(collection.handle),
             trackingParams: collection.trackingParameters,
             term: term.current,
           });

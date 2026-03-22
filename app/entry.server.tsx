@@ -43,6 +43,13 @@ export default async function handleRequest(
       'https://cdn.shopify.com',
       r2PublicOrigin,
     ],
+    styleSrc: [
+      "'self'",
+      "'unsafe-inline'",
+      'https://cdn.shopify.com',
+      'http://localhost:*',
+      'https://fonts.googleapis.com',
+    ],
     imgSrc: [
       "'self'",
       'data:',

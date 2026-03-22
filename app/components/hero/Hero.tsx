@@ -43,7 +43,7 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
               </Link>
             </div>
             <div className="flex justify-center">
-              <Link to="/collections/prints">
+              <Link to="/prints">
                 <Button size="lg" className="mt-5 w-48 cursor-pointer">
                   View All Prints
                 </Button>

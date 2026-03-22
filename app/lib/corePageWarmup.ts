@@ -94,7 +94,7 @@ const CORE_PAGE_CRITICAL_ASSETS = {
     ...SERVICES_PHOTO_IMAGES.map((src) => imageAsset(src)),
     iframeAsset(HERO_BACKGROUND_IFRAME_SRC),
   ],
-  '/collections/prints': [
+  '/prints': [
     imageAsset(
       'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
@@ -104,7 +104,7 @@ const CORE_PAGE_CRITICAL_ASSETS = {
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/print1.jpg'),
     iframeAsset(HERO_BACKGROUND_IFRAME_SRC),
   ],
-  '/collections/stock': [
+  '/stock': [
     imageAsset(
       'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
@@ -130,9 +130,8 @@ export const CORE_PAGE_PREFETCH_PATHS = [
   '/pages/work',
   '/pages/about',
   '/pages/services',
-  '/collections/prints',
-  '/collections/stock',
-  '/collections/stock/Video+Bundle',
+  '/prints',
+  '/stock',
   '/pages/contact',
 ] as const;
 
@@ -159,16 +158,20 @@ export function normalizeCorePagePath(pathname: string): CorePagePath | null {
   if (normalizedPath === '/pages/services') return '/pages/services';
   if (normalizedPath === '/pages/contact') return '/pages/contact';
   if (
+    normalizedPath === '/prints' ||
+    normalizedPath.startsWith('/prints/') ||
     normalizedPath === '/collections/prints' ||
     normalizedPath.startsWith('/collections/prints/')
   ) {
-    return '/collections/prints';
+    return '/prints';
   }
   if (
+    normalizedPath === '/stock' ||
+    normalizedPath.startsWith('/stock/') ||
     normalizedPath === '/collections/stock' ||
     normalizedPath.startsWith('/collections/stock/')
   ) {
-    return '/collections/stock';
+    return '/stock';
   }
 
   return null;

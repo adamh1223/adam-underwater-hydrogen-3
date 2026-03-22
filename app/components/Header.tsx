@@ -32,6 +32,7 @@ import {Kbd} from './ui/kbd';
 import {useIsLoggedIn} from '~/lib/hooks';
 import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
 import {emitAsideDebug} from '~/lib/asideDebugClient';
+import {PRINTS_PATH, STOCK_PATH} from '~/lib/collectionPaths';
 import {ChevronUp, Divide} from 'lucide-react';
 import {log} from 'util';
 import { RootLoader } from '~/root';
@@ -133,8 +134,22 @@ export function HeaderMenu({
         ? new URL(itemUrl).pathname
         : itemUrl;
 
-    if (normalizedUrl.startsWith('/collections/stock/')) {
-      return '/collections/stock';
+    if (
+      normalizedUrl === '/collections/prints' ||
+      normalizedUrl.startsWith('/collections/prints/') ||
+      normalizedUrl === PRINTS_PATH ||
+      normalizedUrl.startsWith(`${PRINTS_PATH}/`)
+    ) {
+      return PRINTS_PATH;
+    }
+
+    if (
+      normalizedUrl === '/collections/stock' ||
+      normalizedUrl.startsWith('/collections/stock/') ||
+      normalizedUrl === STOCK_PATH ||
+      normalizedUrl.startsWith(`${STOCK_PATH}/`)
+    ) {
+      return STOCK_PATH;
     }
 
     return normalizedUrl;

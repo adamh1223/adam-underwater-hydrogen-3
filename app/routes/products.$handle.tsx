@@ -2106,12 +2106,12 @@ export default function Product() {
             </li>
             {!isVideo && (
               <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                <Link to="/collections/prints">Prints</Link>
+                <Link to="/prints">Prints</Link>
               </li>
             )}
             {isVideo && (
               <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                <Link to="/collections/stock">Stock Footage</Link>
+                <Link to="/stock">Stock Footage</Link>
               </li>
             )}
             <li

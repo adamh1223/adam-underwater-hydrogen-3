@@ -376,7 +376,7 @@ function ReviewForm({
                 toast.success('Copied to Clipboard!', {
                   action: {
                     label: 'Browse Products',
-                    onClick: () => navigate('/collections/prints'),
+                    onClick: () => navigate('/prints'),
                   },
                 });
               }

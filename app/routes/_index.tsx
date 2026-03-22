@@ -26,6 +26,7 @@ import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetails
 import {getCustomerReviewLocation} from '~/lib/reviews';
 import HomePageSkeleton from '~/components/home/HomePageSkeleton';
 import {useEntranceSkeletonReady} from '~/components/skeletons/shared';
+import {getCollectionPathByHandle} from '~/lib/collectionPaths';
 
 export const meta: MetaFunction = () => {
   const title = 'Adam Underwater | Underwater Video & Photo';
@@ -271,7 +272,7 @@ function FeaturedCollection({
     <>
       <Link
         className="featured-collection"
-        to={`/collections/${collection.handle}`}
+        to={getCollectionPathByHandle(collection.handle)}
       >
         {image && (
           <div className="featured-collection-image">

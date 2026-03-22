@@ -3,6 +3,7 @@ import '../../styles/components/EProductPreview.css';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {useLocation} from '@remix-run/react';
 import {getOptimizedImageUrl} from '~/lib/imageWarmup';
+import {isStockCollectionPath} from '~/lib/collectionPaths';
 
 type ShopifyImage = {url: string; altText: string};
 
@@ -84,7 +85,7 @@ function EProductPreview({
     }
   };
 
-  const isStockFootagePage = location.pathname.startsWith('/collections/stock');
+  const isStockFootagePage = isStockCollectionPath(location.pathname);
   const isAccountFavoritesPage =
     location.pathname.startsWith('/account/favorites');
   const isStockListLargeViewport =

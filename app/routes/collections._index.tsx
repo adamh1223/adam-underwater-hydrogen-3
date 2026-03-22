@@ -1,7 +1,7 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 
 export async function loader({request}: LoaderFunctionArgs) {
-  return redirect('/collections/prints', 301);
+  return redirect('/prints', 301);
 }
 
 export default function Collections() {
