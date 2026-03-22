@@ -257,7 +257,7 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
               </div>
               <div className="flex flex-1 items-center justify-center">
                 <div className="flex w-full max-w-7xl flex-col items-center gap-6">
-                  <div className="relative w-full">
+                  <div className="carousel-zoom-stage relative w-full">
                     {isActiveImageLoading && (
                       <div className="absolute inset-0 z-30 flex items-center justify-center px-6">
                         <div className="w-full max-w-md rounded-md border border-border bg-background/80 p-4 backdrop-blur-sm">
@@ -279,10 +279,10 @@ export const CarouselZoom = ({items, children}: CarouselZoomProps) => {
                       <CarouselContent className="ml-0">
                         {items?.map((media, idx) => (
                           <CarouselItem
-                            className="flex items-center justify-center pl-0"
+                            className="flex items-center justify-center overflow-hidden pl-0"
                             key={`${media.type}-${media.url}`}
                           >
-                            <div className="flex h-full w-full items-center justify-center px-4">
+                            <div className="flex h-full w-full items-center justify-center overflow-hidden px-4">
                               {media.type === 'image' && (
                                 <img
                                   src={media.url}

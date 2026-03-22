@@ -3823,6 +3823,20 @@ span {
   }
 }
 
+/* Zoom dialog carousels should always fully clip neighboring slides. */
+.carousel-zoom-stage [data-slot='carousel-content'][data-orientation='horizontal'],
+.carousel-zoom-stage [data-slot='carousel-content'][data-orientation='vertical'] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden !important;
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+}
+
+.carousel-zoom-stage [data-slot='carousel-item'] {
+  overflow: hidden;
+}
+
 @media (min-width: 499.02px) {
   .individual-product-location {
     margin-top: 4px;
