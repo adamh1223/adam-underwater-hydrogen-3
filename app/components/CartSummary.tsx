@@ -8,6 +8,7 @@ import {
   Link,
   useRouteLoaderData,
 } from '@remix-run/react';
+import {useIsLoggedIn} from '~/lib/hooks';
 import {Card, CardContent} from './ui/card';
 import {Input} from './ui/input';
 import {Button} from './ui/button';
@@ -150,6 +151,7 @@ export function CartSummary({
 }: CartSummaryProps) {
   const rootData = useRouteLoaderData<RootLoader>('root');
   const isAdmin = Boolean(rootData?.isAdmin);
+  const isLoggedIn = useIsLoggedIn(rootData?.isLoggedIn);
   const pendingPreviewByMerchandiseId = new Map(
     pendingLinePreviews.map((preview) => [preview.merchandiseId, preview] as const),
   );
@@ -682,31 +684,51 @@ export function CartSummary({
           <CartCheckoutActions
             checkoutUrl={cart.checkoutUrl}
             disabled={!isAdmin && !isOrderReady}
+            isLoggedIn={isLoggedIn}
           />
         </div>
       </div>
     </>
   );
 }
+const CLOUDFLARE_PUBLIC_ASSET_BASE =
+  'https://downloads.adamunderwater.com/store-1-au/public';
+
 function CartCheckoutActions({
   checkoutUrl,
   disabled,
+  isLoggedIn,
 }: {
   checkoutUrl?: string;
   disabled: boolean;
+  isLoggedIn: boolean;
 }) {
   if (!checkoutUrl) return null;
 
+  if (isLoggedIn) {
+    return (
+      <Button variant="default" className="mb-4" disabled={disabled}>
+        <Link to={checkoutUrl}>Continue to Checkout &rarr;</Link>
+      </Button>
+    );
+  }
+
   return (
-    // <div>
-    //   <a href={checkoutUrl} target="_self">
-    //     <p>Continue to Checkout &rarr;</p>
-    //   </a>
-    //   <br />
-    // </div>
-    <Button variant="default" className="mb-4" disabled={disabled}>
-      <Link to={checkoutUrl}>Continue to Checkout &rarr;</Link>
-    </Button>
+    <div className="flex flex-col gap-3 mb-4">
+      <Link to="/account/login">
+        <Button variant="default" className="w-full cursor-pointer flex items-center justify-center gap-1">
+          <img
+            src={`${CLOUDFLARE_PUBLIC_ASSET_BASE}/signup-icon-black.png`}
+            alt=""
+            style={{height: '1rem'}}
+          />
+          <span>Sign In/Sign Up (recommended)</span>
+        </Button>
+      </Link>
+      <Button variant="outline" className="w-full" disabled={disabled}>
+        <Link to={checkoutUrl}>Checkout as Guest &rarr;</Link>
+      </Button>
+    </div>
   );
 }
 
