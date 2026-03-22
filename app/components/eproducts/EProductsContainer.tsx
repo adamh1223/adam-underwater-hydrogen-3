@@ -15,6 +15,7 @@ import {ProductPrice} from '../ProductPrice';
 import {Button} from '../ui/button';
 import {ReloadIcon} from '@radix-ui/react-icons';
 import {FaHeart, FaRegHeart} from 'react-icons/fa';
+import {LuTag} from 'react-icons/lu';
 import {
   Tooltip,
   TooltipContent,
@@ -388,6 +389,8 @@ function EProductsContainer({
   const displayFrameIsSlowmo = displayFrameBadgeLabel
     .toLowerCase()
     .includes('slow');
+  const bundleDiscountBadgeClassName =
+    'rounded-md border border-primary bg-background text-primary disabled:cursor-default disabled:opacity-100 inline-flex items-start justify-center gap-1 min-h-[25px] w-[72px] px-1 py-[3px] text-[11px] font-semibold whitespace-normal leading-[1.05]';
 
   const titleCase = (w: string) =>
     w.length === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
@@ -954,7 +957,7 @@ function EProductsContainer({
                     <div
                       className={`product-title-container ${layout === 'grid' ? 'text-center' : 'text-start'}`}
                     >
-                      <div className="pointer-events-none absolute left-0 top-0 z-[70]">
+                      <div className="pointer-events-none absolute left-0 top-0 z-[70] flex flex-col items-start gap-1">
                         <button
                           disabled
                           className={`clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100 ${isBundle ? 'mt-[-24px]' : 'mt-[-20px]'} ms-[-5px]`}
@@ -962,6 +965,15 @@ function EProductsContainer({
                         >
                           {displayResolutionBadgeLabel}
                         </button>
+                        {isBundle && (
+                          <button
+                            disabled
+                            className={`${bundleDiscountBadgeClassName} ms-[-5px]`}
+                          >
+                            <LuTag className="h-3 w-3 shrink-0" />
+                            <span className="min-w-0 text-left">20% off per clip</span>
+                          </button>
+                        )}
                       </div>
 
                       <div className="pointer-events-none absolute right-0 top-0 z-[70] flex flex-col items-end">
@@ -1095,7 +1107,8 @@ function EProductsContainer({
               {isArtistPick && (
                 <div
                   ref={artistPickBadgeRef}
-                  className="absolute left-2 top-2 flex flex-col"
+                  className="absolute left-2 top-2 z-[70] flex flex-col gap-1"
+                  data-bundle-no-nav
                 >
                   <button
                     disabled
@@ -1105,6 +1118,23 @@ function EProductsContainer({
                     <div className="flex justify-center items-end">
                       <img src={'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'} className="badge-img" />
                     </div>
+                  </button>
+                  {isBundle && (
+                    <button disabled className={bundleDiscountBadgeClassName}>
+                      <LuTag className="h-3 w-3 shrink-0" />
+                      <span className="min-w-0 text-left">20% off per clip</span>
+                    </button>
+                  )}
+                </div>
+              )}
+              {!isArtistPick && isBundle && (
+                <div
+                  className="absolute left-2 top-2 z-[70]"
+                  data-bundle-no-nav
+                >
+                  <button disabled className={bundleDiscountBadgeClassName}>
+                    <LuTag className="h-3 w-3 shrink-0" />
+                    <span className="min-w-0 text-left">20% off per clip</span>
                   </button>
                 </div>
               )}
@@ -1199,7 +1229,7 @@ function EProductsContainer({
             <div className={cardContentClassName}>
               <div className={`relative evideo eproduct-top-part-card-list`}>
                 {hasDisplayDurationTag && (
-                  <div className="absolute left-[6px] top-[6px] z-[70] flex flex-col gap-1">
+                  <div className="absolute left-2 top-2 z-[70] flex flex-col gap-1">
                     <button
                       disabled
                       className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
@@ -1248,14 +1278,16 @@ function EProductsContainer({
                 />
               </div> */}
               <div className={`eproduct-bottom-part-card-list relative`}>
-                <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-1 gap-x-1">
-                  <button
-                    disabled
-                    className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-                    style={displayResolutionBadgeStyle}
-                  >
-                    {displayResolutionBadgeLabel}
-                  </button>
+                <div className="absolute inset-x-0 top-[7px] z-50 flex items-start justify-start ps-1 gap-x-1">
+                  <div className="flex flex-col items-start gap-y-1">
+                    <button
+                      disabled
+                      className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                      style={displayResolutionBadgeStyle}
+                    >
+                      {displayResolutionBadgeLabel}
+                    </button>
+                  </div>
                   {displayFrameIsSlowmo && (
                     <button
                       disabled
@@ -1484,7 +1516,7 @@ function EProductsContainer({
                 />
               </div> */}
               <div className={`eproduct-bottom-part-card-list relative`}>
-                <div className="absolute inset-x-0 top-[7px] z-50 flex justify-start ps-[4px] gap-x-1">
+                <div className="absolute inset-x-0 top-[7px] z-50 flex items-start justify-start ps-[4px] gap-x-1">
                   <button
                     disabled
                     className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
@@ -1506,6 +1538,12 @@ function EProductsContainer({
                       className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
                     >
                       {displayFrameBadgeLabel}
+                    </button>
+                  )}
+                  {isBundle && (
+                    <button disabled className={bundleDiscountBadgeClassName}>
+                      <LuTag className="h-3 w-3 shrink-0" />
+                      <span className="min-w-0 text-left">20% off per clip</span>
                     </button>
                   )}
                 </div>
