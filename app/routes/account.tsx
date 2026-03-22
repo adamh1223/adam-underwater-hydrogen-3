@@ -22,7 +22,10 @@ export function shouldRevalidate() {
 }
 
 export const meta: MetaFunction = () => {
-  return buildIconLinkPreviewMeta('Adam Underwater | My Account');
+  return [
+    ...buildIconLinkPreviewMeta('Adam Underwater | My Account'),
+    {name: 'robots', content: 'noindex, nofollow'},
+  ];
 };
 
 export async function loader({context, request}: LoaderFunctionArgs) {

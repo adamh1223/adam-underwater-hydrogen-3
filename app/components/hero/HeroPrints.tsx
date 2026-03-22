@@ -23,7 +23,10 @@ function HeroPrints() {
           Bring the ocean into your home
         </p>
         <div className="flex justify-center returns">
-          <Card className="mb-3 p-5">
+          <Card className="mb-3 p-3">
+            <div>
+              <p className="statement">Original Photography </p>
+            </div>
             <div>
               <p className="statement">Customizable sizes</p>
             </div>
@@ -38,7 +41,7 @@ function HeroPrints() {
 
             <div>
               <p className="statement">
-                Printed on Canon Image PROGRAF PRO-4600
+                Canon Image PROGRAF PRO-4600
               </p>
             </div>
             <div>
@@ -47,9 +50,7 @@ function HeroPrints() {
             <div>
               <p className="statement">Handcrafted in San Diego, CA</p>
             </div>
-            <div>
-              <p className="statement">Original Photography </p>
-            </div>
+            
           </Card>
         </div>
       </div>

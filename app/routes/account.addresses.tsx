@@ -42,7 +42,10 @@ export type ActionResponse = {
 };
 
 export const meta: MetaFunction = () => {
-  return buildIconLinkPreviewMeta('Adam Underwater | My Addresses');
+  return [
+    ...buildIconLinkPreviewMeta('Adam Underwater | My Addresses'),
+    {name: 'robots', content: 'noindex, nofollow'},
+  ];
 };
 
 export async function loader({context}: LoaderFunctionArgs) {

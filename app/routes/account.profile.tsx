@@ -262,7 +262,10 @@ const COUNTRY_PHONE_OPTIONS_BY_DIAL_PREFIX = [...COUNTRY_PHONE_OPTIONS].sort(
 );
 
 export const meta: MetaFunction = () => {
-  return buildIconLinkPreviewMeta('Adam Underwater | My Profile');
+  return [
+    ...buildIconLinkPreviewMeta('Adam Underwater | My Profile'),
+    {name: 'robots', content: 'noindex, nofollow'},
+  ];
 };
 
 const CUSTOMER_ID_QUERY = `#graphql

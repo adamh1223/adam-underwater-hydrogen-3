@@ -90,7 +90,6 @@ body {
 .title-wrapper {
   background-color: var(--color-background);
   border-radius: 10px;
-  padding: 10px;
-  width: 420px;
+  width: 390px;
   opacity: 95%;
 }

@@ -264,11 +264,14 @@ function isPickupOrderPurchaseMethod(
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const orderName =
     typeof data?.order?.name === 'string' ? data.order.name.trim() : '';
-  return buildIconLinkPreviewMeta(
-    orderName
-      ? `Adam Underwater | Order ${orderName}`
-      : 'Adam Underwater | My Orders',
-  );
+  return [
+    ...buildIconLinkPreviewMeta(
+      orderName
+        ? `Adam Underwater | Order ${orderName}`
+        : 'Adam Underwater | My Orders',
+    ),
+    {name: 'robots', content: 'noindex, nofollow'},
+  ];
 };
 
 export async function loader({params, context}: LoaderFunctionArgs) {

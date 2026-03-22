@@ -352,7 +352,10 @@ function getAdminOrderFulfillmentStatusMap(
 }
 
 export const meta: MetaFunction = () => {
-  return buildIconLinkPreviewMeta('Adam Underwater | My Orders');
+  return [
+    ...buildIconLinkPreviewMeta('Adam Underwater | My Orders'),
+    {name: 'robots', content: 'noindex, nofollow'},
+  ];
 };
 
 export async function loader({request, context}: LoaderFunctionArgs) {

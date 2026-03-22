@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
+import {type MetaFunction} from '@remix-run/react';
 import {
   Accordion,
   AccordionContent,
@@ -8,6 +9,30 @@ import {
 import {Card} from '~/components/ui/card';
 import FaqPageSkeleton from '~/components/skeletons/FaqPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+
+export const meta: MetaFunction = () => {
+  const title = 'FAQ | Adam Underwater — Prints, Stock Footage & Underwater Photo Questions';
+  const description =
+    'Frequently asked questions about Adam Underwater prints, stock footage licensing, underwater photography services, shipping, and returns. Find answers about wall art, 4K video clips, and more.';
+
+  return [
+    {title},
+    {name: 'title', content: title},
+    {name: 'description', content: description},
+    {
+      tagName: 'link',
+      rel: 'canonical',
+      href: 'https://adamunderwater.com/pages/faq',
+    },
+    {property: 'og:type', content: 'website'},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:url', content: 'https://adamunderwater.com/pages/faq'},
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+  ];
+};
 
 const faq = () => {
   const [isPageReady, setIsPageReady] = useState(false);
@@ -27,13 +52,57 @@ const faq = () => {
     }
   }, [handleFaqImgLoad]);
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'My desired print size is not available?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Fill out a contact form and let me know your size and I can create your custom size if it is possible.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Do products ship internationally?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'My electronic products - Stock Footage, LUTS, and Sound FX are available from anywhere in the world, but at this time prints can only be shipped within the United States.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'I purchased an Electronic product. How do I download it?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Navigate to "My Orders" and hover over "Download Links" next to your order. Each download link will appear here.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'May I share stock footage I purchased for anyone to use publicly?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No, you may only publish clips purchased here on the specific channels you listed in the form you submit before purchasing stock footage clips. Submit a contact form if you wish to change one of more of these channels.',
+        },
+      },
+    ],
+  };
+
   return (
     <SkeletonGate isReady={isPageReady} skeleton={<FaqPageSkeleton />}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{__html: JSON.stringify(faqJsonLd)}}
+      />
       <section>
         <div className="flex justify-center">
           <img
             ref={imgRef}
             src={'https://downloads.adamunderwater.com/store-1-au/public/faq2.png'}
+            alt="Frequently Asked Questions — Adam Underwater"
             className="pt-5 faq-header-img"
             onLoad={handleFaqImgLoad}
           />

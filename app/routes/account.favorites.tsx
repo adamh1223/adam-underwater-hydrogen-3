@@ -44,7 +44,10 @@ import Sectiontitle from '~/components/global/Sectiontitle';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 
 export const meta: MetaFunction = () => {
-  return buildIconLinkPreviewMeta('Adam Underwater | My Favorites');
+  return [
+    ...buildIconLinkPreviewMeta('Adam Underwater | My Favorites'),
+    {name: 'robots', content: 'noindex, nofollow'},
+  ];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

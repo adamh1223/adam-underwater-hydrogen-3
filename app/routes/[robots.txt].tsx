@@ -99,6 +99,8 @@ Disallow: /policies/
 Disallow: /*/*?*ls=*&ls=*
 Disallow: /*/*?*ls%3D*%3Fls%3D*
 Disallow: /*/*?*ls%3d*%3fls%3d*
+Disallow: /collections/product-sizes
+Disallow: /collections/all
 Disallow: /search
 Allow: /search/
 Disallow: /search/?*

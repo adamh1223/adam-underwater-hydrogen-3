@@ -1,5 +1,37 @@
 import {Suspense, useCallback, useEffect, useRef, useState} from 'react';
-import {Await, useLoaderData, useLocation} from '@remix-run/react';
+import {Await, useLoaderData, useLocation, type MetaFunction} from '@remix-run/react';
+
+const SHARE_IMAGE =
+  'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png';
+
+export const meta: MetaFunction = () => {
+  const title = 'About Adam Underwater | Underwater Videographer & Photographer in San Diego';
+  const description =
+    'Meet Adam Hussain — PADI Scuba Instructor, AAUS Scientific Diver, and FAA Part 107 Drone Operator specializing in underwater video, underwater photography, and drone media in San Diego, CA.';
+
+  return [
+    {title},
+    {name: 'title', content: title},
+    {name: 'description', content: description},
+    {
+      tagName: 'link',
+      rel: 'canonical',
+      href: 'https://adamunderwater.com/pages/about',
+    },
+    {property: 'og:type', content: 'profile'},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:url', content: 'https://adamunderwater.com/pages/about'},
+    {property: 'og:image', content: SHARE_IMAGE},
+    {property: 'og:image:secure_url', content: SHARE_IMAGE},
+    {property: 'og:image:alt', content: 'Adam Hussain — underwater videographer and photographer'},
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+    {name: 'twitter:image', content: SHARE_IMAGE},
+    {name: 'twitter:image:alt', content: 'Adam Hussain — underwater videographer and photographer'},
+  ];
+};
 import {Button} from '~/components/ui/button';
 import {Card} from '~/components/ui/card';
 import {Separator} from '~/components/ui/separator';
@@ -30,6 +62,7 @@ import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 import AboutPageSkeleton from '~/components/skeletons/AboutPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+import { LuTag, LuTags } from 'react-icons/lu';
 
 const ABOUT_GEAR_CATEGORY_STORAGE_KEY = 'about-gear-category';
 const GEAR_CATEGORY_OPTIONS = [
@@ -970,6 +1003,7 @@ export default function AboutPage() {
             src={
               'https://downloads.adamunderwater.com/store-1-au/public/icon.png'
             }
+            alt="Adam Underwater logo"
             className="icon-header"
           />
 
@@ -977,6 +1011,7 @@ export default function AboutPage() {
             src={
               'https://downloads.adamunderwater.com/store-1-au/public/about.png'
             }
+            alt="About Adam Underwater"
             className="about-header"
           />
         </div>
@@ -995,24 +1030,24 @@ export default function AboutPage() {
         </div>
 
         <div className="about-container">
-          <img ref={headshotRef} src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} className="mt-5 headshot" onLoad={handleHeadshotLoad} />
+          <img ref={headshotRef} src={'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'} alt="Adam Hussain — underwater photographer and videographer" className="mt-5 headshot" onLoad={handleHeadshotLoad} />
 
           <div className="about-icon-wrapper">
             <div className="about-icon-container">
-              <img src={'https://downloads.adamunderwater.com/store-1-au/public/padi-logo2.png'} className="padi-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/padi-logo2.png'} alt="PADI certification logo" className="padi-icon" />
               <p className="padi-description text-lg">
                 PADI Open Water Scuba Instructor
               </p>
             </div>
 
             <div className="about-icon-container">
-              <img src={'https://downloads.adamunderwater.com/store-1-au/public/aaus-logo.png'} className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/aaus-logo.png'} alt="AAUS Scientific Diver certification logo" className="about-icon" />
               <p className="text-lg description sci-description">
                 AAUS Scientific Diver
               </p>
             </div>
             <div className="about-icon-container">
-              <img src={'https://downloads.adamunderwater.com/store-1-au/public/faa-logo.png'} className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/faa-logo.png'} alt="FAA Part 107 Drone Operator certification logo" className="about-icon" />
               <p className="text-lg description faa-description">
                 FAA Part 107 Drone Operator
               </p>
@@ -1202,6 +1237,7 @@ export default function AboutPage() {
             src={
               'https://downloads.adamunderwater.com/store-1-au/public/featured6.png'
             }
+            alt="Featured framed canvas wall art — underwater photography prints by Adam Underwater"
             className="featured-img"
           />
         </div>
@@ -1214,6 +1250,8 @@ export default function AboutPage() {
         wishlistProducts={data?.wishlistProducts}
         isLoggedIn={data?.isLoggedIn}
       />
+
+      
     </SkeletonGate>
   );
 }

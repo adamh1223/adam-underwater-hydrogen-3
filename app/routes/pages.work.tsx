@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
+import {type MetaFunction, useLoaderData} from '@remix-run/react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import '../styles/routeStyles/work.css';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
@@ -7,7 +8,30 @@ import {
   RECOMMENDED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
-import {useLoaderData} from '@remix-run/react';
+
+export const meta: MetaFunction = () => {
+  const title = 'Underwater Video Portfolio | Adam Underwater — Stock Footage & Cinematography';
+  const description =
+    'Watch underwater video reels and cinematography by Adam Underwater. Professional 4K underwater stock footage of marine life, kelp forests, sharks, and ocean wildlife in San Diego, CA.';
+
+  return [
+    {title},
+    {name: 'title', content: title},
+    {name: 'description', content: description},
+    {
+      tagName: 'link',
+      rel: 'canonical',
+      href: 'https://adamunderwater.com/pages/work',
+    },
+    {property: 'og:type', content: 'website'},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:url', content: 'https://adamunderwater.com/pages/work'},
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+  ];
+};
 import {CUSTOMER_WISHLIST} from '~/lib/customerQueries';
 import WorkPageSkeleton from '~/components/skeletons/WorkPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
@@ -107,6 +131,7 @@ function WorkPage() {
           src={
             'https://downloads.adamunderwater.com/store-1-au/public/icon.png'
           }
+          alt="Adam Underwater logo"
           className="icon-header"
         />
 
@@ -114,6 +139,7 @@ function WorkPage() {
           src={
             'https://downloads.adamunderwater.com/store-1-au/public/work.png'
           }
+          alt="Underwater video portfolio by Adam Underwater"
           className="work-header"
         />
       </div>
@@ -153,6 +179,7 @@ function WorkPage() {
             src={
               'https://downloads.adamunderwater.com/store-1-au/public/featured6.png'
             }
+            alt="Featured framed canvas wall art — underwater photography prints by Adam Underwater"
             className="featured-img"
             onLoad={handleFeaturedImgLoad}
           />

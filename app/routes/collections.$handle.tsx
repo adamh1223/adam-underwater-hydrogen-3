@@ -121,10 +121,16 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     data?.canonicalCollectionUrl ??
     'https://adamunderwater.com/collections';
 
+  const hiddenCollections = ['product-sizes'];
+  const shouldNoindex = hiddenCollections.includes(collectionHandle);
+
   return [
     {title},
     {name: 'title', content: title},
     {name: 'description', content: description},
+    ...(shouldNoindex
+      ? [{name: 'robots', content: 'noindex, nofollow'}]
+      : []),
     {
       tagName: 'link',
       rel: 'canonical',

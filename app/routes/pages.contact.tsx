@@ -1,6 +1,30 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {useLoaderData} from '@remix-run/react';
+import {useLoaderData, type MetaFunction} from '@remix-run/react';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
+
+export const meta: MetaFunction = () => {
+  const title = 'Contact Adam Underwater | Book Underwater Video & Photo Services';
+  const description =
+    'Get in touch with Adam Underwater for underwater photography, underwater videography, stock footage licensing, or custom print orders. Based in San Diego, CA.';
+
+  return [
+    {title},
+    {name: 'title', content: title},
+    {name: 'description', content: description},
+    {
+      tagName: 'link',
+      rel: 'canonical',
+      href: 'https://adamunderwater.com/pages/contact',
+    },
+    {property: 'og:type', content: 'website'},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:url', content: 'https://adamunderwater.com/pages/contact'},
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+  ];
+};
 import ContactForm from '~/components/form/Contact';
 import NavExample from '~/components/navbar/NavExample';
 import RecommendedProducts from '~/components/products/recommendedProducts';
@@ -102,6 +126,7 @@ function ContactPage() {
           src={
             'https://downloads.adamunderwater.com/store-1-au/public/icon.png'
           }
+          alt="Adam Underwater logo"
           className="icon-header"
         />
 
@@ -109,6 +134,7 @@ function ContactPage() {
           src={
             'https://downloads.adamunderwater.com/store-1-au/public/contact.png'
           }
+          alt="Contact Adam Underwater"
           className="contact-header"
         />
       </div>
@@ -122,6 +148,7 @@ function ContactPage() {
             src={
               'https://downloads.adamunderwater.com/store-1-au/public/featured6.png'
             }
+            alt="Featured framed canvas wall art — underwater photography prints by Adam Underwater"
             className="featured-img"
             onLoad={handleFeaturedImgLoad}
           />

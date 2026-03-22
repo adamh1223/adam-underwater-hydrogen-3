@@ -47,7 +47,10 @@ const CUSTOMER_REVIEWS_QUERY = `#graphql
 `;
 
 export const meta: MetaFunction = () => {
-  return buildIconLinkPreviewMeta('Adam Underwater | My Reviews');
+  return [
+    ...buildIconLinkPreviewMeta('Adam Underwater | My Reviews'),
+    {name: 'robots', content: 'noindex, nofollow'},
+  ];
 };
 
 export async function loader({context}: LoaderFunctionArgs) {

@@ -1281,6 +1281,36 @@ export default function Product() {
     [featuredImage, images?.nodes, selectedVariant?.image],
   );
 
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description || undefined,
+    image: selectedVariant?.image?.url ?? featuredImage?.url ?? undefined,
+    url: `${siteUrl}/products/${product.handle}`,
+    brand: {
+      '@type': 'Brand',
+      name: 'Adam Underwater',
+    },
+    ...(selectedVariant?.price
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: selectedVariant.price.amount,
+            priceCurrency: selectedVariant.price.currencyCode,
+            availability: selectedVariant.availableForSale
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+            url: `${siteUrl}/products/${product.handle}`,
+            seller: {
+              '@type': 'Organization',
+              name: 'Adam Underwater',
+            },
+          },
+        }
+      : {}),
+  };
+
   const isVideo = product.tags.includes('Video');
   const isBundle = product.tags.includes('Bundle');
   const isPrint = !isVideo;
@@ -2042,6 +2072,10 @@ export default function Product() {
         />
       }
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{__html: JSON.stringify(productJsonLd)}}
+      />
       {/* Hidden preloader for featured image to trigger skeleton gate */}
       <img
         ref={productImgRef}
