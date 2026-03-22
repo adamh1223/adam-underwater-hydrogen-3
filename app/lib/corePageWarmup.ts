@@ -56,7 +56,7 @@ const CORE_PAGE_CRITICAL_ASSETS = {
     ),
     iframeAsset(HERO_BACKGROUND_IFRAME_SRC),
   ],
-  '/pages/work': [
+  '/work': [
     imageAsset(
       'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
@@ -68,7 +68,7 @@ const CORE_PAGE_CRITICAL_ASSETS = {
     ),
     ...WORK_IFRAME_SRCS.map((src) => iframeAsset(src)),
   ],
-  '/pages/about': [
+  '/about': [
     imageAsset(
       'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
@@ -77,7 +77,7 @@ const CORE_PAGE_CRITICAL_ASSETS = {
     ),
     imageAsset('https://downloads.adamunderwater.com/store-1-au/public/headshot3.png'),
   ],
-  '/pages/services': [
+  '/services': [
     imageAsset(
       'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
@@ -112,7 +112,7 @@ const CORE_PAGE_CRITICAL_ASSETS = {
       'https://downloads.adamunderwater.com/store-1-au/public/stock.png',
     ),
   ],
-  '/pages/contact': [
+  '/contact': [
     imageAsset(
       'https://downloads.adamunderwater.com/store-1-au/public/icon.png',
     ),
@@ -127,12 +127,12 @@ const CORE_PAGE_CRITICAL_ASSETS = {
 
 export const CORE_PAGE_PREFETCH_PATHS = [
   '/',
-  '/pages/work',
-  '/pages/about',
-  '/pages/services',
+  '/work',
+  '/about',
+  '/services',
   '/prints',
   '/stock',
-  '/pages/contact',
+  '/contact',
 ] as const;
 
 type CorePagePath = keyof typeof CORE_PAGE_CRITICAL_ASSETS;
@@ -153,10 +153,21 @@ export function normalizeCorePagePath(pathname: string): CorePagePath | null {
   const normalizedPath = trimTrailingSlash(pathname);
 
   if (normalizedPath === '/') return '/';
-  if (normalizedPath === '/pages/work') return '/pages/work';
-  if (normalizedPath === '/pages/about') return '/pages/about';
-  if (normalizedPath === '/pages/services') return '/pages/services';
-  if (normalizedPath === '/pages/contact') return '/pages/contact';
+  if (normalizedPath === '/work' || normalizedPath === '/pages/work') {
+    return '/work';
+  }
+  if (normalizedPath === '/about' || normalizedPath === '/pages/about') {
+    return '/about';
+  }
+  if (
+    normalizedPath === '/services' ||
+    normalizedPath === '/pages/services'
+  ) {
+    return '/services';
+  }
+  if (normalizedPath === '/contact' || normalizedPath === '/pages/contact') {
+    return '/contact';
+  }
   if (
     normalizedPath === '/prints' ||
     normalizedPath.startsWith('/prints/') ||

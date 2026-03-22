@@ -1,5 +1,7 @@
 import {Suspense, useCallback, useEffect, useRef, useState} from 'react';
 import {Await, useLoaderData, useLocation, type MetaFunction} from '@remix-run/react';
+import {redirect} from '@shopify/remix-oxygen';
+import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 
 const SHARE_IMAGE =
   'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png';
@@ -16,12 +18,12 @@ export const meta: MetaFunction = () => {
     {
       tagName: 'link',
       rel: 'canonical',
-      href: 'https://adamunderwater.com/pages/about',
+      href: 'https://adamunderwater.com/about',
     },
     {property: 'og:type', content: 'profile'},
     {property: 'og:title', content: title},
     {property: 'og:description', content: description},
-    {property: 'og:url', content: 'https://adamunderwater.com/pages/about'},
+    {property: 'og:url', content: 'https://adamunderwater.com/about'},
     {property: 'og:image', content: SHARE_IMAGE},
     {property: 'og:image:secure_url', content: SHARE_IMAGE},
     {property: 'og:image:alt', content: 'Adam Hussain — underwater videographer and photographer'},
@@ -212,6 +214,12 @@ const ABOUT_GEAR_CARDS: GearCardDefinition[] = [
 ];
 
 export async function loader(args: LoaderFunctionArgs) {
+  const url = new URL(args.request.url);
+  const redirectPath = getRedirectPathFromLegacyPagePath(url.pathname);
+  if (redirectPath) {
+    throw redirect(`${redirectPath}${url.search}`, 301);
+  }
+
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
   //   need the customer variable, add these lines for other instances of recommended products

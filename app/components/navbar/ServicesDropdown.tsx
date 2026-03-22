@@ -130,7 +130,7 @@ function ServicesDropdown({
           <div className="p-3">
             <Button variant="ghost">
               <Link
-                to={'/pages/services#video'}
+                to={'/services#video'}
                 onClick={() => {
                   writeScrollTarget('video');
                   setOpen(false);
@@ -142,7 +142,7 @@ function ServicesDropdown({
 
             <Button variant="ghost">
               <Link
-                to={'/pages/services#photo'}
+                to={'/services#photo'}
                 onClick={() => {
                   writeScrollTarget('photo');
                   setOpen(false);
@@ -154,7 +154,7 @@ function ServicesDropdown({
 
             <Button variant="ghost">
               <Link
-                to={'/pages/services#drone'}
+                to={'/services#drone'}
                 onClick={() => {
                   writeScrollTarget('drone');
                   setOpen(false);

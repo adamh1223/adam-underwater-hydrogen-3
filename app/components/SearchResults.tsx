@@ -1,6 +1,7 @@
 import {Link} from '@remix-run/react';
 import {CartReturn, Image, Money, Pagination} from '@shopify/hydrogen';
 import {urlWithTrackingParams, type RegularSearchReturn} from '~/lib/search';
+import {getPagePathByHandle} from '~/lib/pagePaths';
 import {ProductCarousel} from './products/productCarousel';
 import EProductsContainer from './eproducts/EProductsContainer';
 import Sectiontitle from './global/Sectiontitle';
@@ -81,7 +82,7 @@ function SearchResultsPages({term, pages}: PartialSearchResult<'pages'>) {
       <div>
         {pages?.nodes?.map((page) => {
           const pageUrl = urlWithTrackingParams({
-            baseUrl: `/pages/${page.handle}`,
+            baseUrl: getPagePathByHandle(page.handle),
             trackingParams: page.trackingParameters,
             term,
           });

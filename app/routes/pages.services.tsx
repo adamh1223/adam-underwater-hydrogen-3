@@ -3,6 +3,8 @@ import '../styles/routeStyles/services.css';
 import {Button} from '~/components/ui/button';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type MetaFunction} from '@remix-run/react';
+import {redirect} from '@shopify/remix-oxygen';
+import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 
 export const meta: MetaFunction = () => {
   const title = 'Underwater Video & Photo Services | Adam Underwater — San Diego, CA';
@@ -16,12 +18,12 @@ export const meta: MetaFunction = () => {
     {
       tagName: 'link',
       rel: 'canonical',
-      href: 'https://adamunderwater.com/pages/services',
+      href: 'https://adamunderwater.com/services',
     },
     {property: 'og:type', content: 'website'},
     {property: 'og:title', content: title},
     {property: 'og:description', content: description},
-    {property: 'og:url', content: 'https://adamunderwater.com/pages/services'},
+    {property: 'og:url', content: 'https://adamunderwater.com/services'},
     {name: 'twitter:card', content: 'summary_large_image'},
     {name: 'twitter:title', content: title},
     {name: 'twitter:description', content: description},
@@ -78,6 +80,12 @@ import {warmImageUrls} from '~/lib/imageWarmup';
 // }
 // same issue as recommended products
 export async function loader(args: LoaderFunctionArgs) {
+  const url = new URL(args.request.url);
+  const redirectPath = getRedirectPathFromLegacyPagePath(url.pathname);
+  if (redirectPath) {
+    throw redirect(`${redirectPath}${url.search}`, 301);
+  }
+
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
 

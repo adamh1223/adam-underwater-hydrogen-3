@@ -33,6 +33,7 @@ import {useIsLoggedIn} from '~/lib/hooks';
 import {useMobileActivationGuard} from '~/lib/useMobileActivationGuard';
 import {emitAsideDebug} from '~/lib/asideDebugClient';
 import {PRINTS_PATH, STOCK_PATH} from '~/lib/collectionPaths';
+import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 import {ChevronUp, Divide} from 'lucide-react';
 import {log} from 'util';
 import { RootLoader } from '~/root';
@@ -133,6 +134,13 @@ export function HeaderMenu({
       itemUrl.includes(primaryDomainUrl)
         ? new URL(itemUrl).pathname
         : itemUrl;
+
+    const legacyPageRedirectPath = getRedirectPathFromLegacyPagePath(
+      normalizedUrl,
+    );
+    if (legacyPageRedirectPath) {
+      return legacyPageRedirectPath;
+    }
 
     if (
       normalizedUrl === '/collections/prints' ||
@@ -1246,7 +1254,7 @@ const FALLBACK_HEADER_MENU = {
       tags: [],
       title: 'About',
       type: 'PAGE',
-      url: '/pages/about',
+      url: '/about',
       items: [],
     },
   ],

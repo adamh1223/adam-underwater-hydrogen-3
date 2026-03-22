@@ -1,6 +1,8 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {redirect} from '@shopify/remix-oxygen';
+import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 
 export const meta: MetaFunction = () => {
   const title = 'Contact Adam Underwater | Book Underwater Video & Photo Services';
@@ -14,12 +16,12 @@ export const meta: MetaFunction = () => {
     {
       tagName: 'link',
       rel: 'canonical',
-      href: 'https://adamunderwater.com/pages/contact',
+      href: 'https://adamunderwater.com/contact',
     },
     {property: 'og:type', content: 'website'},
     {property: 'og:title', content: title},
     {property: 'og:description', content: description},
-    {property: 'og:url', content: 'https://adamunderwater.com/pages/contact'},
+    {property: 'og:url', content: 'https://adamunderwater.com/contact'},
     {name: 'twitter:card', content: 'summary_large_image'},
     {name: 'twitter:title', content: title},
     {name: 'twitter:description', content: description},
@@ -38,6 +40,12 @@ import ContactPageSkeleton from '~/components/skeletons/ContactPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 
 export async function loader(args: LoaderFunctionArgs) {
+  const url = new URL(args.request.url);
+  const redirectPath = getRedirectPathFromLegacyPagePath(url.pathname);
+  if (redirectPath) {
+    throw redirect(`${redirectPath}${url.search}`, 301);
+  }
+
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
   let customer = null;

@@ -3,11 +3,13 @@ import {type MetaFunction, useLoaderData} from '@remix-run/react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import '../styles/routeStyles/work.css';
 import {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {redirect} from '@shopify/remix-oxygen';
 import {
   FEATURED_COLLECTION_QUERY,
   RECOMMENDED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
+import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 
 export const meta: MetaFunction = () => {
   const title = 'Underwater Video Portfolio | Adam Underwater — Stock Footage & Cinematography';
@@ -21,12 +23,12 @@ export const meta: MetaFunction = () => {
     {
       tagName: 'link',
       rel: 'canonical',
-      href: 'https://adamunderwater.com/pages/work',
+      href: 'https://adamunderwater.com/work',
     },
     {property: 'og:type', content: 'website'},
     {property: 'og:title', content: title},
     {property: 'og:description', content: description},
-    {property: 'og:url', content: 'https://adamunderwater.com/pages/work'},
+    {property: 'og:url', content: 'https://adamunderwater.com/work'},
     {name: 'twitter:card', content: 'summary_large_image'},
     {name: 'twitter:title', content: title},
     {name: 'twitter:description', content: description},
@@ -37,6 +39,12 @@ import WorkPageSkeleton from '~/components/skeletons/WorkPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 
 export async function loader(args: LoaderFunctionArgs) {
+  const url = new URL(args.request.url);
+  const redirectPath = getRedirectPathFromLegacyPagePath(url.pathname);
+  if (redirectPath) {
+    throw redirect(`${redirectPath}${url.search}`, 301);
+  }
+
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
   //   need the customer variable, add these lines for other instances of recommended products

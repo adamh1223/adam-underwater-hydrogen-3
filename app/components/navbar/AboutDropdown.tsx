@@ -132,7 +132,7 @@ function AboutDropdown({
           <div className="p-3">
             <Button variant="ghost" className="cursor-pointer">
               <Link
-                to={'/pages/about'}
+                to={'/about'}
                 onClick={() => {
                   writeScrollTarget('about');
                   setOpen(false);
@@ -143,7 +143,7 @@ function AboutDropdown({
             </Button>
             <Button variant="ghost" className="cursor-pointer">
               <Link
-                to={'/pages/about#gear'}
+                to={'/about#gear'}
                 onClick={() => {
                   writeScrollTarget('gear');
                   setOpen(false);

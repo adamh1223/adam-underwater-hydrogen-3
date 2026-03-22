@@ -36,7 +36,7 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
           <img ref={heroImgRef} src={'https://downloads.adamunderwater.com/store-1-au/public/vp3.png'} className="p-3 hero-img" onLoad={handleHeroImgLoad}></img>
           <div className="flex flex-col justify-center pt-5">
             <div className="flex justify-center">
-              <Link to="/pages/work">
+              <Link to="/work">
                 <Button size="lg" className="w-48 cursor-pointer">
                   Video
                 </Button>

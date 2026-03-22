@@ -86,7 +86,7 @@ function FooterMenu({
           </div>
           <div className="my-[-10px]">
             <Button variant="link">
-              <Link to="/pages/faq">FAQ</Link>
+              <Link to="/faq">FAQ</Link>
             </Button>
           </div>
         </div>

@@ -7,6 +7,7 @@ import {
   type PredictiveSearchReturn,
 } from '~/lib/search';
 import {getCollectionPathByHandle} from '~/lib/collectionPaths';
+import {getPagePathByHandle} from '~/lib/pagePaths';
 import {useAside} from './Aside';
 import {ProductCarousel} from './products/productCarousel';
 import {EnhancedPartialSearchResult} from '~/lib/types';
@@ -171,7 +172,7 @@ function SearchResultsPredictivePages({
       <ul>
         {pages.map((page) => {
           const pageUrl = urlWithTrackingParams({
-            baseUrl: `/pages/${page.handle}`,
+            baseUrl: getPagePathByHandle(page.handle),
             trackingParams: page.trackingParameters,
             term: term.current,
           });

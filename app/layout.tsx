@@ -86,7 +86,7 @@ export default function Layout() {
               contactPoint: {
                 '@type': 'ContactPoint',
                 contactType: 'customer service',
-                url: 'https://adamunderwater.com/pages/contact',
+                url: 'https://adamunderwater.com/contact',
               },
             }),
           }}

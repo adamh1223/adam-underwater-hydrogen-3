@@ -1,5 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {type MetaFunction} from '@remix-run/react';
+import type {LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {redirect} from '@shopify/remix-oxygen';
 import {
   Accordion,
   AccordionContent,
@@ -9,6 +11,7 @@ import {
 import {Card} from '~/components/ui/card';
 import FaqPageSkeleton from '~/components/skeletons/FaqPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
+import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 
 export const meta: MetaFunction = () => {
   const title = 'FAQ | Adam Underwater — Prints, Stock Footage & Underwater Photo Questions';
@@ -22,17 +25,27 @@ export const meta: MetaFunction = () => {
     {
       tagName: 'link',
       rel: 'canonical',
-      href: 'https://adamunderwater.com/pages/faq',
+      href: 'https://adamunderwater.com/faq',
     },
     {property: 'og:type', content: 'website'},
     {property: 'og:title', content: title},
     {property: 'og:description', content: description},
-    {property: 'og:url', content: 'https://adamunderwater.com/pages/faq'},
+    {property: 'og:url', content: 'https://adamunderwater.com/faq'},
     {name: 'twitter:card', content: 'summary_large_image'},
     {name: 'twitter:title', content: title},
     {name: 'twitter:description', content: description},
   ];
 };
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const redirectPath = getRedirectPathFromLegacyPagePath(url.pathname);
+  if (redirectPath) {
+    throw redirect(`${redirectPath}${url.search}`, 301);
+  }
+
+  return null;
+}
 
 const faq = () => {
   const [isPageReady, setIsPageReady] = useState(false);

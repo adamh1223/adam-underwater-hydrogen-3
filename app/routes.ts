@@ -16,6 +16,11 @@ export default hydrogenRoutes([
 
   // ✅ Everything else (normal pages)
   layout('./layout.tsx', [
+    route('about', './custom-routes/about.tsx'),
+    route('services', './custom-routes/services.tsx'),
+    route('work', './custom-routes/work.tsx'),
+    route('contact', './custom-routes/contact.tsx'),
+    route('faq', './custom-routes/faq.tsx'),
     route('prints', './custom-routes/prints.tsx'),
     route('stock', './custom-routes/stock.tsx'),
     ...(await flatRoutes()),
