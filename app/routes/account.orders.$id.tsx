@@ -1,5 +1,10 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, useFetcher, type MetaFunction, Link} from '@remix-run/react';
+import {
+  useLoaderData,
+  useFetcher,
+  type MetaFunction,
+  Link,
+} from '@remix-run/react';
 import {Money, flattenConnection} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
@@ -195,7 +200,9 @@ function getPickupStatusFromOrderEvents(
   return null;
 }
 
-function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string {
+function getDisplayFulfillmentStatus(
+  fulfillmentStatus?: string | null,
+): string {
   const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
   if (!normalizedStatus) return 'Preparing Shipment';
 
@@ -305,7 +312,9 @@ function isPickupOrderPurchaseMethod(
   return (
     source === 'shopify' &&
     title.length > 0 &&
-    (code === title || titleLooksLikeAddress || shippingRateHandle.includes('pickup'))
+    (code === title ||
+      titleLooksLikeAddress ||
+      shippingRateHandle.includes('pickup'))
   );
 }
 
@@ -351,10 +360,8 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const firstTrackingInfo = Array.isArray(trackingInfoRaw)
     ? trackingInfoRaw[0]
     : null;
-  const trackingNumber =
-    (firstTrackingInfo?.number as string | null) ?? null;
-  const trackingUrl =
-    (firstTrackingInfo?.url as string | null) ?? null;
+  const trackingNumber = (firstTrackingInfo?.number as string | null) ?? null;
+  const trackingUrl = (firstTrackingInfo?.url as string | null) ?? null;
   const upsTrackingHref = trackingNumber
     ? trackingUrl ||
       `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`
@@ -390,17 +397,23 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       query: ADMIN_ORDER_DETAIL_PICKUP_STATUS_QUERY,
       variables: {id: order.id},
     });
-    const eventMessages = Array.isArray(adminStatusResponse?.data?.node?.events?.nodes)
-      ? adminStatusResponse.data.node.events.nodes.map((eventNode) => eventNode?.message)
+    const eventMessages = Array.isArray(
+      adminStatusResponse?.data?.node?.events?.nodes,
+    )
+      ? adminStatusResponse.data.node.events.nodes.map(
+          (eventNode) => eventNode?.message,
+        )
       : [];
     pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
     const fallbackAdminStatus =
-      typeof adminStatusResponse?.data?.node?.displayFulfillmentStatus === 'string'
+      typeof adminStatusResponse?.data?.node?.displayFulfillmentStatus ===
+      'string'
         ? adminStatusResponse.data.node.displayFulfillmentStatus
         : null;
     adminFulfillmentStatus = pickupStatusFromEvents ?? fallbackAdminStatus;
     adminFinancialStatus =
-      typeof adminStatusResponse?.data?.node?.displayFinancialStatus === 'string'
+      typeof adminStatusResponse?.data?.node?.displayFinancialStatus ===
+      'string'
         ? adminStatusResponse.data.node.displayFinancialStatus
         : null;
     adminShippingLine = adminStatusResponse?.data?.node?.shippingLine ?? null;
@@ -511,7 +524,8 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     hasAnyEProducts,
   );
 
-  const effectiveFulfillmentStatus = adminFulfillmentStatus ?? fulfillmentStatus;
+  const effectiveFulfillmentStatus =
+    adminFulfillmentStatus ?? fulfillmentStatus;
 
   // Resolve fulfillment status based on order composition:
   // 1. E-product only → always "Delivered"
@@ -638,7 +652,8 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   // Collect unique print product IDs to check for existing reviews
   const printProductIds = new Set<string>();
   for (const lineItem of lineItems) {
-    const lineItemId = typeof (lineItem as any)?.id === 'string' ? (lineItem as any).id : '';
+    const lineItemId =
+      typeof (lineItem as any)?.id === 'string' ? (lineItem as any).id : '';
     const product = lineItemProductsByLineItemId[lineItemId];
     if (!product?.id) continue;
     const tags = Array.isArray(product.tags) ? product.tags : [];
@@ -720,8 +735,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       variables: {id: adminOrderIdForReturn},
     });
 
-    const fulfillments =
-      fulfillmentResult?.data?.order?.fulfillments ?? [];
+    const fulfillments = fulfillmentResult?.data?.order?.fulfillments ?? [];
     for (const fulfillment of fulfillments) {
       const nodes = fulfillment?.fulfillmentLineItems?.nodes ?? [];
       for (const node of nodes) {
@@ -737,7 +751,12 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     }
   } catch (error) {
     console.error('Failed to load fulfillment line items', error);
-    console.error('Order ID used:', order.id, '→ admin:', order.id.split('?')[0]);
+    console.error(
+      'Order ID used:',
+      order.id,
+      '→ admin:',
+      order.id.split('?')[0],
+    );
   }
 
   return {
@@ -790,9 +809,10 @@ export default function OrderRoute() {
       ),
     [customer?.reviewMediaDiscountReward?.value],
   );
-  const [reviewMediaDiscountReward, setReviewMediaDiscountReward] = useState<
-    ReviewMediaDiscountReward | null
-  >(initialReviewMediaDiscountReward);
+  const [reviewMediaDiscountReward, setReviewMediaDiscountReward] =
+    useState<ReviewMediaDiscountReward | null>(
+      initialReviewMediaDiscountReward,
+    );
 
   useEffect(() => {
     function handleResize() {
@@ -999,7 +1019,9 @@ export default function OrderRoute() {
                                   {discountPercentage ? (
                                     <span>-{discountPercentage}% OFF</span>
                                   ) : (
-                                    discountValue && <Money data={discountValue!} />
+                                    discountValue && (
+                                      <Money data={discountValue!} />
+                                    )
                                   )}
                                 </div>
                               </div>
@@ -1116,7 +1138,9 @@ export default function OrderRoute() {
                       <div className="grid grid-cols-2 gap-6 items-start">
                         <div className="min-w-0">
                           <h3 className="pb-3">
-                            {isPickupOrder ? 'Pickup Address:' : 'Shipping Address:'}
+                            {isPickupOrder
+                              ? 'Pickup Address:'
+                              : 'Shipping Address:'}
                           </h3>
                           {isPickupOrder ? (
                             <a
@@ -1287,7 +1311,11 @@ function ReturnRequestSection({
   orderName: string;
   fulfillmentLineItems: FulfillmentLineItemData[];
 }) {
-  const fetcher = useFetcher<{ok: boolean; error?: string; returnId?: string}>();
+  const fetcher = useFetcher<{
+    ok: boolean;
+    error?: string;
+    returnId?: string;
+  }>();
   const [selectedReason, setSelectedReason] = useState('');
   const [customerNote, setCustomerNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -1340,7 +1368,9 @@ function ReturnRequestSection({
     });
   };
 
-  const selectedItems = fulfillmentLineItems.filter((item) => checkedItems[item.id]);
+  const selectedItems = fulfillmentLineItems.filter(
+    (item) => checkedItems[item.id],
+  );
 
   const handleSubmit = () => {
     if (!selectedItems.length) {
@@ -1373,7 +1403,7 @@ function ReturnRequestSection({
   return (
     <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="return-request" className="!border rounded-md px-4">
-        <AccordionTrigger className="hover:no-underline">
+        <AccordionTrigger className="hover:no-underline cursor-pointer">
           <span className="font-medium">Request return</span>
         </AccordionTrigger>
         <AccordionContent>
@@ -1394,13 +1424,15 @@ function ReturnRequestSection({
                   return (
                     <div
                       key={item.id}
-                      className="rounded border p-2"
+                      className="rounded border p-2 cursor-pointer"
+                      onClick={() => toggleItem(item.id)}
                     >
                       <div className="flex items-center gap-3">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleItem(item.id)}
+                          onClick={(e) => e.stopPropagation()}
                           className="h-4 w-4 shrink-0 accent-primary cursor-pointer"
                         />
                         {item.imageUrl ? (
@@ -1428,13 +1460,20 @@ function ReturnRequestSection({
                         </div>
                       </div>
                       {isChecked && (
-                        <div className="flex items-center gap-2 mt-2 ml-7">
-                          <span className="text-xs text-muted-foreground">Quantity:</span>
+                        <div
+                          className="flex items-center gap-2 mt-2 ml-7"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="text-xs text-muted-foreground">
+                            Quantity:
+                          </span>
                           <button
                             type="button"
-                            onClick={() => adjustQuantity(item.id, -1, item.quantity)}
+                            onClick={() =>
+                              adjustQuantity(item.id, -1, item.quantity)
+                            }
                             disabled={qty <= 1}
-                            className="flex h-6 w-6 items-center justify-center rounded border border-input bg-background text-sm hover:bg-accent disabled:opacity-40"
+                            className="flex h-6 w-6 items-center justify-center rounded border border-input bg-background text-sm hover:bg-accent disabled:opacity-40 cursor-pointer"
                           >
                             −
                           </button>
@@ -1443,9 +1482,11 @@ function ReturnRequestSection({
                           </span>
                           <button
                             type="button"
-                            onClick={() => adjustQuantity(item.id, 1, item.quantity)}
+                            onClick={() =>
+                              adjustQuantity(item.id, 1, item.quantity)
+                            }
                             disabled={qty >= item.quantity}
-                            className="flex h-6 w-6 items-center justify-center rounded border border-input bg-background text-sm hover:bg-accent disabled:opacity-40"
+                            className="flex h-6 w-6 items-center justify-center rounded border border-input bg-background text-sm hover:bg-accent disabled:opacity-40 cursor-pointer"
                           >
                             +
                           </button>
@@ -1489,6 +1530,7 @@ function ReturnRequestSection({
                   onChange={(e) => setCustomerNote(e.target.value)}
                   maxLength={500}
                   rows={3}
+                  className="focus-visible:ring-0 focus-visible:border-primary focus-visible:shadow-[inset_0_0_0_1px_hsl(var(--primary))]"
                 />
               </div>
 
@@ -1500,7 +1542,9 @@ function ReturnRequestSection({
               <Button
                 variant="default"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !selectedReason || !selectedItems.length}
+                disabled={
+                  isSubmitting || !selectedReason || !selectedItems.length
+                }
               >
                 {isSubmitting ? 'Submitting...' : 'Request return'}
               </Button>
@@ -1779,9 +1823,7 @@ function OrderLineRow({
       {isPrint && lineItemProduct?.id && (
         <OrderLineReviewForm
           productId={lineItemProduct.id}
-          productName={
-            lineItemProduct.title ?? lineItem.title ?? 'Print'
-          }
+          productName={lineItemProduct.title ?? lineItem.title ?? 'Print'}
           customer={customer}
           existingReviews={reviewsByProductId[lineItemProduct.id] ?? []}
           onReviewsUpdate={onReviewsUpdate}
@@ -1821,17 +1863,15 @@ function OrderLineReviewForm({
   ) => void;
 }) {
   const customerId = customer?.id ?? undefined;
-  const customerName = [customer?.firstName, customer?.lastName]
-    .filter(Boolean)
-    .join(' ') || undefined;
+  const customerName =
+    [customer?.firstName, customer?.lastName].filter(Boolean).join(' ') ||
+    undefined;
   const customerState = customer?.defaultAddress?.zoneCode ?? undefined;
   const customerCountry = customer?.defaultAddress?.territoryCode ?? undefined;
 
   const userReviewExists = Boolean(
     customerId &&
-      existingReviews.some(
-        (review) => review.customerId === customerId,
-      ),
+    existingReviews.some((review) => review.customerId === customerId),
   );
 
   const handleReviewsUpdate = useCallback(
