@@ -58,6 +58,7 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     name
     statusPageUrl
     processedAt
+    financialStatus
     metafield (key: "test_links", namespace: "custom") {
       value
       type

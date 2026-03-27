@@ -837,6 +837,11 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
       return 'Stock Footage Delivered, Preparing Prints';
     case 'MIXED_PRINTS_SHIPPED':
       return 'Stock Footage Delivered, Prints Shipped';
+    case 'RETURN_IN_PROGRESS':
+    case 'RETURN_REQUESTED':
+      return 'Return in Progress';
+    case 'RETURNED':
+      return 'Returned';
     case 'CANCELLED':
       return 'Cancelled';
     case 'ERROR':
@@ -845,6 +850,28 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
       return 'There Was a Problem';
     default:
       return 'Preparing Shipment';
+  }
+}
+
+function getDisplayFinancialStatus(status?: string | null): string {
+  const s = (status ?? '').trim().toUpperCase();
+  switch (s) {
+    case 'PAID':
+      return 'Paid';
+    case 'PARTIALLY_REFUNDED':
+      return 'Partially Refunded';
+    case 'REFUNDED':
+      return 'Refunded';
+    case 'PENDING':
+      return 'Payment Pending';
+    case 'VOIDED':
+      return 'Voided';
+    case 'AUTHORIZED':
+      return 'Authorized';
+    case 'PARTIALLY_PAID':
+      return 'Partially Paid';
+    default:
+      return s || 'Paid';
   }
 }
 
@@ -942,7 +969,7 @@ function OrderItem({order}: {order: OrderItemFragment}) {
           <CardContent>
               <div className="flex items-end justify-between gap-4">
                 <div className="min-w-0">
-                  <p>{order.financialStatus}</p>
+                  <p>{getDisplayFinancialStatus(order.financialStatus)}</p>
                   <p className="cart-combined-savings-glow">
                     {displayFulfillmentStatus}
                   </p>

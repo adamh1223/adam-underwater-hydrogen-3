@@ -267,6 +267,11 @@ function getDisplayFulfillmentStatus(status: string | null): string {
       return 'Stock Footage Delivered, Preparing Prints';
     case 'MIXED_PRINTS_SHIPPED':
       return 'Stock Footage Delivered, Prints Shipped';
+    case 'RETURN_IN_PROGRESS':
+    case 'RETURN_REQUESTED':
+      return 'Return in Progress';
+    case 'RETURNED':
+      return 'Returned';
     case 'CANCELLED':
       return 'Cancelled';
     case 'ERROR':
@@ -278,19 +283,59 @@ function getDisplayFulfillmentStatus(status: string | null): string {
   }
 }
 
+function getDisplayFinancialStatus(status: string | null): string {
+  const s = (status ?? '').trim().toUpperCase();
+  switch (s) {
+    case 'PAID':
+      return 'Paid';
+    case 'PARTIALLY_REFUNDED':
+      return 'Partially Refunded';
+    case 'REFUNDED':
+      return 'Refunded';
+    case 'PENDING':
+      return 'Payment Pending';
+    case 'VOIDED':
+      return 'Voided';
+    case 'AUTHORIZED':
+      return 'Authorized';
+    case 'PARTIALLY_PAID':
+      return 'Partially Paid';
+    default:
+      return s || 'Paid';
+  }
+}
+
 function getOrderStatusNotificationContent(
   orderNumber: number | null | undefined,
   fulfillmentStatus: string | null,
   isNewOrder: boolean,
+  financialStatus?: string | null,
+  previousFinancialStatus?: string | null,
 ): {title: string; message: string} {
   const orderLabel = `Order #${orderNumber ?? ''}`;
   const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
+  const normalizedFinancial = (financialStatus ?? '').trim().toUpperCase();
+  const normalizedPrevFinancial = (previousFinancialStatus ?? '').trim().toUpperCase();
 
   if (isNewOrder) {
     return {
       title: `${orderLabel} placed`,
       message:
         'We are processing your order. You will receive an email when it ships. Please allow 3-7 business days to ship.',
+    };
+  }
+
+  // Check if financial status changed to refunded
+  const becameRefunded =
+    (normalizedFinancial === 'REFUNDED' || normalizedFinancial === 'PARTIALLY_REFUNDED') &&
+    normalizedPrevFinancial !== normalizedFinancial;
+
+  if (becameRefunded) {
+    const refundLabel = normalizedFinancial === 'PARTIALLY_REFUNDED' ? 'partially refunded' : 'refunded';
+    return {
+      title: `${orderLabel} ${refundLabel}`,
+      message:
+        'Your refund has been approved. Please allow 7-10 business days for the refund to appear on your original form of payment.',
     };
   }
 
@@ -334,6 +379,17 @@ function getOrderStatusNotificationContent(
       return {
         title: `${orderLabel} picked up`,
         message: 'Your order has been picked up.',
+      };
+    case 'RETURN_IN_PROGRESS':
+    case 'RETURN_REQUESTED':
+      return {
+        title: `${orderLabel} return in progress`,
+        message: 'Your return request is being processed.',
+      };
+    case 'RETURNED':
+      return {
+        title: `${orderLabel} returned`,
+        message: 'Your return has been completed.',
       };
     case 'CANCELLED':
       return {
@@ -559,6 +615,8 @@ export async function syncCustomerNotifications(
           orderNumber,
           fulfillmentStatus,
           isNewOrder,
+          financialStatus,
+          prevSnapshot?.financialStatus ?? null,
         );
       notifications.push({
         id: createNotificationId(),

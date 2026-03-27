@@ -1,13 +1,22 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
+import {useLoaderData, useFetcher, type MetaFunction, Link} from '@remix-run/react';
 import {Money, flattenConnection} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'customer-accountapi.generated';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 import {Card, CardContent} from '~/components/ui/card';
 import {Button} from '~/components/ui/button';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '~/components/ui/accordion';
+import {Label} from '~/components/ui/label';
+import {Textarea} from '~/components/ui/textarea';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowLeft} from 'lucide-react';
+import {toast} from 'sonner';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {ProductCarousel} from '~/components/products/productCarousel';
@@ -108,6 +117,7 @@ const ADMIN_ORDER_DETAIL_PICKUP_STATUS_QUERY = `#graphql
       ... on Order {
         id
         displayFulfillmentStatus
+        displayFinancialStatus
         shippingLine {
           title
           code
@@ -123,6 +133,39 @@ const ADMIN_ORDER_DETAIL_PICKUP_STATUS_QUERY = `#graphql
     }
   }
 ` as const;
+
+const ADMIN_ORDER_FULFILLMENT_LINE_ITEMS_QUERY = `#graphql
+  query AdminOrderFulfillmentLineItems($id: ID!) {
+    order(id: $id) {
+      id
+      fulfillments(first: 5) {
+        id
+        fulfillmentLineItems(first: 50) {
+          nodes {
+            id
+            quantity
+            lineItem {
+              name
+              image {
+                url
+                altText
+              }
+              variantTitle
+            }
+          }
+        }
+      }
+    }
+  }
+` as const;
+
+type FulfillmentLineItemData = {
+  id: string;
+  quantity: number;
+  title: string;
+  variantTitle: string | null;
+  imageUrl: string | null;
+};
 
 const ACCOUNT_LOGGED_IN_PROMISE = Promise.resolve(true);
 type LineItemSelectedOption = {name: string; value: string};
@@ -194,6 +237,11 @@ function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string 
       return 'Stock Footage Delivered, Preparing Prints';
     case 'MIXED_PRINTS_SHIPPED':
       return 'Stock Footage Delivered, Prints Shipped';
+    case 'RETURN_IN_PROGRESS':
+    case 'RETURN_REQUESTED':
+      return 'Return in Progress';
+    case 'RETURNED':
+      return 'Returned';
     case 'CANCELLED':
       return 'Cancelled';
     case 'ERROR':
@@ -312,6 +360,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`
     : null;
   let adminFulfillmentStatus: string | null = null;
+  let adminFinancialStatus: string | null = null;
   let pickupStatusFromEvents: string | null = null;
   let adminShippingLine: {
     title?: string | null;
@@ -324,6 +373,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       data?: {
         node?: {
           displayFulfillmentStatus?: string | null;
+          displayFinancialStatus?: string | null;
           shippingLine?: {
             title?: string | null;
             code?: string | null;
@@ -349,6 +399,10 @@ export async function loader({params, context}: LoaderFunctionArgs) {
         ? adminStatusResponse.data.node.displayFulfillmentStatus
         : null;
     adminFulfillmentStatus = pickupStatusFromEvents ?? fallbackAdminStatus;
+    adminFinancialStatus =
+      typeof adminStatusResponse?.data?.node?.displayFinancialStatus === 'string'
+        ? adminStatusResponse.data.node.displayFinancialStatus
+        : null;
     adminShippingLine = adminStatusResponse?.data?.node?.shippingLine ?? null;
   } catch {
     adminFulfillmentStatus = null;
@@ -484,9 +538,22 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   } else {
     resolvedFulfillmentStatus = effectiveFulfillmentStatus;
   }
-  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
-    resolvedFulfillmentStatus,
-  );
+  // Check if order has been refunded — Admin API financial status takes priority
+  // Admin API displayFinancialStatus has values like: PAID, PENDING, REFUNDED,
+  // PARTIALLY_REFUNDED, PARTIALLY_PAID, VOIDED, AUTHORIZED, REFUND_PENDING
+  const normalizedFinancial = (adminFinancialStatus ?? '').trim().toUpperCase();
+  let displayFulfillmentStatus: string;
+  if (normalizedFinancial === 'REFUNDED') {
+    displayFulfillmentStatus = 'Refunded';
+  } else if (normalizedFinancial === 'PARTIALLY_REFUNDED') {
+    displayFulfillmentStatus = 'Partially Refunded';
+  } else if (normalizedFinancial === 'REFUND_PENDING') {
+    displayFulfillmentStatus = 'Refund Pending';
+  } else {
+    displayFulfillmentStatus = getDisplayFulfillmentStatus(
+      resolvedFulfillmentStatus,
+    );
+  }
 
   const lineItemProductsByLineItemId = lineItems.reduce<Record<string, any>>(
     (acc, lineItem: any) => {
@@ -623,6 +690,56 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     await Promise.all(reviewQueries);
   }
 
+  // Fetch fulfillment line items for return requests
+  let fulfillmentLineItems: FulfillmentLineItemData[] = [];
+  try {
+    // Strip ?key=... from Customer Account API order ID for Admin API
+    const adminOrderIdForReturn = order.id.split('?')[0];
+    const fulfillmentResult = await adminGraphql<{
+      data?: {
+        order?: {
+          fulfillments?: Array<{
+            id?: string;
+            fulfillmentLineItems?: {
+              nodes?: Array<{
+                id?: string;
+                quantity?: number;
+                lineItem?: {
+                  name?: string;
+                  image?: {url?: string; altText?: string | null} | null;
+                  variantTitle?: string | null;
+                };
+              }> | null;
+            } | null;
+          }> | null;
+        } | null;
+      };
+    }>({
+      env: context.env,
+      query: ADMIN_ORDER_FULFILLMENT_LINE_ITEMS_QUERY,
+      variables: {id: adminOrderIdForReturn},
+    });
+
+    const fulfillments =
+      fulfillmentResult?.data?.order?.fulfillments ?? [];
+    for (const fulfillment of fulfillments) {
+      const nodes = fulfillment?.fulfillmentLineItems?.nodes ?? [];
+      for (const node of nodes) {
+        if (!node?.id) continue;
+        fulfillmentLineItems.push({
+          id: node.id,
+          quantity: node.quantity ?? 1,
+          title: node.lineItem?.name ?? '',
+          variantTitle: node.lineItem?.variantTitle ?? null,
+          imageUrl: node.lineItem?.image?.url ?? null,
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load fulfillment line items', error);
+    console.error('Order ID used:', order.id, '→ admin:', order.id.split('?')[0]);
+  }
+
   return {
     order,
     lineItems,
@@ -639,6 +756,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     trackingNumber,
     trackingUrl,
     upsTrackingHref,
+    fulfillmentLineItems,
   };
 }
 
@@ -658,6 +776,7 @@ export default function OrderRoute() {
     lineItemSelectedOptionsByLineItemId,
     trackingNumber,
     upsTrackingHref,
+    fulfillmentLineItems,
   } = useLoaderData<typeof loader>();
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
@@ -937,12 +1056,12 @@ export default function OrderRoute() {
                           </div>
                         </Card>
                       </div>
-                      <div className="flex justify-end items-end">
-                        <Button variant="default" className="m-0 mt-5 lg:m-5">
-                          <Link to={order.statusPageUrl} rel="noreferrer">
-                            View Order Status →
-                          </Link>
-                        </Button>
+                      <div className="mt-5">
+                        <ReturnRequestSection
+                          orderId={order.id}
+                          orderName={order.name}
+                          fulfillmentLineItems={fulfillmentLineItems}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1131,12 +1250,12 @@ export default function OrderRoute() {
                       </div>
                     </Card>
                   </div>
-                  <div className="flex justify-end items-end">
-                    <Button variant="default" className="m-5">
-                      <Link to={order.statusPageUrl} rel="noreferrer">
-                        View Order Status →
-                      </Link>
-                    </Button>
+                  <div className="mx-3 mt-5 mb-3">
+                    <ReturnRequestSection
+                      orderId={order.id}
+                      orderName={order.name}
+                      fulfillmentLineItems={fulfillmentLineItems}
+                    />
                   </div>
                 </>
               )}
@@ -1145,6 +1264,251 @@ export default function OrderRoute() {
         </div>
       </div>
     </>
+  );
+}
+
+const RETURN_REASONS = [
+  {value: 'SIZE_TOO_SMALL', label: 'Size'},
+  {value: 'COLOR', label: 'Color'},
+  {value: 'STYLE', label: 'Style'},
+  {value: 'UNWANTED', label: 'Changed my mind'},
+  {value: 'NOT_AS_DESCRIBED', label: 'Item not as described'},
+  {value: 'WRONG_ITEM', label: 'Received the wrong item'},
+  {value: 'DEFECTIVE', label: 'Damaged or defective'},
+  {value: 'OTHER', label: 'Other'},
+];
+
+function ReturnRequestSection({
+  orderId,
+  orderName,
+  fulfillmentLineItems,
+}: {
+  orderId: string;
+  orderName: string;
+  fulfillmentLineItems: FulfillmentLineItemData[];
+}) {
+  const fetcher = useFetcher<{ok: boolean; error?: string; returnId?: string}>();
+  const [selectedReason, setSelectedReason] = useState('');
+  const [customerNote, setCustomerNote] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const handledRef = useRef(false);
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+
+  const isSubmitting = fetcher.state !== 'idle';
+
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data || handledRef.current) return;
+    handledRef.current = true;
+
+    if (fetcher.data.ok) {
+      setSubmitted(true);
+      toast.success('Return request submitted');
+    } else if (fetcher.data.error) {
+      toast.error(fetcher.data.error);
+    }
+  }, [fetcher.state, fetcher.data]);
+
+  useEffect(() => {
+    if (fetcher.state === 'submitting') {
+      handledRef.current = false;
+    }
+  }, [fetcher.state]);
+
+  if (!fulfillmentLineItems.length) return null;
+
+  const toggleItem = (itemId: string) => {
+    setCheckedItems((prev) => {
+      const next = {...prev};
+      if (next[itemId]) {
+        delete next[itemId];
+      } else {
+        next[itemId] = true;
+        if (!quantities[itemId]) {
+          setQuantities((q) => ({...q, [itemId]: 1}));
+        }
+      }
+      return next;
+    });
+  };
+
+  const adjustQuantity = (itemId: string, delta: number, maxQty: number) => {
+    setQuantities((prev) => {
+      const current = prev[itemId] ?? 1;
+      const next = Math.max(1, Math.min(maxQty, current + delta));
+      return {...prev, [itemId]: next};
+    });
+  };
+
+  const selectedItems = fulfillmentLineItems.filter((item) => checkedItems[item.id]);
+
+  const handleSubmit = () => {
+    if (!selectedItems.length) {
+      toast.error('Please select at least one item to return.');
+      return;
+    }
+    if (!selectedReason) {
+      toast.error('Please select a reason for your return.');
+      return;
+    }
+
+    const form = new FormData();
+    form.append('orderId', orderId);
+    form.append('orderName', orderName);
+    form.append('reason', selectedReason);
+    form.append('customerNote', customerNote);
+    form.append(
+      'lineItems',
+      JSON.stringify(
+        selectedItems.map((item) => ({
+          fulfillmentLineItemId: item.id,
+          quantity: quantities[item.id] ?? 1,
+        })),
+      ),
+    );
+
+    fetcher.submit(form, {method: 'post', action: '/api/request_return'});
+  };
+
+  return (
+    <Accordion type="single" collapsible className="w-full">
+      <AccordionItem value="return-request" className="!border rounded-md px-4">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="font-medium">Request return</span>
+        </AccordionTrigger>
+        <AccordionContent>
+          {submitted ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Your return request has been submitted and is being reviewed.
+                We&apos;ll email you once it&apos;s been completed.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Line items with checkboxes */}
+              <div className="space-y-2">
+                {fulfillmentLineItems.map((item) => {
+                  const isChecked = !!checkedItems[item.id];
+                  const qty = quantities[item.id] ?? 1;
+                  return (
+                    <div
+                      key={item.id}
+                      className="rounded border p-2"
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleItem(item.id)}
+                          className="h-4 w-4 shrink-0 accent-primary cursor-pointer"
+                        />
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className="h-12 w-12 shrink-0 rounded object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 shrink-0 rounded bg-muted" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium line-clamp-1">
+                            {item.title}
+                          </p>
+                          {item.variantTitle ? (
+                            <p className="text-xs text-muted-foreground">
+                              {item.variantTitle}
+                            </p>
+                          ) : null}
+                          <p className="text-xs text-muted-foreground">
+                            Qty {item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                      {isChecked && (
+                        <div className="flex items-center gap-2 mt-2 ml-7">
+                          <span className="text-xs text-muted-foreground">Quantity:</span>
+                          <button
+                            type="button"
+                            onClick={() => adjustQuantity(item.id, -1, item.quantity)}
+                            disabled={qty <= 1}
+                            className="flex h-6 w-6 items-center justify-center rounded border border-input bg-background text-sm hover:bg-accent disabled:opacity-40"
+                          >
+                            −
+                          </button>
+                          <span className="w-6 text-center text-sm font-medium">
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => adjustQuantity(item.id, 1, item.quantity)}
+                            disabled={qty >= item.quantity}
+                            className="flex h-6 w-6 items-center justify-center rounded border border-input bg-background text-sm hover:bg-accent disabled:opacity-40"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Reason selector */}
+              <div className="space-y-2">
+                <Label htmlFor="return-reason">Reason for return</Label>
+                <select
+                  id="return-reason"
+                  value={selectedReason}
+                  onChange={(e) => setSelectedReason(e.target.value)}
+                  className="border-input bg-background placeholder:text-muted-foreground flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-primary focus-visible:shadow-[inset_0_0_0_1px_hsl(var(--primary))]"
+                >
+                  <option value="">Select a reason</option>
+                  {RETURN_REASONS.map((reason) => (
+                    <option key={reason.value} value={reason.value}>
+                      {reason.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Optional description */}
+              <div className="space-y-2">
+                <Label htmlFor="return-note">
+                  Description{' '}
+                  <span className="text-muted-foreground font-normal">
+                    (optional)
+                  </span>
+                </Label>
+                <Textarea
+                  id="return-note"
+                  placeholder="Tell us more about why you're returning this item..."
+                  value={customerNote}
+                  onChange={(e) => setCustomerNote(e.target.value)}
+                  maxLength={500}
+                  rows={3}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Return shipping not provided. You have to buy your own return
+                shipping label.
+              </p>
+
+              <Button
+                variant="default"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !selectedReason || !selectedItems.length}
+              >
+                {isSubmitting ? 'Submitting...' : 'Request return'}
+              </Button>
+            </div>
+          )}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
 
