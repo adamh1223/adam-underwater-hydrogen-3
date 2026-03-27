@@ -47,9 +47,18 @@ const CUSTOMER_NOTIFICATIONS_SYNC_QUERY = `
           number
           processedAt
           financialStatus
+          totalPrice {
+            amount
+            currencyCode
+          }
           fulfillments(first: 1) {
             nodes {
               status
+              trackingInformation {
+                company
+                number
+                url
+              }
             }
           }
           lineItems(first: 20) {
@@ -221,6 +230,130 @@ function sortByCreatedAtDesc(notifications: Notification[]) {
   return [...notifications].sort((a, b) =>
     b.createdAt.localeCompare(a.createdAt),
   );
+}
+
+function getDisplayFulfillmentStatus(status: string | null): string {
+  const s = (status ?? '').trim().toUpperCase();
+  if (!s) return 'Preparing Shipment';
+  switch (s) {
+    case 'SUCCESS':
+    case 'DELIVERED':
+      return 'Delivered';
+    case 'FULFILLED':
+      return 'Shipped';
+    case 'IN_TRANSIT':
+    case 'ON_ITS_WAY':
+      return 'In Transit';
+    case 'OUT_FOR_DELIVERY':
+      return 'Out for Delivery';
+    case 'ATTEMPTED_TO_DELIVER':
+      return 'Delivery Attempted';
+    case 'PARTIALLY_FULFILLED':
+      return 'Partially Shipped';
+    case 'MULTIPLE_SHIPMENTS':
+      return 'Shipped';
+    case 'OPEN':
+    case 'PENDING':
+    case 'UNFULFILLED':
+    case 'IN_PROGRESS':
+    case 'PREPARING_FOR_SHIPPING':
+    case 'CONFIRMED':
+      return 'Preparing Shipment';
+    case 'READY_FOR_PICKUP':
+      return 'Ready for pickup';
+    case 'PICKED_UP':
+      return 'Picked up in store';
+    case 'MIXED_PREPARING_PRINTS':
+      return 'Stock Footage Delivered, Preparing Prints';
+    case 'MIXED_PRINTS_SHIPPED':
+      return 'Stock Footage Delivered, Prints Shipped';
+    case 'CANCELLED':
+      return 'Cancelled';
+    case 'ERROR':
+    case 'FAILURE':
+    case 'THERE_WAS_A_PROBLEM':
+      return 'There Was a Problem';
+    default:
+      return 'Preparing Shipment';
+  }
+}
+
+function getOrderStatusNotificationContent(
+  orderNumber: number | null | undefined,
+  fulfillmentStatus: string | null,
+  isNewOrder: boolean,
+): {title: string; message: string} {
+  const orderLabel = `Order #${orderNumber ?? ''}`;
+  const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
+
+  if (isNewOrder) {
+    return {
+      title: `${orderLabel} placed`,
+      message:
+        'We are processing your order. You will receive an email when it ships. Please allow 3-7 business days to ship.',
+    };
+  }
+
+  switch (normalizedStatus) {
+    case 'FULFILLED':
+    case 'MULTIPLE_SHIPMENTS':
+      return {
+        title: `${orderLabel} shipped`,
+        message:
+          'Your order has been shipped. Check your email for tracking information.',
+      };
+    case 'IN_TRANSIT':
+    case 'ON_ITS_WAY':
+      return {
+        title: `${orderLabel} in transit`,
+        message: 'Your order is on its way.',
+      };
+    case 'OUT_FOR_DELIVERY':
+      return {
+        title: `${orderLabel} out for delivery`,
+        message: 'Your order is out for delivery.',
+      };
+    case 'SUCCESS':
+    case 'DELIVERED':
+      return {
+        title: `${orderLabel} delivered`,
+        message: 'Your order was delivered.',
+      };
+    case 'ATTEMPTED_TO_DELIVER':
+      return {
+        title: `${orderLabel} delivery attempted`,
+        message:
+          'A delivery attempt was made for your order. Please check your tracking information.',
+      };
+    case 'READY_FOR_PICKUP':
+      return {
+        title: `${orderLabel} ready for pickup`,
+        message: 'Your order is ready for pickup.',
+      };
+    case 'PICKED_UP':
+      return {
+        title: `${orderLabel} picked up`,
+        message: 'Your order has been picked up.',
+      };
+    case 'CANCELLED':
+      return {
+        title: `${orderLabel} cancelled`,
+        message: 'Your order has been cancelled.',
+      };
+    case 'ERROR':
+    case 'FAILURE':
+    case 'THERE_WAS_A_PROBLEM':
+      return {
+        title: `${orderLabel} updated`,
+        message:
+          'There was a problem with your order. Please contact us for assistance.',
+      };
+    default:
+      return {
+        title: `${orderLabel} updated`,
+        message: `Your order status has been updated to ${getDisplayFulfillmentStatus(fulfillmentStatus)}.`,
+      };
+  }
 }
 
 type RecommendationCategory = 'Prints' | 'Video';
@@ -401,28 +534,37 @@ export async function syncCustomerNotifications(
     const fulfillmentStatus =
       (order.fulfillments?.nodes?.[0]?.status as string | null) ?? null;
 
+    const totalPriceAmount = order.totalPrice?.amount as string | null | undefined;
+    const totalPriceCurrencyCode = order.totalPrice?.currencyCode as string | null | undefined;
+    const trackingInfo = order.fulfillments?.nodes?.[0]?.trackingInformation;
+    const firstTracking = Array.isArray(trackingInfo) ? trackingInfo[0] : null;
+    const trackingNumber = (firstTracking?.number as string | null) ?? null;
+    const trackingUrl = (firstTracking?.url as string | null) ?? null;
     const prevSnapshot = nextState.orderStatusSnapshot?.[orderId];
     const nextSnapshot = {financialStatus, fulfillmentStatus};
+    const isNewOrder = !prevSnapshot;
+    const statusChanged =
+      prevSnapshot &&
+      (prevSnapshot.financialStatus !== financialStatus ||
+        prevSnapshot.fulfillmentStatus !== fulfillmentStatus);
 
-    if (
-      !prevSnapshot ||
-      prevSnapshot.financialStatus !== financialStatus ||
-      prevSnapshot.fulfillmentStatus !== fulfillmentStatus
-    ) {
+    if (isNewOrder || statusChanged) {
       didUpdateOrderSnapshot = true;
     }
 
-    if (
-      prevSnapshot &&
-      (prevSnapshot.financialStatus !== financialStatus ||
-        prevSnapshot.fulfillmentStatus !== fulfillmentStatus)
-    ) {
+    if (isNewOrder || statusChanged) {
       const orderIdParam = encodeURIComponent(btoa(orderId));
+      const {title: statusTitle, message: statusMessage} =
+        getOrderStatusNotificationContent(
+          orderNumber,
+          fulfillmentStatus,
+          isNewOrder,
+        );
       notifications.push({
         id: createNotificationId(),
         type: 'order_status',
-        title: `Order #${orderNumber ?? ''} updated`,
-        message: `Your order status has changed. Click to view your order.`,
+        title: statusTitle,
+        message: statusMessage,
         createdAt: new Date().toISOString(),
         readAt: null,
         href: `/account/orders/${orderIdParam}`,
@@ -430,7 +572,14 @@ export async function syncCustomerNotifications(
           orderId,
           orderNumber,
           processedAt,
-          previous: prevSnapshot,
+          financialStatus,
+          fulfillmentStatus,
+          displayFulfillmentStatus: getDisplayFulfillmentStatus(fulfillmentStatus),
+          totalPriceAmount: totalPriceAmount ?? null,
+          totalPriceCurrencyCode: totalPriceCurrencyCode ?? null,
+          trackingNumber,
+          trackingUrl,
+          previous: prevSnapshot ?? null,
           next: nextSnapshot,
         },
       });

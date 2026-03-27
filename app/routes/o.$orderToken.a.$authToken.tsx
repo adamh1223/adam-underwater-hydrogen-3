@@ -289,8 +289,7 @@ async function findOrderIdByToken(
   // Build customer display name from first/last name
   const firstName = match.customer?.first_name?.trim() ?? '';
   const lastName = match.customer?.last_name?.trim() ?? '';
-  const customerName =
-    [firstName, lastName].filter(Boolean).join(' ') || null;
+  const customerName = [firstName, lastName].filter(Boolean).join(' ') || null;
 
   return {orderGid, customerId, customerName};
 }
@@ -406,7 +405,9 @@ function getPickupStatusFromOrderEvents(
   return null;
 }
 
-function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string {
+function getDisplayFulfillmentStatus(
+  fulfillmentStatus?: string | null,
+): string {
   const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
   if (!normalizedStatus) return 'Preparing Shipment';
 
@@ -512,7 +513,11 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     throw new Response('Order not found', {status: 404});
   }
 
-  const {orderGid, customerId: restCustomerId, customerName: restCustomerName} = orderLookup;
+  const {
+    orderGid,
+    customerId: restCustomerId,
+    customerName: restCustomerName,
+  } = orderLookup;
 
   // If the user is already logged in, redirect to the real account order page
   let isLoggedIn = false;
@@ -727,8 +732,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
               });
               return {
                 productId,
-                reviewsJson:
-                  res?.data?.product?.metafield?.value ?? null,
+                reviewsJson: res?.data?.product?.metafield?.value ?? null,
               };
             } catch {
               return {productId, reviewsJson: null as string | null};
@@ -738,10 +742,8 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       ]);
 
       // Parse customer reward metafield
-      const rewardValue =
-        customerDataResult?.data?.customer?.metafield?.value;
-      reviewMediaDiscountReward =
-        parseReviewMediaDiscountReward(rewardValue);
+      const rewardValue = customerDataResult?.data?.customer?.metafield?.value;
+      reviewMediaDiscountReward = parseReviewMediaDiscountReward(rewardValue);
 
       // Check discount code usage across customer's orders
       if (reviewMediaDiscountReward) {
@@ -751,8 +753,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
         const hasUsed = orderNodes.some((o) =>
           (o?.discountCodes ?? []).some(
             (code) =>
-              typeof code === 'string' &&
-              code.toLowerCase() === targetCode,
+              typeof code === 'string' && code.toLowerCase() === targetCode,
           ),
         );
         discountUsesRemaining = hasUsed ? 0 : 1;
@@ -767,9 +768,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
         try {
           const reviews = JSON.parse(reviewsJson);
           userReviewExistsByProductId[productId] = Array.isArray(reviews)
-            ? reviews.some(
-                (r: any) => r.customerId === orderCustomerId,
-              )
+            ? reviews.some((r: any) => r.customerId === orderCustomerId)
             : false;
         } catch {
           userReviewExistsByProductId[productId] = false;
@@ -903,7 +902,6 @@ export default function OrderTokenStatusPage() {
   return (
     <>
       <div>
-        
         <div className="mx-3 mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
           <Button asChild variant="secondary" className="self-center gap-2">
             <Link to={signInUrl}>
@@ -950,8 +948,15 @@ export default function OrderTokenStatusPage() {
                                 orderCustomerId={orderCustomerId}
                                 orderCustomerName={orderCustomerName}
                                 currentReviewReward={currentReviewReward}
-                                discountUsesRemaining={discountUsesRemaining as number | null}
-                                userReviewExistsByProductId={userReviewExistsByProductId as Record<string, boolean>}
+                                discountUsesRemaining={
+                                  discountUsesRemaining as number | null
+                                }
+                                userReviewExistsByProductId={
+                                  userReviewExistsByProductId as Record<
+                                    string,
+                                    boolean
+                                  >
+                                }
                                 onReviewRewardChange={setCurrentReviewReward}
                               />
                             ))}
@@ -979,8 +984,15 @@ export default function OrderTokenStatusPage() {
                                 orderCustomerId={orderCustomerId}
                                 orderCustomerName={orderCustomerName}
                                 currentReviewReward={currentReviewReward}
-                                discountUsesRemaining={discountUsesRemaining as number | null}
-                                userReviewExistsByProductId={userReviewExistsByProductId as Record<string, boolean>}
+                                discountUsesRemaining={
+                                  discountUsesRemaining as number | null
+                                }
+                                userReviewExistsByProductId={
+                                  userReviewExistsByProductId as Record<
+                                    string,
+                                    boolean
+                                  >
+                                }
                                 onReviewRewardChange={setCurrentReviewReward}
                               />
                             </Card>
@@ -1097,10 +1109,7 @@ export default function OrderTokenStatusPage() {
                     <div className="table">
                       <div className="tbody">
                         {lineItems.map((lineItem, index) => (
-                          <Card
-                            key={lineItem.id ?? index}
-                            className="p-3 mb-3"
-                          >
+                          <Card key={lineItem.id ?? index} className="p-3 mb-3">
                             <TokenOrderLineRow
                               lineItem={lineItem}
                               hasDownload={
@@ -1119,8 +1128,15 @@ export default function OrderTokenStatusPage() {
                               orderCustomerId={orderCustomerId}
                               orderCustomerName={orderCustomerName}
                               currentReviewReward={currentReviewReward}
-                              discountUsesRemaining={discountUsesRemaining as number | null}
-                              userReviewExistsByProductId={userReviewExistsByProductId as Record<string, boolean>}
+                              discountUsesRemaining={
+                                discountUsesRemaining as number | null
+                              }
+                              userReviewExistsByProductId={
+                                userReviewExistsByProductId as Record<
+                                  string,
+                                  boolean
+                                >
+                              }
                               onReviewRewardChange={setCurrentReviewReward}
                             />
                           </Card>
@@ -1305,9 +1321,7 @@ function TokenOrderLineRow({
   const isStockClip = hasTypeFromTags ? isStockClipFromTags : !isPrintFromImage;
   const isPrint = hasTypeFromTags ? isPrintFromTags : isPrintFromImage;
 
-  const originalAmount = parseFloat(
-    lineItem.originalTotalSet.shopMoney.amount,
-  );
+  const originalAmount = parseFloat(lineItem.originalTotalSet.shopMoney.amount);
   const discountedAmount = parseFloat(
     lineItem.discountedTotalSet.shopMoney.amount,
   );
@@ -1355,7 +1369,7 @@ function TokenOrderLineRow({
       <div className="td pb-2">
         <div className="">
           {lineItemProduct && isPrint ? (
-            <div className="mx-auto max-w-[900px]">
+            <div className="mx-auto max-w-[800px]">
               <ProductCarousel
                 product={lineItemProduct}
                 layout="list"
@@ -1367,7 +1381,7 @@ function TokenOrderLineRow({
           ) : null}
 
           {lineItemProduct && isStockClip ? (
-            <div className="mx-auto max-w-[900px]">
+            <div className="mx-auto max-w-[800px]">
               <EProductsContainer
                 product={lineItemProduct}
                 layout="list"
@@ -1496,9 +1510,7 @@ function TokenOrderLineRow({
         <div className="border-t border-primary/20">
           <ReviewForm
             productId={lineItemProduct.id}
-            productName={
-              lineItemProduct.title ?? lineItem.title ?? 'Print'
-            }
+            productName={lineItemProduct.title ?? lineItem.title ?? 'Print'}
             customerId={orderCustomerId ?? undefined}
             customerName={orderCustomerName ?? undefined}
             userReviewExists={

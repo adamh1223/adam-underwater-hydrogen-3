@@ -5,6 +5,13 @@ import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import {ArrowRight, ChevronUp} from 'lucide-react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {Button} from '~/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from '~/components/ui/card';
+import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
+import {navigateWithCardSplash} from '~/lib/cardNavigationSplash';
 import ReviewForm from '~/components/form/ReviewForm';
 import {ProductCarousel} from '~/components/products/productCarousel';
 import EProductsContainer from '~/components/eproducts/EProductsContainer';
@@ -409,6 +416,170 @@ function RecommendationsGrid({
           />
         );
       })}
+    </div>
+  );
+}
+
+function NotificationOrderCard({
+  notification,
+}: {
+  notification: Notification;
+}) {
+  const navigate = useNavigate();
+  const payload = notification.payload;
+  const orderNumber = payload?.orderNumber as number | null | undefined;
+  const processedAt = payload?.processedAt as string | null | undefined;
+  const financialStatus = payload?.financialStatus as string | null | undefined;
+  const displayFulfillmentStatus = payload?.displayFulfillmentStatus as
+    | string
+    | null
+    | undefined;
+  const totalPriceAmount = payload?.totalPriceAmount as
+    | string
+    | null
+    | undefined;
+  const totalPriceCurrencyCode = payload?.totalPriceCurrencyCode as
+    | string
+    | null
+    | undefined;
+  const trackingNumber = payload?.trackingNumber as string | null | undefined;
+  const trackingUrl = payload?.trackingUrl as string | null | undefined;
+  const upsTrackingHref = trackingNumber
+    ? trackingUrl ||
+      `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`
+    : null;
+  const href = notification.href;
+
+  const touchCardId = `notif-order-card:${notification.id}`;
+  const {isTouchHighlighted, touchHighlightHandlers} =
+    useTouchCardHighlight(touchCardId);
+  const touchCardEffects =
+    'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
+
+  const navigateToOrderWithSplash = (
+    cardElement: HTMLElement | null | undefined,
+  ) => {
+    if (!href) return;
+    navigateWithCardSplash({
+      card: cardElement,
+      navigate: () => navigate(href),
+    });
+  };
+
+  let dateLabel = '';
+  let timeLabel = '';
+  if (processedAt) {
+    const date = new Date(processedAt);
+    dateLabel = date.toLocaleDateString('en-US');
+    timeLabel = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
+
+  const hasTotalPrice = totalPriceAmount && totalPriceCurrencyCode;
+
+  return (
+    <div className="h-full">
+      <fieldset className="h-full">
+        <Card
+          className={`h-full cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-primary hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] active:border-primary active:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] focus-within:border-primary focus-within:shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)] ${isTouchHighlighted ? touchCardEffects : ''}`}
+          style={{touchAction: 'pan-y'}}
+          data-touch-highlight-card-id={touchCardId}
+          {...touchHighlightHandlers}
+          role="link"
+          tabIndex={0}
+          onClick={(event) => {
+            navigateToOrderWithSplash(event.currentTarget);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              navigateToOrderWithSplash(event.currentTarget);
+            }
+          }}
+        >
+          <CardHeader>
+            {href ? (
+              <Link
+                to={href}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  const cardElement =
+                    event.currentTarget.closest<HTMLElement>(
+                      '[data-slot="card"]',
+                    );
+                  navigateToOrderWithSplash(cardElement);
+                }}
+              >
+                <strong>Order#: {orderNumber ?? ''}</strong>
+              </Link>
+            ) : (
+              <strong>Order#: {orderNumber ?? ''}</strong>
+            )}
+            {processedAt ? (
+              <div className="text-muted-foreground text-sm flex items-center gap-2">
+                <span>{dateLabel}</span>
+                <span>{timeLabel}</span>
+              </div>
+            ) : null}
+          </CardHeader>
+
+          <CardContent>
+            <div className="flex items-end justify-between gap-4">
+              <div className="min-w-0">
+                {financialStatus ? <p>{financialStatus}</p> : null}
+                {displayFulfillmentStatus ? (
+                  <p className="cart-combined-savings-glow">
+                    {displayFulfillmentStatus}
+                  </p>
+                ) : null}
+                {hasTotalPrice ? (
+                  <p>
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: totalPriceCurrencyCode,
+                    }).format(Number(totalPriceAmount))}
+                  </p>
+                ) : null}
+              </div>
+              <div className="shrink-0">
+                <Button
+                  variant="default"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    const cardElement =
+                      event.currentTarget.closest<HTMLElement>(
+                        '[data-slot="card"]',
+                      );
+                    navigateToOrderWithSplash(cardElement);
+                  }}
+                >
+                  View Order →
+                </Button>
+              </div>
+            </div>
+            {trackingNumber && upsTrackingHref ? (
+              <div className="mt-3 pt-3 border-t border-input">
+                <p className="text-sm">
+                  Tracking number:{' '}
+                  <a
+                    href={upsTrackingHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary hover:underline"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    {trackingNumber}
+                  </a>
+                </p>
+                <p className="text-sm text-muted-foreground">UPS Ground</p>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      </fieldset>
     </div>
   );
 }
@@ -875,9 +1046,7 @@ function NotificationDetail({
       )}
 
       {notification.type === 'order_status' && notification.href && (
-        <Button asChild variant="default">
-          <Link to={notification.href}>View order →</Link>
-        </Button>
+        <NotificationOrderCard notification={notification} />
       )}
 
       {notification.type === 'recommendations' &&

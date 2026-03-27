@@ -224,7 +224,7 @@ function ReviewsSkeleton() {
       </section>
 
       <section className="mt-6 px-4">
-        <div className="mx-auto max-w-[900px] rounded-xl border border-border p-6">
+        <div className="mx-auto max-w-[800px] rounded-xl border border-border p-6">
           <Skeleton className="mx-auto h-8 w-[240px] rounded-md" />
           <div className="mt-6 flex justify-center gap-2">
             {Array.from({length: 5}, (_, index) => (

@@ -296,9 +296,21 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const lineItems = flattenConnection(order.lineItems);
   const discountApplications = flattenConnection(order.discountApplications);
 
-  const fulfillmentStatus =
-    //@ts-expect-error order is any
-    flattenConnection(order.fulfillments)[0]?.status ?? 'N/A';
+  //@ts-expect-error order is any
+  const firstFulfillment = flattenConnection(order.fulfillments)[0];
+  const fulfillmentStatus = firstFulfillment?.status ?? 'N/A';
+  const trackingInfoRaw = (firstFulfillment as any)?.trackingInformation;
+  const firstTrackingInfo = Array.isArray(trackingInfoRaw)
+    ? trackingInfoRaw[0]
+    : null;
+  const trackingNumber =
+    (firstTrackingInfo?.number as string | null) ?? null;
+  const trackingUrl =
+    (firstTrackingInfo?.url as string | null) ?? null;
+  const upsTrackingHref = trackingNumber
+    ? trackingUrl ||
+      `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`
+    : null;
   let adminFulfillmentStatus: string | null = null;
   let pickupStatusFromEvents: string | null = null;
   let adminShippingLine: {
@@ -624,6 +636,9 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     lineItemSelectedOptionsByLineItemId,
     customer,
     existingReviewsByProductId,
+    trackingNumber,
+    trackingUrl,
+    upsTrackingHref,
   };
 }
 
@@ -641,6 +656,8 @@ export default function OrderRoute() {
     existingReviewsByProductId: initialReviewsByProductId,
     lineItemProductsByLineItemId,
     lineItemSelectedOptionsByLineItemId,
+    trackingNumber,
+    upsTrackingHref,
   } = useLoaderData<typeof loader>();
 
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
@@ -824,6 +841,26 @@ export default function OrderRoute() {
                             </p>
                           </div>
                         </div>
+                        {trackingNumber && upsTrackingHref ? (
+                          <div className="border-t border-input mt-4 pt-4 flex justify-end">
+                            <div className="text-left">
+                              <p className="text-sm">
+                                Tracking number:{' '}
+                                <a
+                                  href={upsTrackingHref}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-semibold text-primary hover:underline"
+                                >
+                                  {trackingNumber}
+                                </a>
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                UPS Ground
+                              </p>
+                            </div>
+                          </div>
+                        ) : null}
                       </Card>
                       <div className="pt-3 totals flex justify-end items-end">
                         <Card className="grid grid-cols-1 w-full h-[60%] w-[50%] pe-6">
@@ -997,6 +1034,26 @@ export default function OrderRoute() {
                           </div>
                         </div>
                       </div>
+                      {trackingNumber && upsTrackingHref ? (
+                        <div className="border-t border-input mt-4 pt-4 flex justify-end">
+                          <div className="text-left">
+                            <p className="text-sm">
+                              Tracking number:{' '}
+                              <a
+                                href={upsTrackingHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold text-primary hover:underline"
+                              >
+                                {trackingNumber}
+                              </a>
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              UPS Ground
+                            </p>
+                          </div>
+                        </div>
+                      ) : null}
                     </Card>
                   </div>
                   <div className="pt-3 totals flex justify-end items-end">
@@ -1213,7 +1270,7 @@ function OrderLineRow({
       <div className="td pb-2">
         <div className="">
           {lineItemProduct && isPrint ? (
-            <div className="mx-auto max-w-[900px]">
+            <div className="mx-auto max-w-[800px]">
               <ProductCarousel
                 product={lineItemProduct}
                 layout="list"
@@ -1225,7 +1282,7 @@ function OrderLineRow({
           ) : null}
 
           {lineItemProduct && isStockClip ? (
-            <div className="mx-auto max-w-[900px]">
+            <div className="mx-auto max-w-[800px]">
               <EProductsContainer
                 product={lineItemProduct}
                 layout="list"

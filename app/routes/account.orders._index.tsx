@@ -867,7 +867,18 @@ function OrderItem({order}: {order: OrderItemFragment}) {
   );
   const touchCardEffects =
     'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
-  const fulfillmentStatus = flattenConnection(order.fulfillments)[0]?.status;
+  const firstFulfillment = flattenConnection(order.fulfillments)[0];
+  const fulfillmentStatus = firstFulfillment?.status;
+  const trackingInfo = (firstFulfillment as any)?.trackingInformation;
+  const firstTracking = (Array.isArray(trackingInfo) ? trackingInfo[0] : null) as
+    | {number?: string | null; url?: string | null}
+    | null;
+  const trackingNumber = firstTracking?.number ?? null;
+  const trackingUrl = firstTracking?.url ?? null;
+  const upsTrackingHref = trackingNumber
+    ? trackingUrl ||
+      `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`
+    : null;
   const adminFulfillmentStatus = (
     order as unknown as {adminFulfillmentStatus?: string | null}
   ).adminFulfillmentStatus;
@@ -952,6 +963,23 @@ function OrderItem({order}: {order: OrderItemFragment}) {
                 </Button>
               </div>
             </div>
+            {trackingNumber && upsTrackingHref ? (
+              <div className="mt-3 pt-3 border-t border-input">
+                <p className="text-sm">
+                  Tracking number:{' '}
+                  <a
+                    href={upsTrackingHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary hover:underline"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    {trackingNumber}
+                  </a>
+                </p>
+                <p className="text-sm text-muted-foreground">UPS Ground</p>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       </fieldset>

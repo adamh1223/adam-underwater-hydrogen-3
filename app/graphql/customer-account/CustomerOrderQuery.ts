@@ -67,6 +67,11 @@ export const CUSTOMER_ORDER_QUERY = `#graphql
     fulfillments(first: 1) {
       nodes {
         status
+        trackingInformation {
+          company
+          number
+          url
+        }
       }
     }
     totalTax {
