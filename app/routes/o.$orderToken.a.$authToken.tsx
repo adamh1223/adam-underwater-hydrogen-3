@@ -818,9 +818,16 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   } else {
     resolvedFulfillmentStatus = adminFulfillmentStatus;
   }
-  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
-    resolvedFulfillmentStatus,
-  );
+  const normalizedFinancialStatus = (order.displayFinancialStatus ?? '')
+    .trim()
+    .toUpperCase();
+  const displayFulfillmentStatus =
+    normalizedFinancialStatus === 'REFUNDED' ||
+    normalizedFinancialStatus === 'PARTIALLY_REFUNDED'
+      ? 'Refunded'
+      : normalizedFinancialStatus === 'REFUND_PENDING'
+        ? 'Refund Pending'
+        : getDisplayFulfillmentStatus(resolvedFulfillmentStatus);
 
   const accountOrderPath = `/account/orders/${encodedOrderId}`;
 

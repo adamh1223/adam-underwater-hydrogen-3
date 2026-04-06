@@ -555,12 +555,19 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   // Check if order has been refunded — Admin API financial status takes priority
   // Admin API displayFinancialStatus has values like: PAID, PENDING, REFUNDED,
   // PARTIALLY_REFUNDED, PARTIALLY_PAID, VOIDED, AUTHORIZED, REFUND_PENDING
-  const normalizedFinancial = (adminFinancialStatus ?? '').trim().toUpperCase();
+  const normalizedFinancial = (
+    adminFinancialStatus ??
+    order.financialStatus ??
+    ''
+  )
+    .trim()
+    .toUpperCase();
   let displayFulfillmentStatus: string;
-  if (normalizedFinancial === 'REFUNDED') {
+  if (
+    normalizedFinancial === 'REFUNDED' ||
+    normalizedFinancial === 'PARTIALLY_REFUNDED'
+  ) {
     displayFulfillmentStatus = 'Refunded';
-  } else if (normalizedFinancial === 'PARTIALLY_REFUNDED') {
-    displayFulfillmentStatus = 'Partially Refunded';
   } else if (normalizedFinancial === 'REFUND_PENDING') {
     displayFulfillmentStatus = 'Refund Pending';
   } else {

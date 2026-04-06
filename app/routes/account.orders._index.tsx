@@ -26,11 +26,7 @@ import type {
 import {Button} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
 import {Label} from '~/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from '~/components/ui/card';
+import {Card, CardContent, CardHeader} from '~/components/ui/card';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 import {navigateWithCardSplash} from '~/lib/cardNavigationSplash';
@@ -327,7 +323,8 @@ function getAdminOrderFulfillmentStatusMap(
     const eventMessages = Array.isArray(node?.events?.nodes)
       ? node.events!.nodes!.map((eventNode) => eventNode?.message)
       : [];
-    const pickupStatusFromEvents = getPickupStatusFromOrderEvents(eventMessages);
+    const pickupStatusFromEvents =
+      getPickupStatusFromOrderEvents(eventMessages);
 
     // For POS in-person sales, Shopify sets displayFulfillmentStatus to
     // FULFILLED without any pickup-specific event messages. Detect these by
@@ -376,7 +373,6 @@ export async function loader({request, context}: LoaderFunctionArgs) {
       },
     },
   );
-  
 
   if (errors?.length || !data?.customer) {
     return {customer: null, isLoggedIn};
@@ -405,9 +401,8 @@ export async function loader({request, context}: LoaderFunctionArgs) {
       const adminStatusNodes = Array.isArray(adminStatusResponse?.data?.nodes)
         ? adminStatusResponse.data.nodes
         : [];
-      const resolvedStatusMap = getAdminOrderFulfillmentStatusMap(
-        adminStatusNodes,
-      );
+      const resolvedStatusMap =
+        getAdminOrderFulfillmentStatusMap(adminStatusNodes);
 
       for (const [orderId, status] of resolvedStatusMap.entries()) {
         adminOrderStatusById.set(orderId, status);
@@ -472,7 +467,8 @@ export async function action({request, context}: ActionFunctionArgs) {
     return data<OrderLookupActionData>(
       {
         ok: false,
-        error: 'Please enter your email address or street address with your order number.',
+        error:
+          'Please enter your email address or street address with your order number.',
       },
       {status: 400},
     );
@@ -505,14 +501,20 @@ export async function action({request, context}: ActionFunctionArgs) {
     orderNodes = orderLookupResponse?.data?.orders?.nodes ?? [];
   } catch (error) {
     return data<OrderLookupActionData>(
-      {ok: false, error: 'Order lookup is unavailable right now. Please try again.'},
+      {
+        ok: false,
+        error: 'Order lookup is unavailable right now. Please try again.',
+      },
       {status: 500},
     );
   }
 
   const matchingOrder = orderNodes.find((order) => {
     const candidateOrderNumber = normalizeOrderNumber(order?.name ?? '');
-    if (!candidateOrderNumber || candidateOrderNumber !== normalizedOrderNumber) {
+    if (
+      !candidateOrderNumber ||
+      candidateOrderNumber !== normalizedOrderNumber
+    ) {
       return false;
     }
 
@@ -565,7 +567,10 @@ export async function action({request, context}: ActionFunctionArgs) {
         const message =
           userErrors[0]?.message?.trim() ||
           'Unable to assign this order to your account.';
-        return data<OrderLookupActionData>({ok: false, error: message}, {status: 400});
+        return data<OrderLookupActionData>(
+          {ok: false, error: message},
+          {status: 400},
+        );
       }
     } catch (error) {
       return data<OrderLookupActionData>(
@@ -722,7 +727,11 @@ export default function Orders() {
           )}
         </div>
         <div className="flex justify-center">
-          {orders.nodes.length ? <OrdersTable orders={orders} /> : <EmptyOrders />}
+          {orders.nodes.length ? (
+            <OrdersTable orders={orders} />
+          ) : (
+            <EmptyOrders />
+          )}
         </div>
       </section>
     </>
@@ -795,7 +804,9 @@ function EmptyOrders() {
   );
 }
 
-function getDisplayFulfillmentStatus(fulfillmentStatus?: string | null): string {
+function getDisplayFulfillmentStatus(
+  fulfillmentStatus?: string | null,
+): string {
   const normalizedStatus = (fulfillmentStatus ?? '').trim().toUpperCase();
   if (!normalizedStatus) return 'Preparing Shipment';
 
@@ -859,7 +870,7 @@ function getDisplayFinancialStatus(status?: string | null): string {
     case 'PAID':
       return 'Paid';
     case 'PARTIALLY_REFUNDED':
-      return 'Partially Refunded';
+      return 'Refunded';
     case 'REFUNDED':
       return 'Refunded';
     case 'PENDING':
@@ -873,6 +884,11 @@ function getDisplayFinancialStatus(status?: string | null): string {
     default:
       return s || 'Paid';
   }
+}
+
+function isRefundedLikeFinancialStatus(status?: string | null): boolean {
+  const s = (status ?? '').trim().toUpperCase();
+  return s === 'REFUNDED' || s === 'PARTIALLY_REFUNDED';
 }
 
 function getDisplayOrderProcessedAt(processedAt: string) {
@@ -889,17 +905,16 @@ function getDisplayOrderProcessedAt(processedAt: string) {
 function OrderItem({order}: {order: OrderItemFragment}) {
   const navigate = useNavigate();
   const touchCardId = `order-card:${String(order.id)}`;
-  const {isTouchHighlighted, touchHighlightHandlers} = useTouchCardHighlight(
-    touchCardId,
-  );
+  const {isTouchHighlighted, touchHighlightHandlers} =
+    useTouchCardHighlight(touchCardId);
   const touchCardEffects =
     'border-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.35)]';
   const firstFulfillment = flattenConnection(order.fulfillments)[0];
   const fulfillmentStatus = firstFulfillment?.status;
   const trackingInfo = (firstFulfillment as any)?.trackingInformation;
-  const firstTracking = (Array.isArray(trackingInfo) ? trackingInfo[0] : null) as
-    | {number?: string | null; url?: string | null}
-    | null;
+  const firstTracking = (
+    Array.isArray(trackingInfo) ? trackingInfo[0] : null
+  ) as {number?: string | null; url?: string | null} | null;
   const trackingNumber = firstTracking?.number ?? null;
   const trackingUrl = firstTracking?.url ?? null;
   const upsTrackingHref = trackingNumber
@@ -912,9 +927,20 @@ function OrderItem({order}: {order: OrderItemFragment}) {
   const orderLevelFulfillmentStatus = (
     order as unknown as {fulfillmentStatus?: string | null}
   ).fulfillmentStatus;
-  const displayFulfillmentStatus = getDisplayFulfillmentStatus(
-    adminFulfillmentStatus ?? fulfillmentStatus ?? orderLevelFulfillmentStatus,
-  );
+  const refundedStatusOverride = isRefundedLikeFinancialStatus(
+    order.financialStatus,
+  )
+    ? 'Refunded'
+    : null;
+  const displayFinancialStatus =
+    refundedStatusOverride ?? getDisplayFinancialStatus(order.financialStatus);
+  const displayFulfillmentStatus =
+    refundedStatusOverride ??
+    getDisplayFulfillmentStatus(
+      adminFulfillmentStatus ??
+        fulfillmentStatus ??
+        orderLevelFulfillmentStatus,
+    );
   const {dateLabel, timeLabel} = getDisplayOrderProcessedAt(order.processedAt);
   const orderPath = `/account/orders/${btoa(order.id)}`;
   const navigateToOrderWithSplash = (
@@ -952,9 +978,10 @@ function OrderItem({order}: {order: OrderItemFragment}) {
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                const cardElement = event.currentTarget.closest<HTMLElement>(
-                  '[data-slot="card"]',
-                );
+                const cardElement =
+                  event.currentTarget.closest<HTMLElement>(
+                    '[data-slot="card"]',
+                  );
                 navigateToOrderWithSplash(cardElement);
               }}
             >
@@ -967,22 +994,23 @@ function OrderItem({order}: {order: OrderItemFragment}) {
           </CardHeader>
 
           <CardContent>
-              <div className="flex items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <p>{getDisplayFinancialStatus(order.financialStatus)}</p>
-                  <p className="cart-combined-savings-glow">
-                    {displayFulfillmentStatus}
-                  </p>
-                  <Money data={order.totalPrice} />
-                </div>
+            <div className="flex items-end justify-between gap-4">
+              <div className="min-w-0">
+                <p>{displayFinancialStatus}</p>
+                <p className="cart-combined-savings-glow">
+                  {displayFulfillmentStatus}
+                </p>
+                <Money data={order.totalPrice} />
+              </div>
               <div className="shrink-0">
                 <Button
                   variant="default"
                   onClick={(event) => {
                     event.stopPropagation();
-                    const cardElement = event.currentTarget.closest<HTMLElement>(
-                      '[data-slot="card"]',
-                    );
+                    const cardElement =
+                      event.currentTarget.closest<HTMLElement>(
+                        '[data-slot="card"]',
+                      );
                     navigateToOrderWithSplash(cardElement);
                   }}
                 >
