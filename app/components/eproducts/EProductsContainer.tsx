@@ -25,6 +25,10 @@ import {
 import {toast} from 'sonner';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
 import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
+import {
+  formatDurationFromSeconds,
+  parseDisplayDurationFromTags,
+} from '~/lib/durationTags';
 import {useTouchCardHighlight} from '~/lib/touchCardHighlight';
 import {navigateWithCardSplash} from '~/lib/cardNavigationSplash';
 import type {CartPendingLinePreviewPayload} from '~/lib/cartPendingLine';
@@ -78,7 +82,12 @@ function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
       const clipIndex = Number(durationMatch[1]);
       const durationValue = durationMatch[2]?.trim();
       if (clipIndex > 0 && durationValue) {
-        durationByClip.set(clipIndex, durationValue);
+        // Allow shorthand bundle durations like d1-61 while preserving
+        // existing explicit values like "0:11".
+        const displayDuration = /^\d+$/.test(durationValue)
+          ? formatDurationFromSeconds(Number(durationValue))
+          : durationValue;
+        durationByClip.set(clipIndex, displayDuration);
       }
       return;
     }
@@ -352,9 +361,7 @@ function EProductsContainer({
   let locationState: string | undefined;
   let locationCountry: string | undefined;
 
-  const durationTag = product.tags
-    .find((t: string) => t?.startsWith?.('duration-'))
-    ?.split('-')[1];
+  const durationTag = parseDisplayDurationFromTags(product.tags);
   const isSlowmo = product.tags.includes('slowmo');
   const isArtistPick = product.tags.includes('artist-pick');
   const fallbackResolutionBadgeLabel =

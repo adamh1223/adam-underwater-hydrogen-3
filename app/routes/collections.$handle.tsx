@@ -71,6 +71,10 @@ import {
   getHandleFromCollectionPath,
   getRedirectPathFromLegacyCollectionPath,
 } from '~/lib/collectionPaths';
+import {
+  parseDurationSecondsFromTags,
+  parseDurationSecondsValue,
+} from '~/lib/durationTags';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const collection = data?.collection as
@@ -888,38 +892,8 @@ function StockFiltersPopover({
   );
 }
 
-/** Parse the numeric seconds from a product's duration tag (e.g. "10s" → 10). */
-function parseDurationSecondsValue(rawValue: string): number | null {
-  const trimmedValue = rawValue.trim();
-  if (!trimmedValue) return null;
-
-  // Supports formats like "9", "9s", "0:09", or "1:02:03".
-  const colonParts = trimmedValue.split(':').map((part) => part.trim());
-  if (
-    colonParts.length > 1 &&
-    colonParts.every((part) => /^\d+(?:\.\d+)?$/.test(part))
-  ) {
-    const totalSeconds = colonParts.reduce((accumulator, part) => {
-      return accumulator * 60 + Number(part);
-    }, 0);
-    return Number.isFinite(totalSeconds) ? totalSeconds : null;
-  }
-
-  const normalizedValue = trimmedValue
-    .replace(/\b(seconds?|secs?)\b/gi, '')
-    .replace(/s$/i, '')
-    .trim();
-  if (!/^\d+(?:\.\d+)?$/.test(normalizedValue)) return null;
-
-  const parsed = Number(normalizedValue);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 function parseDurationSeconds(product: {tags: string[]}): number | null {
-  const tag = product.tags.find((t) => t?.startsWith?.('duration-'));
-  if (!tag) return null;
-  const rawValue = tag.slice('duration-'.length).trim();
-  return parseDurationSecondsValue(rawValue);
+  return parseDurationSecondsFromTags(product.tags);
 }
 
 function getBundleClipDurations(tags: string[]): number[] {
