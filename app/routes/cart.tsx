@@ -17,10 +17,27 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import CartPageSkeleton from '~/components/skeletons/CartPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 import {REVIEW_MEDIA_DISCOUNT_CODE} from '~/lib/reviewMediaDiscountReward';
+import {
+  getAdminCustomerEmailDiscountUsage,
+  getCustomerDiscountUsage,
+  setCustomerWelcome15UsesRemainingMetafield,
+  WELCOME15_DISCOUNT_CODE,
+} from '~/lib/customerDiscountUsage.server';
 type VariantProductSummary = {
   productId: string;
   tags: string[];
 };
+
+const CUSTOMER_ID_QUERY = `#graphql
+  query CustomerIdQuery {
+    customer {
+      id
+      emailAddress {
+        emailAddress
+      }
+    }
+  }
+` as const;
 
 type IncomingLineWithPreloadHint = {
   merchandiseId?: unknown;
@@ -399,17 +416,21 @@ export async function action({request, context}: ActionFunctionArgs) {
     case CartForm.ACTIONS.DiscountCodesUpdate: {
       const formDiscountCode = inputs.discountCode;
 
-      // User inputted discount code
-      const discountCodes = (
-        formDiscountCode ? [formDiscountCode] : []
-      ) as string[];
-
-      // Combine discount codes already applied on cart
-      discountCodes.push(...inputs.discountCodes);
+      const discountCodes = Array.from(
+        new Set(
+          [
+            formDiscountCode,
+            ...(Array.isArray(inputs.discountCodes) ? inputs.discountCodes : []),
+          ]
+            .filter((code): code is string => typeof code === 'string')
+            .map((code) => code.trim())
+            .filter(Boolean),
+        ),
+      );
 
       // REVIEW15 + WELCOME15 require the user to be logged in
       const restrictedCodeSet = new Set([
-        'WELCOME15',
+        WELCOME15_DISCOUNT_CODE,
         REVIEW_MEDIA_DISCOUNT_CODE,
       ]);
       const restrictedCode = discountCodes.find((code) =>
@@ -429,6 +450,85 @@ export async function action({request, context}: ActionFunctionArgs) {
             },
             {status: 401},
           );
+        }
+      }
+
+      const includesWelcome15 = discountCodes.some(
+        (code) => code.toUpperCase() === WELCOME15_DISCOUNT_CODE,
+      );
+      const includesReview15 = discountCodes.some(
+        (code) => code.toUpperCase() === REVIEW_MEDIA_DISCOUNT_CODE,
+      );
+      if (includesWelcome15 || includesReview15) {
+        const customerIdentityResponse = await context.customerAccount
+          .query<{
+            customer?: {
+              id?: string | null;
+              emailAddress?: {emailAddress?: string | null} | null;
+            } | null;
+          }>(CUSTOMER_ID_QUERY)
+          .catch(() => null);
+        const customerId = customerIdentityResponse?.data?.customer?.id ?? null;
+        const customerEmail =
+          customerIdentityResponse?.data?.customer?.emailAddress?.emailAddress ??
+          null;
+
+        const hasUsedDiscountCode = async (discountCode: string) => {
+          const usageByCustomerOrderHistory = await getCustomerDiscountUsage({
+            customerAccount: context.customerAccount,
+            code: discountCode,
+          });
+          const usageByCustomerEmail =
+            typeof customerEmail === 'string' && customerEmail.trim()
+              ? await getAdminCustomerEmailDiscountUsage({
+                  env: context.env,
+                  customerEmail,
+                  code: discountCode,
+                })
+              : null;
+
+          return Boolean(
+            usageByCustomerOrderHistory?.used || usageByCustomerEmail?.used,
+          );
+        };
+
+        if (includesWelcome15) {
+          const welcome15AlreadyUsed = await hasUsedDiscountCode(
+            WELCOME15_DISCOUNT_CODE,
+          );
+
+          if (welcome15AlreadyUsed) {
+            return data(
+              {
+                error:
+                  'WELCOME15 has already been used on this account. Uses remaining: 0.',
+              },
+              {status: 409},
+            );
+          }
+
+          if (typeof customerId === 'string' && customerId.trim()) {
+            await setCustomerWelcome15UsesRemainingMetafield({
+              env: context.env,
+              customerId,
+              usesRemaining: 1,
+            }).catch(() => null);
+          }
+        }
+
+        if (includesReview15) {
+          const review15AlreadyUsed = await hasUsedDiscountCode(
+            REVIEW_MEDIA_DISCOUNT_CODE,
+          );
+
+          if (review15AlreadyUsed) {
+            return data(
+              {
+                error: `${REVIEW_MEDIA_DISCOUNT_CODE} has already been used on this account. Uses remaining: 0.`,
+              },
+              {status: 409},
+            );
+          }
         }
       }
 

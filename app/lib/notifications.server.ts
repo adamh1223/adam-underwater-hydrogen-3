@@ -551,29 +551,20 @@ export async function syncCustomerNotifications(
     !hasPhoneNumber ||
     !isSubscribedMarketingState(smsMarketingState);
 
-  if (needsDiscountNotification) {
-    if (!hasNotification(notifications, (n) => n.type === 'discount')) {
-      notifications.push({
-        id: createNotificationId(),
-        type: 'discount',
-        title: 'DISCOUNT CODE',
-        message:
-          'Sign up for SMS + email marketing and we’ll send you a 10% off discount.',
-        createdAt: new Date().toISOString(),
-        readAt: null,
-        href: '/account/profile',
-        payload: null,
-      });
-      didMutate = true;
-    }
-  } else {
-    const before = notifications.length;
-    const filtered = notifications.filter((n) => n.type !== 'discount');
-    if (filtered.length !== before) {
-      notifications.length = 0;
-      notifications.push(...filtered);
-      didMutate = true;
-    }
+  if (!hasNotification(notifications, (n) => n.type === 'discount')) {
+    notifications.push({
+      id: createNotificationId(),
+      type: 'discount',
+      title: 'DISCOUNT CODE',
+      message: needsDiscountNotification
+        ? 'Sign up for SMS + email marketing and we’ll send you a 10% off discount.'
+        : 'Your 10% off discount remains available in your account.',
+      createdAt: new Date().toISOString(),
+      readAt: null,
+      href: '/account/profile',
+      payload: null,
+    });
+    didMutate = true;
   }
 
   const deliveredStatuses = new Set(['DELIVERED', 'SUCCESS']);

@@ -820,8 +820,17 @@ function DiscountCodeErrorMessage({
   fetcher: FetcherWithComponents<any>;
   children: React.ReactNode;
 }) {
+  const firstCartMutationError = Array.isArray(fetcher.data?.errors)
+    ? fetcher.data.errors.find(
+        (error: {message?: unknown}) => typeof error?.message === 'string',
+      )
+    : null;
   const currentError =
-    typeof fetcher.data?.error === 'string' ? fetcher.data.error : null;
+    typeof fetcher.data?.error === 'string'
+      ? fetcher.data.error
+      : typeof firstCartMutationError?.message === 'string'
+        ? firstCartMutationError.message
+        : null;
   const [visibleError, setVisibleError] = useState<string | null>(null);
 
   useEffect(() => {

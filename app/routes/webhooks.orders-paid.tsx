@@ -1,5 +1,11 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
 import {createEmailDownloadToken} from '~/lib/email-download-token.server';
+import {
+  getAdminCustomerEmailDiscountUsage,
+  getAdminCustomerDiscountUsage,
+  setCustomerWelcome15UsesRemainingMetafield,
+  WELCOME15_DISCOUNT_CODE,
+} from '~/lib/customerDiscountUsage.server';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {sendPurchaseDownloadEmail} from '~/lib/purchase-email.server';
 import {sendReviewRequestEmail} from '~/lib/review-email.server';
@@ -32,7 +38,17 @@ type ShopifyOrderPaidWebhookPayload = {
   } | null;
 };
 
-const ACCEPTED_TOPICS = new Set(['orders/paid', 'orders/create']);
+type ShopifyCustomerWebhookPayload = {
+  id?: number;
+  admin_graphql_api_id?: string;
+  email?: string | null;
+};
+
+const ACCEPTED_TOPICS = new Set([
+  'orders/paid',
+  'orders/create',
+  'customers/create',
+]);
 const PAID_STATUSES = new Set(['paid', 'partially_paid']);
 
 const ORDER_DOWNLOADS_QUERY = `
@@ -43,6 +59,9 @@ const ORDER_DOWNLOADS_QUERY = `
       createdAt
       metafield(namespace: "custom", key: "download_email_sent_at") {
         value
+      }
+      customer {
+        id
       }
       lineItems(first: 100) {
         nodes {
@@ -151,6 +170,62 @@ function resolveOrderGid(payload: ShopifyOrderPaidWebhookPayload): string | null
   return null;
 }
 
+function resolveCustomerGid(
+  payload: ShopifyCustomerWebhookPayload | ShopifyOrderPaidWebhookPayload,
+): string | null {
+  if (payload.admin_graphql_api_id?.trim()) {
+    const gid = payload.admin_graphql_api_id.trim();
+    if (gid.includes('/Customer/')) return gid;
+  }
+  if (typeof payload.id === 'number' && Number.isFinite(payload.id)) {
+    return `gid://shopify/Customer/${payload.id}`;
+  }
+  return null;
+}
+
+async function syncWelcome15UsesRemainingForCustomer({
+  context,
+  customerId,
+  customerEmail,
+}: {
+  context: ActionFunctionArgs['context'];
+  customerId: string;
+  customerEmail?: string | null;
+}) {
+  const trimmedCustomerId = customerId.trim();
+  if (!trimmedCustomerId) return false;
+
+  const usageByCustomerHistory = await getAdminCustomerDiscountUsage({
+    env: context.env,
+    customerId: trimmedCustomerId,
+    code: WELCOME15_DISCOUNT_CODE,
+  });
+  const usageByCustomerEmail =
+    typeof customerEmail === 'string' && customerEmail.trim()
+      ? await getAdminCustomerEmailDiscountUsage({
+          env: context.env,
+          customerEmail,
+          code: WELCOME15_DISCOUNT_CODE,
+        })
+      : null;
+
+  const welcome15Used = Boolean(
+    usageByCustomerHistory?.used || usageByCustomerEmail?.used,
+  );
+
+  if (!usageByCustomerHistory && !usageByCustomerEmail) {
+    return false;
+  }
+
+  await setCustomerWelcome15UsesRemainingMetafield({
+    env: context.env,
+    customerId: trimmedCustomerId,
+    usesRemaining: welcome15Used ? 0 : 1,
+  }).catch(() => null);
+
+  return true;
+}
+
 export async function action({request, context}: ActionFunctionArgs) {
   try {
     const topic = request.headers.get('X-Shopify-Topic')?.trim();
@@ -182,15 +257,41 @@ export async function action({request, context}: ActionFunctionArgs) {
       return json({ok: false, error: 'Invalid webhook signature'}, {status: 401});
     }
 
-    let payload: ShopifyOrderPaidWebhookPayload;
+    let payload:
+      | ShopifyOrderPaidWebhookPayload
+      | ShopifyCustomerWebhookPayload;
     try {
-      payload = JSON.parse(rawBody) as ShopifyOrderPaidWebhookPayload;
+      payload = JSON.parse(rawBody) as
+        | ShopifyOrderPaidWebhookPayload
+        | ShopifyCustomerWebhookPayload;
     } catch {
       return json({ok: false, error: 'Invalid webhook payload'}, {status: 400});
     }
 
+    if (topic === 'customers/create') {
+      const customerPayload = payload as ShopifyCustomerWebhookPayload;
+      const customerGid = resolveCustomerGid(customerPayload);
+      if (!customerGid) {
+        return json({ok: false, error: 'Missing customer id'}, {status: 400});
+      }
+
+      const synced = await syncWelcome15UsesRemainingForCustomer({
+        context,
+        customerId: customerGid,
+        customerEmail: customerPayload.email,
+      });
+      return json({
+        ok: true,
+        synced,
+        customerId: customerGid,
+      });
+    }
+
+    const orderPayload = payload as ShopifyOrderPaidWebhookPayload;
+
     if (topic === 'orders/create') {
-      const financialStatus = payload.financial_status?.trim().toLowerCase() ?? '';
+      const financialStatus =
+        orderPayload.financial_status?.trim().toLowerCase() ?? '';
       if (financialStatus && !PAID_STATUSES.has(financialStatus)) {
         return json({
           ok: true,
@@ -199,7 +300,7 @@ export async function action({request, context}: ActionFunctionArgs) {
       }
     }
 
-    const orderGid = resolveOrderGid(payload);
+    const orderGid = resolveOrderGid(orderPayload);
     if (!orderGid) {
       return json({ok: false, error: 'Missing order id'}, {status: 400});
     }
@@ -211,6 +312,7 @@ export async function action({request, context}: ActionFunctionArgs) {
           name?: string | null;
           createdAt?: string | null;
           metafield?: {value?: string | null} | null;
+          customer?: {id?: string | null} | null;
           lineItems?: {
             nodes?: Array<{
               id: string;
@@ -243,6 +345,20 @@ export async function action({request, context}: ActionFunctionArgs) {
     if (!order) {
       return json({ok: false, error: 'Order not found'}, {status: 404});
     }
+
+    const customerId = order.customer?.id?.trim() ?? null;
+    if (customerId) {
+      await syncWelcome15UsesRemainingForCustomer({
+        context,
+        customerId,
+        customerEmail:
+          orderPayload.email ??
+          orderPayload.contact_email ??
+          orderPayload.customer?.email ??
+          null,
+      });
+    }
+
     if (order.metafield?.value?.trim()) {
       return json({ok: true, skipped: 'Purchase email already sent for this order'});
     }
@@ -308,9 +424,9 @@ export async function action({request, context}: ActionFunctionArgs) {
     }
 
     const customerEmail =
-      payload.email?.trim() ||
-      payload.contact_email?.trim() ||
-      payload.customer?.email?.trim() ||
+      orderPayload.email?.trim() ||
+      orderPayload.contact_email?.trim() ||
+      orderPayload.customer?.email?.trim() ||
       null;
     if (!customerEmail) {
       return json({
@@ -321,9 +437,9 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     const orderName =
       order.name?.trim() ||
-      payload.name?.trim() ||
-      (typeof payload.order_number === 'number'
-        ? `Order #${payload.order_number}`
+      orderPayload.name?.trim() ||
+      (typeof orderPayload.order_number === 'number'
+        ? `Order #${orderPayload.order_number}`
         : 'Order');
 
     // Send download email if there are downloadable items
@@ -332,12 +448,12 @@ export async function action({request, context}: ActionFunctionArgs) {
         env: context.env,
         toEmail: customerEmail,
         orderName,
-        processedAt: payload.created_at ?? order.createdAt ?? null,
-        shippingAddress: toShippingAddressLabel(payload.shipping_address),
-        status: payload.fulfillment_status || 'Paid',
-        subtotal: payload.subtotal_price ?? null,
-        tax: payload.total_tax ?? null,
-        total: payload.total_price ?? null,
+        processedAt: orderPayload.created_at ?? order.createdAt ?? null,
+        shippingAddress: toShippingAddressLabel(orderPayload.shipping_address),
+        status: orderPayload.fulfillment_status || 'Paid',
+        subtotal: orderPayload.subtotal_price ?? null,
+        tax: orderPayload.total_tax ?? null,
+        total: orderPayload.total_price ?? null,
         downloadItems,
       });
     }

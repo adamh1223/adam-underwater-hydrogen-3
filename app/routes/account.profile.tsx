@@ -56,6 +56,12 @@ import {
 } from '~/components/ui/input-otp';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
+import {
+  getAdminCustomerEmailDiscountUsage,
+  getCustomerDiscountUsage,
+  setCustomerWelcome15UsesRemainingMetafield,
+  WELCOME15_DISCOUNT_CODE,
+} from '~/lib/customerDiscountUsage.server';
 import {cn} from '~/lib/utils';
 
 export type ActionResponse = {
@@ -272,6 +278,9 @@ const CUSTOMER_ID_QUERY = `#graphql
   query CustomerIdQuery {
     customer {
       id
+      emailAddress {
+        emailAddress
+      }
     }
   }
 ` as const;
@@ -284,49 +293,30 @@ export async function loader({context}: LoaderFunctionArgs) {
       CUSTOMER_ID_QUERY,
     );
     const customerId = customerData?.customer?.id;
+    const customerEmail = customerData?.customer?.emailAddress?.emailAddress;
     if (!customerId) return {welcome15Used};
 
-    const numericId = customerId.replace(/\D/g, '');
-    const adminToken = context.env.SHOPIFY_ADMIN_TOKEN;
-    const storeDomain = context.env.PUBLIC_STORE_DOMAIN;
-    const adminDomainEnv = context.env.SHOPIFY_ADMIN_DOMAIN;
+    const usageByCustomerOrderHistory = await getCustomerDiscountUsage({
+      customerAccount: context.customerAccount,
+      code: WELCOME15_DISCOUNT_CODE,
+    });
+    const usageByCustomerEmail = customerEmail
+      ? await getAdminCustomerEmailDiscountUsage({
+          env: context.env,
+          customerEmail,
+          code: WELCOME15_DISCOUNT_CODE,
+        })
+      : null;
 
-    if (adminToken && storeDomain) {
-      const sanitizedStoreDomain = storeDomain.replace(/^https?:\/\//, '');
-      const adminDomain =
-        adminDomainEnv?.replace(/^https?:\/\//, '') ??
-        (sanitizedStoreDomain.includes('myshopify.com')
-          ? sanitizedStoreDomain
-          : null);
+    welcome15Used = Boolean(
+      usageByCustomerOrderHistory?.used || usageByCustomerEmail?.used,
+    );
 
-      if (adminDomain) {
-        const adminEndpoint = `https://${adminDomain}/admin/api/2025-01/graphql.json`;
-        const response = await fetch(adminEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Shopify-Access-Token': adminToken,
-          },
-          body: JSON.stringify({
-            query: `{
-              orders(first: 1, query: "discount_code:WELCOME15 customer_id:${numericId}") {
-                edges {
-                  node {
-                    id
-                  }
-                }
-              }
-            }`,
-          }),
-        });
-
-        if (response.ok) {
-          const json: any = await response.json();
-          const orders = json?.data?.orders?.edges ?? [];
-          welcome15Used = orders.length > 0;
-        }
-      }
-    }
+    await setCustomerWelcome15UsesRemainingMetafield({
+      env: context.env,
+      customerId,
+      usesRemaining: welcome15Used ? 0 : 1,
+    }).catch(() => null);
   } catch {
     // Silently fail — default to not used
   }
