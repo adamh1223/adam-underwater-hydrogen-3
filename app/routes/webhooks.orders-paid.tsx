@@ -143,7 +143,16 @@ async function verifyShopifyWebhookHmac({
   return timingSafeEqual(receivedHmac, expectedHmac);
 }
 
-function getPublicSiteUrl(env: Env): string {
+function getPublicSiteUrl(env: Env, request?: Request): string {
+  if (request) {
+    try {
+      const requestOrigin = new URL(request.url).origin.trim();
+      if (requestOrigin) return requestOrigin.replace(/\/+$/, '');
+    } catch {
+      // Ignore malformed request URLs and fall back to env configuration.
+    }
+  }
+
   const configured =
     env.PUBLIC_SITE_URL?.trim() || env.PUBLIC_STOREFRONT_URL?.trim();
   if (configured) {
@@ -388,7 +397,7 @@ export async function action({request, context}: ActionFunctionArgs) {
       return json({ok: true, skipped: 'Purchase email already sent for this order'});
     }
 
-    const siteUrl = getPublicSiteUrl(context.env);
+    const siteUrl = getPublicSiteUrl(context.env, request);
     const lineItems = order.lineItems?.nodes ?? [];
     const downloadableItems = await Promise.all(
       lineItems.map(async (lineItem) => {
