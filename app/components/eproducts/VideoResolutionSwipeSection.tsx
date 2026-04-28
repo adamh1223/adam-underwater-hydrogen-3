@@ -10,6 +10,10 @@ const STOCK_SWIPE_ASSET_BASE_URL =
   'https://downloads.adamunderwater.com/shared/stock-swipe';
 const HAND_TOGGLE_ICON_URL =
   'https://downloads.adamunderwater.com/store-1-au/public/hand-icon.png';
+const DEFAULT_ZOOM_LEVEL = 4;
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 8;
+const ZOOM_STEP = 0.75;
 
 const STOCK_SWIPE_IMAGE_EXTENSIONS = [
   'jpg',
@@ -135,16 +139,12 @@ export default function VideoResolutionSwipeSection({
   const [resolvedHigherResolutionLabel, setResolvedHigherResolutionLabel] =
     useState<string | null>(null);
   const [dividerPercentage, setDividerPercentage] = useState(50);
-  const [zoomLevel, setZoomLevel] = useState(3);
+  const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM_LEVEL);
   const [mode, setMode] = useState<'swipe' | 'pan'>('swipe');
   const [originX, setOriginX] = useState(50);
   const [originY, setOriginY] = useState(50);
   const [isPanning, setIsPanning] = useState(false);
   const compareRef = useRef<HTMLDivElement | null>(null);
-
-  const ZOOM_MIN = 1;
-  const ZOOM_MAX = 4;
-  const ZOOM_STEP = 0.5;
 
   const handleZoomIn = useCallback((e: React.PointerEvent | React.MouseEvent) => {
     e.stopPropagation();

@@ -202,7 +202,7 @@ export function ProductForm({
       lines={addToCartLines}
       replaceExistingLineProductId={isVideo ? productId : undefined}
     >
-      <div>
+      <div className="add-to-cart-btn-content">
         <div className="add-to-cart-btn-product-name">
           {selectedVariant?.product?.title}
         </div>

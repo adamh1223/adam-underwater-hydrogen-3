@@ -2542,14 +2542,25 @@ span {
   padding: 6px 4px;
   width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 .view-product-btn {
   padding: 6px 2px;
   width: 100%;
 }
 
+.add-to-cart-btn-content {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .add-to-cart-btn-variant {
   font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .add-to-cart-btn-text {
@@ -2557,10 +2568,19 @@ span {
   font-weight: 650;
   display: flex;
   justify-content: center;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .add-to-cart-btn-product-name {
   font-size: 16px;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .add-to-cart-btn-compare-at-price {
