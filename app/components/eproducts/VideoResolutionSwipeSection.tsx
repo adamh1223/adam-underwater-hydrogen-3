@@ -23,12 +23,68 @@ const STOCK_SWIPE_IMAGE_EXTENSIONS = [
 ];
 const DEFAULT_HIGHER_RESOLUTION_LABELS = ['8K', '6K', '5K', '10K', '12K'];
 
-function buildSwipeImageCandidates(resolutionLabel: string, vidKey: string) {
+function buildLegacySwipeImageCandidates(
+  resolutionLabel: string,
+  vidKey: string,
+) {
   const normalizedResolution = resolutionLabel.toLowerCase();
 
   return STOCK_SWIPE_IMAGE_EXTENSIONS.map(
     (extension) =>
       `${STOCK_SWIPE_ASSET_BASE_URL}/swipe${normalizedResolution}-${vidKey}.${extension}`,
+  );
+}
+
+function parseResolutionNumber(label: string): number | null {
+  const match = label.trim().toUpperCase().match(/^(\d+)\s*K$/);
+  if (!match) return null;
+  const parsed = Number.parseInt(match[1] ?? '', 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+}
+
+function normalizeHigherResolutionLabel(label: string): string | null {
+  const parsed = parseResolutionNumber(label);
+  if (parsed === null || parsed <= 4) return null;
+  return `${parsed}K`;
+}
+
+function extractProductNumberFromVidKey(vidKey: string): string | null {
+  const match = vidKey.match(/(\d+)/);
+  return match?.[1] ?? null;
+}
+
+function buildModernLeftImageCandidates(
+  higherResolutionLabel: string,
+  productNumber: string,
+) {
+  const parsedResolution = parseResolutionNumber(higherResolutionLabel);
+  if (parsedResolution === null || parsedResolution <= 4) return [];
+
+  const filenameStems = [
+    `img-UM-${parsedResolution}-4K-${productNumber}`,
+    `img-UM-4K-${productNumber}`,
+  ];
+
+  return filenameStems.flatMap((filenameStem) =>
+    STOCK_SWIPE_IMAGE_EXTENSIONS.map(
+      (extension) =>
+        `${STOCK_SWIPE_ASSET_BASE_URL}/${filenameStem}.${extension}`,
+    ),
+  );
+}
+
+function buildModernRightImageCandidates(
+  higherResolutionLabel: string,
+  productNumber: string,
+) {
+  const normalizedHigherResolution =
+    normalizeHigherResolutionLabel(higherResolutionLabel);
+  if (!normalizedHigherResolution) return [];
+
+  return STOCK_SWIPE_IMAGE_EXTENSIONS.map(
+    (extension) =>
+      `${STOCK_SWIPE_ASSET_BASE_URL}/img-UM-${normalizedHigherResolution}-${productNumber}.${extension}`,
   );
 }
 
@@ -79,7 +135,7 @@ export default function VideoResolutionSwipeSection({
   const [resolvedHigherResolutionLabel, setResolvedHigherResolutionLabel] =
     useState<string | null>(null);
   const [dividerPercentage, setDividerPercentage] = useState(50);
-  const [zoomLevel, setZoomLevel] = useState(2.25);
+  const [zoomLevel, setZoomLevel] = useState(3);
   const [mode, setMode] = useState<'swipe' | 'pan'>('swipe');
   const [originX, setOriginX] = useState(50);
   const [originY, setOriginY] = useState(50);
@@ -146,8 +202,8 @@ export default function VideoResolutionSwipeSection({
     [originX, originY, zoomLevel],
   );
 
-  const leftCandidates = useMemo(
-    () => buildSwipeImageCandidates('4k', vidKey),
+  const productNumber = useMemo(
+    () => extractProductNumberFromVidKey(vidKey),
     [vidKey],
   );
   const higherResolutionCandidates = useMemo(
@@ -155,9 +211,15 @@ export default function VideoResolutionSwipeSection({
       Array.from(
         new Set(
           [
-            higherResolutionLabel?.toUpperCase()?.trim(),
+            higherResolutionLabel,
             ...DEFAULT_HIGHER_RESOLUTION_LABELS,
-          ].filter((label): label is string => Boolean(label)),
+          ]
+            .map((label) =>
+              typeof label === 'string'
+                ? normalizeHigherResolutionLabel(label)
+                : null,
+            )
+            .filter((label): label is string => Boolean(label)),
         ),
       ),
     [higherResolutionLabel],
@@ -171,16 +233,31 @@ export default function VideoResolutionSwipeSection({
     setResolvedHigherResolutionLabel(null);
 
     const load = async () => {
-      const resolvedLeftUrl = await preloadFirstAvailableImage(leftCandidates);
-      if (cancelled || !resolvedLeftUrl) return;
-
       for (const resolutionLabel of higherResolutionCandidates) {
-        const rightCandidates = buildSwipeImageCandidates(
+        const modernLeftCandidates =
+          productNumber !== null
+            ? buildModernLeftImageCandidates(resolutionLabel, productNumber)
+            : [];
+        const modernRightCandidates =
+          productNumber !== null
+            ? buildModernRightImageCandidates(resolutionLabel, productNumber)
+            : [];
+        const legacyLeftCandidates = buildLegacySwipeImageCandidates('4k', vidKey);
+        const legacyRightCandidates = buildLegacySwipeImageCandidates(
           resolutionLabel,
           vidKey,
         );
-        const resolvedRightUrl =
-          await preloadFirstAvailableImage(rightCandidates);
+
+        const resolvedLeftUrl = await preloadFirstAvailableImage([
+          ...modernLeftCandidates,
+          ...legacyLeftCandidates,
+        ]);
+        if (cancelled || !resolvedLeftUrl) continue;
+
+        const resolvedRightUrl = await preloadFirstAvailableImage([
+          ...modernRightCandidates,
+          ...legacyRightCandidates,
+        ]);
         if (cancelled) return;
         if (!resolvedRightUrl) continue;
 
@@ -196,7 +273,7 @@ export default function VideoResolutionSwipeSection({
     return () => {
       cancelled = true;
     };
-  }, [higherResolutionCandidates, leftCandidates, vidKey]);
+  }, [higherResolutionCandidates, productNumber, vidKey]);
 
   const updateDividerFromClientX = useCallback((clientX: number) => {
     const container = compareRef.current;

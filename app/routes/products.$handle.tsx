@@ -2360,6 +2360,7 @@ export default function Product() {
                   <Card className="mb-2">
                     <CardContent>
                       <div
+                        className="product-description-content"
                         dangerouslySetInnerHTML={{
                           __html: activeBundleClip.descriptionHtml,
                         }}
@@ -2371,6 +2372,7 @@ export default function Product() {
                   <Card className="mb-2">
                     <CardContent>
                       <div
+                        className="product-description-content"
                         dangerouslySetInnerHTML={{__html: descriptionHtml}}
                       />
                     </CardContent>
@@ -2492,13 +2494,17 @@ export default function Product() {
 
                 {isBundle && activeBundleClip?.descriptionHtml && (
                   <div
+                    className="product-description-content"
                     dangerouslySetInnerHTML={{
                       __html: activeBundleClip.descriptionHtml,
                     }}
                   />
                 )}
                 {!isBundle && (
-                  <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+                  <div
+                    className="product-description-content"
+                    dangerouslySetInnerHTML={{__html: descriptionHtml}}
+                  />
                 )}
                 <br />
 

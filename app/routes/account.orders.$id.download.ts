@@ -83,10 +83,14 @@ export async function loader({context, params, request}: LoaderFunctionArgs) {
   const selectedOptions = Array.isArray(variantResponse?.node?.selectedOptions)
     ? variantResponse.node.selectedOptions
     : [];
+  const productOptions = Array.isArray(variantResponse?.node?.product?.options)
+    ? variantResponse.node.product.options
+    : [];
   const objectKey = getR2ObjectKeyFromTagsForVariant({
     tags,
     selectedOptions,
     variantTitle: matchingLineItem?.variantTitle,
+    productOptions,
   });
 
   if (!objectKey) {

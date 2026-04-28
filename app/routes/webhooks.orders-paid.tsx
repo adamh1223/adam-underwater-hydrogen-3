@@ -81,6 +81,12 @@ const ORDER_DOWNLOADS_QUERY = `
             product {
               title
               tags
+              options {
+                name
+                optionValues {
+                  name
+                }
+              }
             }
           }
         }
@@ -292,10 +298,25 @@ export async function action({request, context}: ActionFunctionArgs) {
     if (topic === 'orders/create') {
       const financialStatus =
         orderPayload.financial_status?.trim().toLowerCase() ?? '';
-      if (financialStatus && !PAID_STATUSES.has(financialStatus)) {
+      const rawTotalPrice =
+        typeof orderPayload.total_price === 'string'
+          ? orderPayload.total_price.trim()
+          : '';
+      const parsedTotalPrice =
+        rawTotalPrice.length > 0 ? Number(rawTotalPrice) : null;
+      const isZeroDollarOrder =
+        parsedTotalPrice !== null &&
+        Number.isFinite(parsedTotalPrice) &&
+        parsedTotalPrice <= 0;
+
+      if (
+        financialStatus &&
+        !PAID_STATUSES.has(financialStatus) &&
+        !isZeroDollarOrder
+      ) {
         return json({
           ok: true,
-          skipped: `Order not paid yet (financial_status=${financialStatus})`,
+          skipped: `Order not paid yet (financial_status=${financialStatus}, total=${rawTotalPrice || 'unknown'})`,
         });
       }
     }
@@ -329,6 +350,10 @@ export async function action({request, context}: ActionFunctionArgs) {
                 product?: {
                   title?: string | null;
                   tags?: string[] | null;
+                  options?: Array<{
+                    name?: string | null;
+                    optionValues?: Array<{name?: string | null}> | null;
+                  }> | null;
                 } | null;
               } | null;
             }>;
@@ -375,6 +400,7 @@ export async function action({request, context}: ActionFunctionArgs) {
           tags,
           selectedOptions: lineItem.variant?.selectedOptions ?? [],
           variantTitle: lineItem.variant?.title ?? lineItem.title,
+          productOptions: lineItem.variant?.product?.options ?? [],
         });
         if (!objectKey) return null;
 

@@ -576,7 +576,11 @@ export async function loader({params, context}: LoaderFunctionArgs) {
 
   const downloadMetadataByVariantId = new Map<
     string,
-    {tags: string[]; selectedOptions: Array<{name?: string; value?: string}>}
+    {
+      tags: string[];
+      selectedOptions: Array<{name?: string; value?: string}>;
+      productOptions: Array<{name?: string; optionValues?: Array<{name?: string}>}>;
+    }
   >();
   const productByVariantId = new Map<string, any>();
   for (const response of variantResponses) {
@@ -589,7 +593,12 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     const selectedOptions = Array.isArray(variant?.selectedOptions)
       ? variant.selectedOptions
       : [];
-    downloadMetadataByVariantId.set(variant.id, {tags, selectedOptions});
+    const productOptions = Array.isArray(product?.options) ? product.options : [];
+    downloadMetadataByVariantId.set(variant.id, {
+      tags,
+      selectedOptions,
+      productOptions,
+    });
     if (product?.id && product?.handle) {
       productByVariantId.set(variant.id, product);
     }
@@ -629,6 +638,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       tags: variantMetadata.tags,
       selectedOptions: variantMetadata.selectedOptions,
       variantTitle: lineItem.variantTitle,
+      productOptions: variantMetadata.productOptions,
     });
     lineItemHasDownload[lineItem.id] = Boolean(objectKey);
   }

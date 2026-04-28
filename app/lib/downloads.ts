@@ -1,5 +1,6 @@
 const DOWNLOAD_TAG_PREFIXES = ['r2:', 'r2key:', 'r2-key:', 'r2/'] as const;
 const LEGACY_DOWNLOAD_TAG_PREFIXES = ['umclips/'] as const;
+const STOCK_DOWNLOAD_OBJECT_PREFIX = 'shared/stock';
 
 type VariantSelectionOption = {
   name?: unknown;
@@ -9,6 +10,15 @@ type VariantSelectionOption = {
 type VariantSelectionInput = {
   selectedOptions?: VariantSelectionOption[] | null;
   variantTitle?: unknown;
+};
+
+type ProductOptionValue = {
+  name?: unknown;
+};
+
+type ProductOption = {
+  name?: unknown;
+  optionValues?: unknown;
 };
 
 function normalizeTag(tag: unknown): string {
@@ -84,6 +94,79 @@ function getResolutionFromVariantSelection(
   return parseResolutionValue(variantTitle);
 }
 
+function getProductNumberFromVidTag(tags: unknown[]): string | null {
+  for (const rawTag of tags) {
+    const tag = normalizeTag(rawTag);
+    if (!tag) continue;
+    const match = tag.match(/^(?:vid|bundle)[-_](\d+)$/i);
+    if (match?.[1]) return match[1];
+  }
+
+  return null;
+}
+
+function toProductOptions(value: unknown): ProductOption[] {
+  return Array.isArray(value) ? (value as ProductOption[]) : [];
+}
+
+function toOptionValues(option: ProductOption): ProductOptionValue[] {
+  return Array.isArray(option?.optionValues)
+    ? (option.optionValues as ProductOptionValue[])
+    : [];
+}
+
+function getHighestResolutionFromProductOptions(productOptions: unknown): number | null {
+  const options = toProductOptions(productOptions);
+  const resolutionOption = options.find(
+    (option) =>
+      typeof option?.name === 'string' &&
+      option.name.trim().toLowerCase() === 'resolution',
+  );
+  if (!resolutionOption) return null;
+
+  let highestResolution: number | null = null;
+  for (const optionValue of toOptionValues(resolutionOption)) {
+    const parsedResolution = parseResolutionValue(
+      typeof optionValue?.name === 'string' ? optionValue.name : '',
+    );
+    if (parsedResolution === null) continue;
+    if (highestResolution === null || parsedResolution > highestResolution) {
+      highestResolution = parsedResolution;
+    }
+  }
+
+  return highestResolution;
+}
+
+function buildModernStockObjectKey({
+  productNumber,
+  desiredResolution,
+  highestResolution,
+}: {
+  productNumber: string;
+  desiredResolution: number;
+  highestResolution: number | null;
+}): string | null {
+  if (!Number.isFinite(desiredResolution) || desiredResolution <= 0) return null;
+
+  let filename = '';
+  if (desiredResolution > 4) {
+    filename = `UM-${desiredResolution}K-${productNumber}.mov`;
+  } else if (desiredResolution === 4) {
+    const pairedHigherResolution =
+      highestResolution !== null && highestResolution > 4
+        ? highestResolution
+        : null;
+    filename = pairedHigherResolution
+      ? `UM-${pairedHigherResolution}-4K-${productNumber}.mov`
+      : `UM-4K-${productNumber}.mov`;
+  } else {
+    return null;
+  }
+
+  return `${STOCK_DOWNLOAD_OBJECT_PREFIX}/${filename}`;
+}
+
 function collectR2ObjectKeysFromTags(tags: unknown[]): string[] {
   const keys: string[] = [];
   const seen = new Set<string>();
@@ -143,18 +226,31 @@ export function getR2ObjectKeyFromTagsForVariant({
   tags,
   selectedOptions,
   variantTitle,
+  productOptions,
 }: {
   tags: unknown[];
   selectedOptions?: VariantSelectionOption[] | null;
   variantTitle?: unknown;
+  productOptions?: unknown;
 }): string | null {
-  const objectKeys = collectR2ObjectKeysFromTags(tags);
-  if (!objectKeys.length) return null;
-
   const desiredResolution = getResolutionFromVariantSelection({
     selectedOptions,
     variantTitle,
   });
+  const productNumber = getProductNumberFromVidTag(tags);
+  const highestResolution = getHighestResolutionFromProductOptions(productOptions);
+
+  if (productNumber && desiredResolution !== null) {
+    const modernObjectKey = buildModernStockObjectKey({
+      productNumber,
+      desiredResolution,
+      highestResolution,
+    });
+    if (modernObjectKey) return modernObjectKey;
+  }
+
+  const objectKeys = collectR2ObjectKeysFromTags(tags);
+  if (!objectKeys.length) return null;
 
   if (desiredResolution !== null) {
     const matchingObjectKey = objectKeys.find(

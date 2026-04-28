@@ -27,6 +27,12 @@ const EMAIL_DOWNLOAD_ORDER_QUERY = `
             }
             product {
               tags
+              options {
+                name
+                optionValues {
+                  name
+                }
+              }
             }
           }
         }
@@ -61,7 +67,13 @@ export async function loader({context, params}: LoaderFunctionArgs) {
                 name?: string | null;
                 value?: string | null;
               }> | null;
-              product?: {tags?: string[] | null} | null;
+              product?: {
+                tags?: string[] | null;
+                options?: Array<{
+                  name?: string | null;
+                  optionValues?: Array<{name?: string | null}> | null;
+                }> | null;
+              } | null;
             } | null;
           }>;
         } | null;
@@ -87,6 +99,7 @@ export async function loader({context, params}: LoaderFunctionArgs) {
     tags: productTags,
     selectedOptions: lineItem.variant?.selectedOptions ?? [],
     variantTitle: lineItem.variant?.title ?? lineItem.title,
+    productOptions: lineItem.variant?.product?.options ?? [],
   });
   if (!objectKey) return notFound('No downloadable asset configured.');
 

@@ -24,7 +24,10 @@ import {
 } from '../ui/tooltip';
 import {toast} from 'sonner';
 import {getHighestResolutionLabelFromTags} from '~/lib/downloads';
-import {getHighestResolutionVariantFromProduct} from '~/lib/resolution';
+import {
+  getHighestResolutionVariantFromProduct,
+  parseResolutionValue,
+} from '~/lib/resolution';
 import {
   formatDurationFromSeconds,
   parseDisplayDurationFromTags,
@@ -364,8 +367,30 @@ function EProductsContainer({
   const durationTag = parseDisplayDurationFromTags(product.tags);
   const isSlowmo = product.tags.includes('slowmo');
   const isArtistPick = product.tags.includes('artist-pick');
+  const highestResolutionLabelFromOptions = useMemo(() => {
+    const productOptions = Array.isArray(product.options) ? product.options : [];
+    const resolutionOption = productOptions.find(
+      (option) =>
+        typeof option?.name === 'string' &&
+        option.name.trim().toLowerCase() === 'resolution',
+    );
+    if (!resolutionOption?.optionValues) return null;
+
+    let highestResolution: number | null = null;
+    for (const optionValue of resolutionOption.optionValues) {
+      const parsedResolution = parseResolutionValue(optionValue?.name);
+      if (parsedResolution === null) continue;
+      if (highestResolution === null || parsedResolution > highestResolution) {
+        highestResolution = parsedResolution;
+      }
+    }
+
+    return highestResolution === null ? null : `${highestResolution}K`;
+  }, [product.options]);
   const fallbackResolutionBadgeLabel =
-    getHighestResolutionLabelFromTags(product.tags) ?? '4K';
+    highestResolutionLabelFromOptions ??
+    getHighestResolutionLabelFromTags(product.tags) ??
+    '4K';
   const bundleClipMetadata = useMemo(
     () => parseBundleClipMetadata(product.tags ?? []),
     [product.tags],

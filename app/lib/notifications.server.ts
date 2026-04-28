@@ -950,7 +950,12 @@ export async function getNotificationOrderDetails(
     const variantMetadataByVariantId = new Map<
       string,
       {
-        product: {id: string; handle: string; tags: string[]};
+        product: {
+          id: string;
+          handle: string;
+          tags: string[];
+          options: Array<{name?: string; optionValues?: Array<{name?: string}>}>;
+        };
         selectedOptions: Array<{name?: string; value?: string}>;
       }
     >();
@@ -967,6 +972,12 @@ export async function getNotificationOrderDetails(
           id: product.id as string,
           handle: product.handle as string,
           tags: Array.isArray(product.tags) ? (product.tags as string[]) : [],
+          options: Array.isArray(product.options)
+            ? (product.options as Array<{
+                name?: string;
+                optionValues?: Array<{name?: string}>;
+              }>)
+            : [],
         },
         selectedOptions,
       });
@@ -997,6 +1008,7 @@ export async function getNotificationOrderDetails(
             tags: variantMetadata.product.tags,
             selectedOptions: variantMetadata.selectedOptions,
             variantTitle: lineItem?.variantTitle,
+            productOptions: variantMetadata.product.options,
           });
 
           if (objectKey) {
