@@ -1,5 +1,9 @@
 import {DIRECT_EMAIL_FROM, sendDirectEmail} from '~/lib/email-provider.server';
 
+const STOCK_PAGE_URL = 'https://adamunderwater.com/stock';
+const EMAIL_LOGO_URL =
+  'https://downloads.adamunderwater.com/store-1-au/public/logo-nobg.png';
+
 type PurchaseEmailDownloadItem = {
   title: string;
   quantity: number;
@@ -113,6 +117,13 @@ function createPurchaseEmailHtml({
         <td align="center">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:1120px; border:1px solid #153157; border-radius:16px; background:#000a22; padding:18px;">
             <tr>
+              <td align="center" style="padding:4px 0 16px 0;">
+                <a href="${STOCK_PAGE_URL}" style="text-decoration:none;">
+                  <img src="${EMAIL_LOGO_URL}" alt="Adam Underwater" width="460" style="display:block; width:100%; max-width:460px; height:auto; border:0;" />
+                </a>
+              </td>
+            </tr>
+            <tr>
               <td style="padding-bottom:14px;">
                 <p style="margin:0 0 8px 0; font-size:30px; font-weight:700; color:#ffffff;">Thank you for your purchase! ${escapeHtml(orderName)}</p>
                 ${
@@ -150,6 +161,11 @@ function createPurchaseEmailHtml({
                         <p style="margin:0; color:#ffffff;">
                           Total: ${escapeHtml(formatCurrency(total))}
                         </p>
+                      </div>
+                      <div style="text-align:center; margin-top:16px;">
+                        <a href="${STOCK_PAGE_URL}" style="display:inline-block; background:#2fb4f7; color:#00112f; border-radius:14px; padding:16px 34px; font-size:18px; font-weight:600; text-decoration:none;">
+                          Continue shopping →
+                        </a>
                       </div>
                     </td>
                   </tr>
