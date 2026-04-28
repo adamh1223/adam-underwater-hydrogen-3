@@ -85,7 +85,7 @@ function createPurchaseEmailHtml({
           ${imageMarkup}
           <p style="margin:14px 0 0 0; color:#ffffff;">Quantity: ${item.quantity}</p>
           <div style="text-align:center; margin-top:18px;">
-            <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
+            <a href="${escapeHtml(item.downloadUrl)}" target="_self" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
               Download ↓
             </a>
           </div>
@@ -130,14 +130,14 @@ function createPurchaseEmailHtml({
                         )}</p>
                       </div>
                       <div style="border:1px solid #153157; border-radius:14px; background:#00112f; padding:18px;">
-                        <p style="margin:0 0 14px 0; color:#ffffff; display:flex; justify-content:space-between;">
-                          <span>Subtotal</span><span>${escapeHtml(formatCurrency(subtotal))}</span>
+                        <p style="margin:0 0 14px 0; color:#ffffff;">
+                          Subtotal: ${escapeHtml(formatCurrency(subtotal))}
                         </p>
-                        <p style="margin:0 0 14px 0; color:#ffffff; display:flex; justify-content:space-between;">
-                          <span>Tax</span><span>${escapeHtml(formatCurrency(tax))}</span>
+                        <p style="margin:0 0 14px 0; color:#ffffff;">
+                          Tax: ${escapeHtml(formatCurrency(tax))}
                         </p>
-                        <p style="margin:0; color:#ffffff; display:flex; justify-content:space-between;">
-                          <span>Total</span><span>${escapeHtml(formatCurrency(total))}</span>
+                        <p style="margin:0; color:#ffffff;">
+                          Total: ${escapeHtml(formatCurrency(total))}
                         </p>
                       </div>
                     </td>
@@ -177,7 +177,7 @@ export async function sendPurchaseDownloadEmail({
   downloadItems: PurchaseEmailDownloadItem[];
 }) {
   const sanitizedOrderName = orderName.trim() || 'Order';
-  const subject = `Thank you for your purchase! ${sanitizedOrderName}`;
+  const subject = `Your downloads are ready! ${sanitizedOrderName}`;
   const html = createPurchaseEmailHtml({
     orderName: sanitizedOrderName,
     processedAt,

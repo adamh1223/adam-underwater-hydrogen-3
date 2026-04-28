@@ -6,7 +6,10 @@ import {
   setCustomerWelcome15UsesRemainingMetafield,
   WELCOME15_DISCOUNT_CODE,
 } from '~/lib/customerDiscountUsage.server';
-import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
+import {
+  getLowResolutionThumbnailUrlForVariant,
+  getR2ObjectKeyFromTagsForVariant,
+} from '~/lib/downloads';
 import {sendPurchaseDownloadEmail} from '~/lib/purchase-email.server';
 import {sendReviewRequestEmail} from '~/lib/review-email.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
@@ -429,7 +432,14 @@ export async function action({request, context}: ActionFunctionArgs) {
             Number.isFinite(lineItem.quantity)
               ? lineItem.quantity
               : 1,
-          imageUrl: lineItem.variant?.image?.url ?? null,
+          imageUrl:
+            getLowResolutionThumbnailUrlForVariant({
+              tags,
+              productOptions: lineItem.variant?.product?.options ?? [],
+              publicBaseUrl: context.env.R2_PUBLIC_BASE_URL,
+            }) ??
+            lineItem.variant?.image?.url ??
+            null,
           downloadUrl: `${siteUrl}/download/${encodeURIComponent(token)}`,
           isBundle: tags.includes('Bundle'),
         };

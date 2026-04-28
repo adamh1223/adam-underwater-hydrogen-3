@@ -1,6 +1,9 @@
 const DOWNLOAD_TAG_PREFIXES = ['r2:', 'r2key:', 'r2-key:', 'r2/'] as const;
 const LEGACY_DOWNLOAD_TAG_PREFIXES = ['umclips/'] as const;
 const STOCK_DOWNLOAD_OBJECT_PREFIX = 'shared/stock';
+const STOCK_SWIPE_OBJECT_PREFIX = 'shared/stock-swipe';
+const DEFAULT_STOCK_SWIPE_PUBLIC_BASE_URL =
+  'https://downloads.adamunderwater.com';
 
 type VariantSelectionOption = {
   name?: unknown;
@@ -32,6 +35,14 @@ function stripPrefix(value: string, prefix: string): string {
 function normalizeObjectKey(value: string): string | null {
   const normalized = value.trim().replace(/^\/+/, '').replace(/\/+$/, '');
   return normalized.length ? normalized : null;
+}
+
+function normalizePublicBaseUrl(value: unknown): string {
+  if (typeof value === 'string') {
+    const trimmed = value.trim().replace(/\/+$/, '');
+    if (trimmed) return trimmed;
+  }
+  return DEFAULT_STOCK_SWIPE_PUBLIC_BASE_URL;
 }
 
 function extractSharedObjectKeyFromHttpUrl(value: string): string | null {
@@ -279,6 +290,27 @@ export function getDownloadFilenameFromObjectKey(objectKey: string): string {
   const fallback = 'download';
   const lastSegment = keyWithoutTrailingSlash.split('/').pop() ?? fallback;
   return sanitizeDownloadFilename(lastSegment || fallback);
+}
+
+export function getLowResolutionThumbnailUrlForVariant({
+  tags,
+  productOptions,
+  publicBaseUrl,
+}: {
+  tags: unknown[];
+  productOptions?: unknown;
+  publicBaseUrl?: unknown;
+}): string | null {
+  const productNumber = getProductNumberFromVidTag(tags);
+  if (!productNumber) return null;
+
+  const highestResolution = getHighestResolutionFromProductOptions(productOptions);
+  const filename =
+    highestResolution !== null && highestResolution > 4
+      ? `img-UM-${highestResolution}-4K-${productNumber}.jpg`
+      : `img-UM-4K-${productNumber}.jpg`;
+
+  return `${normalizePublicBaseUrl(publicBaseUrl)}/${STOCK_SWIPE_OBJECT_PREFIX}/${filename}`;
 }
 
 export function sanitizeDownloadFilename(filename: string): string {
