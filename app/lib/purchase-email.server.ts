@@ -70,7 +70,18 @@ function createPurchaseEmailHtml({
     .map((item) => {
       const title = escapeHtml(item.title);
       const imageMarkup = item.imageUrl
-        ? `<img src="${escapeHtml(item.imageUrl)}" alt="${title}" width="520" style="display:block; border-radius:12px; width:92%; max-width:520px; height:auto; margin:14px auto;" />`
+        ? `
+          <table role="presentation" width="92%" cellspacing="0" cellpadding="0" style="width:92%; max-width:520px; margin:14px auto 0 auto;">
+            <tr>
+              <td
+                background="${escapeHtml(item.imageUrl)}"
+                style="background:url('${escapeHtml(item.imageUrl)}') center center / cover no-repeat; border-radius:12px; height:300px; line-height:0; font-size:0;"
+              >
+                &nbsp;
+              </td>
+            </tr>
+          </table>
+        `
         : '';
 
       return `
