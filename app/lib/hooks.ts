@@ -2,6 +2,7 @@ import {CartReturn} from '@shopify/hydrogen';
 import {truncate} from 'fs/promises';
 import React, {useState} from 'react';
 import {useEffect} from 'react';
+import {hasVideoTag} from '~/lib/productTags';
 
 export const useIsVideoInCart = (
   itemID: string | undefined,
@@ -16,7 +17,7 @@ export const useIsVideoInCart = (
         }
         const IDs = cartData?.lines.nodes
           .map((node) => {
-            if (node.merchandise.product.tags?.includes('Video')) {
+            if (hasVideoTag(node.merchandise.product.tags ?? [])) {
               return node.merchandise.id;
             }
           })

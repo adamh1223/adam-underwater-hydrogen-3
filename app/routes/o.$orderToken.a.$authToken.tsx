@@ -18,6 +18,7 @@ import {
   REVIEW_MEDIA_DISCOUNT_NAMESPACE,
   type ReviewMediaDiscountReward,
 } from '~/lib/reviewMediaDiscountReward';
+import {hasVideoTag} from '~/lib/productTags';
 
 const PICKUP_ADDRESS_TEXT = '1080 8th Ave, San Diego, CA 92101';
 const PICKUP_ADDRESS_APPLE_MAPS_URL = `https://maps.apple.com/?q=${encodeURIComponent(
@@ -701,7 +702,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     const printProductIds = new Set<string>();
     for (const li of lineItems) {
       const tags = li.variant?.product?.tags ?? [];
-      const isPrint = tags.includes('Prints') && !tags.includes('Video');
+      const isPrint = tags.includes('Prints') && !hasVideoTag(tags);
       if (isPrint && li.variant?.product?.id) {
         printProductIds.add(li.variant.product.id);
       }
@@ -793,7 +794,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   const hasAnyEProducts = Object.values(lineItemHasDownload).some(Boolean);
   const hasAnyPrints = lineItems.some((li) => {
     const tags = li.variant?.product?.tags ?? [];
-    return tags.includes('Prints') && !tags.includes('Video');
+    return tags.includes('Prints') && !hasVideoTag(tags);
   });
   const isEProductOnly = hasAnyEProducts && !hasAnyPrints;
   const isMixedOrder = hasAnyEProducts && hasAnyPrints;
@@ -1321,7 +1322,7 @@ function TokenOrderLineRow({
   const lineItemTags = tagsFromLineItemMap.length
     ? tagsFromLineItemMap
     : tagsFromProduct;
-  const isStockClipFromTags = lineItemTags.includes('Video');
+  const isStockClipFromTags = hasVideoTag(lineItemTags);
   const isBundleFromTags = lineItemTags.includes('Bundle');
   const isPrintFromTags =
     lineItemTags.includes('Prints') && !isStockClipFromTags;

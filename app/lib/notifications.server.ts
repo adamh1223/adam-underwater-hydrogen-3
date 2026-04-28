@@ -9,6 +9,7 @@ import {
 } from '~/lib/notifications';
 import {getR2ObjectKeyFromTagsForVariant} from '~/lib/downloads';
 import {applyHighestResolutionVariantToProducts} from '~/lib/resolution';
+import {hasVideoTag, isPrintProductFromTags} from '~/lib/productTags';
 
 type NotificationsState = {
   orderStatusSnapshot?: Record<
@@ -445,7 +446,7 @@ async function resolveOrderRecommendationDetails(
     if (typeof node?.id !== 'string' || !Array.isArray(tags)) continue;
 
     const variantCategories: RecommendationCategory[] = [];
-    if (tags.includes('Video')) variantCategories.push('Video');
+    if (hasVideoTag(tags)) variantCategories.push('Video');
     if (tags.includes('Prints')) variantCategories.push('Prints');
     if (!variantCategories.length) continue;
 
@@ -872,20 +873,25 @@ export async function getNotificationRecommendedProducts(
   context: any,
   category: 'Prints' | 'Video',
 ) {
-  const query =
-    category === 'Video'
-      ? 'tag:Video'
-      : 'tag:Prints -tag:Video';
+  const query = category === 'Video' ? '-tag:Prints' : 'tag:Prints';
 
   try {
     const response = await context.storefront.query(
       NOTIFICATION_RECOMMENDED_PRODUCTS_QUERY,
-      {variables: {first: 6, query}},
+      {variables: {first: 30, query}},
     );
     const nodes = Array.isArray(response?.products?.nodes)
       ? response.products.nodes
       : [];
-    return applyHighestResolutionVariantToProducts(nodes as any[]);
+    const filteredNodes = nodes
+      .filter((node) => {
+        const tags = Array.isArray((node as any)?.tags) ? (node as any).tags : [];
+        return category === 'Video'
+          ? hasVideoTag(tags)
+          : isPrintProductFromTags(tags);
+      })
+      .slice(0, 6);
+    return applyHighestResolutionVariantToProducts(filteredNodes as any[]);
   } catch (error) {
     console.error('Unable to load recommended products', error);
     return [];

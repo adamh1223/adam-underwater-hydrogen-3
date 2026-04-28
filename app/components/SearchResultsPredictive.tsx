@@ -12,6 +12,7 @@ import {useAside} from './Aside';
 import {ProductCarousel} from './products/productCarousel';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import EProductsContainer from './eproducts/EProductsContainer';
+import {hasVideoTag} from '~/lib/productTags';
 
 type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
 
@@ -265,7 +266,7 @@ function SearchResultsPredictiveProducts({
             </React.Fragment>
           );
         }
-        if (product.tags.includes('Video')) {
+        if (hasVideoTag(product.tags)) {
           const isBundle = product.tags.includes('Bundle');
           return (
             <React.Fragment key={product.id}>

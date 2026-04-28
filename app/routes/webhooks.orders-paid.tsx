@@ -13,6 +13,7 @@ import {
 import {sendPurchaseDownloadEmail} from '~/lib/purchase-email.server';
 import {sendReviewRequestEmail} from '~/lib/review-email.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
+import {hasVideoTag} from '~/lib/productTags';
 
 type ShopifyOrderPaidWebhookPayload = {
   id?: number;
@@ -454,7 +455,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     const printItems = lineItems
       .filter((lineItem) => {
         const tags = lineItem.variant?.product?.tags ?? [];
-        return tags.includes('Prints') && !tags.includes('Video');
+        return tags.includes('Prints') && !hasVideoTag(tags);
       })
       .map((lineItem) => ({
         title:

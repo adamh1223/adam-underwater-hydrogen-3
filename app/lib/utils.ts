@@ -1,5 +1,6 @@
 import {clsx, type ClassValue} from 'clsx';
 import {twMerge} from 'tailwind-merge';
+import {hasVideoTag} from '~/lib/productTags';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -9,10 +10,10 @@ export function generateCartDescription(tags: string[] = []) {
   if (tags.includes('Prints')) {
     return 'Framed Canvas Print';
   }
-  if (tags.includes('Video') && tags.includes('Bundle')) {
+  if (hasVideoTag(tags) && tags.includes('Bundle')) {
     return 'Stock Footage Bundle';
   }
-  if (tags.includes('Video')) {
+  if (hasVideoTag(tags)) {
     return 'Stock Footage Video';
   }
 }

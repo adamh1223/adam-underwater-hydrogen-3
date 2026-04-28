@@ -109,7 +109,7 @@ function getProductNumberFromVidTag(tags: unknown[]): string | null {
   for (const rawTag of tags) {
     const tag = normalizeTag(rawTag);
     if (!tag) continue;
-    const match = tag.match(/^(?:vid|bundle)[-_](\d+)$/i);
+    const match = tag.match(/^(?:v|vid|bundle)[-_]?(\d+)$/i);
     if (match?.[1]) return match[1];
   }
 

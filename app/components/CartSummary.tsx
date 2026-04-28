@@ -24,6 +24,7 @@ import StockForm from './form/StockForm';
 import type {RootLoader} from '~/root';
 import {CartDiscountProgress} from './CartDiscountProgress';
 import {REVIEW_MEDIA_DISCOUNT_CODE} from '~/lib/reviewMediaDiscountReward';
+import {hasVideoTag} from '~/lib/productTags';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -207,7 +208,7 @@ export function CartSummary({
   }
 
   const clipProducts = cart.lines.nodes.filter((item) => {
-    return item.merchandise.product.tags?.includes('Video');
+    return hasVideoTag(item.merchandise.product.tags ?? []);
   });
   const clipNames = clipProducts.map(
     (product) => product.merchandise.product.title,

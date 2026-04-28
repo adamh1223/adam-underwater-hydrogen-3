@@ -57,9 +57,12 @@ function normalizeResolutionLabel(value: string): string {
 }
 
 function normalizeFrameLabel(value: string): string {
-  const normalized = value.trim().toLowerCase();
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, '');
 
-  if (normalized.includes('slow')) return 'Slow-mo';
+  if (normalized === 's' || normalized.includes('slow')) return 'Slow-mo';
+
+  const shorthandMatch = normalized.match(/^f(24|30|50|60)$/);
+  if (shorthandMatch?.[1]) return `${shorthandMatch[1]}fps`;
 
   const numericWithOptionalFps = normalized.match(/^(\d+(?:\.\d+)?)(fps)?$/i);
   if (numericWithOptionalFps?.[1]) return `${numericWithOptionalFps[1]}fps`;
@@ -129,6 +132,33 @@ function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
   });
 
   return {durationByClip, resolutionByClip, frameByClip, clipNameByClip};
+}
+
+function getFrameBadgeLabelFromTags(tags: string[]): string | null {
+  for (const rawTag of tags) {
+    const normalizedTag = rawTag.trim().toLowerCase().replace(/\s+/g, '');
+    if (!normalizedTag) continue;
+
+    if (normalizedTag === 's' || normalizedTag.includes('slow')) {
+      return 'Slow-mo';
+    }
+
+    const shorthandMatch = normalizedTag.match(/^f(24|30|50|60)$/);
+    if (shorthandMatch?.[1]) {
+      return `${shorthandMatch[1]}fps`;
+    }
+
+    if (
+      normalizedTag === '24fps' ||
+      normalizedTag === '30fps' ||
+      normalizedTag === '50fps' ||
+      normalizedTag === '60fps'
+    ) {
+      return normalizedTag;
+    }
+  }
+
+  return null;
 }
 
 function getResolutionBadgeStyle(resolutionLabel: string): React.CSSProperties {
@@ -291,7 +321,7 @@ function EProductsContainer({
     ? 'Stock Footage Bundle'
     : 'Stock Footage Video';
   const pendingProductTags = useMemo(() => {
-    const baseTags = isBundle ? ['Video', 'Bundle'] : ['Video'];
+    const baseTags = isBundle ? ['v0', 'Bundle'] : ['v0'];
     const sourceTags = Array.isArray(product.tags) ? product.tags : [];
     const mergedTags = [...baseTags, ...sourceTags];
     return Array.from(new Set(mergedTags));
@@ -365,8 +395,7 @@ function EProductsContainer({
   let locationCountry: string | undefined;
 
   const durationTag = parseDisplayDurationFromTags(product.tags);
-  const isSlowmo = product.tags.includes('slowmo');
-  const isArtistPick = product.tags.includes('artist-pick');
+  const isArtistPick = product.tags.includes('a');
   const highestResolutionLabelFromOptions = useMemo(() => {
     const productOptions = Array.isArray(product.options) ? product.options : [];
     const resolutionOption = productOptions.find(
@@ -414,7 +443,8 @@ function EProductsContainer({
     displayResolutionBadgeLabel,
   );
 
-  const fallbackFrameBadgeLabel = isSlowmo ? 'Slow-mo' : '24fps';
+  const frameBadgeLabelFromTags = getFrameBadgeLabelFromTags(product.tags);
+  const fallbackFrameBadgeLabel = frameBadgeLabelFromTags ?? '24fps';
   const displayFrameBadgeLabel = isBundle
     ? bundleClipMetadata.frameByClip.get(activeBundleClipIndex) ??
       fallbackFrameBadgeLabel
@@ -1137,29 +1167,6 @@ function EProductsContainer({
           {/* Title/Location + Artist Pick + Duration tag + Favorite button for LIST <=600px > */}
           {shouldRenderListCompactRange && (
             <>
-              {isArtistPick && (
-                <div
-                  ref={artistPickBadgeRef}
-                  className="absolute left-2 top-2 z-[70] flex flex-col gap-1"
-                  data-bundle-no-nav
-                >
-                  <button
-                    disabled
-                    className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] text-sm  disabled:cursor-default disabled:opacity-100"
-                  >
-                    Artist's Pick
-                    <div className="flex justify-center items-end">
-                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'} className="badge-img" />
-                    </div>
-                  </button>
-                  {isBundle && (
-                    <button disabled className={bundleDiscountBadgeClassName}>
-                      <LuTag className="h-3 w-3 shrink-0" />
-                      <span className="min-w-0 text-left">20% off per clip</span>
-                    </button>
-                  )}
-                </div>
-              )}
               {!isArtistPick && isBundle && (
                 <div
                   className="absolute left-2 top-2 z-[70]"
@@ -1173,11 +1180,47 @@ function EProductsContainer({
               )}
               <div
                 ref={listTitleContainerRef}
-                className="product-title-container border-b py-1 min-h-[50px] text-center flex items-center justify-center"
+                className={`product-title-container border-b py-1 min-h-[50px] ${
+                  isArtistPick
+                    ? 'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 px-2'
+                    : 'text-center flex items-center justify-center'
+                }`}
               >
+                {isArtistPick && (
+                  <div
+                    ref={artistPickBadgeRef}
+                    className="z-[70] flex flex-col gap-1 justify-self-start"
+                    data-bundle-no-nav
+                  >
+                    <button
+                      disabled
+                      className="artist-pick-list rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] text-sm disabled:cursor-default disabled:opacity-100"
+                    >
+                      Artist&apos;s Pick
+                      <div className="flex justify-center items-end">
+                        <img
+                          src={
+                            'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'
+                          }
+                          className="badge-img"
+                        />
+                      </div>
+                    </button>
+                    {isBundle && (
+                      <button disabled className={bundleDiscountBadgeClassName}>
+                        <LuTag className="h-3 w-3 shrink-0" />
+                        <span className="min-w-0 text-left">
+                          20% off per clip
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                )}
                 <Link
                   ref={listTitleContentRef}
-                  className="product-item flex w-full flex-col items-center justify-center text-center transition-transform duration-150"
+                  className={`product-item flex w-full min-w-0 flex-col items-center justify-center text-center transition-transform duration-150 ${
+                    isArtistPick ? 'px-1' : ''
+                  }`}
                   key={product.id}
                   prefetch="intent"
                   to={variantUrl}
@@ -1186,7 +1229,7 @@ function EProductsContainer({
                     ref={listTitleTextBlockRef}
                     className="flex flex-col items-center justify-center text-center transition-transform duration-150"
                     style={
-                      listTitleOverlapShiftPx > 0
+                      !isArtistPick && listTitleOverlapShiftPx > 0
                         ? {transform: `translateX(${listTitleOverlapShiftPx}px)`}
                         : undefined
                     }
@@ -1199,12 +1242,69 @@ function EProductsContainer({
                     </p>
                   </div>
                 </Link>
+                {isArtistPick && (
+                  <div
+                    className="cursor-pointer z-[70] justify-self-end"
+                    data-bundle-no-nav
+                  >
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            ref={listFavoriteButtonRef}
+                            onClick={
+                              wishlistItem
+                                ? removeFromFavorites
+                                : addToFavorites
+                            }
+                            disabled={!loginValue}
+                            className={wishlistListButtonClassName}
+                          >
+                            {pendingWishlistChange ? (
+                              <div className="flex justify-center items-center">
+                                <ReloadIcon className="animate-spin favorite-toggle-spinner" />
+                              </div>
+                            ) : (
+                              <>
+                                {wishlistItem ? (
+                                  <div className="flex justify-center items-center">
+                                    <FaHeart />
+                                  </div>
+                                ) : (
+                                  <>
+                                    {loginValue ? (
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    ) : (
+                                      <Link to="/account/login">
+                                        <div className="flex justify-center items-center">
+                                          <FaRegHeart />
+                                        </div>
+                                      </Link>
+                                    )}
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-sm z-1000">
+                          {wishlistItem
+                            ? 'Remove from Favorites'
+                            : 'Save to Favorites'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
               </div>
 
-              <div
-                className="cursor-pointer absolute right-2 top-2 z-50"
-                data-bundle-no-nav
-              >
+              {!isArtistPick && (
+                <div
+                  className="cursor-pointer absolute right-2 top-2 z-50"
+                  data-bundle-no-nav
+                >
                 {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
 
                 <TooltipProvider>
@@ -1254,7 +1354,8 @@ function EProductsContainer({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              </div>
+                </div>
+              )}
             </>
           )}
           {/* 4K + slowmo + eproductpreview + price + description + add to cart + view product for LIST <= 600px */}

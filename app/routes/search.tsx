@@ -50,6 +50,7 @@ import {
   COMBINED_SEARCH_HINT_WORDS,
   RandomizedSearchHint,
 } from '~/components/RandomizedSearchHint';
+import {hasVideoTag} from '~/lib/productTags';
 
 export const meta: MetaFunction = () => {
   return [{title: `Adam Underwater | Search`}];
@@ -149,7 +150,7 @@ const isPrintProduct = (product: EnhancedPartialSearchResult) =>
   product.tags.includes('vertPrimary');
 
 const isStockProduct = (product: EnhancedPartialSearchResult) =>
-  product.tags.includes('Video');
+  hasVideoTag(product.tags);
 
 function parseDurationSeconds(product: {tags: string[]}): number | null {
   return parseDurationSecondsFromTags(product.tags);
@@ -177,9 +178,61 @@ function normalizeBundleFrameFilterValue(
   value: string,
 ): FrameRateFilter | string {
   const normalized = value.trim().toLowerCase();
+  if (normalized === 's') return 'slowmo';
+  const shorthandMatch = normalized.match(/^f(24|30|50|60)$/);
+  if (shorthandMatch?.[1]) {
+    return shorthandMatch[1] === '24' ? '24fps' : 'slowmo';
+  }
   if (normalized.includes('slow')) return 'slowmo';
+  if (
+    normalized === '30' ||
+    normalized === '30fps' ||
+    normalized === '50' ||
+    normalized === '50fps' ||
+    normalized === '60' ||
+    normalized === '60fps'
+  ) {
+    return 'slowmo';
+  }
   if (normalized === '24' || normalized === '24fps') return '24fps';
   return normalized;
+}
+
+function getTopLevelFrameTagValue(tags: string[]): number | null {
+  for (const rawTag of tags) {
+    const normalizedTag = rawTag.trim().toLowerCase().replace(/\s+/g, '');
+    const shorthandMatch = normalizedTag.match(/^f(24|30|50|60)$/);
+    if (shorthandMatch?.[1]) {
+      return Number.parseInt(shorthandMatch[1], 10);
+    }
+
+    const legacyMatch = normalizedTag.match(/^(\d+)fps$/);
+    if (!legacyMatch?.[1]) continue;
+    const parsedLegacy = Number.parseInt(legacyMatch[1], 10);
+    if (parsedLegacy === 24 || parsedLegacy === 30 || parsedLegacy === 50 || parsedLegacy === 60) {
+      return parsedLegacy;
+    }
+  }
+
+  return null;
+}
+
+function isSlowMotionFrameTag(tags: string[]): boolean {
+  const frameTagValue = getTopLevelFrameTagValue(tags);
+  if (frameTagValue !== null) {
+    return frameTagValue !== 24;
+  }
+
+  return tags.includes('s');
+}
+
+function isStandard24FrameTag(tags: string[]): boolean {
+  const frameTagValue = getTopLevelFrameTagValue(tags);
+  if (frameTagValue !== null) {
+    return frameTagValue === 24;
+  }
+
+  return !tags.includes('s');
 }
 
 function getBundleClipFrameRates(tags: string[]): string[] {
@@ -244,10 +297,10 @@ function bundleMatchesFrameRate(
   const frames = getBundleClipFrameRates(tags);
   if (frames.length === 0) {
     if (frameRateFilter === '24fps') {
-      return !tags.includes('slowmo');
+      return isStandard24FrameTag(tags);
     }
     if (frameRateFilter === 'slowmo') {
-      return tags.includes('slowmo');
+      return isSlowMotionFrameTag(tags);
     }
     return true;
   }
@@ -1154,7 +1207,7 @@ export default function SearchPage() {
         const isBundleProduct = product.tags.includes('Bundle');
         const matchesArtistPickFilter =
           stockArtistPickFilterState === 'All' ||
-          product.tags.includes('artist-pick');
+          product.tags.includes('a');
 
         if (!matchesArtistPickFilter) return false;
 
@@ -1181,9 +1234,9 @@ export default function SearchPage() {
             if (!bundleMatchesFrameRate(product.tags, frameRateFilter))
               return false;
           } else if (frameRateFilter === '24fps') {
-            if (product.tags.includes('slowmo')) return false;
+            if (!isStandard24FrameTag(product.tags)) return false;
           } else if (frameRateFilter === 'slowmo') {
-            if (!product.tags.includes('slowmo')) return false;
+            if (!isSlowMotionFrameTag(product.tags)) return false;
           }
         }
 

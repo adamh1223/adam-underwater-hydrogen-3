@@ -7,6 +7,7 @@ import EProductsContainer from './eproducts/EProductsContainer';
 import Sectiontitle from './global/Sectiontitle';
 import {EnhancedPartialSearchResult} from '~/lib/types';
 import {useEffect, useState} from 'react';
+import {hasVideoTag} from '~/lib/productTags';
 
 type SearchItems = RegularSearchReturn['result']['items'];
 type PartialSearchResult<ItemType extends keyof SearchItems> = Pick<
@@ -145,7 +146,7 @@ function SearchResultsProducts({
             product.tags.includes('Prints'),
           );
           const hasVideoProducts = nodes.some((product) =>
-            product.tags.includes('Video'),
+            hasVideoTag(product.tags),
           );
           const hasCardProducts = hasPrintProducts || hasVideoProducts;
           const productGridClassName = [
@@ -186,7 +187,7 @@ function SearchResultsProducts({
                 </div>
               );
             }
-            if (product.tags.includes('Video')) {
+            if (hasVideoTag(product.tags)) {
               return (
                 <div className="h-full" key={product.id}>
                   <EProductsContainer

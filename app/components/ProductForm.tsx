@@ -124,8 +124,8 @@ export function ProductForm({
   const pendingProductTags = isPrint
     ? ['Prints']
     : isVideoBundle
-      ? ['Video', 'Bundle']
-      : ['Video'];
+      ? ['v0', 'Bundle']
+      : ['v0'];
   const previewImageUrl =
     selectedVariant?.image?.url ?? imagesToShow?.[0]?.url ?? null;
   const pendingLinePreview: CartPendingLinePreviewPayload | null =

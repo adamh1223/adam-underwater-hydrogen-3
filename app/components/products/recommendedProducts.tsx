@@ -3,6 +3,7 @@ import {Suspense, useEffect, useState} from 'react';
 import {RecommendedProductsQuery} from 'storefrontapi.generated';
 import ProductCarousel from './productCarousel';
 import {Separator} from '../ui/separator';
+import {hasVideoTag} from '~/lib/productTags';
 
 function RecommendedProducts({
   products,
@@ -47,7 +48,7 @@ function RecommendedProducts({
               >
                 {response
                   ? response.products.nodes.map((product) => {
-                      const isVideo = product.tags?.includes('Video');
+                      const isVideo = hasVideoTag(product.tags ?? []);
                       const isRecommendedProduct =
                         product.tags?.includes('recommended');
                       const isInWishlist = wishlistProducts?.includes(

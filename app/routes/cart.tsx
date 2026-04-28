@@ -23,6 +23,7 @@ import {
   setCustomerWelcome15UsesRemainingMetafield,
   WELCOME15_DISCOUNT_CODE,
 } from '~/lib/customerDiscountUsage.server';
+import {hasVideoTag} from '~/lib/productTags';
 type VariantProductSummary = {
   productId: string;
   tags: string[];
@@ -60,7 +61,7 @@ const VARIANT_PRODUCT_SUMMARY_QUERY = `#graphql
 `;
 
 function isVideoProduct(tags: string[] | null | undefined) {
-  return Array.isArray(tags) && tags.includes('Video');
+  return hasVideoTag(tags ?? []);
 }
 
 function toCartLineInput(line: unknown): CartLineInput | null {
@@ -105,7 +106,7 @@ function getPreloadedVariantSummariesFromLines(lines: unknown[]) {
     const isVideo = candidate.__isVideo === true;
     summaryByVariantId.set(merchandiseId, {
       productId,
-      tags: isVideo ? ['Video'] : [],
+      tags: isVideo ? ['v0'] : [],
     });
   }
 

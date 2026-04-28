@@ -34,6 +34,7 @@ import {
   type ReviewMediaDiscountReward,
 } from '~/lib/reviewMediaDiscountReward';
 import {toast} from 'sonner';
+import {hasVideoTag} from '~/lib/productTags';
 
 type RecommendedProduct = {
   id: string;
@@ -197,7 +198,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
         selectedLeaveReviewOrder.lineItems
           .filter((lineItem) => {
             const tags = lineItem.product?.tags ?? [];
-            return tags.includes('Prints') && !tags.includes('Video');
+            return tags.includes('Prints') && !hasVideoTag(tags);
           })
           .map((lineItem) => lineItem.product?.id)
           .filter((id): id is string => typeof id === 'string' && id.length > 0),
@@ -791,7 +792,7 @@ function NotificationDetail({
                     const productHref = handle ? `/products/${handle}` : null;
                     const tags = lineItem.product?.tags ?? [];
                     const isPrint =
-                      tags.includes('Prints') && !tags.includes('Video');
+                      tags.includes('Prints') && !hasVideoTag(tags);
                     const productId = lineItem.product?.id ?? null;
                     const existingReview = productId
                       ? localUserReviewsByProductId[productId]

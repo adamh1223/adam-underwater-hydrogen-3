@@ -10,6 +10,7 @@ import {Card, CardContent} from './ui/card';
 import {Button} from './ui/button';
 import {Skeleton} from './ui/skeleton';
 import {generateCartDescription} from '~/lib/utils';
+import {hasVideoTag} from '~/lib/productTags';
 import {Fragment, useEffect, useState} from 'react';
 import type {CartPendingLinePreview} from '~/lib/cartPendingLine';
 
@@ -280,7 +281,7 @@ export function CartLineItem({
   }, []);
 
   const isPrintProduct = normalizedProductTags.includes('prints');
-  const isVideoProduct = normalizedProductTags.includes('video');
+  const isVideoProduct = hasVideoTag(productTags);
   const hasHorizontalPrintTag = normalizedProductTags.some((tag) =>
     ['horonly', 'horprimary', 'horizontal'].includes(tag),
   );

@@ -33,6 +33,7 @@ import {
   parseReviewMediaDiscountReward,
   type ReviewMediaDiscountReward,
 } from '~/lib/reviewMediaDiscountReward';
+import {hasVideoTag} from '~/lib/productTags';
 
 const ORDER_LINE_ITEM_VARIANT_DETAILS_QUERY = `#graphql
   query OrderLineItemVariantDetails($id: ID!) {
@@ -524,7 +525,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   // Determine order composition and pickup status
   const hasAnyEProducts = Object.keys(downloadLinksByLineItemId).length > 0;
   const hasAnyPrints = Array.from(downloadMetadataByVariantId.values()).some(
-    ({tags}) => tags.includes('Prints') && !tags.includes('Video'),
+    ({tags}) => tags.includes('Prints') && !hasVideoTag(tags),
   );
   const isEProductOnly = hasAnyEProducts && !hasAnyPrints;
   const isMixedOrder = hasAnyEProducts && hasAnyPrints;
@@ -674,7 +675,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     const product = lineItemProductsByLineItemId[lineItemId];
     if (!product?.id) continue;
     const tags = Array.isArray(product.tags) ? product.tags : [];
-    const isPrint = tags.includes('Prints') && !tags.includes('Video');
+    const isPrint = tags.includes('Prints') && !hasVideoTag(tags);
     if (isPrint) {
       printProductIds.add(product.id);
     }
@@ -1637,7 +1638,7 @@ function OrderLineRow({
   const lineItemTags = tagsFromLineItemMap.length
     ? tagsFromLineItemMap
     : tagsFromProduct;
-  const isStockClipFromTags = lineItemTags.includes('Video');
+  const isStockClipFromTags = hasVideoTag(lineItemTags);
   const isBundleFromTags = lineItemTags.includes('Bundle');
   const isPrintFromTags =
     lineItemTags.includes('Prints') && !isStockClipFromTags;

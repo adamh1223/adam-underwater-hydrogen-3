@@ -75,6 +75,7 @@ import {
   parseDurationSecondsFromTags,
   parseDurationSecondsValue,
 } from '~/lib/durationTags';
+import {hasVideoTag} from '~/lib/productTags';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   const collection = data?.collection as
@@ -241,7 +242,7 @@ async function loadCriticalData({
     filters.push({tag: searchTerm});
   }
 
-  const [{collection}] = await Promise.all([
+  const [{collection}, stockFallbackResponse] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
       variables: {
         handle,
@@ -250,6 +251,11 @@ async function loadCriticalData({
       },
       // Add other queries here, so that they are loaded in parallel
     }),
+    handle === 'stock'
+      ? storefront.query(STOCK_PRODUCTS_FALLBACK_QUERY, {
+          variables: {first: 250},
+        })
+      : Promise.resolve(null),
   ]);
 
   if (!collection) {
@@ -259,8 +265,30 @@ async function loadCriticalData({
   }
 
   if (Array.isArray(collection?.products?.nodes)) {
+    let mergedNodes = [...(collection.products.nodes as any[])];
+
+    if (handle === 'stock') {
+      const fallbackNodes = Array.isArray(
+        stockFallbackResponse?.products?.nodes,
+      )
+        ? (stockFallbackResponse.products.nodes as any[]).filter((product) =>
+            hasVideoTag(product?.tags),
+          )
+        : [];
+
+      if (fallbackNodes.length > 0) {
+        const byId = new Map<string, any>();
+        for (const product of [...mergedNodes, ...fallbackNodes]) {
+          const id = typeof product?.id === 'string' ? product.id : '';
+          if (!id) continue;
+          if (!byId.has(id)) byId.set(id, product);
+        }
+        mergedNodes = Array.from(byId.values());
+      }
+    }
+
     collection.products.nodes = applyHighestResolutionVariantToProducts(
-      collection.products.nodes as any[],
+      mergedNodes,
     );
   }
 
@@ -918,9 +946,66 @@ function normalizeBundleFrameFilterValue(
   value: string,
 ): FrameRateFilter | string {
   const normalized = value.trim().toLowerCase();
+  if (normalized === 's') return 'slowmo';
+  const shorthandMatch = normalized.match(/^f(24|30|50|60)$/);
+  if (shorthandMatch?.[1]) {
+    return shorthandMatch[1] === '24' ? '24fps' : 'slowmo';
+  }
   if (normalized.includes('slow')) return 'slowmo';
+  if (
+    normalized === '30' ||
+    normalized === '30fps' ||
+    normalized === '50' ||
+    normalized === '50fps' ||
+    normalized === '60' ||
+    normalized === '60fps'
+  ) {
+    return 'slowmo';
+  }
   if (normalized === '24' || normalized === '24fps') return '24fps';
   return normalized;
+}
+
+function getTopLevelFrameTagValue(tags: string[]): number | null {
+  for (const rawTag of tags) {
+    const normalizedTag = rawTag.trim().toLowerCase().replace(/\s+/g, '');
+    const shorthandMatch = normalizedTag.match(/^f(24|30|50|60)$/);
+    if (shorthandMatch?.[1]) {
+      return Number.parseInt(shorthandMatch[1], 10);
+    }
+
+    const legacyMatch = normalizedTag.match(/^(\d+)fps$/);
+    if (!legacyMatch?.[1]) continue;
+    const parsedLegacy = Number.parseInt(legacyMatch[1], 10);
+    if (
+      parsedLegacy === 24 ||
+      parsedLegacy === 30 ||
+      parsedLegacy === 50 ||
+      parsedLegacy === 60
+    ) {
+      return parsedLegacy;
+    }
+  }
+
+  return null;
+}
+
+function isSlowMotionFrameTag(tags: string[]): boolean {
+  const frameTagValue = getTopLevelFrameTagValue(tags);
+  if (frameTagValue !== null) {
+    return frameTagValue !== 24;
+  }
+
+  return tags.includes('s');
+}
+
+function isStandard24FrameTag(tags: string[]): boolean {
+  const frameTagValue = getTopLevelFrameTagValue(tags);
+  if (frameTagValue !== null) {
+    return frameTagValue === 24;
+  }
+
+  return !tags.includes('s');
 }
 
 function getBundleClipFrameRates(tags: string[]): string[] {
@@ -958,10 +1043,10 @@ function bundleMatchesFrameRate(
   const frames = getBundleClipFrameRates(tags);
   if (frames.length === 0) {
     if (frameRateFilter === '24fps') {
-      return !tags.includes('slowmo');
+      return isStandard24FrameTag(tags);
     }
     if (frameRateFilter === 'slowmo') {
-      return tags.includes('slowmo');
+      return isSlowMotionFrameTag(tags);
     }
     return true;
   }
@@ -1064,12 +1149,12 @@ function applyStockCollectionFilters<
     const isBundleProduct = product.tags.includes('Bundle');
     const matchesArtistPickFilter =
       artistPickFilterState === 'All' ||
-      product.tags.includes('artist-pick');
+      product.tags.includes('a');
 
     if (!matchesArtistPickFilter) return false;
 
     if (stockFilterState === 'All Clips') {
-      if (!(product.tags.includes('Video') && !isBundleProduct)) return false;
+      if (!(hasVideoTag(product.tags) && !isBundleProduct)) return false;
     } else if (stockFilterState === 'Discounted Bundles') {
       if (!isBundleProduct) return false;
     }
@@ -1097,9 +1182,9 @@ function applyStockCollectionFilters<
         if (!bundleMatchesFrameRate(product.tags, frameRateFilter))
           return false;
       } else if (frameRateFilter === '24fps') {
-        if (product.tags.includes('slowmo')) return false;
+        if (!isStandard24FrameTag(product.tags)) return false;
       } else if (frameRateFilter === 'slowmo') {
-        if (!product.tags.includes('slowmo')) return false;
+        if (!isSlowMotionFrameTag(product.tags)) return false;
       }
     }
 
@@ -1130,21 +1215,14 @@ function getFilteredCollectionSearchProducts({
   frameRateFilter: FrameRateFilter;
   artistPickFilterState: 'All' | "Artist's Pick Only";
 }) {
-  const extraTags: string[] = [];
   const collectionName = capitalizeFirstLetter(collectionTitle ?? '');
-
-  if (collectionName === 'Stock') {
-    extraTags.push('Video');
-  }
 
   const filteredProducts = products.filter((product) =>
     product?.tags?.includes(collectionName),
   );
   const extraFilteredProducts =
-    extraTags.length > 0
-      ? products.filter((product) =>
-          product?.tags?.some((tag) => extraTags.includes(tag)),
-        )
+    collectionHandle === 'stock'
+      ? products.filter((product) => hasVideoTag(product?.tags))
       : [];
   const combinedProductSearches = [
     ...filteredProducts,
@@ -2311,5 +2389,21 @@ const COLLECTION_QUERY = `#graphql
   }
 
   
+` as const;
+
+const STOCK_PRODUCTS_FALLBACK_QUERY = `#graphql
+  ${PRODUCT_ITEM_FRAGMENT}
+  query StockProductsFallback(
+    $country: CountryCode
+    $language: LanguageCode
+    $first: Int = 250
+  ) @inContext(country: $country, language: $language) {
+    products(first: $first, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        ...ProductItem
+        descriptionHtml
+      }
+    }
+  }
 ` as const;
 // tack on selectedvariants even if theres none

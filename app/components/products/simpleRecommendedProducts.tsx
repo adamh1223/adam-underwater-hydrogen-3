@@ -11,6 +11,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '../ui/carousel';
+import {hasVideoTag} from '~/lib/productTags';
 
 function SimpleRecommendedProducts({
   products,
@@ -92,8 +93,8 @@ function SimpleRecommendedProducts({
                 product.images.nodes[0]?.url?.includes('youmayalsolike'),
               );
               const matchesType = isVideo
-                ? product.tags.includes('Video')
-                : !product.tags.includes('Video');
+                ? hasVideoTag(product.tags)
+                : !hasVideoTag(product.tags);
 
               return (
                 hasYouMayAlsoLikeImage &&

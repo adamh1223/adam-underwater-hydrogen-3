@@ -34,6 +34,7 @@ import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 import {useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
+import {hasVideoTag} from '~/lib/productTags';
 
 const ADMIN_ORDER_LOOKUP_QUERY = `#graphql
   query AdminOrderLookup($first: Int!, $query: String!) {
@@ -260,8 +261,8 @@ type OrderComposition = 'eproduct-only' | 'mixed' | 'print-or-other';
 
 /**
  * Determine the product composition of an order from its line item tags.
- * - `eproduct-only`: all items are stock footage (Video), no prints
- * - `mixed`: has both stock footage (Video) and physical prints (Prints)
+ * - `eproduct-only`: all items are stock footage (`v<number>`), no prints
+ * - `mixed`: has both stock footage (`v<number>`) and physical prints (Prints)
  * - `print-or-other`: only prints or unknown items
  */
 function getOrderComposition(
@@ -275,7 +276,7 @@ function getOrderComposition(
 
   for (const item of items) {
     const tags = item?.variant?.product?.tags ?? [];
-    const isVideo = tags.includes('Video');
+    const isVideo = hasVideoTag(tags);
     const isPrint = tags.includes('Prints') && !isVideo;
     if (isVideo) hasEProduct = true;
     if (isPrint) hasPrint = true;

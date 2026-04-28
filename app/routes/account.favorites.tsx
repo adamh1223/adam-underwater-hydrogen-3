@@ -42,6 +42,7 @@ import EProductsContainer from '~/components/eproducts/EProductsContainer';
 import {useEffect} from 'react';
 import Sectiontitle from '~/components/global/Sectiontitle';
 import {buildIconLinkPreviewMeta} from '~/lib/linkPreview';
+import {hasVideoTag} from '~/lib/productTags';
 
 export const meta: MetaFunction = () => {
   return [
@@ -131,7 +132,7 @@ export default function Favorites() {
                 </>
               );
             }
-            if (product.tags.includes('Video')) {
+            if (hasVideoTag(product.tags)) {
               return (
                 <>
                   <EProductsContainer

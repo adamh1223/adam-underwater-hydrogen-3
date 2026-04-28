@@ -1,6 +1,7 @@
 import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {getNotificationOrderDetails} from '~/lib/notifications.server';
 import {GET_REVIEW_QUERY} from '~/lib/homeQueries';
+import {hasVideoTag} from '~/lib/productTags';
 
 export async function loader({context, request}: LoaderFunctionArgs) {
   await context.customerAccount.handleAuthStatus();
@@ -40,7 +41,7 @@ export async function loader({context, request}: LoaderFunctionArgs) {
         (order.lineItems ?? [])
           .filter((lineItem) => {
             const tags = lineItem.product?.tags ?? [];
-            return tags.includes('Prints') && !tags.includes('Video');
+            return tags.includes('Prints') && !hasVideoTag(tags);
           })
           .map((lineItem) => lineItem.product?.id)
           .filter((id): id is string => typeof id === 'string' && id.length > 0),

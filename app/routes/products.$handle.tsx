@@ -92,6 +92,7 @@ import {
   REVIEW_MEDIA_DISCOUNT_NAMESPACE,
   serializeReviewMediaDiscountReward,
 } from '~/lib/reviewMediaDiscountReward';
+import {hasVideoTag} from '~/lib/productTags';
 import ProductPageSkeleton from '~/components/skeletons/ProductPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 
@@ -152,7 +153,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   );
   const product = data?.product;
   const productTags = Array.isArray(product?.tags) ? product.tags : [];
-  const isEProduct = productTags.includes('Video');
+  const isEProduct = hasVideoTag(productTags);
   const selectedOptionsForMeta = (data?.selectedOptions ??
     product?.selectedOrFirstAvailableVariant?.selectedOptions) as
     | Array<ShareSelectedOption>
@@ -261,11 +262,7 @@ function parseVideoFileSizeTags(tags: unknown[]): ParsedVideoFileSizeTags {
     const singleOrHigherMatch = tag.match(/^s(\d+)$/i);
     if (singleOrHigherMatch?.[1]) {
       const parsed = Number.parseInt(singleOrHigherMatch[1], 10);
-      if (
-        Number.isFinite(parsed) &&
-        parsed > 0 &&
-        singleOrHigherMb === null
-      ) {
+      if (Number.isFinite(parsed) && parsed > 0 && singleOrHigherMb === null) {
         singleOrHigherMb = parsed;
       }
     }
@@ -351,6 +348,34 @@ function getSelectedVideoFileSizeLabel({
     : formatVideoFileSizeLabel(singleOrHigherMb as number);
 }
 
+function getSelectedVideoFrameRateLabel(tags: unknown[]): string | null {
+  for (const rawTag of tags) {
+    if (typeof rawTag !== 'string') continue;
+    const normalizedTag = rawTag.trim().toLowerCase().replace(/\s+/g, '');
+    const shorthandMatch = normalizedTag.match(/^f(24|30|50|60)$/);
+    const match = shorthandMatch ?? normalizedTag.match(/^(\d+)fps$/);
+    if (!match?.[1]) continue;
+
+    const parsedFps = Number.parseInt(match[1], 10);
+    if (!Number.isFinite(parsedFps) || parsedFps <= 0) continue;
+
+    switch (parsedFps) {
+      case 24:
+        return '24fps (100% speed)';
+      case 30:
+        return '30 fps (80% speed)';
+      case 50:
+        return '50fps (50% speed)';
+      case 60:
+        return '60fps (40% speed)';
+      default:
+        return null;
+    }
+  }
+
+  return null;
+}
+
 const FIVE_STAR_KEYS = ['one', 'two', 'three', 'four', 'five'] as const;
 
 type ProductSpecItem = {
@@ -382,7 +407,8 @@ const PRINT_SPECS: ProductSpecItem[] = [
       'Printed on 200 GSM, polyester inkjet matte canvas on the Canon ImagePro-graf 4600 on a 44 inch roll.',
   },
   {
-    iconSrc: 'https://downloads.adamunderwater.com/store-1-au/public/durable.png',
+    iconSrc:
+      'https://downloads.adamunderwater.com/store-1-au/public/durable.png',
     title: 'Durable',
     description:
       'Prints are professionally stretched over heavy duty wooden frames. Staples are methodically placed to allow even tension of the canvas.',
@@ -430,9 +456,16 @@ function SpecsGrid({
   return (
     <div className={`${sectionClassName} product-specs-grid`}>
       {items.map((item) => (
-        <div key={`${sectionClassName}-${item.title}`} className="product-specs-item">
+        <div
+          key={`${sectionClassName}-${item.title}`}
+          className="product-specs-item"
+        >
           <div className="flex justify-center">
-            <img src={item.iconSrc} alt={item.title} style={{height: '2.7rem'}} />
+            <img
+              src={item.iconSrc}
+              alt={item.title}
+              style={{height: '2.7rem'}}
+            />
           </div>
           <div className="flex justify-center">{item.title}</div>
           <div className="product-specs-item-description">
@@ -493,11 +526,11 @@ function getVideoSwipeComparisonConfig(product: any): {
   const tags = Array.isArray(product?.tags) ? product.tags : [];
   const vidIdentifierTag = tags.find(
     (tag: unknown) =>
-      typeof tag === 'string' && /^(?:vid|bundle)[-_]\d+$/i.test(tag.trim()),
+      typeof tag === 'string' && /^(?:v|vid|bundle)[-_]?\d+$/i.test(tag.trim()),
   );
   const vidKey =
     typeof vidIdentifierTag === 'string'
-      ? toVidKey(vidIdentifierTag.match(/^(?:vid|bundle)[-_](\d+)$/i)?.[1])
+      ? toVidKey(vidIdentifierTag.match(/^(?:v|vid|bundle)[-_]?(\d+)$/i)?.[1])
       : undefined;
   if (!vidKey) return null;
 
@@ -537,11 +570,11 @@ const bundleWmlinkRegex = /^wmlink(\d+)_/i;
 const bundleClipNameRegex = /^cn(\d+)_+(.+)$/i;
 const bundleAltRegex = /bundle(\d+)(?:[-_](\d+))?/i;
 const bundleVidTokenRegex =
-  /(?:^|[^a-z0-9])(?:vid|bundle)[-_]?(\d+)(?=[^a-z0-9]|$)/i;
-const indexedVidTagRegex = /^vid(\d+)[-_](\d+)$/i;
+  /(?:^|[^a-z0-9])(?:v|vid|bundle)[-_]?(\d+)(?=[^a-z0-9]|$)/i;
+const indexedVidTagRegex = /^(?:v|vid)(\d+)[-_](\d+)$/i;
 const indexedBundleVidTagRegex = /^bundle(\d+)[-_](\d+)$/i;
-const standaloneBundleVidTagRegex = /^bundle[-_](\d+)$/i;
-const standaloneVidTagRegex = /^vid[-_](\d+)$/i;
+const standaloneBundleVidTagRegex = /^bundle[-_]?(\d+)$/i;
+const standaloneVidTagRegex = /^(?:v|vid)[-_]?(\d+)$/i;
 const bundleClipDivRegex =
   /<div[^>]*class=(["'])[^"']*\bclip-(\d+)\b[^"']*\1[^>]*>([\s\S]*?)<\/div>/gi;
 const bundleDescriptionTitleBlacklist = new Set([
@@ -726,7 +759,8 @@ function buildBundleDetailClips({
     if (matchedIndex?.[1]) {
       const clipIndex = Number(matchedIndex[1]);
       const vidFromAlt =
-        toVidKey(matchedIndex[2]) ?? toVidKey(altText.match(bundleVidTokenRegex)?.[1]);
+        toVidKey(matchedIndex[2]) ??
+        toVidKey(altText.match(bundleVidTokenRegex)?.[1]);
 
       if (clipIndex > 0) {
         imageByClip.set(clipIndex, image);
@@ -738,7 +772,9 @@ function buildBundleDetailClips({
     }
 
     const orderedClipIndex = imageIndex + 1;
-    const fallbackVidFromAlt = toVidKey(altText.match(bundleVidTokenRegex)?.[1]);
+    const fallbackVidFromAlt = toVidKey(
+      altText.match(bundleVidTokenRegex)?.[1],
+    );
     if (fallbackVidFromAlt && !vidByClip.has(orderedClipIndex)) {
       vidByClip.set(orderedClipIndex, fallbackVidFromAlt);
     }
@@ -867,9 +903,8 @@ async function loadCriticalData({
     variables: {productId: product.id},
   });
   if (reviews?.product?.metafield?.value) {
-    const {hydrateReviewLocationsInMetafieldValue} = await import(
-      '~/lib/reviews.server'
-    );
+    const {hydrateReviewLocationsInMetafieldValue} =
+      await import('~/lib/reviews.server');
     reviews.product.metafield.value =
       await hydrateReviewLocationsInMetafieldValue(
         context.env,
@@ -897,13 +932,22 @@ async function loadCriticalData({
     }
 
     const customerNode = (customer as any)?.customer as
-      | {id?: string; firstName?: string; lastName?: string; reviewMediaDiscountReward?: {value?: string | null}}
+      | {
+          id?: string;
+          firstName?: string;
+          lastName?: string;
+          reviewMediaDiscountReward?: {value?: string | null};
+        }
       | undefined;
     const existingReward = parseReviewMediaDiscountReward(
       customerNode?.reviewMediaDiscountReward?.value,
     );
 
-    if (!existingReward && customerNode?.id && reviews?.product?.metafield?.value) {
+    if (
+      !existingReward &&
+      customerNode?.id &&
+      reviews?.product?.metafield?.value
+    ) {
       let parsedProductReviews: any[] = [];
       try {
         const parsed = JSON.parse(reviews.product.metafield.value);
@@ -959,7 +1003,8 @@ async function loadCriticalData({
             },
           });
 
-          const metafieldErrors = metafieldResult?.data?.metafieldsSet?.userErrors ?? [];
+          const metafieldErrors =
+            metafieldResult?.data?.metafieldsSet?.userErrors ?? [];
           if (metafieldErrors.length > 0) {
             console.error(
               'Backfill review discount reward metafield errors:',
@@ -1427,17 +1472,20 @@ export default function Product() {
       : {}),
   };
 
-  const isVideo = product.tags.includes('Video');
+  const isVideo = hasVideoTag(product.tags);
   const isBundle = product.tags.includes('Bundle');
+  const isArtistPick = product.tags.includes('a');
   const isPrint = !isVideo;
   const isVideoBundle = isVideo && isBundle;
+  const selectedVideoFrameRateLabel = getSelectedVideoFrameRateLabel(tags);
   const selectedVideoFileSizeLabel = getSelectedVideoFileSizeLabel({
     tags,
     product,
     selectedVariant,
   });
   const standaloneVideoSwipeComparison = useMemo(
-    () => (isVideo && !isBundle ? getVideoSwipeComparisonConfig(product) : null),
+    () =>
+      isVideo && !isBundle ? getVideoSwipeComparisonConfig(product) : null,
     [isBundle, isVideo, product],
   );
 
@@ -1829,7 +1877,10 @@ export default function Product() {
     }
 
     params.set('_au_meta', SHARE_CACHE_BUST_VERSION);
-    if (typeof selectedVariant?.id === 'string' && selectedVariant.id.length > 0) {
+    if (
+      typeof selectedVariant?.id === 'string' &&
+      selectedVariant.id.length > 0
+    ) {
       params.set('_au_variant', selectedVariant.id);
     } else {
       params.delete('_au_variant');
@@ -2029,67 +2080,88 @@ export default function Product() {
       ? ' favorite-toggle-btn--active'
       : ''
   }${
-    favoriteBorderTraceState === 'adding' ? ' favorite-toggle-btn--animating' : ''
+    favoriteBorderTraceState === 'adding'
+      ? ' favorite-toggle-btn--animating'
+      : ''
   }${
     favoriteBorderTraceState === 'removing'
       ? ' favorite-toggle-btn--animating-reverse'
       : ''
   }`;
   const productActionIconClassName = 'h-4 w-4';
+  const renderArtistPickBadge = (className = '') => (
+    <button
+      disabled
+      className={`artist-pick rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] text-sm hover:bg-background disabled:cursor-default disabled:opacity-100 ${className}`}
+    >
+      Artist&apos;s Pick
+      <div className="flex justify-center items-end">
+        <img
+          src={
+            'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'
+          }
+          alt=""
+          className="badge-img"
+        />
+      </div>
+    </button>
+  );
 
   const renderProductHeaderActionButtons = () => (
     <TooltipProvider>
-      <div className="flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={wishlistItem ? removeFromFavorites : addToFavorites}
-              className={productWishlistButtonClassName}
-            >
-              {pendingWishlistChange ? (
-                <ReloadIcon
-                  className={`${productActionIconClassName} animate-spin`}
-                />
-              ) : (
-                <>
-                  {wishlistItem ? (
-                    <FaHeart className={productActionIconClassName} />
-                  ) : (
-                    <>
-                      {isLoggedIn ? (
-                        <FaRegHeart className={productActionIconClassName} />
-                      ) : (
-                        <Link to="/account/login">
-                          <FaRegHeart
-                            className={productActionIconClassName}
-                          />
-                        </Link>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-sm z-1000">
-            {wishlistItem ? 'Remove from Favorites' : 'Save to Favorites'}
-          </TooltipContent>
-        </Tooltip>
+      <div className="flex flex-col items-end gap-2">
+        <div className="flex items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={wishlistItem ? removeFromFavorites : addToFavorites}
+                className={productWishlistButtonClassName}
+              >
+                {pendingWishlistChange ? (
+                  <ReloadIcon
+                    className={`${productActionIconClassName} animate-spin`}
+                  />
+                ) : (
+                  <>
+                    {wishlistItem ? (
+                      <FaHeart className={productActionIconClassName} />
+                    ) : (
+                      <>
+                        {isLoggedIn ? (
+                          <FaRegHeart className={productActionIconClassName} />
+                        ) : (
+                          <Link to="/account/login">
+                            <FaRegHeart
+                              className={productActionIconClassName}
+                            />
+                          </Link>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-sm z-1000">
+              {wishlistItem ? 'Remove from Favorites' : 'Save to Favorites'}
+            </TooltipContent>
+          </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={handleShareButtonClick}
-              className={productActionButtonClassName}
-              aria-label="Share product"
-            >
-              <Share className={productActionIconClassName} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-sm z-1000">
-            Share
-          </TooltipContent>
-        </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleShareButtonClick}
+                className={productActionButtonClassName}
+                aria-label="Share product"
+              >
+                <Share className={productActionIconClassName} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-sm z-1000">
+              Share
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </TooltipProvider>
   );
@@ -2214,42 +2286,71 @@ export default function Product() {
       <>
         <section className="product pt-[20px]">
           {/* Link tree */}
-          <ol className="px-[30px] mb-3 flex flex-wrap items-center gap-1.5 break-words text-lg text-muted-foreground sm:gap-2.5">
-            <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-              <Link to="/">Home</Link>
-            </li>
-            <li
-              role="presentation"
-              aria-hidden="true"
-              className="[&>svg]:size-3.5"
-            >
-              {<ChevronRightIcon />}
-            </li>
-            {!isVideo && (
-              <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                <Link to="/prints">Prints</Link>
-              </li>
+          <div className="ps-[30px] pe-[12px] mb-3 flow-root text-left">
+            {isArtistPick && (
+              <div className="float-right ml-3 mb-2">
+                {renderArtistPickBadge('text-sm')}
+              </div>
             )}
-            {isVideo && (
-              <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                <Link to="/stock">Stock Footage</Link>
-              </li>
-            )}
-            <li
-              role="presentation"
-              aria-hidden="true"
-              className="[&>svg]:size-3.5"
+            <nav
+              aria-label="Breadcrumb"
+              className="min-w-0 text-left text-lg text-muted-foreground leading-tight break-words"
             >
-              {<ChevronRightIcon />}
-            </li>
-            <li className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-              {title}
-            </li>
-          </ol>
+              <div className="inline-flex gap-1.5 me-2 mb-1">
+                <Link
+                  className="transition-colors hover:text-foreground"
+                  to="/"
+                >
+                  Home
+                </Link>
+                <div
+                  role="presentation"
+                  aria-hidden="true"
+                  className="[&>svg]:size-3.5 flex items-center"
+                >
+                  {<ChevronRightIcon />}
+                </div>
+              </div>
+              {!isVideo && (
+                <div className="inline-flex gap-1.5 me-2 mb-1">
+                  <Link
+                    className="transition-colors hover:text-foreground"
+                    to="/prints"
+                  >
+                    Prints
+                  </Link>
+                  <div
+                    role="presentation"
+                    aria-hidden="true"
+                    className="[&>svg]:size-3.5 flex items-center"
+                  >
+                    {<ChevronRightIcon />}
+                  </div>
+                </div>
+              )}
+              {isVideo && (
+                <div className="inline-flex gap-1.5 me-2 mb-1">
+                  <Link
+                    className="transition-colors hover:text-foreground"
+                    to="/stock"
+                  >
+                    Stock Footage
+                  </Link>
+                  <div
+                    role="presentation"
+                    aria-hidden="true"
+                    className="[&>svg]:size-3.5 flex items-center"
+                  >
+                    {<ChevronRightIcon />}
+                  </div>
+                </div>
+              )}
+              <div className="inline text-muted-foreground">{title}</div>
+            </nav>
+          </div>
           {windowWidth && windowWidth < 1024 && (
             <>
-              <br />
-              <div className="individual-product-header-container px-[35px]">
+              <div className="individual-product-header-container px-[35px] pt-[6px]">
                 <div className="title-button-wrapper">
                   <span className="capitalize text-3xl font-bold">{title}</span>
                   {renderProductHeaderActionButtons()}
@@ -2260,9 +2361,7 @@ export default function Product() {
                 )}
                 {isVideo && (
                   <p className="text-muted-foreground">
-                    {isBundle
-                      ? 'Stock Footage Bundle'
-                      : 'Stock Footage Video'}
+                    {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
                   </p>
                 )}
                 <ProductPrice
@@ -2499,8 +2598,13 @@ export default function Product() {
                     </CardContent>
                   </Card>
                 )}
+                {isVideo && !isBundle && selectedVideoFrameRateLabel && (
+                  <p className="mt-3 mb-2">
+                    <strong>Frame Rate:</strong> {selectedVideoFrameRateLabel}
+                  </p>
+                )}
                 {isVideo && !isBundle && selectedVideoFileSizeLabel && (
-                  <p className="mt-3 mb-4">
+                  <p className="mb-4">
                     <strong>File Size:</strong> {selectedVideoFileSizeLabel}
                   </p>
                 )}
@@ -2632,8 +2736,13 @@ export default function Product() {
                     dangerouslySetInnerHTML={{__html: descriptionHtml}}
                   />
                 )}
+                {isVideo && !isBundle && selectedVideoFrameRateLabel && (
+                  <p className="mt-3 mb-2">
+                    <strong>Frame Rate:</strong> {selectedVideoFrameRateLabel}
+                  </p>
+                )}
                 {isVideo && !isBundle && selectedVideoFileSizeLabel ? (
-                  <p className="mt-3 mb-4">
+                  <p className="mb-4">
                     <strong>File Size:</strong> {selectedVideoFileSizeLabel}
                   </p>
                 ) : (
@@ -2960,21 +3069,20 @@ export default function Product() {
                   onEdit={handleEditReview}
                   isAdmin={isAdmin}
                 />
-                <div className='mx-3'>
-
-                <ReviewForm
-                  productId={product.id}
-                  productName={product.title}
-                  customerId={customerId}
-                  customerName={customerName}
-                  customerState={customerState}
-                  customerCountry={customerCountry}
-                  updateExistingReviews={updateExistingReviews}
-                  userReviewExists={userReviewExists}
-                  isBlocked={isBlocked}
-                  reviewMediaDiscountReward={reviewMediaDiscountReward}
-                  showDiscountPromo
-                />
+                <div className="mx-3">
+                  <ReviewForm
+                    productId={product.id}
+                    productName={product.title}
+                    customerId={customerId}
+                    customerName={customerName}
+                    customerState={customerState}
+                    customerCountry={customerCountry}
+                    updateExistingReviews={updateExistingReviews}
+                    userReviewExists={userReviewExists}
+                    isBlocked={isBlocked}
+                    reviewMediaDiscountReward={reviewMediaDiscountReward}
+                    showDiscountPromo
+                  />
                 </div>
               </div>
             </section>
@@ -2982,7 +3090,9 @@ export default function Product() {
           {isVideo && activeVideoSwipeComparison && (
             <VideoResolutionSwipeSection
               vidKey={activeVideoSwipeComparison.vidKey}
-              higherResolutionLabel={activeVideoSwipeComparison.higherResolutionLabel}
+              higherResolutionLabel={
+                activeVideoSwipeComparison.higherResolutionLabel
+              }
             />
           )}
           <section className="you-may-also-like mt-3">
