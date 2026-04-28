@@ -235,6 +235,122 @@ function hasSelectedResolutionOption(
   );
 }
 
+type ParsedVideoFileSizeTags = {
+  singleOrHigherMb: number | null;
+  lowerMb: number | null;
+};
+
+function parseVideoFileSizeTags(tags: unknown[]): ParsedVideoFileSizeTags {
+  let singleOrHigherMb: number | null = null;
+  let lowerMb: number | null = null;
+
+  for (const rawTag of tags) {
+    if (typeof rawTag !== 'string') continue;
+    const tag = rawTag.trim();
+    if (!tag) continue;
+
+    const lowerMatch = tag.match(/^ss(\d+)$/i);
+    if (lowerMatch?.[1]) {
+      const parsed = Number.parseInt(lowerMatch[1], 10);
+      if (Number.isFinite(parsed) && parsed > 0 && lowerMb === null) {
+        lowerMb = parsed;
+      }
+      continue;
+    }
+
+    const singleOrHigherMatch = tag.match(/^s(\d+)$/i);
+    if (singleOrHigherMatch?.[1]) {
+      const parsed = Number.parseInt(singleOrHigherMatch[1], 10);
+      if (
+        Number.isFinite(parsed) &&
+        parsed > 0 &&
+        singleOrHigherMb === null
+      ) {
+        singleOrHigherMb = parsed;
+      }
+    }
+  }
+
+  return {singleOrHigherMb, lowerMb};
+}
+
+function getHighestResolutionFromProductOptions(product: any): number | null {
+  const options = Array.isArray(product?.options) ? product.options : [];
+  const resolutionOption = options.find(
+    (option: any) =>
+      typeof option?.name === 'string' &&
+      option.name.trim().toLowerCase() === 'resolution',
+  );
+  if (!resolutionOption) return null;
+
+  const optionValues = Array.isArray(resolutionOption.optionValues)
+    ? resolutionOption.optionValues
+    : [];
+  const resolutions = optionValues
+    .map((optionValue: any) => parseResolutionValue(optionValue?.name))
+    .filter(
+      (resolution: number | null): resolution is number => resolution !== null,
+    );
+
+  if (!resolutions.length) return null;
+  return Math.max(...resolutions);
+}
+
+function getSelectedResolutionFromVariant(variant: any): number | null {
+  const selectedOptions = Array.isArray(variant?.selectedOptions)
+    ? variant.selectedOptions
+    : [];
+
+  for (const option of selectedOptions) {
+    const optionName =
+      typeof option?.name === 'string' ? option.name.trim().toLowerCase() : '';
+    if (optionName !== 'resolution') continue;
+    const parsed = parseResolutionValue(option?.value);
+    if (parsed !== null) return parsed;
+  }
+
+  return parseResolutionValue(variant?.title);
+}
+
+function formatVideoFileSizeLabel(megabytes: number): string {
+  if (megabytes >= 1000) {
+    return `${(megabytes / 1000).toFixed(1)} GB`;
+  }
+
+  return `${megabytes} MB`;
+}
+
+function getSelectedVideoFileSizeLabel({
+  tags,
+  product,
+  selectedVariant,
+}: {
+  tags: unknown[];
+  product: any;
+  selectedVariant: any;
+}): string | null {
+  const {singleOrHigherMb, lowerMb} = parseVideoFileSizeTags(tags);
+
+  if (singleOrHigherMb === null && lowerMb === null) return null;
+  if (singleOrHigherMb === null && lowerMb !== null) {
+    return formatVideoFileSizeLabel(lowerMb);
+  }
+  if (lowerMb === null && singleOrHigherMb !== null) {
+    return formatVideoFileSizeLabel(singleOrHigherMb);
+  }
+
+  const highestResolution = getHighestResolutionFromProductOptions(product);
+  const selectedResolution = getSelectedResolutionFromVariant(selectedVariant);
+  const hasLowerSelected =
+    highestResolution !== null &&
+    selectedResolution !== null &&
+    selectedResolution < highestResolution;
+
+  return hasLowerSelected
+    ? formatVideoFileSizeLabel(lowerMb as number)
+    : formatVideoFileSizeLabel(singleOrHigherMb as number);
+}
+
 const FIVE_STAR_KEYS = ['one', 'two', 'three', 'four', 'five'] as const;
 
 type ProductSpecItem = {
@@ -1315,6 +1431,11 @@ export default function Product() {
   const isBundle = product.tags.includes('Bundle');
   const isPrint = !isVideo;
   const isVideoBundle = isVideo && isBundle;
+  const selectedVideoFileSizeLabel = getSelectedVideoFileSizeLabel({
+    tags,
+    product,
+    selectedVariant,
+  });
   const standaloneVideoSwipeComparison = useMemo(
     () => (isVideo && !isBundle ? getVideoSwipeComparisonConfig(product) : null),
     [isBundle, isVideo, product],
@@ -2378,6 +2499,11 @@ export default function Product() {
                     </CardContent>
                   </Card>
                 )}
+                {isVideo && !isBundle && selectedVideoFileSizeLabel && (
+                  <p className="mt-3 mb-4">
+                    <strong>File Size:</strong> {selectedVideoFileSizeLabel}
+                  </p>
+                )}
 
                 <ProductForm
                   VideoAlreadyInCart={disableButton}
@@ -2506,7 +2632,13 @@ export default function Product() {
                     dangerouslySetInnerHTML={{__html: descriptionHtml}}
                   />
                 )}
-                <br />
+                {isVideo && !isBundle && selectedVideoFileSizeLabel ? (
+                  <p className="mt-3 mb-4">
+                    <strong>File Size:</strong> {selectedVideoFileSizeLabel}
+                  </p>
+                ) : (
+                  <br />
+                )}
 
                 <ProductForm
                   VideoAlreadyInCart={disableButton}
