@@ -70,7 +70,7 @@ function createPurchaseEmailHtml({
     .map((item) => {
       const title = escapeHtml(item.title);
       const imageMarkup = item.imageUrl
-        ? `<img src="${escapeHtml(item.imageUrl)}" alt="${title}" width="240" style="display:block; border-radius:12px; width:240px; height:auto; margin:12px auto;" />`
+        ? `<img src="${escapeHtml(item.imageUrl)}" alt="${title}" width="520" style="display:block; border-radius:12px; width:92%; max-width:520px; height:auto; margin:14px auto;" />`
         : '';
 
       return `
@@ -85,7 +85,7 @@ function createPurchaseEmailHtml({
           ${imageMarkup}
           <p style="margin:14px 0 0 0; color:#ffffff;">Quantity: ${item.quantity}</p>
           <div style="text-align:center; margin-top:18px;">
-            <a href="${escapeHtml(item.downloadUrl)}" target="_self" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
+            <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
               Download ↓
             </a>
           </div>
