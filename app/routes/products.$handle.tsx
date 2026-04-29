@@ -2286,7 +2286,7 @@ export default function Product() {
       <>
         <section className="product pt-[12px]">
           {/* Link tree */}
-          <div className="ps-[30px] pe-[12px] mb-3 flow-root text-left">
+          <div className="ps-[20px] pe-[12px] mb-3 flow-root text-left">
             {isArtistPick && (
               <div className="float-right ml-3 mb-2">
                 {renderArtistPickBadge('text-sm')}
@@ -2350,7 +2350,7 @@ export default function Product() {
           </div>
           {windowWidth && windowWidth < 1024 && (
             <>
-              <div className="individual-product-header-container px-[16px] pt-[6px]">
+              <div className="individual-product-header-container px-[16px] pt-1">
                 <div className="title-button-wrapper">
                   <span className="capitalize text-3xl font-bold">{title}</span>
                   {renderProductHeaderActionButtons()}
