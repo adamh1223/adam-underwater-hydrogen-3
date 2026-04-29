@@ -10,10 +10,10 @@ const STOCK_SWIPE_ASSET_BASE_URL =
   'https://downloads.adamunderwater.com/shared/stock-swipe';
 const HAND_TOGGLE_ICON_URL =
   'https://downloads.adamunderwater.com/store-1-au/public/hand-icon.png';
-const DEFAULT_ZOOM_LEVEL = 4;
+const DEFAULT_ZOOM_LEVEL = 5;
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 8;
-const ZOOM_STEP = 0.75;
+const ZOOM_STEP = 1;
 
 const STOCK_SWIPE_IMAGE_EXTENSIONS = [
   'jpg',
