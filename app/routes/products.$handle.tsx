@@ -2284,7 +2284,7 @@ export default function Product() {
         onLoad={handleProductImgLoad}
       />
       <>
-        <section className="product pt-[20px]">
+        <section className="product pt-[12px]">
           {/* Link tree */}
           <div className="ps-[30px] pe-[12px] mb-3 flow-root text-left">
             {isArtistPick && (
@@ -2350,7 +2350,7 @@ export default function Product() {
           </div>
           {windowWidth && windowWidth < 1024 && (
             <>
-              <div className="individual-product-header-container px-[35px] pt-[6px]">
+              <div className="individual-product-header-container px-[16px] pt-[6px]">
                 <div className="title-button-wrapper">
                   <span className="capitalize text-3xl font-bold">{title}</span>
                   {renderProductHeaderActionButtons()}

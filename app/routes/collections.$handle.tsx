@@ -934,7 +934,7 @@ function PriceSlider({
   };
 
   return (
-    <div className="border-t border-border pt-2">
+    <div className="border-t border-border pt-2 pb-2">
       <div className="mb-2 flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-foreground">Price</p>
         <p className="text-sm text-muted-foreground">
@@ -1260,6 +1260,11 @@ function StockFiltersPopover({
                     onRangeChange={(nextMinIndex, nextMaxIndex) => {
                       setDurationMinFilterIndex(nextMinIndex);
                       setDurationMaxFilterIndex(nextMaxIndex);
+                      setDurationAllSelected(
+                        nextMinIndex === DEFAULT_DURATION_MIN_FILTER_INDEX &&
+                          nextMaxIndex ===
+                            DEFAULT_DURATION_MAX_FILTER_INDEX,
+                      );
                     }}
                     onInteract={() => {
                       if (durationAllSelected) setDurationAllSelected(false);
@@ -1848,6 +1853,20 @@ export default function Collection() {
     useState<number>(DEFAULT_STOCK_PRICE_FILTER_MAX);
   const [printsPriceFilterMax, setPrintsPriceFilterMax] =
     useState<number>(DEFAULT_PRINTS_PRICE_FILTER_MAX);
+
+  useEffect(() => {
+    const shouldSelectAllDurations =
+      durationMinFilterIndex === DEFAULT_DURATION_MIN_FILTER_INDEX &&
+      durationMaxFilterIndex === DEFAULT_DURATION_MAX_FILTER_INDEX;
+
+    if (durationAllSelected !== shouldSelectAllDurations) {
+      setDurationAllSelected(shouldSelectAllDurations);
+    }
+  }, [
+    durationAllSelected,
+    durationMinFilterIndex,
+    durationMaxFilterIndex,
+  ]);
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
   const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
     useState(false);

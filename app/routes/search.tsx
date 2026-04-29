@@ -893,7 +893,7 @@ function PriceSlider({
   };
 
   return (
-    <div className="border-t border-border pt-2">
+    <div className="border-t border-border pt-2 pb-2">
       <div className="mb-2 flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-foreground">Price</p>
         <p className="text-sm text-muted-foreground">

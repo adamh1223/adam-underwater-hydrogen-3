@@ -41,6 +41,7 @@ import {REGEXP_ONLY_DIGITS} from 'input-otp';
 import {Card, CardAction, CardContent, CardHeader} from '~/components/ui/card';
 import {Button, buttonVariants} from '~/components/ui/button';
 import {Input} from '~/components/ui/input';
+import {Checkbox} from '~/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -585,6 +586,8 @@ export default function AccountProfile() {
   const marketingSmsState = customer?.phoneNumber?.marketingState;
   const marketingSmsOnFile =
     marketingSmsState === 'SUBSCRIBED' || marketingSmsState === 'PENDING';
+  const [marketingEmailSubscribed, setMarketingEmailSubscribed] =
+    useState(marketingEmail);
   const [marketingSms, setMarketingSms] = useState(marketingSmsOnFile);
   const initialPhoneState = resolveInitialPhoneState(phoneOnFile);
   const [selectedPhoneCountry, setSelectedPhoneCountry] = useState<CountryCode>(
@@ -603,14 +606,19 @@ export default function AccountProfile() {
   const copySplashStopTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    setMarketingEmailSubscribed(marketingEmail);
+  }, [marketingEmail]);
+
+  useEffect(() => {
     setMarketingSms(marketingSmsOnFile);
   }, [marketingSmsOnFile]);
 
   useEffect(() => {
     if (action?.error) {
+      setMarketingEmailSubscribed(marketingEmail);
       setMarketingSms(marketingSmsOnFile);
     }
-  }, [action?.error, marketingSmsOnFile]);
+  }, [action?.error, marketingEmail, marketingSmsOnFile]);
 
   useEffect(() => {
     const nextPhoneState = resolveInitialPhoneState(phoneOnFile);
@@ -693,16 +701,11 @@ export default function AccountProfile() {
     const lastNameValue =
       (form.elements.namedItem('lastName') as HTMLInputElement | null)?.value ??
       '';
-    const marketingEmailChecked =
-      (
-        form.elements.namedItem('marketingEmail') as HTMLInputElement | null
-      )?.checked ?? marketingEmail;
-
     shouldToastOnSuccessRef.current =
       firstNameValue.trim() !== (customer.firstName ?? '').trim() ||
       lastNameValue.trim() !== (customer.lastName ?? '').trim() ||
       phoneValue.trim() !== phoneOnFileValue ||
-      marketingEmailChecked !== marketingEmail ||
+      marketingEmailSubscribed !== marketingEmail ||
       marketingSms !== marketingSmsOnFile;
   };
 
@@ -898,10 +901,18 @@ export default function AccountProfile() {
                       className="flex items-center gap-2"
                     >
                       <input
-                        id="marketingEmail"
+                        type="hidden"
                         name="marketingEmail"
-                        type="checkbox"
-                        defaultChecked={marketingEmail}
+                        value={marketingEmailSubscribed ? 'on' : ''}
+                      />
+                      <Checkbox
+                        id="marketingEmail"
+                        checked={marketingEmailSubscribed}
+                        onCheckedChange={(checked) => {
+                          setClientError(null);
+                          setMarketingEmailSubscribed(checked === true);
+                        }}
+                        className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       Subscribed to marketing emails for news and discounts
                     </label>
@@ -917,14 +928,18 @@ export default function AccountProfile() {
                       className="flex items-center gap-2"
                     >
                       <input
-                        id="marketingSms"
+                        type="hidden"
                         name="marketingSms"
-                        type="checkbox"
+                        value={marketingSms ? 'on' : ''}
+                      />
+                      <Checkbox
+                        id="marketingSms"
                         checked={marketingSms}
-                        onChange={(event) => {
+                        onCheckedChange={(checked) => {
                           setClientError(null);
-                          setMarketingSms(event.target.checked);
+                          setMarketingSms(checked === true);
                         }}
+                        className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       Subscribed to SMS news and discounts
                     </label>
