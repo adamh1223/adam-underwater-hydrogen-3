@@ -135,10 +135,14 @@ const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
 const DEFAULT_FRAME_RATE_FILTER: FrameRateFilter = 'all';
 const PRICE_FILTER_MIN = 0;
 const STOCK_PRICE_FILTER_MAX = 400;
+const DEFAULT_STOCK_PRICE_FILTER_MIN = PRICE_FILTER_MIN;
 const DEFAULT_STOCK_PRICE_FILTER_MAX = STOCK_PRICE_FILTER_MAX;
+const DEFAULT_STOCK_PRICE_FILTER_ALL = true;
 const LEGACY_STOCK_PRICE_FILTER_MAX = 200;
 const PRINTS_PRICE_FILTER_MAX = 400;
+const DEFAULT_PRINTS_PRICE_FILTER_MIN = PRICE_FILTER_MIN;
 const DEFAULT_PRINTS_PRICE_FILTER_MAX = PRINTS_PRICE_FILTER_MAX;
+const DEFAULT_PRINTS_PRICE_FILTER_ALL = true;
 const bundleDurationRegex = /^d(\d+)-(.+)$/i;
 const bundleResolutionRegex = /^res(\d+)-(.+)$/i;
 const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
@@ -147,14 +151,21 @@ const SEARCH_PRODUCT_FILTER_STORAGE_KEY = 'search-product-filter-mode';
 const SEARCH_PRINTS_FILTER_STORAGE_KEY = 'search-prints-filter-mode';
 const SEARCH_PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY =
   'search-prints-most-popular-filter-mode';
-const SEARCH_PRINTS_PRICE_FILTER_STORAGE_KEY = 'search-prints-price-filter-mode';
+const SEARCH_PRINTS_PRICE_MIN_FILTER_STORAGE_KEY =
+  'search-prints-price-min-filter-mode';
+const SEARCH_PRINTS_PRICE_MAX_FILTER_STORAGE_KEY =
+  'search-prints-price-filter-mode';
+const SEARCH_PRINTS_PRICE_ALL_FILTER_STORAGE_KEY =
+  'search-prints-price-all-filter-mode';
 const SEARCH_STOCK_DURATION_MIN_FILTER_KEY = 'search-stock-duration-min-filter';
 const SEARCH_STOCK_DURATION_MAX_FILTER_KEY = 'search-stock-duration-max-filter';
 const SEARCH_STOCK_DURATION_ALL_FILTER_KEY = 'search-stock-duration-all-filter';
 const SEARCH_STOCK_RESOLUTION_FILTER_KEY = 'search-stock-resolution-filter';
 const SEARCH_STOCK_FRAME_RATE_FILTER_KEY = 'search-stock-frame-rate-filter';
 const SEARCH_STOCK_ARTIST_PICK_FILTER_KEY = 'search-stock-artist-pick-filter';
-const SEARCH_STOCK_PRICE_FILTER_KEY = 'search-stock-price-filter';
+const SEARCH_STOCK_PRICE_MIN_FILTER_KEY = 'search-stock-price-min-filter';
+const SEARCH_STOCK_PRICE_MAX_FILTER_KEY = 'search-stock-price-filter';
+const SEARCH_STOCK_PRICE_ALL_FILTER_KEY = 'search-stock-price-all-filter';
 
 const FILTER_ICON_BUTTON_CLASS_NAME =
   'relative inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium shadow-sm outline-none transition-all hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-default disabled:opacity-50';
@@ -827,62 +838,153 @@ function DurationRangeSlider({
   );
 }
 
-function PriceSlider({
-  value,
-  onChange,
+function PriceRangeSlider({
+  minSelection,
+  maxSelection,
+  onRangeChange,
+  allSelected,
+  setAllSelected,
   minValue = PRICE_FILTER_MIN,
   maxValue = STOCK_PRICE_FILTER_MAX,
 }: {
-  value: number;
-  onChange: (value: number) => void;
+  minSelection: number;
+  maxSelection: number;
+  onRangeChange: (nextMin: number, nextMax: number) => void;
+  allSelected: boolean;
+  setAllSelected: (value: boolean) => void;
   minValue?: number;
   maxValue?: number;
 }) {
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
-  const [draftValue, setDraftValue] = useState<number | null>(null);
-  const activeValue = draftValue ?? value;
+  const [draftRange, setDraftRange] = useState<{
+    min: number;
+    max: number;
+  } | null>(null);
+  const activeMin = draftRange?.min ?? minSelection;
+  const activeMax = draftRange?.max ?? maxSelection;
 
-  const clampValue = useCallback((rawValue: number) => {
-    return Math.min(maxValue, Math.max(minValue, rawValue));
-  }, [maxValue, minValue]);
+  const clampValue = useCallback(
+    (rawValue: number) => Math.min(maxValue, Math.max(minValue, rawValue)),
+    [maxValue, minValue],
+  );
+
+  const enforceRangeGap = useCallback(
+    (candidateMin: number, candidateMax: number) => {
+      let safeMin = clampValue(candidateMin);
+      let safeMax = clampValue(candidateMax);
+      if (safeMin >= safeMax) {
+        if (safeMin >= maxValue) {
+          safeMin = maxValue - 1;
+          safeMax = maxValue;
+        } else {
+          safeMax = safeMin + 1;
+        }
+      }
+      return {min: safeMin, max: safeMax};
+    },
+    [clampValue, maxValue],
+  );
 
   const valueToPositionPercent = useCallback(
     (rawValue: number) =>
-      ((clampValue(rawValue) - minValue) / (maxValue - minValue)) *
-      100,
+      ((clampValue(rawValue) - minValue) / (maxValue - minValue)) * 100,
     [clampValue, maxValue, minValue],
   );
 
-  const getValueFromClientX = useCallback(
+  const getContinuousValueFromClientX = useCallback(
     (clientX: number) => {
       const trackElement = sliderTrackRef.current;
-      if (!trackElement) return value;
+      if (!trackElement) return 0;
 
       const {left, width} = trackElement.getBoundingClientRect();
-      if (width <= 0) return value;
+      if (width <= 0) return 0;
 
       const progress = Math.min(1, Math.max(0, (clientX - left) / width));
-      return clampValue(
-        Math.round(minValue + progress * (maxValue - minValue)),
-      );
+      return minValue + progress * (maxValue - minValue);
     },
-    [clampValue, maxValue, minValue, value],
+    [maxValue, minValue],
   );
 
-  const handleTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  const getNearestValue = useCallback(
+    (clientX: number) =>
+      clampValue(Math.round(getContinuousValueFromClientX(clientX))),
+    [clampValue, getContinuousValueFromClientX],
+  );
+
+  const resolveHandle = useCallback(
+    (targetValue: number, currentMin: number, currentMax: number) => {
+      if (targetValue <= currentMin) return 'min' as const;
+      if (targetValue >= currentMax) return 'max' as const;
+      const minDistance = Math.abs(targetValue - currentMin);
+      const maxDistance = Math.abs(targetValue - currentMax);
+      return minDistance <= maxDistance ? ('min' as const) : ('max' as const);
+    },
+    [],
+  );
+
+  const applyHandleMove = useCallback(
+    (
+      handle: 'min' | 'max',
+      targetValue: number,
+      currentMin: number,
+      currentMax: number,
+    ) => {
+      if (handle === 'min') {
+        return enforceRangeGap(targetValue, currentMax);
+      }
+      return enforceRangeGap(currentMin, targetValue);
+    },
+    [enforceRangeGap],
+  );
+
+  const commitRange = useCallback(
+    (nextMin: number, nextMax: number) => {
+      const safeRange = enforceRangeGap(nextMin, nextMax);
+      onRangeChange(safeRange.min, safeRange.max);
+      setAllSelected(safeRange.min === minValue && safeRange.max === maxValue);
+    },
+    [enforceRangeGap, onRangeChange, setAllSelected, minValue, maxValue],
+  );
+
+  const handleTrackPointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
     if (event.button !== 0) return;
 
-    const nextValue = getValueFromClientX(event.clientX);
-    setDraftValue(nextValue);
+    const pointerValue = getNearestValue(event.clientX);
+    const initialHandle = resolveHandle(pointerValue, minSelection, maxSelection);
+    const initialDraft = applyHandleMove(
+      initialHandle,
+      pointerValue,
+      minSelection,
+      maxSelection,
+    );
+    setDraftRange(initialDraft);
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      setDraftValue(getValueFromClientX(moveEvent.clientX));
+      const movedValue = getNearestValue(moveEvent.clientX);
+      setDraftRange((currentDraft) => {
+        const baseRange = currentDraft ?? initialDraft;
+        return applyHandleMove(
+          initialHandle,
+          movedValue,
+          baseRange.min,
+          baseRange.max,
+        );
+      });
     };
 
     const handlePointerUp = (upEvent: PointerEvent) => {
-      const finalValue = getValueFromClientX(upEvent.clientX);
-      setDraftValue(null);
-      onChange(finalValue);
+      const finalValue = getNearestValue(upEvent.clientX);
+      const baseRange = draftRange ?? initialDraft;
+      const nextRange = applyHandleMove(
+        initialHandle,
+        finalValue,
+        baseRange.min,
+        baseRange.max,
+      );
+      setDraftRange(null);
+      commitRange(nextRange.min, nextRange.max);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('pointercancel', handlePointerUp);
@@ -897,39 +999,63 @@ function PriceSlider({
     <div className="border-t border-border pt-2 pb-2">
       <div className="mb-2 flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-foreground">Price</p>
-        <p className="text-sm text-muted-foreground">
-          {`$${minValue}-$${Math.round(activeValue)}`}
-        </p>
+        <p className="text-sm text-muted-foreground">{`$${Math.round(activeMin)}-$${Math.round(activeMax)}`}</p>
       </div>
-      <div className="notched-slider-rail">
-        <div
-          ref={sliderTrackRef}
-          className="notched-slider-track notched-slider-track--price"
-          role="slider"
-          tabIndex={0}
-          aria-label="Price"
-          aria-valuemin={minValue}
-          aria-valuemax={maxValue}
-          aria-valuenow={Math.round(value)}
-          onPointerDown={handleTrackPointerDown}
-          onKeyDown={(event) => {
-            if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
-              event.preventDefault();
-              onChange(clampValue(value - 1));
-            }
-            if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
-              event.preventDefault();
-              onChange(clampValue(value + 1));
-            }
-          }}
-        >
-          <div
-            className="notched-slider-track-fill"
-            style={{width: `${valueToPositionPercent(activeValue)}%`}}
-          />
-          <div
-            className="notched-slider-thumb"
-            style={{left: `${valueToPositionPercent(activeValue)}%`}}
+      <div className="flex items-end gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="notched-slider-rail">
+            <div
+              ref={sliderTrackRef}
+              className="notched-slider-track notched-slider-track--price"
+              role="slider"
+              tabIndex={0}
+              aria-label="Price"
+              aria-valuemin={minValue}
+              aria-valuemax={maxValue}
+              aria-valuenow={Math.round(maxSelection)}
+              onPointerDown={handleTrackPointerDown}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  commitRange(minSelection, maxSelection - 1);
+                }
+                if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  commitRange(minSelection, maxSelection + 1);
+                }
+              }}
+            >
+              <div
+                className="notched-slider-track-fill"
+                style={{
+                  left: `${valueToPositionPercent(activeMin)}%`,
+                  width: `calc(${valueToPositionPercent(activeMax)}% - ${valueToPositionPercent(activeMin)}%)`,
+                }}
+              />
+              <div
+                className="notched-slider-thumb"
+                style={{left: `${valueToPositionPercent(activeMin)}%`}}
+              />
+              <div
+                className="notched-slider-thumb"
+                style={{left: `${valueToPositionPercent(activeMax)}%`}}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="inline-flex shrink-0 flex-col items-center gap-1 pb-1 text-xs text-muted-foreground">
+          <span>All</span>
+          <Checkbox
+            checked={allSelected}
+            onCheckedChange={(checked) => {
+              const isChecked = checked === true;
+              setAllSelected(isChecked);
+              if (isChecked) {
+                onRangeChange(minValue, maxValue);
+              }
+            }}
+            className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            aria-label="Show all prices"
           />
         </div>
       </div>
@@ -944,8 +1070,12 @@ function SearchFiltersPopover({
   setPrintsFilterState,
   printsMostPopularFilterState,
   setPrintsMostPopularFilterState,
+  printsPriceFilterMin,
   printsPriceFilterMax,
+  setPrintsPriceFilterMin,
   setPrintsPriceFilterMax,
+  printsPriceAllSelected,
+  setPrintsPriceAllSelected,
   durationMinFilterIndex,
   setDurationMinFilterIndex,
   durationMaxFilterIndex,
@@ -958,8 +1088,12 @@ function SearchFiltersPopover({
   setFrameRateFilter,
   stockArtistPickFilterState,
   setStockArtistPickFilterState,
+  stockPriceFilterMin,
   stockPriceFilterMax,
+  setStockPriceFilterMin,
   setStockPriceFilterMax,
+  stockPriceAllSelected,
+  setStockPriceAllSelected,
   open,
   onOpenChange,
 }: {
@@ -969,8 +1103,12 @@ function SearchFiltersPopover({
   setPrintsFilterState: (value: PrintsFilterState) => void;
   printsMostPopularFilterState: PrintsMostPopularFilterState;
   setPrintsMostPopularFilterState: (value: PrintsMostPopularFilterState) => void;
+  printsPriceFilterMin: number;
   printsPriceFilterMax: number;
+  setPrintsPriceFilterMin: (value: number) => void;
   setPrintsPriceFilterMax: (value: number) => void;
+  printsPriceAllSelected: boolean;
+  setPrintsPriceAllSelected: (value: boolean) => void;
   durationMinFilterIndex: number;
   setDurationMinFilterIndex: (value: number) => void;
   durationMaxFilterIndex: number;
@@ -983,8 +1121,12 @@ function SearchFiltersPopover({
   setFrameRateFilter: (value: FrameRateFilter) => void;
   stockArtistPickFilterState: StockArtistPickFilterState;
   setStockArtistPickFilterState: (value: StockArtistPickFilterState) => void;
+  stockPriceFilterMin: number;
   stockPriceFilterMax: number;
+  setStockPriceFilterMin: (value: number) => void;
   setStockPriceFilterMax: (value: number) => void;
+  stockPriceAllSelected: boolean;
+  setStockPriceAllSelected: (value: boolean) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -992,6 +1134,8 @@ function SearchFiltersPopover({
     productFilter !== 'all' ||
     printsFilterState !== 'All' ||
     printsMostPopularFilterState !== 'All' ||
+    !printsPriceAllSelected ||
+    printsPriceFilterMin !== DEFAULT_PRINTS_PRICE_FILTER_MIN ||
     printsPriceFilterMax !== DEFAULT_PRINTS_PRICE_FILTER_MAX ||
     !durationAllSelected ||
     durationMinFilterIndex !== DEFAULT_DURATION_MIN_FILTER_INDEX ||
@@ -999,20 +1143,26 @@ function SearchFiltersPopover({
     resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX ||
     frameRateFilter !== DEFAULT_FRAME_RATE_FILTER ||
     stockArtistPickFilterState !== 'All' ||
+    !stockPriceAllSelected ||
+    stockPriceFilterMin !== DEFAULT_STOCK_PRICE_FILTER_MIN ||
     stockPriceFilterMax !== DEFAULT_STOCK_PRICE_FILTER_MAX;
 
   const handleReset = () => {
     setProductFilter('all');
     setPrintsFilterState('All');
     setPrintsMostPopularFilterState('All');
+    setPrintsPriceFilterMin(DEFAULT_PRINTS_PRICE_FILTER_MIN);
     setPrintsPriceFilterMax(DEFAULT_PRINTS_PRICE_FILTER_MAX);
+    setPrintsPriceAllSelected(DEFAULT_PRINTS_PRICE_FILTER_ALL);
     setDurationMinFilterIndex(DEFAULT_DURATION_MIN_FILTER_INDEX);
     setDurationMaxFilterIndex(DEFAULT_DURATION_MAX_FILTER_INDEX);
     setDurationAllSelected(DEFAULT_DURATION_ALL_FILTER);
     setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
     setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
     setStockArtistPickFilterState('All');
+    setStockPriceFilterMin(DEFAULT_STOCK_PRICE_FILTER_MIN);
     setStockPriceFilterMax(DEFAULT_STOCK_PRICE_FILTER_MAX);
+    setStockPriceAllSelected(DEFAULT_STOCK_PRICE_FILTER_ALL);
   };
 
   return (
@@ -1148,9 +1298,19 @@ function SearchFiltersPopover({
                   </ToggleGroupItem>
                 </ToggleGroup>
               </div>
-              <PriceSlider
-                value={printsPriceFilterMax}
-                onChange={setPrintsPriceFilterMax}
+              <PriceRangeSlider
+                minSelection={printsPriceFilterMin}
+                maxSelection={printsPriceFilterMax}
+                onRangeChange={(nextMin, nextMax) => {
+                  setPrintsPriceFilterMin(nextMin);
+                  setPrintsPriceFilterMax(nextMax);
+                  setPrintsPriceAllSelected(
+                    nextMin === DEFAULT_PRINTS_PRICE_FILTER_MIN &&
+                      nextMax === DEFAULT_PRINTS_PRICE_FILTER_MAX,
+                  );
+                }}
+                allSelected={printsPriceAllSelected}
+                setAllSelected={setPrintsPriceAllSelected}
                 minValue={PRICE_FILTER_MIN}
                 maxValue={PRINTS_PRICE_FILTER_MAX}
               />
@@ -1289,9 +1449,19 @@ function SearchFiltersPopover({
                   </ToggleGroupItem>
                 </ToggleGroup>
               </div>
-              <PriceSlider
-                value={stockPriceFilterMax}
-                onChange={setStockPriceFilterMax}
+              <PriceRangeSlider
+                minSelection={stockPriceFilterMin}
+                maxSelection={stockPriceFilterMax}
+                onRangeChange={(nextMin, nextMax) => {
+                  setStockPriceFilterMin(nextMin);
+                  setStockPriceFilterMax(nextMax);
+                  setStockPriceAllSelected(
+                    nextMin === DEFAULT_STOCK_PRICE_FILTER_MIN &&
+                      nextMax === DEFAULT_STOCK_PRICE_FILTER_MAX,
+                  );
+                }}
+                allSelected={stockPriceAllSelected}
+                setAllSelected={setStockPriceAllSelected}
                 minValue={PRICE_FILTER_MIN}
                 maxValue={STOCK_PRICE_FILTER_MAX}
               />
@@ -1329,8 +1499,14 @@ export default function SearchPage() {
     useState<PrintsFilterState>('All');
   const [printsMostPopularFilterState, setPrintsMostPopularFilterState] =
     useState<PrintsMostPopularFilterState>('All');
+  const [printsPriceFilterMin, setPrintsPriceFilterMin] = useState<number>(
+    DEFAULT_PRINTS_PRICE_FILTER_MIN,
+  );
   const [printsPriceFilterMax, setPrintsPriceFilterMax] = useState<number>(
     DEFAULT_PRINTS_PRICE_FILTER_MAX,
+  );
+  const [printsPriceAllSelected, setPrintsPriceAllSelected] = useState(
+    DEFAULT_PRINTS_PRICE_FILTER_ALL,
   );
   const [durationMinFilterIndex, setDurationMinFilterIndex] = useState(
     DEFAULT_DURATION_MIN_FILTER_INDEX,
@@ -1363,8 +1539,34 @@ export default function SearchPage() {
     durationMinFilterIndex,
     durationMaxFilterIndex,
   ]);
+  useEffect(() => {
+    const shouldSelectAllPrintPrices =
+      printsPriceFilterMin === DEFAULT_PRINTS_PRICE_FILTER_MIN &&
+      printsPriceFilterMax === DEFAULT_PRINTS_PRICE_FILTER_MAX;
+    if (printsPriceAllSelected !== shouldSelectAllPrintPrices) {
+      setPrintsPriceAllSelected(shouldSelectAllPrintPrices);
+    }
+  }, [
+    printsPriceAllSelected,
+    printsPriceFilterMin,
+    printsPriceFilterMax,
+  ]);
+  const [stockPriceFilterMin, setStockPriceFilterMin] = useState<number>(
+    DEFAULT_STOCK_PRICE_FILTER_MIN,
+  );
   const [stockPriceFilterMax, setStockPriceFilterMax] =
     useState<number>(DEFAULT_STOCK_PRICE_FILTER_MAX);
+  const [stockPriceAllSelected, setStockPriceAllSelected] = useState(
+    DEFAULT_STOCK_PRICE_FILTER_ALL,
+  );
+  useEffect(() => {
+    const shouldSelectAllStockPrices =
+      stockPriceFilterMin === DEFAULT_STOCK_PRICE_FILTER_MIN &&
+      stockPriceFilterMax === DEFAULT_STOCK_PRICE_FILTER_MAX;
+    if (stockPriceAllSelected !== shouldSelectAllStockPrices) {
+      setStockPriceAllSelected(shouldSelectAllStockPrices);
+    }
+  }, [stockPriceAllSelected, stockPriceFilterMin, stockPriceFilterMax]);
   const [hasHydratedControls, setHasHydratedControls] = useState(false);
   const [isSearchFiltersPopoverOpen, setIsSearchFiltersPopoverOpen] =
     useState(false);
@@ -1463,19 +1665,46 @@ export default function SearchPage() {
         setPrintsMostPopularFilterState(savedPrintsMostPopularFilter);
       }
 
-      const savedPrintsPriceFilter = window.localStorage.getItem(
-        SEARCH_PRINTS_PRICE_FILTER_STORAGE_KEY,
+      const savedPrintsPriceMin = window.localStorage.getItem(
+        SEARCH_PRINTS_PRICE_MIN_FILTER_STORAGE_KEY,
       );
-      if (savedPrintsPriceFilter !== null) {
-        const parsedPrintsPriceFilter = Number.parseInt(savedPrintsPriceFilter, 10);
-        if (Number.isFinite(parsedPrintsPriceFilter)) {
-          setPrintsPriceFilterMax(
-            Math.min(
-              PRINTS_PRICE_FILTER_MAX,
-              Math.max(PRICE_FILTER_MIN, parsedPrintsPriceFilter),
-            ),
-          );
+      const savedPrintsPriceMax = window.localStorage.getItem(
+        SEARCH_PRINTS_PRICE_MAX_FILTER_STORAGE_KEY,
+      );
+      const savedPrintsPriceAll = window.localStorage.getItem(
+        SEARCH_PRINTS_PRICE_ALL_FILTER_STORAGE_KEY,
+      );
+      let nextPrintsPriceMin = DEFAULT_PRINTS_PRICE_FILTER_MIN;
+      let nextPrintsPriceMax = DEFAULT_PRINTS_PRICE_FILTER_MAX;
+      if (savedPrintsPriceMin !== null) {
+        const parsedPrintsPriceMin = Number.parseInt(savedPrintsPriceMin, 10);
+        if (Number.isFinite(parsedPrintsPriceMin)) {
+          nextPrintsPriceMin = parsedPrintsPriceMin;
         }
+      }
+      if (savedPrintsPriceMax !== null) {
+        const parsedPrintsPriceMax = Number.parseInt(savedPrintsPriceMax, 10);
+        if (Number.isFinite(parsedPrintsPriceMax)) {
+          nextPrintsPriceMax = parsedPrintsPriceMax;
+        }
+      }
+      const safePrintsPriceMin = Math.min(
+        PRINTS_PRICE_FILTER_MAX - 1,
+        Math.max(PRICE_FILTER_MIN, nextPrintsPriceMin),
+      );
+      const safePrintsPriceMax = Math.min(
+        PRINTS_PRICE_FILTER_MAX,
+        Math.max(safePrintsPriceMin + 1, nextPrintsPriceMax),
+      );
+      setPrintsPriceFilterMin(safePrintsPriceMin);
+      setPrintsPriceFilterMax(safePrintsPriceMax);
+      if (savedPrintsPriceAll === 'true' || savedPrintsPriceAll === 'false') {
+        setPrintsPriceAllSelected(savedPrintsPriceAll === 'true');
+      } else {
+        setPrintsPriceAllSelected(
+          safePrintsPriceMin === DEFAULT_PRINTS_PRICE_FILTER_MIN &&
+            safePrintsPriceMax === DEFAULT_PRINTS_PRICE_FILTER_MAX,
+        );
       }
 
       const savedDurationAll = window.localStorage.getItem(
@@ -1540,23 +1769,49 @@ export default function SearchPage() {
       ) {
         setStockArtistPickFilterState(savedStockArtistPickFilter);
       }
-      const savedStockPriceFilter = window.localStorage.getItem(
-        SEARCH_STOCK_PRICE_FILTER_KEY,
+      const savedStockPriceMin = window.localStorage.getItem(
+        SEARCH_STOCK_PRICE_MIN_FILTER_KEY,
       );
-      if (savedStockPriceFilter !== null) {
-        const parsedStockPriceFilter = Number.parseInt(savedStockPriceFilter, 10);
-        if (Number.isFinite(parsedStockPriceFilter)) {
-          const migratedStockPriceFilter =
-            parsedStockPriceFilter === LEGACY_STOCK_PRICE_FILTER_MAX
-              ? DEFAULT_STOCK_PRICE_FILTER_MAX
-              : parsedStockPriceFilter;
-          setStockPriceFilterMax(
-            Math.min(
-              STOCK_PRICE_FILTER_MAX,
-              Math.max(PRICE_FILTER_MIN, migratedStockPriceFilter),
-            ),
-          );
+      const savedStockPriceMax = window.localStorage.getItem(
+        SEARCH_STOCK_PRICE_MAX_FILTER_KEY,
+      );
+      const savedStockPriceAll = window.localStorage.getItem(
+        SEARCH_STOCK_PRICE_ALL_FILTER_KEY,
+      );
+      let nextStockPriceMin = DEFAULT_STOCK_PRICE_FILTER_MIN;
+      let nextStockPriceMax = DEFAULT_STOCK_PRICE_FILTER_MAX;
+      if (savedStockPriceMin !== null) {
+        const parsedStockPriceMin = Number.parseInt(savedStockPriceMin, 10);
+        if (Number.isFinite(parsedStockPriceMin)) {
+          nextStockPriceMin = parsedStockPriceMin;
         }
+      }
+      if (savedStockPriceMax !== null) {
+        const parsedStockPriceMax = Number.parseInt(savedStockPriceMax, 10);
+        if (Number.isFinite(parsedStockPriceMax)) {
+          nextStockPriceMax =
+            parsedStockPriceMax === LEGACY_STOCK_PRICE_FILTER_MAX
+              ? DEFAULT_STOCK_PRICE_FILTER_MAX
+              : parsedStockPriceMax;
+        }
+      }
+      const safeStockPriceMin = Math.min(
+        STOCK_PRICE_FILTER_MAX - 1,
+        Math.max(PRICE_FILTER_MIN, nextStockPriceMin),
+      );
+      const safeStockPriceMax = Math.min(
+        STOCK_PRICE_FILTER_MAX,
+        Math.max(safeStockPriceMin + 1, nextStockPriceMax),
+      );
+      setStockPriceFilterMin(safeStockPriceMin);
+      setStockPriceFilterMax(safeStockPriceMax);
+      if (savedStockPriceAll === 'true' || savedStockPriceAll === 'false') {
+        setStockPriceAllSelected(savedStockPriceAll === 'true');
+      } else {
+        setStockPriceAllSelected(
+          safeStockPriceMin === DEFAULT_STOCK_PRICE_FILTER_MIN &&
+            safeStockPriceMax === DEFAULT_STOCK_PRICE_FILTER_MAX,
+        );
       }
     } catch {
       // Ignore storage access errors.
@@ -1582,8 +1837,16 @@ export default function SearchPage() {
         printsMostPopularFilterState,
       );
       window.localStorage.setItem(
-        SEARCH_PRINTS_PRICE_FILTER_STORAGE_KEY,
+        SEARCH_PRINTS_PRICE_MIN_FILTER_STORAGE_KEY,
+        String(printsPriceFilterMin),
+      );
+      window.localStorage.setItem(
+        SEARCH_PRINTS_PRICE_MAX_FILTER_STORAGE_KEY,
         String(printsPriceFilterMax),
+      );
+      window.localStorage.setItem(
+        SEARCH_PRINTS_PRICE_ALL_FILTER_STORAGE_KEY,
+        String(printsPriceAllSelected),
       );
       window.localStorage.setItem(
         SEARCH_STOCK_DURATION_MIN_FILTER_KEY,
@@ -1610,8 +1873,16 @@ export default function SearchPage() {
         stockArtistPickFilterState,
       );
       window.localStorage.setItem(
-        SEARCH_STOCK_PRICE_FILTER_KEY,
+        SEARCH_STOCK_PRICE_MIN_FILTER_KEY,
+        String(stockPriceFilterMin),
+      );
+      window.localStorage.setItem(
+        SEARCH_STOCK_PRICE_MAX_FILTER_KEY,
         String(stockPriceFilterMax),
+      );
+      window.localStorage.setItem(
+        SEARCH_STOCK_PRICE_ALL_FILTER_KEY,
+        String(stockPriceAllSelected),
       );
     } catch {
       // Ignore storage access errors.
@@ -1625,11 +1896,15 @@ export default function SearchPage() {
     layout,
     printsFilterState,
     printsMostPopularFilterState,
+    printsPriceFilterMin,
     printsPriceFilterMax,
+    printsPriceAllSelected,
     productFilter,
     resolutionFilterIndex,
     stockArtistPickFilterState,
+    stockPriceFilterMin,
     stockPriceFilterMax,
+    stockPriceAllSelected,
   ]);
 
   useEffect(() => {
@@ -1640,14 +1915,24 @@ export default function SearchPage() {
         window.localStorage.removeItem(
           SEARCH_PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
         );
-        window.localStorage.removeItem(SEARCH_PRINTS_PRICE_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(
+          SEARCH_PRINTS_PRICE_MIN_FILTER_STORAGE_KEY,
+        );
+        window.localStorage.removeItem(
+          SEARCH_PRINTS_PRICE_MAX_FILTER_STORAGE_KEY,
+        );
+        window.localStorage.removeItem(
+          SEARCH_PRINTS_PRICE_ALL_FILTER_STORAGE_KEY,
+        );
         window.localStorage.removeItem(SEARCH_STOCK_DURATION_MIN_FILTER_KEY);
         window.localStorage.removeItem(SEARCH_STOCK_DURATION_MAX_FILTER_KEY);
         window.localStorage.removeItem(SEARCH_STOCK_DURATION_ALL_FILTER_KEY);
         window.localStorage.removeItem(SEARCH_STOCK_RESOLUTION_FILTER_KEY);
         window.localStorage.removeItem(SEARCH_STOCK_FRAME_RATE_FILTER_KEY);
         window.localStorage.removeItem(SEARCH_STOCK_ARTIST_PICK_FILTER_KEY);
-        window.localStorage.removeItem(SEARCH_STOCK_PRICE_FILTER_KEY);
+        window.localStorage.removeItem(SEARCH_STOCK_PRICE_MIN_FILTER_KEY);
+        window.localStorage.removeItem(SEARCH_STOCK_PRICE_MAX_FILTER_KEY);
+        window.localStorage.removeItem(SEARCH_STOCK_PRICE_ALL_FILTER_KEY);
       } catch {
         // Ignore storage access errors.
       }
@@ -1774,7 +2059,9 @@ export default function SearchPage() {
       filteredProducts = filteredProducts.filter((product) => {
         const productPrice = getProductPriceAmount(product);
         return (
-          productPrice === null || productPrice <= printsPriceFilterMax
+          productPrice === null ||
+          (productPrice >= printsPriceFilterMin &&
+            productPrice <= printsPriceFilterMax)
         );
       });
       return filteredProducts;
@@ -1849,7 +2136,11 @@ export default function SearchPage() {
         }
 
         const productPrice = getProductPriceAmount(product);
-        if (productPrice !== null && productPrice > stockPriceFilterMax) {
+        if (
+          productPrice !== null &&
+          (productPrice < stockPriceFilterMin ||
+            productPrice > stockPriceFilterMax)
+        ) {
           return false;
         }
 
@@ -1866,10 +2157,12 @@ export default function SearchPage() {
     frameRateFilter,
     printsFilterState,
     printsMostPopularFilterState,
+    printsPriceFilterMin,
     printsPriceFilterMax,
     productFilter,
     resolutionFilterIndex,
     stockArtistPickFilterState,
+    stockPriceFilterMin,
     stockPriceFilterMax,
   ]);
 
@@ -1953,8 +2246,12 @@ export default function SearchPage() {
                   setPrintsMostPopularFilterState={
                     setPrintsMostPopularFilterState
                   }
+                  printsPriceFilterMin={printsPriceFilterMin}
                   printsPriceFilterMax={printsPriceFilterMax}
+                  setPrintsPriceFilterMin={setPrintsPriceFilterMin}
                   setPrintsPriceFilterMax={setPrintsPriceFilterMax}
+                  printsPriceAllSelected={printsPriceAllSelected}
+                  setPrintsPriceAllSelected={setPrintsPriceAllSelected}
                   durationMinFilterIndex={durationMinFilterIndex}
                   setDurationMinFilterIndex={setDurationMinFilterIndex}
                   durationMaxFilterIndex={durationMaxFilterIndex}
@@ -1967,8 +2264,12 @@ export default function SearchPage() {
                   setFrameRateFilter={setFrameRateFilter}
                   stockArtistPickFilterState={stockArtistPickFilterState}
                   setStockArtistPickFilterState={setStockArtistPickFilterState}
+                  stockPriceFilterMin={stockPriceFilterMin}
                   stockPriceFilterMax={stockPriceFilterMax}
+                  setStockPriceFilterMin={setStockPriceFilterMin}
                   setStockPriceFilterMax={setStockPriceFilterMax}
+                  stockPriceAllSelected={stockPriceAllSelected}
+                  setStockPriceAllSelected={setStockPriceAllSelected}
                   open={isSearchFiltersPopoverOpen}
                   onOpenChange={setIsSearchFiltersPopoverOpen}
                 />
@@ -2079,8 +2380,12 @@ export default function SearchPage() {
                     setPrintsMostPopularFilterState={
                       setPrintsMostPopularFilterState
                     }
+                    printsPriceFilterMin={printsPriceFilterMin}
                     printsPriceFilterMax={printsPriceFilterMax}
+                    setPrintsPriceFilterMin={setPrintsPriceFilterMin}
                     setPrintsPriceFilterMax={setPrintsPriceFilterMax}
+                    printsPriceAllSelected={printsPriceAllSelected}
+                    setPrintsPriceAllSelected={setPrintsPriceAllSelected}
                     durationMinFilterIndex={durationMinFilterIndex}
                     setDurationMinFilterIndex={setDurationMinFilterIndex}
                     durationMaxFilterIndex={durationMaxFilterIndex}
@@ -2093,8 +2398,12 @@ export default function SearchPage() {
                     setFrameRateFilter={setFrameRateFilter}
                     stockArtistPickFilterState={stockArtistPickFilterState}
                     setStockArtistPickFilterState={setStockArtistPickFilterState}
+                    stockPriceFilterMin={stockPriceFilterMin}
                     stockPriceFilterMax={stockPriceFilterMax}
+                    setStockPriceFilterMin={setStockPriceFilterMin}
                     setStockPriceFilterMax={setStockPriceFilterMax}
+                    stockPriceAllSelected={stockPriceAllSelected}
+                    setStockPriceAllSelected={setStockPriceAllSelected}
                     open={isSearchFiltersPopoverOpen}
                     onOpenChange={setIsSearchFiltersPopoverOpen}
                   />

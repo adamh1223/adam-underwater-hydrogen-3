@@ -140,9 +140,7 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
     {title},
     {name: 'title', content: title},
     {name: 'description', content: description},
-    ...(shouldNoindex
-      ? [{name: 'robots', content: 'noindex, nofollow'}]
-      : []),
+    ...(shouldNoindex ? [{name: 'robots', content: 'noindex, nofollow'}] : []),
     {
       tagName: 'link',
       rel: 'canonical',
@@ -288,9 +286,8 @@ async function loadCriticalData({
       }
     }
 
-    collection.products.nodes = applyHighestResolutionVariantToProducts(
-      mergedNodes,
-    );
+    collection.products.nodes =
+      applyHighestResolutionVariantToProducts(mergedNodes);
   }
 
   return {
@@ -342,10 +339,14 @@ const DEFAULT_DURATION_ALL_FILTER = true;
 const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
 const PRICE_FILTER_MIN = 0;
 const STOCK_PRICE_FILTER_MAX = 400;
+const DEFAULT_STOCK_PRICE_FILTER_MIN = PRICE_FILTER_MIN;
 const DEFAULT_STOCK_PRICE_FILTER_MAX = STOCK_PRICE_FILTER_MAX;
+const DEFAULT_STOCK_PRICE_FILTER_ALL = true;
 const LEGACY_STOCK_PRICE_FILTER_MAX = 200;
 const PRINTS_PRICE_FILTER_MAX = 400;
+const DEFAULT_PRINTS_PRICE_FILTER_MIN = PRICE_FILTER_MIN;
 const DEFAULT_PRINTS_PRICE_FILTER_MAX = PRINTS_PRICE_FILTER_MAX;
+const DEFAULT_PRINTS_PRICE_FILTER_ALL = true;
 const bundleDurationRegex = /^d(\d+)-(.+)$/i;
 const bundleResolutionRegex = /^res(\d+)-(.+)$/i;
 const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
@@ -868,62 +869,157 @@ function DurationRangeSlider({
   );
 }
 
-function PriceSlider({
-  value,
-  onChange,
+function PriceRangeSlider({
+  minSelection,
+  maxSelection,
+  onRangeChange,
+  allSelected,
+  setAllSelected,
   minValue = PRICE_FILTER_MIN,
   maxValue = STOCK_PRICE_FILTER_MAX,
 }: {
-  value: number;
-  onChange: (value: number) => void;
+  minSelection: number;
+  maxSelection: number;
+  onRangeChange: (nextMin: number, nextMax: number) => void;
+  allSelected: boolean;
+  setAllSelected: (value: boolean) => void;
   minValue?: number;
   maxValue?: number;
 }) {
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
-  const [draftValue, setDraftValue] = useState<number | null>(null);
-  const activeValue = draftValue ?? value;
+  const [draftRange, setDraftRange] = useState<{
+    min: number;
+    max: number;
+  } | null>(null);
+  const activeMin = draftRange?.min ?? minSelection;
+  const activeMax = draftRange?.max ?? maxSelection;
 
-  const clampValue = useCallback((rawValue: number) => {
-    return Math.min(maxValue, Math.max(minValue, rawValue));
-  }, [maxValue, minValue]);
+  const clampValue = useCallback(
+    (rawValue: number) => Math.min(maxValue, Math.max(minValue, rawValue)),
+    [maxValue, minValue],
+  );
+
+  const enforceRangeGap = useCallback(
+    (candidateMin: number, candidateMax: number) => {
+      let safeMin = clampValue(candidateMin);
+      let safeMax = clampValue(candidateMax);
+      if (safeMin >= safeMax) {
+        if (safeMin >= maxValue) {
+          safeMin = maxValue - 1;
+          safeMax = maxValue;
+        } else {
+          safeMax = safeMin + 1;
+        }
+      }
+      return {min: safeMin, max: safeMax};
+    },
+    [clampValue, maxValue],
+  );
 
   const valueToPositionPercent = useCallback(
     (rawValue: number) =>
-      ((clampValue(rawValue) - minValue) / (maxValue - minValue)) *
-      100,
+      ((clampValue(rawValue) - minValue) / (maxValue - minValue)) * 100,
     [clampValue, maxValue, minValue],
   );
 
-  const getValueFromClientX = useCallback(
+  const getContinuousValueFromClientX = useCallback(
     (clientX: number) => {
       const trackElement = sliderTrackRef.current;
-      if (!trackElement) return value;
+      if (!trackElement) return 0;
 
       const {left, width} = trackElement.getBoundingClientRect();
-      if (width <= 0) return value;
+      if (width <= 0) return 0;
 
       const progress = Math.min(1, Math.max(0, (clientX - left) / width));
-      return clampValue(
-        Math.round(minValue + progress * (maxValue - minValue)),
-      );
+      return minValue + progress * (maxValue - minValue);
     },
-    [clampValue, maxValue, minValue, value],
+    [maxValue, minValue],
   );
 
-  const handleTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  const getNearestValue = useCallback(
+    (clientX: number) =>
+      clampValue(Math.round(getContinuousValueFromClientX(clientX))),
+    [clampValue, getContinuousValueFromClientX],
+  );
+
+  const resolveHandle = useCallback(
+    (targetValue: number, currentMin: number, currentMax: number) => {
+      if (targetValue <= currentMin) return 'min' as const;
+      if (targetValue >= currentMax) return 'max' as const;
+      const minDistance = Math.abs(targetValue - currentMin);
+      const maxDistance = Math.abs(targetValue - currentMax);
+      return minDistance <= maxDistance ? ('min' as const) : ('max' as const);
+    },
+    [],
+  );
+
+  const applyHandleMove = useCallback(
+    (
+      handle: 'min' | 'max',
+      targetValue: number,
+      currentMin: number,
+      currentMax: number,
+    ) => {
+      if (handle === 'min') {
+        return enforceRangeGap(targetValue, currentMax);
+      }
+      return enforceRangeGap(currentMin, targetValue);
+    },
+    [enforceRangeGap],
+  );
+
+  const commitRange = useCallback(
+    (nextMin: number, nextMax: number) => {
+      const safeRange = enforceRangeGap(nextMin, nextMax);
+      onRangeChange(safeRange.min, safeRange.max);
+      setAllSelected(safeRange.min === minValue && safeRange.max === maxValue);
+    },
+    [enforceRangeGap, onRangeChange, setAllSelected, minValue, maxValue],
+  );
+
+  const handleTrackPointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
     if (event.button !== 0) return;
 
-    const nextValue = getValueFromClientX(event.clientX);
-    setDraftValue(nextValue);
+    const pointerValue = getNearestValue(event.clientX);
+    const initialHandle = resolveHandle(
+      pointerValue,
+      minSelection,
+      maxSelection,
+    );
+    const initialDraft = applyHandleMove(
+      initialHandle,
+      pointerValue,
+      minSelection,
+      maxSelection,
+    );
+    setDraftRange(initialDraft);
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      setDraftValue(getValueFromClientX(moveEvent.clientX));
+      const movedValue = getNearestValue(moveEvent.clientX);
+      setDraftRange((currentDraft) => {
+        const baseRange = currentDraft ?? initialDraft;
+        return applyHandleMove(
+          initialHandle,
+          movedValue,
+          baseRange.min,
+          baseRange.max,
+        );
+      });
     };
 
     const handlePointerUp = (upEvent: PointerEvent) => {
-      const finalValue = getValueFromClientX(upEvent.clientX);
-      setDraftValue(null);
-      onChange(finalValue);
+      const finalValue = getNearestValue(upEvent.clientX);
+      const baseRange = draftRange ?? initialDraft;
+      const nextRange = applyHandleMove(
+        initialHandle,
+        finalValue,
+        baseRange.min,
+        baseRange.max,
+      );
+      setDraftRange(null);
+      commitRange(nextRange.min, nextRange.max);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('pointercancel', handlePointerUp);
@@ -935,42 +1031,66 @@ function PriceSlider({
   };
 
   return (
-    <div className="border-t border-border pt-2 pb-2">
+    <div className="border-t border-border pt-2">
       <div className="mb-2 flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-foreground">Price</p>
-        <p className="text-sm text-muted-foreground">
-          {`$${minValue}-$${Math.round(activeValue)}`}
-        </p>
+        <p className="text-sm text-muted-foreground">{`$${Math.round(activeMin)}-$${Math.round(activeMax)}`}</p>
       </div>
-      <div className="notched-slider-rail">
-        <div
-          ref={sliderTrackRef}
-          className="notched-slider-track notched-slider-track--price"
-          role="slider"
-          tabIndex={0}
-          aria-label="Price"
-          aria-valuemin={minValue}
-          aria-valuemax={maxValue}
-          aria-valuenow={Math.round(value)}
-          onPointerDown={handleTrackPointerDown}
-          onKeyDown={(event) => {
-            if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
-              event.preventDefault();
-              onChange(clampValue(value - 1));
-            }
-            if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
-              event.preventDefault();
-              onChange(clampValue(value + 1));
-            }
-          }}
-        >
-          <div
-            className="notched-slider-track-fill"
-            style={{width: `${valueToPositionPercent(activeValue)}%`}}
-          />
-          <div
-            className="notched-slider-thumb"
-            style={{left: `${valueToPositionPercent(activeValue)}%`}}
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="notched-slider-rail">
+            <div
+              ref={sliderTrackRef}
+              className="notched-slider-track notched-slider-track--price"
+              role="slider"
+              tabIndex={0}
+              aria-label="Price"
+              aria-valuemin={minValue}
+              aria-valuemax={maxValue}
+              aria-valuenow={Math.round(maxSelection)}
+              onPointerDown={handleTrackPointerDown}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+                  event.preventDefault();
+                  commitRange(minSelection, maxSelection - 1);
+                }
+                if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+                  event.preventDefault();
+                  commitRange(minSelection, maxSelection + 1);
+                }
+              }}
+            >
+              <div
+                className="notched-slider-track-fill"
+                style={{
+                  left: `${valueToPositionPercent(activeMin)}%`,
+                  width: `calc(${valueToPositionPercent(activeMax)}% - ${valueToPositionPercent(activeMin)}%)`,
+                }}
+              />
+              <div
+                className="notched-slider-thumb"
+                style={{left: `${valueToPositionPercent(activeMin)}%`}}
+              />
+              <div
+                className="notched-slider-thumb"
+                style={{left: `${valueToPositionPercent(activeMax)}%`}}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="inline-flex shrink-0 flex-col items-center gap-1 pb-1 text-xs text-muted-foreground">
+          <span>All</span>
+          <Checkbox
+            checked={allSelected}
+            onCheckedChange={(checked) => {
+              const isChecked = checked === true;
+              setAllSelected(isChecked);
+              if (isChecked) {
+                onRangeChange(minValue, maxValue);
+              }
+            }}
+            className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            aria-label="Show all prices"
           />
         </div>
       </div>
@@ -983,8 +1103,12 @@ function PrintsFiltersPopover({
   setFilterState,
   mostPopularFilterState,
   setMostPopularFilterState,
+  printsPriceFilterMin,
   printsPriceFilterMax,
+  setPrintsPriceFilterMin,
   setPrintsPriceFilterMax,
+  printsPriceAllSelected,
+  setPrintsPriceAllSelected,
   open,
   onOpenChange,
 }: {
@@ -992,154 +1116,170 @@ function PrintsFiltersPopover({
   setFilterState: (value: 'All' | 'Horizontal' | 'Vertical') => void;
   mostPopularFilterState: 'All' | 'Most Popular Only';
   setMostPopularFilterState: (value: 'All' | 'Most Popular Only') => void;
+  printsPriceFilterMin: number;
   printsPriceFilterMax: number;
+  setPrintsPriceFilterMin: (value: number) => void;
   setPrintsPriceFilterMax: (value: number) => void;
+  printsPriceAllSelected: boolean;
+  setPrintsPriceAllSelected: (value: boolean) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const isFiltered =
     filterState !== 'All' ||
     mostPopularFilterState !== 'All' ||
+    !printsPriceAllSelected ||
+    printsPriceFilterMin !== DEFAULT_PRINTS_PRICE_FILTER_MIN ||
     printsPriceFilterMax !== DEFAULT_PRINTS_PRICE_FILTER_MAX;
   const handleReset = () => {
     setFilterState('All');
     setMostPopularFilterState('All');
+    setPrintsPriceFilterMin(DEFAULT_PRINTS_PRICE_FILTER_MIN);
     setPrintsPriceFilterMax(DEFAULT_PRINTS_PRICE_FILTER_MAX);
+    setPrintsPriceAllSelected(DEFAULT_PRINTS_PRICE_FILTER_ALL);
   };
 
   return (
     <div className="relative inline-flex">
-        <div className="inline-flex">
-          <HoverOnlyTooltip
-            content={
-              <>
-                Keyboard shortcut: <Kbd>f</Kbd>
-              </>
-            }
-          >
-            <CollectionFilterIconButton
-              isFiltered={isFiltered}
-              ariaLabel="Filter print products"
-              onClick={() => onOpenChange(!open)}
-              aria-expanded={open}
-              aria-haspopup="dialog"
-            />
-          </HoverOnlyTooltip>
-        </div>
-        <FilterDropdown
-          open={open}
-          onOpenChange={onOpenChange}
-          sideOffset={8}
-          className="w-80 p-2"
+      <div className="inline-flex">
+        <HoverOnlyTooltip
+          content={
+            <>
+              Keyboard shortcut: <Kbd>f</Kbd>
+            </>
+          }
         >
-          <div className="space-y-4">
-            <div>
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-foreground">
-                  Orientation
-                </p>
-                <HoverOnlyTooltip
-                  content={
-                    <>
-                      Reset Filters - shortcut: <Kbd>r</Kbd>
-                    </>
-                  }
-                >
-                  <button
-                    type="button"
-                    className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
-                    aria-label="Reset print filters"
-                    onClick={handleReset}
-                  >
-                    <img
-                      src={
-                        'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
-                      }
-                      alt=""
-                      className="w-5 h-5"
-                    ></img>
-                  </button>
-                </HoverOnlyTooltip>
-              </div>
-              <InputGroup className="overflow-hidden">
-                {(['All', 'Horizontal', 'Vertical'] as const).map(
-                  (value, index) => (
-                    <HoverOnlyTooltip
-                      key={value}
-                      content={
-                        <>
-                          Keyboard shortcut:{' '}
-                          <Kbd>
-                            {value === 'All'
-                              ? 'a'
-                              : value === 'Horizontal'
-                                ? 'h'
-                                : 'v'}
-                          </Kbd>
-                        </>
-                      }
-                    >
-                      <button
-                        type="button"
-                        className={`h-9 flex-1 cursor-pointer px-3 text-sm transition-colors ${
-                          index > 0 ? 'border-l border-input' : ''
-                        } ${
-                          filterState === value
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground'
-                        }`}
-                        onClick={() => setFilterState(value)}
-                      >
-                        {value}
-                      </button>
-                    </HoverOnlyTooltip>
-                  ),
-                )}
-              </InputGroup>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Many horizontal prints <strong>are also available</strong> in
-              vertical on the product page
-            </p>
-            <div className="border-t border-border pt-2">
-              <p className="text-sm font-medium text-foreground mb-3">
-                Most Popular
-              </p>
-              <ToggleGroup
-                type="single"
-                variant="outline"
-                value={mostPopularFilterState}
-                onValueChange={(value) => {
-                  if (value) {
-                    setMostPopularFilterState(
-                      value as 'All' | 'Most Popular Only',
-                    );
-                  }
-                }}
-                className="w-full cursor-pointer"
+          <CollectionFilterIconButton
+            isFiltered={isFiltered}
+            ariaLabel="Filter print products"
+            onClick={() => onOpenChange(!open)}
+            aria-expanded={open}
+            aria-haspopup="dialog"
+          />
+        </HoverOnlyTooltip>
+      </div>
+      <FilterDropdown
+        open={open}
+        onOpenChange={onOpenChange}
+        sideOffset={8}
+        className="w-80 p-2"
+      >
+        <div className="space-y-4">
+          <div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-foreground">Orientation</p>
+              <HoverOnlyTooltip
+                content={
+                  <>
+                    Reset Filters - shortcut: <Kbd>r</Kbd>
+                  </>
+                }
               >
-                <ToggleGroupItem
-                  value="All"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                <button
+                  type="button"
+                  className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+                  aria-label="Reset print filters"
+                  onClick={handleReset}
                 >
-                  All
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="Most Popular Only"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  Most Popular Only
-                </ToggleGroupItem>
-                </ToggleGroup>
+                  <img
+                    src={
+                      'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                    }
+                    alt=""
+                    className="w-5 h-5"
+                  ></img>
+                </button>
+              </HoverOnlyTooltip>
             </div>
-            <PriceSlider
-              value={printsPriceFilterMax}
-              onChange={setPrintsPriceFilterMax}
-              minValue={PRICE_FILTER_MIN}
-              maxValue={PRINTS_PRICE_FILTER_MAX}
-            />
+            <InputGroup className="overflow-hidden">
+              {(['All', 'Horizontal', 'Vertical'] as const).map(
+                (value, index) => (
+                  <HoverOnlyTooltip
+                    key={value}
+                    content={
+                      <>
+                        Keyboard shortcut:{' '}
+                        <Kbd>
+                          {value === 'All'
+                            ? 'a'
+                            : value === 'Horizontal'
+                              ? 'h'
+                              : 'v'}
+                        </Kbd>
+                      </>
+                    }
+                  >
+                    <button
+                      type="button"
+                      className={`h-9 flex-1 cursor-pointer px-3 text-sm transition-colors ${
+                        index > 0 ? 'border-l border-input' : ''
+                      } ${
+                        filterState === value
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground'
+                      }`}
+                      onClick={() => setFilterState(value)}
+                    >
+                      {value}
+                    </button>
+                  </HoverOnlyTooltip>
+                ),
+              )}
+            </InputGroup>
           </div>
-        </FilterDropdown>
+          <p className="text-sm text-muted-foreground">
+            Many horizontal prints <strong>are also available</strong> in
+            vertical on the product page
+          </p>
+          <div className="border-t border-border pt-2">
+            <p className="text-sm font-medium text-foreground mb-3">
+              Most Popular
+            </p>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={mostPopularFilterState}
+              onValueChange={(value) => {
+                if (value) {
+                  setMostPopularFilterState(
+                    value as 'All' | 'Most Popular Only',
+                  );
+                }
+              }}
+              className="w-full cursor-pointer"
+            >
+              <ToggleGroupItem
+                value="All"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="Most Popular Only"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Most Popular Only
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <PriceRangeSlider
+            minSelection={printsPriceFilterMin}
+            maxSelection={printsPriceFilterMax}
+            onRangeChange={(nextMin, nextMax) => {
+              setPrintsPriceFilterMin(nextMin);
+              setPrintsPriceFilterMax(nextMax);
+              setPrintsPriceAllSelected(
+                nextMin === DEFAULT_PRINTS_PRICE_FILTER_MIN &&
+                  nextMax === DEFAULT_PRINTS_PRICE_FILTER_MAX,
+              );
+            }}
+            allSelected={printsPriceAllSelected}
+            setAllSelected={setPrintsPriceAllSelected}
+            minValue={PRICE_FILTER_MIN}
+            maxValue={PRINTS_PRICE_FILTER_MAX}
+          />
+        </div>
+      </FilterDropdown>
     </div>
   );
 }
@@ -1157,8 +1297,12 @@ function StockFiltersPopover({
   setFrameRateFilter,
   artistPickFilterState,
   setArtistPickFilterState,
+  priceFilterMin,
   priceFilterMax,
+  setPriceFilterMin,
   setPriceFilterMax,
+  priceAllSelected,
+  setPriceAllSelected,
   open,
   onOpenChange,
 }: {
@@ -1174,8 +1318,12 @@ function StockFiltersPopover({
   setFrameRateFilter: (v: FrameRateFilter) => void;
   artistPickFilterState: 'All' | "Artist's Pick Only";
   setArtistPickFilterState: (v: 'All' | "Artist's Pick Only") => void;
+  priceFilterMin: number;
   priceFilterMax: number;
+  setPriceFilterMin: (value: number) => void;
   setPriceFilterMax: (value: number) => void;
+  priceAllSelected: boolean;
+  setPriceAllSelected: (value: boolean) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -1186,6 +1334,8 @@ function StockFiltersPopover({
     resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX ||
     frameRateFilter !== DEFAULT_FRAME_RATE_FILTER ||
     artistPickFilterState !== 'All' ||
+    !priceAllSelected ||
+    priceFilterMin !== DEFAULT_STOCK_PRICE_FILTER_MIN ||
     priceFilterMax !== DEFAULT_STOCK_PRICE_FILTER_MAX;
 
   const handleReset = () => {
@@ -1195,195 +1345,206 @@ function StockFiltersPopover({
     setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
     setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
     setArtistPickFilterState('All');
+    setPriceFilterMin(DEFAULT_STOCK_PRICE_FILTER_MIN);
     setPriceFilterMax(DEFAULT_STOCK_PRICE_FILTER_MAX);
+    setPriceAllSelected(DEFAULT_STOCK_PRICE_FILTER_ALL);
   };
 
   return (
     <div className="relative inline-flex">
-        <div className="inline-flex">
-          <HoverOnlyTooltip
-            content={
-              <>
-                Keyboard shortcut: <Kbd>f</Kbd>
-              </>
-            }
-          >
-            <CollectionFilterIconButton
-              isFiltered={isFiltered}
-              ariaLabel="Filter stock footage"
-              onClick={() => onOpenChange(!open)}
-              aria-expanded={open}
-              aria-haspopup="dialog"
-            />
-          </HoverOnlyTooltip>
-        </div>
-        <FilterDropdown
-          open={open}
-          onOpenChange={onOpenChange}
-          sideOffset={8}
-          className="w-80 p-3"
+      <div className="inline-flex">
+        <HoverOnlyTooltip
+          content={
+            <>
+              Keyboard shortcut: <Kbd>f</Kbd>
+            </>
+          }
         >
-          <div className="space-y-4">
-            <div className="notched-slider-section">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-foreground">
-                  Duration (seconds)
-                </p>
-                <HoverOnlyTooltip
-                  content={
-                    <>
-                      Reset Filters - shortcut: <Kbd>r</Kbd>
-                    </>
-                  }
-                >
-                  <button
-                    type="button"
-                    className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
-                    aria-label="Reset stock filters"
-                    onClick={handleReset}
-                  >
-                    <img
-                      src={
-                        'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
-                      }
-                      alt=""
-                      className="w-5 h-5"
-                    ></img>
-                  </button>
-                </HoverOnlyTooltip>
-              </div>
-              <div className="flex items-end gap-3">
-                <div className="min-w-0 flex-1">
-                  <DurationRangeSlider
-                    notches={DURATION_NOTCHES}
-                    minIndex={durationMinFilterIndex}
-                    maxIndex={durationMaxFilterIndex}
-                    onRangeChange={(nextMinIndex, nextMaxIndex) => {
-                      setDurationMinFilterIndex(nextMinIndex);
-                      setDurationMaxFilterIndex(nextMaxIndex);
-                      setDurationAllSelected(
-                        nextMinIndex === DEFAULT_DURATION_MIN_FILTER_INDEX &&
-                          nextMaxIndex ===
-                            DEFAULT_DURATION_MAX_FILTER_INDEX,
-                      );
-                    }}
-                    onInteract={() => {
-                      if (durationAllSelected) setDurationAllSelected(false);
-                    }}
-                  />
-                </div>
-                <div className="inline-flex shrink-0 flex-col items-center gap-1 pb-1 text-xs text-muted-foreground">
-                  <span>All</span>
-                  <Checkbox
-                    checked={durationAllSelected}
-                    onCheckedChange={(checked) => {
-                      const isChecked = checked === true;
-                      setDurationAllSelected(isChecked);
-                      if (isChecked) {
-                        setDurationMinFilterIndex(
-                          DEFAULT_DURATION_MIN_FILTER_INDEX,
-                        );
-                        setDurationMaxFilterIndex(
-                          DEFAULT_DURATION_MAX_FILTER_INDEX,
-                        );
-                      }
-                    }}
-                    className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    aria-label="Show all durations"
-                  />
-                </div>
-              </div>
-            </div>
-            <NotchedSlider
-              label="Resolution"
-              notches={RESOLUTION_NOTCHES}
-              value={resolutionFilterIndex}
-              onChange={setResolutionFilterIndex}
-            />
-            <div className="border-t border-border pt-2">
-              <p className="text-sm font-medium text-foreground mb-3">
-                Frame Rate
+          <CollectionFilterIconButton
+            isFiltered={isFiltered}
+            ariaLabel="Filter stock footage"
+            onClick={() => onOpenChange(!open)}
+            aria-expanded={open}
+            aria-haspopup="dialog"
+          />
+        </HoverOnlyTooltip>
+      </div>
+      <FilterDropdown
+        open={open}
+        onOpenChange={onOpenChange}
+        sideOffset={8}
+        className="w-80 p-3"
+      >
+        <div className="space-y-4">
+          <div className="notched-slider-section">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-foreground">
+                Duration (seconds)
               </p>
-              <ToggleGroup
-                type="single"
-                variant="outline"
-                value={frameRateFilter}
-                onValueChange={(value) => {
-                  if (value) setFrameRateFilter(value as FrameRateFilter);
-                }}
-                className="w-full cursor-pointer"
+              <HoverOnlyTooltip
+                content={
+                  <>
+                    Reset Filters - shortcut: <Kbd>r</Kbd>
+                  </>
+                }
               >
-                <ToggleGroupItem
-                  value="all"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                <button
+                  type="button"
+                  className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+                  aria-label="Reset stock filters"
+                  onClick={handleReset}
                 >
-                  All
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="24fps"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  24fps
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="30fps"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  30fps
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="50fps"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  50fps
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="60fps"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  60fps
-                </ToggleGroupItem>
-              </ToggleGroup>
+                  <img
+                    src={
+                      'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                    }
+                    alt=""
+                    className="w-5 h-5"
+                  ></img>
+                </button>
+              </HoverOnlyTooltip>
             </div>
-            <div className="border-t border-border pt-2">
-              <p className="text-sm font-medium text-foreground mb-3">
-                Artist&apos;s Pick
-              </p>
-              <ToggleGroup
-                type="single"
-                variant="outline"
-                value={artistPickFilterState}
-                onValueChange={(value) => {
-                  if (value) {
-                    setArtistPickFilterState(
-                      value as 'All' | "Artist's Pick Only",
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <DurationRangeSlider
+                  notches={DURATION_NOTCHES}
+                  minIndex={durationMinFilterIndex}
+                  maxIndex={durationMaxFilterIndex}
+                  onRangeChange={(nextMinIndex, nextMaxIndex) => {
+                    setDurationMinFilterIndex(nextMinIndex);
+                    setDurationMaxFilterIndex(nextMaxIndex);
+                    setDurationAllSelected(
+                      nextMinIndex === DEFAULT_DURATION_MIN_FILTER_INDEX &&
+                        nextMaxIndex === DEFAULT_DURATION_MAX_FILTER_INDEX,
                     );
-                  }
-                }}
-                className="w-full cursor-pointer"
-              >
-                <ToggleGroupItem
-                  value="All"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  All
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value="Artist's Pick Only"
-                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-                >
-                  Artist&apos;s Pick Only
-                </ToggleGroupItem>
-                </ToggleGroup>
+                  }}
+                  onInteract={() => {
+                    if (durationAllSelected) setDurationAllSelected(false);
+                  }}
+                />
+              </div>
+              <div className="inline-flex shrink-0 flex-col items-center gap-1 pb-1 text-xs text-muted-foreground">
+                <span>All</span>
+                <Checkbox
+                  checked={durationAllSelected}
+                  onCheckedChange={(checked) => {
+                    const isChecked = checked === true;
+                    setDurationAllSelected(isChecked);
+                    if (isChecked) {
+                      setDurationMinFilterIndex(
+                        DEFAULT_DURATION_MIN_FILTER_INDEX,
+                      );
+                      setDurationMaxFilterIndex(
+                        DEFAULT_DURATION_MAX_FILTER_INDEX,
+                      );
+                    }
+                  }}
+                  className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  aria-label="Show all durations"
+                />
+              </div>
             </div>
-            <PriceSlider
-              value={priceFilterMax}
-              onChange={setPriceFilterMax}
-              minValue={PRICE_FILTER_MIN}
-              maxValue={STOCK_PRICE_FILTER_MAX}
-            />
           </div>
-        </FilterDropdown>
+          <NotchedSlider
+            label="Resolution"
+            notches={RESOLUTION_NOTCHES}
+            value={resolutionFilterIndex}
+            onChange={setResolutionFilterIndex}
+          />
+          <div className="border-t border-border pt-2">
+            <p className="text-sm font-medium text-foreground mb-3">
+              Frame Rate
+            </p>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={frameRateFilter}
+              onValueChange={(value) => {
+                if (value) setFrameRateFilter(value as FrameRateFilter);
+              }}
+              className="w-full cursor-pointer"
+            >
+              <ToggleGroupItem
+                value="all"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="24fps"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                24fps
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="30fps"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                30fps
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="50fps"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                50fps
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="60fps"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                60fps
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <div className="border-t border-border pt-2">
+            <p className="text-sm font-medium text-foreground mb-3">
+              Artist&apos;s Pick
+            </p>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              value={artistPickFilterState}
+              onValueChange={(value) => {
+                if (value) {
+                  setArtistPickFilterState(
+                    value as 'All' | "Artist's Pick Only",
+                  );
+                }
+              }}
+              className="w-full cursor-pointer"
+            >
+              <ToggleGroupItem
+                value="All"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                All
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="Artist's Pick Only"
+                className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Artist&apos;s Pick Only
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <PriceRangeSlider
+            minSelection={priceFilterMin}
+            maxSelection={priceFilterMax}
+            onRangeChange={(nextMin, nextMax) => {
+              setPriceFilterMin(nextMin);
+              setPriceFilterMax(nextMax);
+              setPriceAllSelected(
+                nextMin === DEFAULT_STOCK_PRICE_FILTER_MIN &&
+                  nextMax === DEFAULT_STOCK_PRICE_FILTER_MAX,
+              );
+            }}
+            allSelected={priceAllSelected}
+            setAllSelected={setPriceAllSelected}
+            minValue={PRICE_FILTER_MIN}
+            maxValue={STOCK_PRICE_FILTER_MAX}
+          />
+        </div>
+      </FilterDropdown>
     </div>
   );
 }
@@ -1484,7 +1645,9 @@ function matchesDurationRange(
 }
 
 function getProductPriceAmount(product: {
-  selectedOrFirstAvailableVariant?: {price?: {amount?: string | null} | null} | null;
+  selectedOrFirstAvailableVariant?: {
+    price?: {amount?: string | null} | null;
+  } | null;
   priceRange?: {minVariantPrice?: {amount?: string | null} | null} | null;
 }): number | null {
   const rawAmount =
@@ -1554,25 +1717,28 @@ function getHighestResolutionNumber(product: {
 function applyPrintCollectionFilters<
   TProduct extends {
     tags: string[];
-    selectedOrFirstAvailableVariant?: {price?: {amount?: string | null} | null} | null;
+    selectedOrFirstAvailableVariant?: {
+      price?: {amount?: string | null} | null;
+    } | null;
     priceRange?: {minVariantPrice?: {amount?: string | null} | null} | null;
   },
 >(
   products: TProduct[],
   filterState: 'All' | 'Horizontal' | 'Vertical',
   mostPopularFilterState: 'All' | 'Most Popular Only',
+  printsPriceFilterMin: number,
   printsPriceFilterMax: number,
 ) {
   return products.filter((product) => {
     const matchesMostPopularFilter =
-      mostPopularFilterState === 'All' ||
-      product.tags.includes('most-popular');
+      mostPopularFilterState === 'All' || product.tags.includes('most-popular');
 
     if (!matchesMostPopularFilter) return false;
 
     const matchesOrientation =
       filterState === 'Horizontal'
-        ? product.tags.includes('horOnly') || product.tags.includes('horPrimary')
+        ? product.tags.includes('horOnly') ||
+          product.tags.includes('horPrimary')
         : filterState === 'Vertical'
           ? product.tags.includes('vertOnly') ||
             product.tags.includes('vertPrimary')
@@ -1583,8 +1749,13 @@ function applyPrintCollectionFilters<
     if (!matchesOrientation) return false;
 
     const productPrice = getProductPriceAmount(product);
-    if (productPrice !== null && productPrice > printsPriceFilterMax)
+    if (
+      productPrice !== null &&
+      (productPrice < printsPriceFilterMin ||
+        productPrice > printsPriceFilterMax)
+    ) {
       return false;
+    }
 
     return true;
   });
@@ -1594,7 +1765,9 @@ function applyStockCollectionFilters<
   TProduct extends {
     tags: string[];
     options?: {name?: string; optionValues?: {name?: string}[]}[];
-    selectedOrFirstAvailableVariant?: {price?: {amount?: string | null} | null} | null;
+    selectedOrFirstAvailableVariant?: {
+      price?: {amount?: string | null} | null;
+    } | null;
     priceRange?: {minVariantPrice?: {amount?: string | null} | null} | null;
   },
 >(
@@ -1607,6 +1780,7 @@ function applyStockCollectionFilters<
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    priceFilterMin,
     priceFilterMax,
   }: {
     stockFilterState: 'All Clips' | 'Discounted Bundles';
@@ -1616,6 +1790,7 @@ function applyStockCollectionFilters<
     resolutionFilterIndex: number;
     frameRateFilter: FrameRateFilter;
     artistPickFilterState: 'All' | "Artist's Pick Only";
+    priceFilterMin: number;
     priceFilterMax: number;
   },
 ) {
@@ -1630,8 +1805,7 @@ function applyStockCollectionFilters<
   return products.filter((product) => {
     const isBundleProduct = product.tags.includes('Bundle');
     const matchesArtistPickFilter =
-      artistPickFilterState === 'All' ||
-      product.tags.includes('a');
+      artistPickFilterState === 'All' || product.tags.includes('a');
 
     if (!matchesArtistPickFilter) return false;
 
@@ -1692,7 +1866,12 @@ function applyStockCollectionFilters<
     }
 
     const productPrice = getProductPriceAmount(product);
-    if (productPrice !== null && productPrice > priceFilterMax) return false;
+    if (
+      productPrice !== null &&
+      (productPrice < priceFilterMin || productPrice > priceFilterMax)
+    ) {
+      return false;
+    }
 
     return true;
   });
@@ -1704,6 +1883,7 @@ function getFilteredCollectionSearchProducts({
   collectionTitle,
   filterState,
   mostPopularFilterState,
+  printsPriceFilterMin,
   stockFilterState,
   printsPriceFilterMax,
   durationMinFilterIndex,
@@ -1712,6 +1892,7 @@ function getFilteredCollectionSearchProducts({
   resolutionFilterIndex,
   frameRateFilter,
   artistPickFilterState,
+  stockPriceFilterMin,
   stockPriceFilterMax,
 }: {
   products: EnhancedPartialSearchResult[];
@@ -1720,6 +1901,7 @@ function getFilteredCollectionSearchProducts({
   filterState: 'All' | 'Horizontal' | 'Vertical';
   mostPopularFilterState: 'All' | 'Most Popular Only';
   stockFilterState: 'All Clips' | 'Discounted Bundles';
+  printsPriceFilterMin: number;
   printsPriceFilterMax: number;
   durationMinFilterIndex: number;
   durationMaxFilterIndex: number;
@@ -1727,6 +1909,7 @@ function getFilteredCollectionSearchProducts({
   resolutionFilterIndex: number;
   frameRateFilter: FrameRateFilter;
   artistPickFilterState: 'All' | "Artist's Pick Only";
+  stockPriceFilterMin: number;
   stockPriceFilterMax: number;
 }) {
   const collectionName = capitalizeFirstLetter(collectionTitle ?? '');
@@ -1748,6 +1931,7 @@ function getFilteredCollectionSearchProducts({
       combinedProductSearches,
       filterState,
       mostPopularFilterState,
+      printsPriceFilterMin,
       printsPriceFilterMax,
     );
   }
@@ -1764,6 +1948,7 @@ function getFilteredCollectionSearchProducts({
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    priceFilterMin: stockPriceFilterMin,
     priceFilterMax: stockPriceFilterMax,
   });
 }
@@ -1823,7 +2008,12 @@ export default function Collection() {
   const PRINTS_FILTER_STORAGE_KEY = 'collection-prints-filter-mode';
   const PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY =
     'collection-prints-most-popular-filter-mode';
-  const PRINTS_PRICE_FILTER_STORAGE_KEY = 'collection-prints-price-filter-mode';
+  const PRINTS_PRICE_MIN_FILTER_STORAGE_KEY =
+    'collection-prints-price-min-filter-mode';
+  const PRINTS_PRICE_MAX_FILTER_STORAGE_KEY =
+    'collection-prints-price-filter-mode';
+  const PRINTS_PRICE_ALL_FILTER_STORAGE_KEY =
+    'collection-prints-price-all-filter-mode';
   const STOCK_FILTER_STORAGE_KEY = 'collection-stock-filter-mode';
   const STOCK_DURATION_MIN_FILTER_KEY = 'collection-stock-duration-min-filter';
   const STOCK_DURATION_MAX_FILTER_KEY = 'collection-stock-duration-max-filter';
@@ -1831,7 +2021,9 @@ export default function Collection() {
   const STOCK_RESOLUTION_FILTER_KEY = 'collection-stock-resolution-filter';
   const STOCK_FRAME_RATE_FILTER_KEY = 'collection-stock-frame-rate-filter';
   const STOCK_ARTIST_PICK_FILTER_KEY = 'collection-stock-artist-pick-filter';
-  const STOCK_PRICE_FILTER_KEY = 'collection-stock-price-filter';
+  const STOCK_PRICE_MIN_FILTER_KEY = 'collection-stock-price-min-filter';
+  const STOCK_PRICE_MAX_FILTER_KEY = 'collection-stock-price-filter';
+  const STOCK_PRICE_ALL_FILTER_KEY = 'collection-stock-price-all-filter';
   const [layout, setLayout] = useState('grid');
   const [durationMinFilterIndex, setDurationMinFilterIndex] = useState(
     DEFAULT_DURATION_MIN_FILTER_INDEX,
@@ -1850,10 +2042,24 @@ export default function Collection() {
   ); // default: "all"
   const [artistPickFilterState, setArtistPickFilterState] =
     useState<StockArtistPickFilterState>('All');
-  const [stockPriceFilterMax, setStockPriceFilterMax] =
-    useState<number>(DEFAULT_STOCK_PRICE_FILTER_MAX);
-  const [printsPriceFilterMax, setPrintsPriceFilterMax] =
-    useState<number>(DEFAULT_PRINTS_PRICE_FILTER_MAX);
+  const [stockPriceFilterMin, setStockPriceFilterMin] = useState<number>(
+    DEFAULT_STOCK_PRICE_FILTER_MIN,
+  );
+  const [stockPriceFilterMax, setStockPriceFilterMax] = useState<number>(
+    DEFAULT_STOCK_PRICE_FILTER_MAX,
+  );
+  const [stockPriceAllSelected, setStockPriceAllSelected] = useState(
+    DEFAULT_STOCK_PRICE_FILTER_ALL,
+  );
+  const [printsPriceFilterMin, setPrintsPriceFilterMin] = useState<number>(
+    DEFAULT_PRINTS_PRICE_FILTER_MIN,
+  );
+  const [printsPriceFilterMax, setPrintsPriceFilterMax] = useState<number>(
+    DEFAULT_PRINTS_PRICE_FILTER_MAX,
+  );
+  const [printsPriceAllSelected, setPrintsPriceAllSelected] = useState(
+    DEFAULT_PRINTS_PRICE_FILTER_ALL,
+  );
 
   useEffect(() => {
     const shouldSelectAllDurations =
@@ -1863,11 +2069,25 @@ export default function Collection() {
     if (durationAllSelected !== shouldSelectAllDurations) {
       setDurationAllSelected(shouldSelectAllDurations);
     }
-  }, [
-    durationAllSelected,
-    durationMinFilterIndex,
-    durationMaxFilterIndex,
-  ]);
+  }, [durationAllSelected, durationMinFilterIndex, durationMaxFilterIndex]);
+
+  useEffect(() => {
+    const shouldSelectAllPrintPrices =
+      printsPriceFilterMin === DEFAULT_PRINTS_PRICE_FILTER_MIN &&
+      printsPriceFilterMax === DEFAULT_PRINTS_PRICE_FILTER_MAX;
+    if (printsPriceAllSelected !== shouldSelectAllPrintPrices) {
+      setPrintsPriceAllSelected(shouldSelectAllPrintPrices);
+    }
+  }, [printsPriceAllSelected, printsPriceFilterMin, printsPriceFilterMax]);
+
+  useEffect(() => {
+    const shouldSelectAllStockPrices =
+      stockPriceFilterMin === DEFAULT_STOCK_PRICE_FILTER_MIN &&
+      stockPriceFilterMax === DEFAULT_STOCK_PRICE_FILTER_MAX;
+    if (stockPriceAllSelected !== shouldSelectAllStockPrices) {
+      setStockPriceAllSelected(shouldSelectAllStockPrices);
+    }
+  }, [stockPriceAllSelected, stockPriceFilterMin, stockPriceFilterMax]);
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
   const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
     useState(false);
@@ -1950,6 +2170,7 @@ export default function Collection() {
         filterState,
         mostPopularFilterState,
         stockFilterState,
+        printsPriceFilterMin,
         printsPriceFilterMax,
         durationMinFilterIndex,
         durationMaxFilterIndex,
@@ -1957,6 +2178,7 @@ export default function Collection() {
         resolutionFilterIndex,
         frameRateFilter,
         artistPickFilterState,
+        stockPriceFilterMin,
         stockPriceFilterMax,
       }),
     [
@@ -1966,6 +2188,7 @@ export default function Collection() {
       filterState,
       mostPopularFilterState,
       stockFilterState,
+      printsPriceFilterMin,
       printsPriceFilterMax,
       durationMinFilterIndex,
       durationMaxFilterIndex,
@@ -1973,6 +2196,7 @@ export default function Collection() {
       resolutionFilterIndex,
       frameRateFilter,
       artistPickFilterState,
+      stockPriceFilterMin,
       stockPriceFilterMax,
     ],
   );
@@ -2036,27 +2260,55 @@ export default function Collection() {
         setMostPopularFilterState('All');
       }
 
-      const savedPrintsPriceFilter = window.localStorage.getItem(
-        PRINTS_PRICE_FILTER_STORAGE_KEY,
+      const savedPrintsPriceMin = window.localStorage.getItem(
+        PRINTS_PRICE_MIN_FILTER_STORAGE_KEY,
       );
-      if (savedPrintsPriceFilter !== null) {
-        const parsedPrintsPriceFilter = Number.parseInt(
-          savedPrintsPriceFilter,
-          10,
-        );
-        if (Number.isFinite(parsedPrintsPriceFilter)) {
-          setPrintsPriceFilterMax(
-            Math.min(
-              PRINTS_PRICE_FILTER_MAX,
-              Math.max(PRICE_FILTER_MIN, parsedPrintsPriceFilter),
-            ),
-          );
+      const savedPrintsPriceMax = window.localStorage.getItem(
+        PRINTS_PRICE_MAX_FILTER_STORAGE_KEY,
+      );
+      const savedPrintsPriceAll = window.localStorage.getItem(
+        PRINTS_PRICE_ALL_FILTER_STORAGE_KEY,
+      );
+
+      let nextPrintsPriceMin = DEFAULT_PRINTS_PRICE_FILTER_MIN;
+      let nextPrintsPriceMax = DEFAULT_PRINTS_PRICE_FILTER_MAX;
+      if (savedPrintsPriceMin !== null) {
+        const parsedPrintsPriceMin = Number.parseInt(savedPrintsPriceMin, 10);
+        if (Number.isFinite(parsedPrintsPriceMin)) {
+          nextPrintsPriceMin = parsedPrintsPriceMin;
         }
+      }
+      if (savedPrintsPriceMax !== null) {
+        const parsedPrintsPriceMax = Number.parseInt(savedPrintsPriceMax, 10);
+        if (Number.isFinite(parsedPrintsPriceMax)) {
+          nextPrintsPriceMax = parsedPrintsPriceMax;
+        }
+      }
+
+      const safePrintsPriceMin = Math.min(
+        PRINTS_PRICE_FILTER_MAX - 1,
+        Math.max(PRICE_FILTER_MIN, nextPrintsPriceMin),
+      );
+      const safePrintsPriceMax = Math.min(
+        PRINTS_PRICE_FILTER_MAX,
+        Math.max(safePrintsPriceMin + 1, nextPrintsPriceMax),
+      );
+      setPrintsPriceFilterMin(safePrintsPriceMin);
+      setPrintsPriceFilterMax(safePrintsPriceMax);
+      if (savedPrintsPriceAll === 'true' || savedPrintsPriceAll === 'false') {
+        setPrintsPriceAllSelected(savedPrintsPriceAll === 'true');
+      } else {
+        setPrintsPriceAllSelected(
+          safePrintsPriceMin === DEFAULT_PRINTS_PRICE_FILTER_MIN &&
+            safePrintsPriceMax === DEFAULT_PRINTS_PRICE_FILTER_MAX,
+        );
       }
     } catch {
       setFilterState('All');
       setMostPopularFilterState('All');
+      setPrintsPriceFilterMin(DEFAULT_PRINTS_PRICE_FILTER_MIN);
       setPrintsPriceFilterMax(DEFAULT_PRINTS_PRICE_FILTER_MAX);
+      setPrintsPriceAllSelected(DEFAULT_PRINTS_PRICE_FILTER_ALL);
     } finally {
       setHasInitializedPrintsFilter(true);
     }
@@ -2071,8 +2323,16 @@ export default function Collection() {
         mostPopularFilterState,
       );
       window.localStorage.setItem(
-        PRINTS_PRICE_FILTER_STORAGE_KEY,
+        PRINTS_PRICE_MIN_FILTER_STORAGE_KEY,
+        String(printsPriceFilterMin),
+      );
+      window.localStorage.setItem(
+        PRINTS_PRICE_MAX_FILTER_STORAGE_KEY,
         String(printsPriceFilterMax),
+      );
+      window.localStorage.setItem(
+        PRINTS_PRICE_ALL_FILTER_STORAGE_KEY,
+        String(printsPriceAllSelected),
       );
     } catch {
       // Ignore storage access errors (private mode, etc.)
@@ -2081,7 +2341,9 @@ export default function Collection() {
     collection?.handle,
     filterState,
     mostPopularFilterState,
+    printsPriceFilterMin,
     printsPriceFilterMax,
+    printsPriceAllSelected,
     hasInitializedPrintsFilter,
   ]);
 
@@ -2183,23 +2445,51 @@ export default function Collection() {
       ) {
         setArtistPickFilterState(savedArtistPickFilter);
       }
-      const savedPriceFilter = window.localStorage.getItem(
-        STOCK_PRICE_FILTER_KEY,
+      const savedStockPriceMin = window.localStorage.getItem(
+        STOCK_PRICE_MIN_FILTER_KEY,
       );
-      if (savedPriceFilter !== null) {
-        const parsedPriceFilter = Number.parseInt(savedPriceFilter, 10);
-        if (Number.isFinite(parsedPriceFilter)) {
-          const migratedPriceFilter =
-            parsedPriceFilter === LEGACY_STOCK_PRICE_FILTER_MAX
-              ? DEFAULT_STOCK_PRICE_FILTER_MAX
-              : parsedPriceFilter;
-          setStockPriceFilterMax(
-            Math.min(
-              STOCK_PRICE_FILTER_MAX,
-              Math.max(PRICE_FILTER_MIN, migratedPriceFilter),
-            ),
-          );
+      const savedStockPriceMax = window.localStorage.getItem(
+        STOCK_PRICE_MAX_FILTER_KEY,
+      );
+      const savedStockPriceAll = window.localStorage.getItem(
+        STOCK_PRICE_ALL_FILTER_KEY,
+      );
+
+      let nextStockPriceMin = DEFAULT_STOCK_PRICE_FILTER_MIN;
+      let nextStockPriceMax = DEFAULT_STOCK_PRICE_FILTER_MAX;
+      if (savedStockPriceMin !== null) {
+        const parsedStockPriceMin = Number.parseInt(savedStockPriceMin, 10);
+        if (Number.isFinite(parsedStockPriceMin)) {
+          nextStockPriceMin = parsedStockPriceMin;
         }
+      }
+      if (savedStockPriceMax !== null) {
+        const parsedStockPriceMax = Number.parseInt(savedStockPriceMax, 10);
+        if (Number.isFinite(parsedStockPriceMax)) {
+          nextStockPriceMax =
+            parsedStockPriceMax === LEGACY_STOCK_PRICE_FILTER_MAX
+              ? DEFAULT_STOCK_PRICE_FILTER_MAX
+              : parsedStockPriceMax;
+        }
+      }
+
+      const safeStockPriceMin = Math.min(
+        STOCK_PRICE_FILTER_MAX - 1,
+        Math.max(PRICE_FILTER_MIN, nextStockPriceMin),
+      );
+      const safeStockPriceMax = Math.min(
+        STOCK_PRICE_FILTER_MAX,
+        Math.max(safeStockPriceMin + 1, nextStockPriceMax),
+      );
+      setStockPriceFilterMin(safeStockPriceMin);
+      setStockPriceFilterMax(safeStockPriceMax);
+      if (savedStockPriceAll === 'true' || savedStockPriceAll === 'false') {
+        setStockPriceAllSelected(savedStockPriceAll === 'true');
+      } else {
+        setStockPriceAllSelected(
+          safeStockPriceMin === DEFAULT_STOCK_PRICE_FILTER_MIN &&
+            safeStockPriceMax === DEFAULT_STOCK_PRICE_FILTER_MAX,
+        );
       }
     } catch {
       // Ignore storage access errors
@@ -2232,8 +2522,16 @@ export default function Collection() {
         artistPickFilterState,
       );
       window.localStorage.setItem(
-        STOCK_PRICE_FILTER_KEY,
+        STOCK_PRICE_MIN_FILTER_KEY,
+        String(stockPriceFilterMin),
+      );
+      window.localStorage.setItem(
+        STOCK_PRICE_MAX_FILTER_KEY,
         String(stockPriceFilterMax),
+      );
+      window.localStorage.setItem(
+        STOCK_PRICE_ALL_FILTER_KEY,
+        String(stockPriceAllSelected),
       );
     } catch {
       // Ignore storage access errors
@@ -2246,24 +2544,28 @@ export default function Collection() {
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    stockPriceFilterMin,
     stockPriceFilterMax,
+    stockPriceAllSelected,
   ]);
 
   useEffect(() => {
     return () => {
       try {
         window.localStorage.removeItem(PRINTS_FILTER_STORAGE_KEY);
-        window.localStorage.removeItem(
-          PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
-        );
-        window.localStorage.removeItem(PRINTS_PRICE_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(PRINTS_PRICE_MIN_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(PRINTS_PRICE_MAX_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(PRINTS_PRICE_ALL_FILTER_STORAGE_KEY);
         window.localStorage.removeItem(STOCK_DURATION_MIN_FILTER_KEY);
         window.localStorage.removeItem(STOCK_DURATION_MAX_FILTER_KEY);
         window.localStorage.removeItem(STOCK_DURATION_ALL_FILTER_KEY);
         window.localStorage.removeItem(STOCK_RESOLUTION_FILTER_KEY);
         window.localStorage.removeItem(STOCK_FRAME_RATE_FILTER_KEY);
         window.localStorage.removeItem(STOCK_ARTIST_PICK_FILTER_KEY);
-        window.localStorage.removeItem(STOCK_PRICE_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_PRICE_MIN_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_PRICE_MAX_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_PRICE_ALL_FILTER_KEY);
       } catch {
         // Ignore storage access errors (private mode, etc.)
       }
@@ -2281,6 +2583,7 @@ export default function Collection() {
         baseConnection.nodes as Array<{tags: string[]}>,
         filterState,
         mostPopularFilterState,
+        printsPriceFilterMin,
         printsPriceFilterMax,
       );
     }
@@ -2299,6 +2602,7 @@ export default function Collection() {
           resolutionFilterIndex,
           frameRateFilter,
           artistPickFilterState,
+          priceFilterMin: stockPriceFilterMin,
           priceFilterMax: stockPriceFilterMax,
         },
       );
@@ -2313,6 +2617,7 @@ export default function Collection() {
     collection?.products,
     filterState,
     mostPopularFilterState,
+    printsPriceFilterMin,
     printsPriceFilterMax,
     stockFilterState,
     durationMinFilterIndex,
@@ -2321,6 +2626,7 @@ export default function Collection() {
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    stockPriceFilterMin,
     stockPriceFilterMax,
   ]);
 
@@ -2432,7 +2738,9 @@ export default function Collection() {
           setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
           setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
           setArtistPickFilterState('All');
+          setStockPriceFilterMin(DEFAULT_STOCK_PRICE_FILTER_MIN);
           setStockPriceFilterMax(DEFAULT_STOCK_PRICE_FILTER_MAX);
+          setStockPriceAllSelected(DEFAULT_STOCK_PRICE_FILTER_ALL);
           return;
         }
       }
@@ -2460,7 +2768,9 @@ export default function Collection() {
           event.preventDefault();
           setFilterState('All');
           setMostPopularFilterState('All');
+          setPrintsPriceFilterMin(DEFAULT_PRINTS_PRICE_FILTER_MIN);
           setPrintsPriceFilterMax(DEFAULT_PRINTS_PRICE_FILTER_MAX);
+          setPrintsPriceAllSelected(DEFAULT_PRINTS_PRICE_FILTER_ALL);
         }
       }
     };
@@ -2537,8 +2847,12 @@ export default function Collection() {
                   setFrameRateFilter={setFrameRateFilter}
                   artistPickFilterState={artistPickFilterState}
                   setArtistPickFilterState={setArtistPickFilterState}
+                  priceFilterMin={stockPriceFilterMin}
                   priceFilterMax={stockPriceFilterMax}
+                  setPriceFilterMin={setStockPriceFilterMin}
                   setPriceFilterMax={setStockPriceFilterMax}
+                  priceAllSelected={stockPriceAllSelected}
+                  setPriceAllSelected={setStockPriceAllSelected}
                   open={isCollectionFiltersPopoverOpen}
                   onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
@@ -2549,8 +2863,12 @@ export default function Collection() {
                   setFilterState={setFilterState}
                   mostPopularFilterState={mostPopularFilterState}
                   setMostPopularFilterState={setMostPopularFilterState}
+                  printsPriceFilterMin={printsPriceFilterMin}
                   printsPriceFilterMax={printsPriceFilterMax}
+                  setPrintsPriceFilterMin={setPrintsPriceFilterMin}
                   setPrintsPriceFilterMax={setPrintsPriceFilterMax}
+                  printsPriceAllSelected={printsPriceAllSelected}
+                  setPrintsPriceAllSelected={setPrintsPriceAllSelected}
                   open={isCollectionFiltersPopoverOpen}
                   onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
@@ -2751,8 +3069,12 @@ export default function Collection() {
                       setFrameRateFilter={setFrameRateFilter}
                       artistPickFilterState={artistPickFilterState}
                       setArtistPickFilterState={setArtistPickFilterState}
+                      priceFilterMin={stockPriceFilterMin}
                       priceFilterMax={stockPriceFilterMax}
+                      setPriceFilterMin={setStockPriceFilterMin}
                       setPriceFilterMax={setStockPriceFilterMax}
+                      priceAllSelected={stockPriceAllSelected}
+                      setPriceAllSelected={setStockPriceAllSelected}
                       open={isCollectionFiltersPopoverOpen}
                       onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />
@@ -2763,8 +3085,12 @@ export default function Collection() {
                       setFilterState={setFilterState}
                       mostPopularFilterState={mostPopularFilterState}
                       setMostPopularFilterState={setMostPopularFilterState}
+                      printsPriceFilterMin={printsPriceFilterMin}
                       printsPriceFilterMax={printsPriceFilterMax}
+                      setPrintsPriceFilterMin={setPrintsPriceFilterMin}
                       setPrintsPriceFilterMax={setPrintsPriceFilterMax}
+                      printsPriceAllSelected={printsPriceAllSelected}
+                      setPrintsPriceAllSelected={setPrintsPriceAllSelected}
                       open={isCollectionFiltersPopoverOpen}
                       onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />

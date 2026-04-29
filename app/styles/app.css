@@ -2499,7 +2499,8 @@ span {
 }
 
 .notched-slider-track--price {
-  width: calc(100% - 0.625rem);
+  width: calc(100% - 1.25rem);
+  margin-inline: 0.625rem;
 }
 
 .notched-slider-track-fill {
