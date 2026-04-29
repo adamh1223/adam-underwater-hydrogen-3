@@ -3118,6 +3118,8 @@ export default function Product() {
                 products={recommendedProducts}
                 isVideo={isVideo}
                 currentProductID={product.id}
+                currentProductTitle={product.title}
+                currentProductDescription={product.description}
                 cart={cart}
                 isLoggedIn={isLoggedIn}
                 wishlistProducts={wishlistProducts}

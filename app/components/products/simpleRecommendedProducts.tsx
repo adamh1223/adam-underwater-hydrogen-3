@@ -13,10 +13,58 @@ import {
 } from '../ui/carousel';
 import {hasVideoTag} from '~/lib/productTags';
 
+const KEYWORD_STOP_WORDS = new Set([
+  'a',
+  'an',
+  'and',
+  'are',
+  'at',
+  'be',
+  'by',
+  'for',
+  'from',
+  'in',
+  'is',
+  'it',
+  'of',
+  'on',
+  'or',
+  'that',
+  'the',
+  'this',
+  'to',
+  'with',
+  'stock',
+  'footage',
+  'video',
+  'clip',
+  'clips',
+]);
+
+function tokenizeKeywords(value: string | null | undefined): string[] {
+  if (!value) return [];
+  const matches = value.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+  return matches.filter((token) => {
+    if (KEYWORD_STOP_WORDS.has(token)) return false;
+    if (token.length >= 3) return true;
+    return /^\d+k$/.test(token) || /^\d+fps$/.test(token);
+  });
+}
+
+function getSharedKeywordCount(source: Set<string>, target: Set<string>): number {
+  let sharedCount = 0;
+  target.forEach((keyword) => {
+    if (source.has(keyword)) sharedCount += 1;
+  });
+  return sharedCount;
+}
+
 function SimpleRecommendedProducts({
   products,
   isVideo,
   currentProductID,
+  currentProductTitle,
+  currentProductDescription,
   cart,
   isLoggedIn,
   wishlistProducts,
@@ -24,6 +72,8 @@ function SimpleRecommendedProducts({
   products: Promise<RecommendedProductsQuery | null>;
   isVideo: boolean;
   currentProductID: string;
+  currentProductTitle: string;
+  currentProductDescription?: string | null;
   cart?: Promise<CartReturn | null>;
   isLoggedIn: boolean;
   wishlistProducts: string[];
@@ -73,6 +123,13 @@ function SimpleRecommendedProducts({
   const computedSlidesPerView = isVideo
     ? relatedVideoColumnCount
     : slidesPerView;
+  const currentProductKeywordSet = useMemo(() => {
+    return new Set([
+      ...tokenizeKeywords(currentProductTitle),
+      ...tokenizeKeywords(currentProductDescription),
+    ]);
+  }, [currentProductDescription, currentProductTitle]);
+
   const allowOuterRecommendedCarouselDrag = (
     _emblaApi: unknown,
     event: MouseEvent | TouchEvent,
@@ -88,20 +145,40 @@ function SimpleRecommendedProducts({
         <Await resolve={products}>
           {(response) => {
             const allProducts = response?.products.nodes ?? [];
-            const filteredProducts = allProducts.filter((product) => {
-              const hasYouMayAlsoLikeImage = Boolean(
-                product.images.nodes[0]?.url?.includes('youmayalsolike'),
-              );
-              const matchesType = isVideo
-                ? hasVideoTag(product.tags)
-                : !hasVideoTag(product.tags);
+            const filteredProducts = allProducts
+              .map((product) => {
+                const matchesType = isVideo
+                  ? hasVideoTag(product.tags)
+                  : !hasVideoTag(product.tags);
+                if (!matchesType || product.id === currentProductID) {
+                  return null;
+                }
 
-              return (
-                hasYouMayAlsoLikeImage &&
-                matchesType &&
-                product.id !== currentProductID
-              );
-            });
+                const productKeywordSet = new Set([
+                  ...tokenizeKeywords(product.title),
+                  ...tokenizeKeywords((product as {description?: string | null}).description),
+                ]);
+                const sharedKeywordCount = getSharedKeywordCount(
+                  currentProductKeywordSet,
+                  productKeywordSet,
+                );
+
+                if (currentProductKeywordSet.size > 0 && sharedKeywordCount <= 0) {
+                  return null;
+                }
+
+                return {product, sharedKeywordCount};
+              })
+              .filter(
+                (
+                  entry,
+                ): entry is {
+                  product: (typeof allProducts)[number];
+                  sharedKeywordCount: number;
+                } => entry !== null,
+              )
+              .sort((a, b) => b.sharedKeywordCount - a.sharedKeywordCount)
+              .map((entry) => entry.product);
 
             const effectiveSlidesPerView = Math.max(
               1,

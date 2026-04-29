@@ -34,6 +34,7 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   fragment RecommendedProduct on Product {
     id
     title
+    description
     handle
     featuredImage {
       id
