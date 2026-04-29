@@ -13,7 +13,7 @@ import {
 import {sendPurchaseDownloadEmail} from '~/lib/purchase-email.server';
 import {sendReviewRequestEmail} from '~/lib/review-email.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
-import {hasVideoTag} from '~/lib/productTags';
+import {hasVideoIdentifierTag, hasVideoTag} from '~/lib/productTags';
 
 type ShopifyOrderPaidWebhookPayload = {
   id?: number;
@@ -48,10 +48,18 @@ type ShopifyCustomerWebhookPayload = {
   email?: string | null;
 };
 
+type ShopifyProductWebhookPayload = {
+  id?: number;
+  admin_graphql_api_id?: string;
+  tags?: string | null;
+};
+
 const ACCEPTED_TOPICS = new Set([
   'orders/paid',
   'orders/create',
   'customers/create',
+  'products/create',
+  'products/update',
 ]);
 const PAID_STATUSES = new Set(['paid', 'partially_paid']);
 
@@ -110,10 +118,31 @@ const SET_ORDER_EMAIL_SENT_METAFIELD_MUTATION = `
   }
 ` as const;
 
+const PRODUCT_TAG_SYNC_MUTATION = `
+  mutation ProductTagSync($product: ProductUpdateInput!) {
+    productUpdate(product: $product) {
+      product {
+        id
+        tags
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+` as const;
+
 function toBase64(bytes: Uint8Array): string {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary);
+}
+
+function normalizeWebhookTopic(rawTopic: string | null): string {
+  const normalized = (rawTopic ?? '').trim().toLowerCase();
+  if (!normalized) return '';
+  return normalized.replace(/_/g, '/');
 }
 
 function timingSafeEqual(a: string, b: string) {
@@ -123,6 +152,17 @@ function timingSafeEqual(a: string, b: string) {
     mismatch |= a.charCodeAt(index) ^ b.charCodeAt(index);
   }
   return mismatch === 0;
+}
+
+function normalizePublicR2BaseUrl(env: Env): string {
+  const base = env.R2_PUBLIC_BASE_URL?.trim();
+  if (base) return base.replace(/\/+$/, '');
+  return 'https://downloads.adamunderwater.com';
+}
+
+function createPublicR2DownloadUrl(env: Env, objectKey: string): string {
+  const cleanedObjectKey = objectKey.trim().replace(/^\/+/, '');
+  return `${normalizePublicR2BaseUrl(env)}/${cleanedObjectKey}`;
 }
 
 async function verifyShopifyWebhookHmac({
@@ -202,6 +242,95 @@ function resolveCustomerGid(
   return null;
 }
 
+function resolveProductGid(payload: ShopifyProductWebhookPayload): string | null {
+  if (payload.admin_graphql_api_id?.trim()) {
+    const gid = payload.admin_graphql_api_id.trim();
+    if (gid.includes('/Product/')) return gid;
+  }
+  if (typeof payload.id === 'number' && Number.isFinite(payload.id)) {
+    return `gid://shopify/Product/${payload.id}`;
+  }
+  return null;
+}
+
+function parseCommaSeparatedTags(rawTags: string | null | undefined): string[] {
+  if (typeof rawTags !== 'string') return [];
+  return rawTags
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
+
+function containsTagCaseInsensitive(tags: string[], target: string): boolean {
+  const normalizedTarget = target.trim().toLowerCase();
+  return tags.some((tag) => tag.trim().toLowerCase() === normalizedTarget);
+}
+
+async function syncLegacyVideoTagsForProduct({
+  context,
+  payload,
+}: {
+  context: ActionFunctionArgs['context'];
+  payload: ShopifyProductWebhookPayload;
+}) {
+  const productId = resolveProductGid(payload);
+  if (!productId) {
+    return {ok: false, skipped: 'Missing product id'};
+  }
+
+  const existingTags = parseCommaSeparatedTags(payload.tags);
+  if (!hasVideoIdentifierTag(existingTags)) {
+    return {ok: true, skipped: 'No v#/vid# tag present'};
+  }
+
+  const tagsToApply = [...existingTags];
+  let changed = false;
+
+  if (!containsTagCaseInsensitive(tagsToApply, 'Video')) {
+    tagsToApply.push('Video');
+    changed = true;
+  }
+  if (!containsTagCaseInsensitive(tagsToApply, 'EProduct')) {
+    tagsToApply.push('EProduct');
+    changed = true;
+  }
+
+  if (!changed) {
+    return {ok: true, synced: false, skipped: 'Already has Video + EProduct'};
+  }
+
+  const mutationResult = await adminGraphql<{
+    data?: {
+      productUpdate?: {
+        userErrors?: Array<{field?: string[] | null; message?: string | null}>;
+      } | null;
+    };
+  }>({
+    env: context.env,
+    query: PRODUCT_TAG_SYNC_MUTATION,
+    variables: {
+      product: {
+        id: productId,
+        tags: tagsToApply,
+      },
+    },
+  }).catch((error) => {
+    console.error('Product tag sync failed', {
+      productId,
+      error,
+    });
+    return null;
+  });
+
+  const userErrors = mutationResult?.data?.productUpdate?.userErrors ?? [];
+  if (Array.isArray(userErrors) && userErrors.length > 0) {
+    console.error('Product tag sync user errors', {productId, userErrors});
+    return {ok: false, synced: false, userErrors};
+  }
+
+  return {ok: true, synced: true, productId, tagsApplied: tagsToApply};
+}
+
 async function syncWelcome15UsesRemainingForCustomer({
   context,
   customerId,
@@ -247,7 +376,7 @@ async function syncWelcome15UsesRemainingForCustomer({
 
 export async function action({request, context}: ActionFunctionArgs) {
   try {
-    const topic = request.headers.get('X-Shopify-Topic')?.trim();
+    const topic = normalizeWebhookTopic(request.headers.get('X-Shopify-Topic'));
     if (topic && !ACCEPTED_TOPICS.has(topic)) {
       return json({ok: true, skipped: `Ignored topic ${topic}`});
     }
@@ -278,13 +407,24 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     let payload:
       | ShopifyOrderPaidWebhookPayload
-      | ShopifyCustomerWebhookPayload;
+      | ShopifyCustomerWebhookPayload
+      | ShopifyProductWebhookPayload;
     try {
       payload = JSON.parse(rawBody) as
         | ShopifyOrderPaidWebhookPayload
-        | ShopifyCustomerWebhookPayload;
+        | ShopifyCustomerWebhookPayload
+        | ShopifyProductWebhookPayload;
     } catch {
       return json({ok: false, error: 'Invalid webhook payload'}, {status: 400});
+    }
+
+    if (topic === 'products/create' || topic === 'products/update') {
+      const productPayload = payload as ShopifyProductWebhookPayload;
+      const result = await syncLegacyVideoTagsForProduct({
+        context,
+        payload: productPayload,
+      });
+      return json({ok: true, topic, ...result});
     }
 
     if (topic === 'customers/create') {
@@ -417,11 +557,23 @@ export async function action({request, context}: ActionFunctionArgs) {
         });
         if (!objectKey) return null;
 
-        const token = await createEmailDownloadToken({
-          env: context.env,
-          orderId: order.id,
-          lineItemId,
-        });
+        let downloadUrl = '';
+        try {
+          const token = await createEmailDownloadToken({
+            env: context.env,
+            orderId: order.id,
+            lineItemId,
+          });
+          downloadUrl = `${siteUrl}/download/${encodeURIComponent(token)}`;
+        } catch (tokenError) {
+          console.error('Unable to sign email download token; using public fallback URL', {
+            orderId: order.id,
+            lineItemId,
+            objectKey,
+            tokenError,
+          });
+          downloadUrl = createPublicR2DownloadUrl(context.env, objectKey);
+        }
 
         return {
           title:
@@ -441,7 +593,7 @@ export async function action({request, context}: ActionFunctionArgs) {
             }) ??
             lineItem.variant?.image?.url ??
             null,
-          downloadUrl: `${siteUrl}/download/${encodeURIComponent(token)}`,
+          downloadUrl,
           isBundle: tags.includes('Bundle'),
         };
       }),
