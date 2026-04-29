@@ -59,6 +59,7 @@ import RecommendedProducts from '~/components/products/recommendedProducts';
 import CollectionPageSkeleton from '~/components/skeletons/CollectionPageSkeleton';
 import {SkeletonGate} from '~/components/skeletons/shared';
 import {ToggleGroup, ToggleGroupItem} from '~/components/ui/toggle-group';
+import {Checkbox} from '~/components/ui/checkbox';
 import {DEFAULT_LINK_PREVIEW_ICON} from '~/lib/linkPreview';
 import MarqueeBanner from '~/components/global/MarqueeBanner';
 import {
@@ -314,13 +315,18 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 /*  Stock Footage Filters                                                    */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const DURATION_NOTCHES = [
-  {value: 10, label: '10'},
-  {value: 20, label: '20'},
+type DurationNotch = {
+  value: number;
+  label: string;
+};
+
+const DURATION_NOTCHES: DurationNotch[] = [
+  {value: 0, label: '0'},
   {value: 30, label: '30'},
-  {value: 40, label: '40'},
-  {value: 50, label: '50'},
-  {value: Infinity, label: 'All'},
+  {value: 60, label: '60'},
+  {value: 120, label: '120'},
+  {value: 180, label: '180'},
+  {value: 600, label: '600'},
 ];
 
 const RESOLUTION_NOTCHES = [
@@ -330,13 +336,20 @@ const RESOLUTION_NOTCHES = [
   {value: 8, label: '8K+'},
 ];
 
-const DEFAULT_DURATION_FILTER_INDEX = DURATION_NOTCHES.length - 1;
+const DEFAULT_DURATION_MIN_FILTER_INDEX = 0;
+const DEFAULT_DURATION_MAX_FILTER_INDEX = DURATION_NOTCHES.length - 1;
+const DEFAULT_DURATION_ALL_FILTER = true;
 const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
+const PRICE_FILTER_MIN = 0;
+const STOCK_PRICE_FILTER_MAX = 200;
+const DEFAULT_STOCK_PRICE_FILTER_MAX = STOCK_PRICE_FILTER_MAX;
+const PRINTS_PRICE_FILTER_MAX = 400;
+const DEFAULT_PRINTS_PRICE_FILTER_MAX = PRINTS_PRICE_FILTER_MAX;
 const bundleDurationRegex = /^d(\d+)-(.+)$/i;
 const bundleResolutionRegex = /^res(\d+)-(.+)$/i;
 const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
 
-type FrameRateFilter = 'all' | '24fps' | 'slowmo';
+type FrameRateFilter = 'all' | '24fps' | '30fps' | '50fps' | '60fps';
 const DEFAULT_FRAME_RATE_FILTER: FrameRateFilter = 'all';
 
 const STOCK_FILTER_ICON_BUTTON_CLASS_NAME =
@@ -595,11 +608,382 @@ function NotchedSlider({
   );
 }
 
+function DurationRangeSlider({
+  notches,
+  minIndex,
+  maxIndex,
+  onRangeChange,
+  onInteract,
+}: {
+  notches: DurationNotch[];
+  minIndex: number;
+  maxIndex: number;
+  onRangeChange: (nextMinIndex: number, nextMaxIndex: number) => void;
+  onInteract?: () => void;
+}) {
+  const max = notches.length - 1;
+  const sliderTrackRef = useRef<HTMLDivElement | null>(null);
+  const [draftRange, setDraftRange] = useState<{
+    min: number;
+    max: number;
+  } | null>(null);
+  const activeMinIndex = draftRange?.min ?? minIndex;
+  const activeMaxIndex = draftRange?.max ?? maxIndex;
+
+  const clampIndex = useCallback(
+    (rawIndex: number) => Math.min(max, Math.max(0, rawIndex)),
+    [max],
+  );
+
+  const enforceRangeGap = useCallback(
+    (candidateMin: number, candidateMax: number) => {
+      let safeMin = clampIndex(candidateMin);
+      let safeMax = clampIndex(candidateMax);
+      if (safeMin >= safeMax) {
+        if (safeMin >= max) {
+          safeMin = max - 1;
+          safeMax = max;
+        } else {
+          safeMax = safeMin + 1;
+        }
+      }
+      return {min: safeMin, max: safeMax};
+    },
+    [clampIndex, max],
+  );
+
+  const getContinuousValueFromClientX = useCallback(
+    (clientX: number) => {
+      const trackElement = sliderTrackRef.current;
+      if (!trackElement || max <= 0) return 0;
+
+      const {left, width} = trackElement.getBoundingClientRect();
+      if (width <= 0) return 0;
+
+      const progress = Math.min(1, Math.max(0, (clientX - left) / width));
+      return progress * max;
+    },
+    [max],
+  );
+
+  const getNearestNotchIndex = useCallback(
+    (clientX: number) =>
+      clampIndex(Math.round(getContinuousValueFromClientX(clientX))),
+    [clampIndex, getContinuousValueFromClientX],
+  );
+
+  const getNotchPosition = useCallback(
+    (index: number) => {
+      if (max <= 0) return '0%';
+      return `${(index / max) * 100}%`;
+    },
+    [max],
+  );
+
+  const resolveHandle = useCallback(
+    (targetIndex: number, currentMin: number, currentMax: number) => {
+      if (targetIndex <= currentMin) return 'min' as const;
+      if (targetIndex >= currentMax) return 'max' as const;
+      const minDistance = Math.abs(targetIndex - currentMin);
+      const maxDistance = Math.abs(targetIndex - currentMax);
+      return minDistance <= maxDistance ? ('min' as const) : ('max' as const);
+    },
+    [],
+  );
+
+  const applyHandleMove = useCallback(
+    (
+      handle: 'min' | 'max',
+      targetIndex: number,
+      currentMin: number,
+      currentMax: number,
+    ) => {
+      if (handle === 'min') {
+        return enforceRangeGap(targetIndex, currentMax);
+      }
+      return enforceRangeGap(currentMin, targetIndex);
+    },
+    [enforceRangeGap],
+  );
+
+  const commitRange = useCallback(
+    (nextMin: number, nextMax: number) => {
+      const safeRange = enforceRangeGap(nextMin, nextMax);
+      onInteract?.();
+      onRangeChange(safeRange.min, safeRange.max);
+    },
+    [enforceRangeGap, onInteract, onRangeChange],
+  );
+
+  const handleTrackPointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (event.button !== 0) return;
+
+    onInteract?.();
+    const pointerIndex = getNearestNotchIndex(event.clientX);
+    const initialHandle = resolveHandle(pointerIndex, minIndex, maxIndex);
+    const initialDraft = applyHandleMove(
+      initialHandle,
+      pointerIndex,
+      minIndex,
+      maxIndex,
+    );
+    setDraftRange(initialDraft);
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const movedIndex = getNearestNotchIndex(moveEvent.clientX);
+      setDraftRange((currentDraft) => {
+        const baseRange = currentDraft ?? initialDraft;
+        return applyHandleMove(
+          initialHandle,
+          movedIndex,
+          baseRange.min,
+          baseRange.max,
+        );
+      });
+    };
+
+    const handlePointerUp = () => {
+      setDraftRange((currentDraft) => {
+        const finalRange = currentDraft ?? initialDraft;
+        commitRange(finalRange.min, finalRange.max);
+        return null;
+      });
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+  };
+
+  return (
+    <div className="notched-slider-container">
+      <div className="notched-slider-labels">
+        {notches.map((notch, index) => (
+          <button
+            key={`duration-range-${notch.label}-${String(notch.value)}`}
+            type="button"
+            className={`notched-slider-label ${
+              index >= activeMinIndex && index <= activeMaxIndex ? 'active' : ''
+            }`}
+            style={{left: getNotchPosition(index)}}
+            onClick={() => {
+              onInteract?.();
+              const handle = resolveHandle(index, minIndex, maxIndex);
+              const nextRange = applyHandleMove(
+                handle,
+                index,
+                minIndex,
+                maxIndex,
+              );
+              commitRange(nextRange.min, nextRange.max);
+            }}
+          >
+            {notch.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="notched-slider-rail">
+        <div className="notched-slider-markers">
+          {notches.map((notch, index) => (
+            <button
+              key={`duration-range-marker-${notch.label}-${String(notch.value)}`}
+              type="button"
+              className="notched-slider-marker-slot"
+              style={{left: getNotchPosition(index)}}
+              onClick={() => {
+                onInteract?.();
+                const handle = resolveHandle(index, minIndex, maxIndex);
+                const nextRange = applyHandleMove(
+                  handle,
+                  index,
+                  minIndex,
+                  maxIndex,
+                );
+                commitRange(nextRange.min, nextRange.max);
+              }}
+              aria-label={`Set duration to ${notch.label} seconds`}
+            >
+              <span
+                className={`notched-slider-tick ${
+                  index >= activeMinIndex && index <= activeMaxIndex
+                    ? 'active'
+                    : ''
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+
+        <div
+          ref={sliderTrackRef}
+          className="notched-slider-track"
+          role="slider"
+          tabIndex={0}
+          aria-label="Duration range"
+          aria-valuemin={notches[activeMinIndex]?.value ?? 0}
+          aria-valuemax={notches[activeMaxIndex]?.value ?? 0}
+          aria-valuenow={notches[activeMaxIndex]?.value ?? 0}
+          aria-valuetext={`${notches[activeMinIndex]?.value ?? 0} to ${
+            notches[activeMaxIndex]?.value ?? 0
+          } seconds`}
+          onPointerDown={handleTrackPointerDown}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+              event.preventDefault();
+              commitRange(minIndex - 1, maxIndex);
+            }
+            if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              commitRange(minIndex, maxIndex + 1);
+            }
+          }}
+        >
+          <div
+            className="notched-slider-track-fill"
+            style={{
+              left: getNotchPosition(activeMinIndex),
+              width: `calc(${getNotchPosition(activeMaxIndex)} - ${getNotchPosition(
+                activeMinIndex,
+              )})`,
+            }}
+          />
+          <div
+            className="notched-slider-thumb"
+            style={{left: getNotchPosition(activeMinIndex)}}
+          />
+          <div
+            className="notched-slider-thumb"
+            style={{left: getNotchPosition(activeMaxIndex)}}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriceSlider({
+  value,
+  onChange,
+  minValue = PRICE_FILTER_MIN,
+  maxValue = STOCK_PRICE_FILTER_MAX,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+  minValue?: number;
+  maxValue?: number;
+}) {
+  const sliderTrackRef = useRef<HTMLDivElement | null>(null);
+  const [draftValue, setDraftValue] = useState<number | null>(null);
+  const activeValue = draftValue ?? value;
+
+  const clampValue = useCallback((rawValue: number) => {
+    return Math.min(maxValue, Math.max(minValue, rawValue));
+  }, [maxValue, minValue]);
+
+  const valueToPositionPercent = useCallback(
+    (rawValue: number) =>
+      ((clampValue(rawValue) - minValue) / (maxValue - minValue)) *
+      100,
+    [clampValue, maxValue, minValue],
+  );
+
+  const getValueFromClientX = useCallback(
+    (clientX: number) => {
+      const trackElement = sliderTrackRef.current;
+      if (!trackElement) return value;
+
+      const {left, width} = trackElement.getBoundingClientRect();
+      if (width <= 0) return value;
+
+      const progress = Math.min(1, Math.max(0, (clientX - left) / width));
+      return clampValue(
+        Math.round(minValue + progress * (maxValue - minValue)),
+      );
+    },
+    [clampValue, maxValue, minValue, value],
+  );
+
+  const handleTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+
+    const nextValue = getValueFromClientX(event.clientX);
+    setDraftValue(nextValue);
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      setDraftValue(getValueFromClientX(moveEvent.clientX));
+    };
+
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      const finalValue = getValueFromClientX(upEvent.clientX);
+      setDraftValue(null);
+      onChange(finalValue);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+  };
+
+  return (
+    <div className="border-t border-border pt-2">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-foreground">Price</p>
+        <p className="text-sm text-muted-foreground">
+          {`$${minValue}-$${Math.round(activeValue)}`}
+        </p>
+      </div>
+      <div className="notched-slider-rail">
+        <div
+          ref={sliderTrackRef}
+          className="notched-slider-track notched-slider-track--price"
+          role="slider"
+          tabIndex={0}
+          aria-label="Price"
+          aria-valuemin={minValue}
+          aria-valuemax={maxValue}
+          aria-valuenow={Math.round(value)}
+          onPointerDown={handleTrackPointerDown}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+              event.preventDefault();
+              onChange(clampValue(value - 1));
+            }
+            if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+              event.preventDefault();
+              onChange(clampValue(value + 1));
+            }
+          }}
+        >
+          <div
+            className="notched-slider-track-fill"
+            style={{width: `${valueToPositionPercent(activeValue)}%`}}
+          />
+          <div
+            className="notched-slider-thumb"
+            style={{left: `${valueToPositionPercent(activeValue)}%`}}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PrintsFiltersPopover({
   filterState,
   setFilterState,
   mostPopularFilterState,
   setMostPopularFilterState,
+  printsPriceFilterMax,
+  setPrintsPriceFilterMax,
   open,
   onOpenChange,
 }: {
@@ -607,13 +991,19 @@ function PrintsFiltersPopover({
   setFilterState: (value: 'All' | 'Horizontal' | 'Vertical') => void;
   mostPopularFilterState: 'All' | 'Most Popular Only';
   setMostPopularFilterState: (value: 'All' | 'Most Popular Only') => void;
+  printsPriceFilterMax: number;
+  setPrintsPriceFilterMax: (value: number) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const isFiltered = filterState !== 'All' || mostPopularFilterState !== 'All';
+  const isFiltered =
+    filterState !== 'All' ||
+    mostPopularFilterState !== 'All' ||
+    printsPriceFilterMax !== DEFAULT_PRINTS_PRICE_FILTER_MAX;
   const handleReset = () => {
     setFilterState('All');
     setMostPopularFilterState('All');
+    setPrintsPriceFilterMax(DEFAULT_PRINTS_PRICE_FILTER_MAX);
   };
 
   return (
@@ -739,8 +1129,14 @@ function PrintsFiltersPopover({
                 >
                   Most Popular Only
                 </ToggleGroupItem>
-              </ToggleGroup>
+                </ToggleGroup>
             </div>
+            <PriceSlider
+              value={printsPriceFilterMax}
+              onChange={setPrintsPriceFilterMax}
+              minValue={PRICE_FILTER_MIN}
+              maxValue={PRINTS_PRICE_FILTER_MAX}
+            />
           </div>
         </FilterDropdown>
     </div>
@@ -748,39 +1144,57 @@ function PrintsFiltersPopover({
 }
 
 function StockFiltersPopover({
-  durationFilterIndex,
-  setDurationFilterIndex,
+  durationMinFilterIndex,
+  setDurationMinFilterIndex,
+  durationMaxFilterIndex,
+  setDurationMaxFilterIndex,
+  durationAllSelected,
+  setDurationAllSelected,
   resolutionFilterIndex,
   setResolutionFilterIndex,
   frameRateFilter,
   setFrameRateFilter,
   artistPickFilterState,
   setArtistPickFilterState,
+  priceFilterMax,
+  setPriceFilterMax,
   open,
   onOpenChange,
 }: {
-  durationFilterIndex: number;
-  setDurationFilterIndex: (v: number) => void;
+  durationMinFilterIndex: number;
+  setDurationMinFilterIndex: (v: number) => void;
+  durationMaxFilterIndex: number;
+  setDurationMaxFilterIndex: (v: number) => void;
+  durationAllSelected: boolean;
+  setDurationAllSelected: (value: boolean) => void;
   resolutionFilterIndex: number;
   setResolutionFilterIndex: (v: number) => void;
   frameRateFilter: FrameRateFilter;
   setFrameRateFilter: (v: FrameRateFilter) => void;
   artistPickFilterState: 'All' | "Artist's Pick Only";
   setArtistPickFilterState: (v: 'All' | "Artist's Pick Only") => void;
+  priceFilterMax: number;
+  setPriceFilterMax: (value: number) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const isFiltered =
-    durationFilterIndex !== DEFAULT_DURATION_FILTER_INDEX ||
+    !durationAllSelected ||
+    durationMinFilterIndex !== DEFAULT_DURATION_MIN_FILTER_INDEX ||
+    durationMaxFilterIndex !== DEFAULT_DURATION_MAX_FILTER_INDEX ||
     resolutionFilterIndex !== DEFAULT_RESOLUTION_FILTER_INDEX ||
     frameRateFilter !== DEFAULT_FRAME_RATE_FILTER ||
-    artistPickFilterState !== 'All';
+    artistPickFilterState !== 'All' ||
+    priceFilterMax !== DEFAULT_STOCK_PRICE_FILTER_MAX;
 
   const handleReset = () => {
-    setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
+    setDurationMinFilterIndex(DEFAULT_DURATION_MIN_FILTER_INDEX);
+    setDurationMaxFilterIndex(DEFAULT_DURATION_MAX_FILTER_INDEX);
+    setDurationAllSelected(DEFAULT_DURATION_ALL_FILTER);
     setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
     setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
     setArtistPickFilterState('All');
+    setPriceFilterMax(DEFAULT_STOCK_PRICE_FILTER_MAX);
   };
 
   return (
@@ -809,41 +1223,71 @@ function StockFiltersPopover({
           className="w-80 p-3"
         >
           <div className="space-y-4">
-            <NotchedSlider
-              label="Duration (seconds)"
-              notches={DURATION_NOTCHES}
-              value={durationFilterIndex}
-              onChange={setDurationFilterIndex}
-              headerContent={
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-foreground">
-                    Duration (seconds)
-                  </p>
-                  <HoverOnlyTooltip
-                    content={
-                      <>
-                        Reset Filters - shortcut: <Kbd>r</Kbd>
-                      </>
-                    }
+            <div className="notched-slider-section">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-foreground">
+                  Duration (seconds)
+                </p>
+                <HoverOnlyTooltip
+                  content={
+                    <>
+                      Reset Filters - shortcut: <Kbd>r</Kbd>
+                    </>
+                  }
+                >
+                  <button
+                    type="button"
+                    className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
+                    aria-label="Reset stock filters"
+                    onClick={handleReset}
                   >
-                    <button
-                      type="button"
-                      className={STOCK_FILTER_ICON_BUTTON_CLASS_NAME}
-                      aria-label="Reset stock filters"
-                      onClick={handleReset}
-                    >
-                      <img
-                        src={
-                          'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
-                        }
-                        alt=""
-                        className="w-5 h-5"
-                      ></img>
-                    </button>
-                  </HoverOnlyTooltip>
+                    <img
+                      src={
+                        'https://downloads.adamunderwater.com/store-1-au/public/reset.png'
+                      }
+                      alt=""
+                      className="w-5 h-5"
+                    ></img>
+                  </button>
+                </HoverOnlyTooltip>
+              </div>
+              <div className="flex items-end gap-3">
+                <div className="min-w-0 flex-1">
+                  <DurationRangeSlider
+                    notches={DURATION_NOTCHES}
+                    minIndex={durationMinFilterIndex}
+                    maxIndex={durationMaxFilterIndex}
+                    onRangeChange={(nextMinIndex, nextMaxIndex) => {
+                      setDurationMinFilterIndex(nextMinIndex);
+                      setDurationMaxFilterIndex(nextMaxIndex);
+                    }}
+                    onInteract={() => {
+                      if (durationAllSelected) setDurationAllSelected(false);
+                    }}
+                  />
                 </div>
-              }
-            />
+                <div className="inline-flex shrink-0 flex-col items-center gap-1 pb-1 text-xs text-muted-foreground">
+                  <span>All</span>
+                  <Checkbox
+                    checked={durationAllSelected}
+                    onCheckedChange={(checked) => {
+                      const isChecked = checked === true;
+                      setDurationAllSelected(isChecked);
+                      if (isChecked) {
+                        setDurationMinFilterIndex(
+                          DEFAULT_DURATION_MIN_FILTER_INDEX,
+                        );
+                        setDurationMaxFilterIndex(
+                          DEFAULT_DURATION_MAX_FILTER_INDEX,
+                        );
+                      }
+                    }}
+                    className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    aria-label="Show all durations"
+                  />
+                </div>
+              </div>
+            </div>
             <NotchedSlider
               label="Resolution"
               notches={RESOLUTION_NOTCHES}
@@ -876,10 +1320,22 @@ function StockFiltersPopover({
                   24fps
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                  value="slowmo"
+                  value="30fps"
                   className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                 >
-                  Slowmo
+                  30fps
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="50fps"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  50fps
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="60fps"
+                  className="flex-1 cursor-pointer data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  60fps
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -912,8 +1368,14 @@ function StockFiltersPopover({
                 >
                   Artist&apos;s Pick Only
                 </ToggleGroupItem>
-              </ToggleGroup>
+                </ToggleGroup>
             </div>
+            <PriceSlider
+              value={priceFilterMax}
+              onChange={setPriceFilterMax}
+              minValue={PRICE_FILTER_MIN}
+              maxValue={STOCK_PRICE_FILTER_MAX}
+            />
           </div>
         </FilterDropdown>
     </div>
@@ -945,81 +1407,86 @@ function getBundleClipResolutions(tags: string[]): number[] {
 function normalizeBundleFrameFilterValue(
   value: string,
 ): FrameRateFilter | string {
-  const normalized = value.trim().toLowerCase();
-  if (normalized === 's') return 'slowmo';
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, '');
   const shorthandMatch = normalized.match(/^f(24|30|50|60)$/);
   if (shorthandMatch?.[1]) {
-    return shorthandMatch[1] === '24' ? '24fps' : 'slowmo';
+    return `${shorthandMatch[1]}fps`;
   }
-  if (normalized.includes('slow')) return 'slowmo';
-  if (
-    normalized === '30' ||
-    normalized === '30fps' ||
-    normalized === '50' ||
-    normalized === '50fps' ||
-    normalized === '60' ||
-    normalized === '60fps'
-  ) {
-    return 'slowmo';
+
+  const legacyMatch = normalized.match(/^(\d+)(fps)?$/i);
+  if (legacyMatch?.[1]) {
+    const parsedFps = Number.parseInt(legacyMatch[1], 10);
+    if (
+      parsedFps === 24 ||
+      parsedFps === 30 ||
+      parsedFps === 50 ||
+      parsedFps === 60
+    ) {
+      return `${parsedFps}fps`;
+    }
   }
-  if (normalized === '24' || normalized === '24fps') return '24fps';
+
   return normalized;
 }
 
-function getTopLevelFrameTagValue(tags: string[]): number | null {
-  for (const rawTag of tags) {
-    const normalizedTag = rawTag.trim().toLowerCase().replace(/\s+/g, '');
-    const shorthandMatch = normalizedTag.match(/^f(24|30|50|60)$/);
-    if (shorthandMatch?.[1]) {
-      return Number.parseInt(shorthandMatch[1], 10);
-    }
+function isFrameRateFilterValue(
+  value: string,
+): value is Exclude<FrameRateFilter, 'all'> {
+  return (
+    value === '24fps' ||
+    value === '30fps' ||
+    value === '50fps' ||
+    value === '60fps'
+  );
+}
 
-    const legacyMatch = normalizedTag.match(/^(\d+)fps$/);
-    if (!legacyMatch?.[1]) continue;
-    const parsedLegacy = Number.parseInt(legacyMatch[1], 10);
-    if (
-      parsedLegacy === 24 ||
-      parsedLegacy === 30 ||
-      parsedLegacy === 50 ||
-      parsedLegacy === 60
-    ) {
-      return parsedLegacy;
-    }
+function getTopLevelFrameTagValue(
+  tags: string[],
+): Exclude<FrameRateFilter, 'all'> | null {
+  for (const rawTag of tags) {
+    const normalizedTag = normalizeBundleFrameFilterValue(rawTag);
+    if (typeof normalizedTag !== 'string') continue;
+    if (isFrameRateFilterValue(normalizedTag)) return normalizedTag;
   }
 
   return null;
 }
 
-function isSlowMotionFrameTag(tags: string[]): boolean {
-  const frameTagValue = getTopLevelFrameTagValue(tags);
-  if (frameTagValue !== null) {
-    return frameTagValue !== 24;
-  }
-
-  return tags.includes('s');
-}
-
-function isStandard24FrameTag(tags: string[]): boolean {
-  const frameTagValue = getTopLevelFrameTagValue(tags);
-  if (frameTagValue !== null) {
-    return frameTagValue === 24;
-  }
-
-  return !tags.includes('s');
-}
-
-function getBundleClipFrameRates(tags: string[]): string[] {
+function getBundleClipFrameRates(
+  tags: string[],
+): Array<Exclude<FrameRateFilter, 'all'>> {
   return tags.flatMap((tag) => {
     const match = tag.match(bundleFrameRegex);
     if (!match?.[2]) return [];
-    return [normalizeBundleFrameFilterValue(match[2])];
+    const normalizedFrameRate = normalizeBundleFrameFilterValue(match[2]);
+    if (
+      typeof normalizedFrameRate === 'string' &&
+      isFrameRateFilterValue(normalizedFrameRate)
+    ) {
+      return [normalizedFrameRate];
+    }
+    return [];
   });
 }
 
-function bundleMatchesDuration(tags: string[], maxDuration: number): boolean {
-  const durations = getBundleClipDurations(tags);
-  if (durations.length === 0) return true;
-  return durations.some((seconds) => seconds <= maxDuration);
+function matchesDurationRange(
+  seconds: number,
+  minDurationSeconds: number,
+  maxDurationSeconds: number,
+): boolean {
+  return seconds >= minDurationSeconds && seconds <= maxDurationSeconds;
+}
+
+function getProductPriceAmount(product: {
+  selectedOrFirstAvailableVariant?: {price?: {amount?: string | null} | null} | null;
+  priceRange?: {minVariantPrice?: {amount?: string | null} | null} | null;
+}): number | null {
+  const rawAmount =
+    product.selectedOrFirstAvailableVariant?.price?.amount ??
+    product.priceRange?.minVariantPrice?.amount;
+  if (typeof rawAmount !== 'string') return null;
+  const parsedAmount = Number.parseFloat(rawAmount);
+  return Number.isFinite(parsedAmount) ? parsedAmount : null;
 }
 
 function bundleMatchesResolution(
@@ -1042,13 +1509,7 @@ function bundleMatchesFrameRate(
 ): boolean {
   const frames = getBundleClipFrameRates(tags);
   if (frames.length === 0) {
-    if (frameRateFilter === '24fps') {
-      return isStandard24FrameTag(tags);
-    }
-    if (frameRateFilter === 'slowmo') {
-      return isSlowMotionFrameTag(tags);
-    }
-    return true;
+    return getTopLevelFrameTagValue(tags) === frameRateFilter;
   }
 
   return frames.some((frame) => frame === frameRateFilter);
@@ -1085,11 +1546,16 @@ function getHighestResolutionNumber(product: {
 }
 
 function applyPrintCollectionFilters<
-  TProduct extends {tags: string[]},
+  TProduct extends {
+    tags: string[];
+    selectedOrFirstAvailableVariant?: {price?: {amount?: string | null} | null} | null;
+    priceRange?: {minVariantPrice?: {amount?: string | null} | null} | null;
+  },
 >(
   products: TProduct[],
   filterState: 'All' | 'Horizontal' | 'Vertical',
   mostPopularFilterState: 'All' | 'Most Popular Only',
+  printsPriceFilterMax: number,
 ) {
   return products.filter((product) => {
     const matchesMostPopularFilter =
@@ -1098,26 +1564,23 @@ function applyPrintCollectionFilters<
 
     if (!matchesMostPopularFilter) return false;
 
-    if (filterState === 'Horizontal') {
-      return (
-        product.tags.includes('horOnly') ||
-        product.tags.includes('horPrimary')
-      );
-    }
+    const matchesOrientation =
+      filterState === 'Horizontal'
+        ? product.tags.includes('horOnly') || product.tags.includes('horPrimary')
+        : filterState === 'Vertical'
+          ? product.tags.includes('vertOnly') ||
+            product.tags.includes('vertPrimary')
+          : product.tags.includes('horOnly') ||
+            product.tags.includes('horPrimary') ||
+            product.tags.includes('vertOnly') ||
+            product.tags.includes('vertPrimary');
+    if (!matchesOrientation) return false;
 
-    if (filterState === 'Vertical') {
-      return (
-        product.tags.includes('vertOnly') ||
-        product.tags.includes('vertPrimary')
-      );
-    }
+    const productPrice = getProductPriceAmount(product);
+    if (productPrice !== null && productPrice > printsPriceFilterMax)
+      return false;
 
-    return (
-      product.tags.includes('horOnly') ||
-      product.tags.includes('horPrimary') ||
-      product.tags.includes('vertOnly') ||
-      product.tags.includes('vertPrimary')
-    );
+    return true;
   });
 }
 
@@ -1125,24 +1588,37 @@ function applyStockCollectionFilters<
   TProduct extends {
     tags: string[];
     options?: {name?: string; optionValues?: {name?: string}[]}[];
+    selectedOrFirstAvailableVariant?: {price?: {amount?: string | null} | null} | null;
+    priceRange?: {minVariantPrice?: {amount?: string | null} | null} | null;
   },
 >(
   products: TProduct[],
   {
     stockFilterState,
-    durationFilterIndex,
+    durationMinFilterIndex,
+    durationMaxFilterIndex,
+    durationAllSelected,
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    priceFilterMax,
   }: {
     stockFilterState: 'All Clips' | 'Discounted Bundles';
-    durationFilterIndex: number;
+    durationMinFilterIndex: number;
+    durationMaxFilterIndex: number;
+    durationAllSelected: boolean;
     resolutionFilterIndex: number;
     frameRateFilter: FrameRateFilter;
     artistPickFilterState: 'All' | "Artist's Pick Only";
+    priceFilterMax: number;
   },
 ) {
-  const maxDuration = DURATION_NOTCHES[durationFilterIndex]?.value ?? Infinity;
+  const durationMinNotch =
+    DURATION_NOTCHES[durationMinFilterIndex] ??
+    DURATION_NOTCHES[DEFAULT_DURATION_MIN_FILTER_INDEX];
+  const durationMaxNotch =
+    DURATION_NOTCHES[durationMaxFilterIndex] ??
+    DURATION_NOTCHES[DEFAULT_DURATION_MAX_FILTER_INDEX];
   const minResolution = RESOLUTION_NOTCHES[resolutionFilterIndex]?.value ?? 4;
 
   return products.filter((product) => {
@@ -1159,12 +1635,33 @@ function applyStockCollectionFilters<
       if (!isBundleProduct) return false;
     }
 
-    if (maxDuration !== Infinity) {
+    if (!durationAllSelected) {
       if (isBundleProduct) {
-        if (!bundleMatchesDuration(product.tags, maxDuration)) return false;
+        const clipDurations = getBundleClipDurations(product.tags);
+        if (
+          clipDurations.length > 0 &&
+          !clipDurations.some((seconds) =>
+            matchesDurationRange(
+              seconds,
+              durationMinNotch.value,
+              durationMaxNotch.value,
+            ),
+          )
+        ) {
+          return false;
+        }
       } else {
         const seconds = parseDurationSeconds(product);
-        if (seconds !== null && seconds > maxDuration) return false;
+        if (
+          seconds !== null &&
+          !matchesDurationRange(
+            seconds,
+            durationMinNotch.value,
+            durationMaxNotch.value,
+          )
+        ) {
+          return false;
+        }
       }
     }
 
@@ -1181,12 +1678,15 @@ function applyStockCollectionFilters<
       if (isBundleProduct) {
         if (!bundleMatchesFrameRate(product.tags, frameRateFilter))
           return false;
-      } else if (frameRateFilter === '24fps') {
-        if (!isStandard24FrameTag(product.tags)) return false;
-      } else if (frameRateFilter === 'slowmo') {
-        if (!isSlowMotionFrameTag(product.tags)) return false;
+      } else {
+        if (getTopLevelFrameTagValue(product.tags) !== frameRateFilter) {
+          return false;
+        }
       }
     }
+
+    const productPrice = getProductPriceAmount(product);
+    if (productPrice !== null && productPrice > priceFilterMax) return false;
 
     return true;
   });
@@ -1199,10 +1699,14 @@ function getFilteredCollectionSearchProducts({
   filterState,
   mostPopularFilterState,
   stockFilterState,
-  durationFilterIndex,
+  printsPriceFilterMax,
+  durationMinFilterIndex,
+  durationMaxFilterIndex,
+  durationAllSelected,
   resolutionFilterIndex,
   frameRateFilter,
   artistPickFilterState,
+  stockPriceFilterMax,
 }: {
   products: EnhancedPartialSearchResult[];
   collectionHandle?: string;
@@ -1210,10 +1714,14 @@ function getFilteredCollectionSearchProducts({
   filterState: 'All' | 'Horizontal' | 'Vertical';
   mostPopularFilterState: 'All' | 'Most Popular Only';
   stockFilterState: 'All Clips' | 'Discounted Bundles';
-  durationFilterIndex: number;
+  printsPriceFilterMax: number;
+  durationMinFilterIndex: number;
+  durationMaxFilterIndex: number;
+  durationAllSelected: boolean;
   resolutionFilterIndex: number;
   frameRateFilter: FrameRateFilter;
   artistPickFilterState: 'All' | "Artist's Pick Only";
+  stockPriceFilterMax: number;
 }) {
   const collectionName = capitalizeFirstLetter(collectionTitle ?? '');
 
@@ -1234,6 +1742,7 @@ function getFilteredCollectionSearchProducts({
       combinedProductSearches,
       filterState,
       mostPopularFilterState,
+      printsPriceFilterMax,
     );
   }
 
@@ -1243,10 +1752,13 @@ function getFilteredCollectionSearchProducts({
 
   return applyStockCollectionFilters(combinedProductSearches, {
     stockFilterState,
-    durationFilterIndex,
+    durationMinFilterIndex,
+    durationMaxFilterIndex,
+    durationAllSelected,
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    priceFilterMax: stockPriceFilterMax,
   });
 }
 
@@ -1305,15 +1817,25 @@ export default function Collection() {
   const PRINTS_FILTER_STORAGE_KEY = 'collection-prints-filter-mode';
   const PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY =
     'collection-prints-most-popular-filter-mode';
+  const PRINTS_PRICE_FILTER_STORAGE_KEY = 'collection-prints-price-filter-mode';
   const STOCK_FILTER_STORAGE_KEY = 'collection-stock-filter-mode';
-  const STOCK_DURATION_FILTER_KEY = 'collection-stock-duration-filter';
+  const STOCK_DURATION_MIN_FILTER_KEY = 'collection-stock-duration-min-filter';
+  const STOCK_DURATION_MAX_FILTER_KEY = 'collection-stock-duration-max-filter';
+  const STOCK_DURATION_ALL_FILTER_KEY = 'collection-stock-duration-all-filter';
   const STOCK_RESOLUTION_FILTER_KEY = 'collection-stock-resolution-filter';
   const STOCK_FRAME_RATE_FILTER_KEY = 'collection-stock-frame-rate-filter';
   const STOCK_ARTIST_PICK_FILTER_KEY = 'collection-stock-artist-pick-filter';
+  const STOCK_PRICE_FILTER_KEY = 'collection-stock-price-filter';
   const [layout, setLayout] = useState('grid');
-  const [durationFilterIndex, setDurationFilterIndex] = useState(
-    DEFAULT_DURATION_FILTER_INDEX,
-  ); // default: "All Durations"
+  const [durationMinFilterIndex, setDurationMinFilterIndex] = useState(
+    DEFAULT_DURATION_MIN_FILTER_INDEX,
+  );
+  const [durationMaxFilterIndex, setDurationMaxFilterIndex] = useState(
+    DEFAULT_DURATION_MAX_FILTER_INDEX,
+  );
+  const [durationAllSelected, setDurationAllSelected] = useState(
+    DEFAULT_DURATION_ALL_FILTER,
+  );
   const [resolutionFilterIndex, setResolutionFilterIndex] = useState(
     DEFAULT_RESOLUTION_FILTER_INDEX,
   ); // default: "Has 4K+"
@@ -1322,6 +1844,10 @@ export default function Collection() {
   ); // default: "all"
   const [artistPickFilterState, setArtistPickFilterState] =
     useState<StockArtistPickFilterState>('All');
+  const [stockPriceFilterMax, setStockPriceFilterMax] =
+    useState<number>(DEFAULT_STOCK_PRICE_FILTER_MAX);
+  const [printsPriceFilterMax, setPrintsPriceFilterMax] =
+    useState<number>(DEFAULT_PRINTS_PRICE_FILTER_MAX);
   const [hasInitializedLayout, setHasInitializedLayout] = useState(false);
   const [hasInitializedPrintsFilter, setHasInitializedPrintsFilter] =
     useState(false);
@@ -1404,10 +1930,14 @@ export default function Collection() {
         filterState,
         mostPopularFilterState,
         stockFilterState,
-        durationFilterIndex,
+        printsPriceFilterMax,
+        durationMinFilterIndex,
+        durationMaxFilterIndex,
+        durationAllSelected,
         resolutionFilterIndex,
         frameRateFilter,
         artistPickFilterState,
+        stockPriceFilterMax,
       }),
     [
       searchFetcher.data,
@@ -1416,10 +1946,14 @@ export default function Collection() {
       filterState,
       mostPopularFilterState,
       stockFilterState,
-      durationFilterIndex,
+      printsPriceFilterMax,
+      durationMinFilterIndex,
+      durationMaxFilterIndex,
+      durationAllSelected,
       resolutionFilterIndex,
       frameRateFilter,
       artistPickFilterState,
+      stockPriceFilterMax,
     ],
   );
   const predictiveQueries =
@@ -1481,9 +2015,28 @@ export default function Collection() {
       } else {
         setMostPopularFilterState('All');
       }
+
+      const savedPrintsPriceFilter = window.localStorage.getItem(
+        PRINTS_PRICE_FILTER_STORAGE_KEY,
+      );
+      if (savedPrintsPriceFilter !== null) {
+        const parsedPrintsPriceFilter = Number.parseInt(
+          savedPrintsPriceFilter,
+          10,
+        );
+        if (Number.isFinite(parsedPrintsPriceFilter)) {
+          setPrintsPriceFilterMax(
+            Math.min(
+              PRINTS_PRICE_FILTER_MAX,
+              Math.max(PRICE_FILTER_MIN, parsedPrintsPriceFilter),
+            ),
+          );
+        }
+      }
     } catch {
       setFilterState('All');
       setMostPopularFilterState('All');
+      setPrintsPriceFilterMax(DEFAULT_PRINTS_PRICE_FILTER_MAX);
     } finally {
       setHasInitializedPrintsFilter(true);
     }
@@ -1497,6 +2050,10 @@ export default function Collection() {
         PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
         mostPopularFilterState,
       );
+      window.localStorage.setItem(
+        PRINTS_PRICE_FILTER_STORAGE_KEY,
+        String(printsPriceFilterMax),
+      );
     } catch {
       // Ignore storage access errors (private mode, etc.)
     }
@@ -1504,6 +2061,7 @@ export default function Collection() {
     collection?.handle,
     filterState,
     mostPopularFilterState,
+    printsPriceFilterMax,
     hasInitializedPrintsFilter,
   ]);
 
@@ -1545,15 +2103,36 @@ export default function Collection() {
   useEffect(() => {
     if (collection?.handle !== 'stock') return;
     try {
-      const savedDuration = window.localStorage.getItem(
-        STOCK_DURATION_FILTER_KEY,
+      const savedDurationAll = window.localStorage.getItem(
+        STOCK_DURATION_ALL_FILTER_KEY,
       );
-      if (savedDuration !== null) {
-        const idx = Number(savedDuration);
-        if (idx >= 0 && idx < DURATION_NOTCHES.length) {
-          setDurationFilterIndex(idx);
+      if (savedDurationAll === 'true' || savedDurationAll === 'false') {
+        setDurationAllSelected(savedDurationAll === 'true');
+      }
+
+      const savedDurationMin = window.localStorage.getItem(
+        STOCK_DURATION_MIN_FILTER_KEY,
+      );
+      const savedDurationMax = window.localStorage.getItem(
+        STOCK_DURATION_MAX_FILTER_KEY,
+      );
+      if (savedDurationMin !== null && savedDurationMax !== null) {
+        const parsedMin = Number.parseInt(savedDurationMin, 10);
+        const parsedMax = Number.parseInt(savedDurationMax, 10);
+        if (Number.isFinite(parsedMin) && Number.isFinite(parsedMax)) {
+          const clampedMin = Math.min(
+            DURATION_NOTCHES.length - 2,
+            Math.max(0, parsedMin),
+          );
+          const clampedMax = Math.min(
+            DURATION_NOTCHES.length - 1,
+            Math.max(clampedMin + 1, parsedMax),
+          );
+          setDurationMinFilterIndex(clampedMin);
+          setDurationMaxFilterIndex(clampedMax);
         }
       }
+
       const savedResolution = window.localStorage.getItem(
         STOCK_RESOLUTION_FILTER_KEY,
       );
@@ -1569,7 +2148,9 @@ export default function Collection() {
       if (
         savedFrameRate === 'all' ||
         savedFrameRate === '24fps' ||
-        savedFrameRate === 'slowmo'
+        savedFrameRate === '30fps' ||
+        savedFrameRate === '50fps' ||
+        savedFrameRate === '60fps'
       ) {
         setFrameRateFilter(savedFrameRate);
       }
@@ -1582,6 +2163,20 @@ export default function Collection() {
       ) {
         setArtistPickFilterState(savedArtistPickFilter);
       }
+      const savedPriceFilter = window.localStorage.getItem(
+        STOCK_PRICE_FILTER_KEY,
+      );
+      if (savedPriceFilter !== null) {
+        const parsedPriceFilter = Number.parseInt(savedPriceFilter, 10);
+        if (Number.isFinite(parsedPriceFilter)) {
+          setStockPriceFilterMax(
+            Math.min(
+              STOCK_PRICE_FILTER_MAX,
+              Math.max(PRICE_FILTER_MIN, parsedPriceFilter),
+            ),
+          );
+        }
+      }
     } catch {
       // Ignore storage access errors
     }
@@ -1592,8 +2187,16 @@ export default function Collection() {
     if (collection?.handle !== 'stock') return;
     try {
       window.localStorage.setItem(
-        STOCK_DURATION_FILTER_KEY,
-        String(durationFilterIndex),
+        STOCK_DURATION_MIN_FILTER_KEY,
+        String(durationMinFilterIndex),
+      );
+      window.localStorage.setItem(
+        STOCK_DURATION_MAX_FILTER_KEY,
+        String(durationMaxFilterIndex),
+      );
+      window.localStorage.setItem(
+        STOCK_DURATION_ALL_FILTER_KEY,
+        String(durationAllSelected),
       );
       window.localStorage.setItem(
         STOCK_RESOLUTION_FILTER_KEY,
@@ -1604,15 +2207,22 @@ export default function Collection() {
         STOCK_ARTIST_PICK_FILTER_KEY,
         artistPickFilterState,
       );
+      window.localStorage.setItem(
+        STOCK_PRICE_FILTER_KEY,
+        String(stockPriceFilterMax),
+      );
     } catch {
       // Ignore storage access errors
     }
   }, [
     collection?.handle,
-    durationFilterIndex,
+    durationMinFilterIndex,
+    durationMaxFilterIndex,
+    durationAllSelected,
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    stockPriceFilterMax,
   ]);
 
   useEffect(() => {
@@ -1622,10 +2232,14 @@ export default function Collection() {
         window.localStorage.removeItem(
           PRINTS_MOST_POPULAR_FILTER_STORAGE_KEY,
         );
-        window.localStorage.removeItem(STOCK_DURATION_FILTER_KEY);
+        window.localStorage.removeItem(PRINTS_PRICE_FILTER_STORAGE_KEY);
+        window.localStorage.removeItem(STOCK_DURATION_MIN_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_DURATION_MAX_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_DURATION_ALL_FILTER_KEY);
         window.localStorage.removeItem(STOCK_RESOLUTION_FILTER_KEY);
         window.localStorage.removeItem(STOCK_FRAME_RATE_FILTER_KEY);
         window.localStorage.removeItem(STOCK_ARTIST_PICK_FILTER_KEY);
+        window.localStorage.removeItem(STOCK_PRICE_FILTER_KEY);
       } catch {
         // Ignore storage access errors (private mode, etc.)
       }
@@ -1643,6 +2257,7 @@ export default function Collection() {
         baseConnection.nodes as Array<{tags: string[]}>,
         filterState,
         mostPopularFilterState,
+        printsPriceFilterMax,
       );
     }
 
@@ -1654,10 +2269,13 @@ export default function Collection() {
         }>,
         {
           stockFilterState,
-          durationFilterIndex,
+          durationMinFilterIndex,
+          durationMaxFilterIndex,
+          durationAllSelected,
           resolutionFilterIndex,
           frameRateFilter,
           artistPickFilterState,
+          priceFilterMax: stockPriceFilterMax,
         },
       );
     }
@@ -1671,11 +2289,15 @@ export default function Collection() {
     collection?.products,
     filterState,
     mostPopularFilterState,
+    printsPriceFilterMax,
     stockFilterState,
-    durationFilterIndex,
+    durationMinFilterIndex,
+    durationMaxFilterIndex,
+    durationAllSelected,
     resolutionFilterIndex,
     frameRateFilter,
     artistPickFilterState,
+    stockPriceFilterMax,
   ]);
 
   useEffect(() => {
@@ -1780,10 +2402,13 @@ export default function Collection() {
 
         if (key === 'r') {
           event.preventDefault();
-          setDurationFilterIndex(DEFAULT_DURATION_FILTER_INDEX);
+          setDurationMinFilterIndex(DEFAULT_DURATION_MIN_FILTER_INDEX);
+          setDurationMaxFilterIndex(DEFAULT_DURATION_MAX_FILTER_INDEX);
+          setDurationAllSelected(DEFAULT_DURATION_ALL_FILTER);
           setResolutionFilterIndex(DEFAULT_RESOLUTION_FILTER_INDEX);
           setFrameRateFilter(DEFAULT_FRAME_RATE_FILTER);
           setArtistPickFilterState('All');
+          setStockPriceFilterMax(DEFAULT_STOCK_PRICE_FILTER_MAX);
           return;
         }
       }
@@ -1811,6 +2436,7 @@ export default function Collection() {
           event.preventDefault();
           setFilterState('All');
           setMostPopularFilterState('All');
+          setPrintsPriceFilterMax(DEFAULT_PRINTS_PRICE_FILTER_MAX);
         }
       }
     };
@@ -1875,14 +2501,20 @@ export default function Collection() {
               </div>
               {collection?.handle === 'stock' && (
                 <StockFiltersPopover
-                  durationFilterIndex={durationFilterIndex}
-                  setDurationFilterIndex={setDurationFilterIndex}
+                  durationMinFilterIndex={durationMinFilterIndex}
+                  setDurationMinFilterIndex={setDurationMinFilterIndex}
+                  durationMaxFilterIndex={durationMaxFilterIndex}
+                  setDurationMaxFilterIndex={setDurationMaxFilterIndex}
+                  durationAllSelected={durationAllSelected}
+                  setDurationAllSelected={setDurationAllSelected}
                   resolutionFilterIndex={resolutionFilterIndex}
                   setResolutionFilterIndex={setResolutionFilterIndex}
                   frameRateFilter={frameRateFilter}
                   setFrameRateFilter={setFrameRateFilter}
                   artistPickFilterState={artistPickFilterState}
                   setArtistPickFilterState={setArtistPickFilterState}
+                  priceFilterMax={stockPriceFilterMax}
+                  setPriceFilterMax={setStockPriceFilterMax}
                   open={isCollectionFiltersPopoverOpen}
                   onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
@@ -1893,6 +2525,8 @@ export default function Collection() {
                   setFilterState={setFilterState}
                   mostPopularFilterState={mostPopularFilterState}
                   setMostPopularFilterState={setMostPopularFilterState}
+                  printsPriceFilterMax={printsPriceFilterMax}
+                  setPrintsPriceFilterMax={setPrintsPriceFilterMax}
                   open={isCollectionFiltersPopoverOpen}
                   onOpenChange={setIsCollectionFiltersPopoverOpen}
                 />
@@ -2081,14 +2715,20 @@ export default function Collection() {
                   </div>
                   {collection?.handle === 'stock' && (
                     <StockFiltersPopover
-                      durationFilterIndex={durationFilterIndex}
-                      setDurationFilterIndex={setDurationFilterIndex}
+                      durationMinFilterIndex={durationMinFilterIndex}
+                      setDurationMinFilterIndex={setDurationMinFilterIndex}
+                      durationMaxFilterIndex={durationMaxFilterIndex}
+                      setDurationMaxFilterIndex={setDurationMaxFilterIndex}
+                      durationAllSelected={durationAllSelected}
+                      setDurationAllSelected={setDurationAllSelected}
                       resolutionFilterIndex={resolutionFilterIndex}
                       setResolutionFilterIndex={setResolutionFilterIndex}
                       frameRateFilter={frameRateFilter}
                       setFrameRateFilter={setFrameRateFilter}
                       artistPickFilterState={artistPickFilterState}
                       setArtistPickFilterState={setArtistPickFilterState}
+                      priceFilterMax={stockPriceFilterMax}
+                      setPriceFilterMax={setStockPriceFilterMax}
                       open={isCollectionFiltersPopoverOpen}
                       onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />
@@ -2099,6 +2739,8 @@ export default function Collection() {
                       setFilterState={setFilterState}
                       mostPopularFilterState={mostPopularFilterState}
                       setMostPopularFilterState={setMostPopularFilterState}
+                      printsPriceFilterMax={printsPriceFilterMax}
+                      setPrintsPriceFilterMax={setPrintsPriceFilterMax}
                       open={isCollectionFiltersPopoverOpen}
                       onOpenChange={setIsCollectionFiltersPopoverOpen}
                     />

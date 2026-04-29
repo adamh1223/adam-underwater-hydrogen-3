@@ -2498,6 +2498,10 @@ span {
   outline: none;
 }
 
+.notched-slider-track--price {
+  width: calc(100% - 0.625rem);
+}
+
 .notched-slider-track-fill {
   position: absolute;
   top: 50%;

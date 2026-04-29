@@ -56,20 +56,25 @@ function normalizeResolutionLabel(value: string): string {
   return value.trim().toUpperCase();
 }
 
-function normalizeFrameLabel(value: string): string {
+function normalizeFrameLabel(value: string): string | null {
   const normalized = value.trim().toLowerCase().replace(/\s+/g, '');
-
-  if (normalized === 's' || normalized.includes('slow')) return 'Slow-mo';
-
   const shorthandMatch = normalized.match(/^f(24|30|50|60)$/);
   if (shorthandMatch?.[1]) return `${shorthandMatch[1]}fps`;
 
-  const numericWithOptionalFps = normalized.match(/^(\d+(?:\.\d+)?)(fps)?$/i);
-  if (numericWithOptionalFps?.[1]) return `${numericWithOptionalFps[1]}fps`;
+  const legacyMatch = normalized.match(/^(\d+)(fps)?$/i);
+  if (legacyMatch?.[1]) {
+    const parsedFps = Number.parseInt(legacyMatch[1], 10);
+    if (
+      parsedFps === 24 ||
+      parsedFps === 30 ||
+      parsedFps === 50 ||
+      parsedFps === 60
+    ) {
+      return `${parsedFps}fps`;
+    }
+  }
 
-  if (normalized.endsWith('fps')) return normalized;
-
-  return value.trim();
+  return null;
 }
 
 function normalizeClipName(value: string): string {
@@ -115,8 +120,11 @@ function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
     if (frameMatch) {
       const clipIndex = Number(frameMatch[1]);
       const frameValue = frameMatch[2]?.trim();
-      if (clipIndex > 0 && frameValue) {
-        frameByClip.set(clipIndex, normalizeFrameLabel(frameValue));
+      const normalizedFrameLabel = frameValue
+        ? normalizeFrameLabel(frameValue)
+        : null;
+      if (clipIndex > 0 && normalizedFrameLabel) {
+        frameByClip.set(clipIndex, normalizedFrameLabel);
       }
       return;
     }
@@ -136,26 +144,8 @@ function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
 
 function getFrameBadgeLabelFromTags(tags: string[]): string | null {
   for (const rawTag of tags) {
-    const normalizedTag = rawTag.trim().toLowerCase().replace(/\s+/g, '');
-    if (!normalizedTag) continue;
-
-    if (normalizedTag === 's' || normalizedTag.includes('slow')) {
-      return 'Slow-mo';
-    }
-
-    const shorthandMatch = normalizedTag.match(/^f(24|30|50|60)$/);
-    if (shorthandMatch?.[1]) {
-      return `${shorthandMatch[1]}fps`;
-    }
-
-    if (
-      normalizedTag === '24fps' ||
-      normalizedTag === '30fps' ||
-      normalizedTag === '50fps' ||
-      normalizedTag === '60fps'
-    ) {
-      return normalizedTag;
-    }
+    const normalizedFrameLabel = normalizeFrameLabel(rawTag);
+    if (normalizedFrameLabel) return normalizedFrameLabel;
   }
 
   return null;
@@ -444,14 +434,11 @@ function EProductsContainer({
   );
 
   const frameBadgeLabelFromTags = getFrameBadgeLabelFromTags(product.tags);
-  const fallbackFrameBadgeLabel = frameBadgeLabelFromTags ?? '24fps';
+  const fallbackFrameBadgeLabel = frameBadgeLabelFromTags;
   const displayFrameBadgeLabel = isBundle
     ? bundleClipMetadata.frameByClip.get(activeBundleClipIndex) ??
       fallbackFrameBadgeLabel
     : fallbackFrameBadgeLabel;
-  const displayFrameIsSlowmo = displayFrameBadgeLabel
-    .toLowerCase()
-    .includes('slow');
   const bundleDiscountBadgeClassName =
     'rounded-md border border-primary bg-background text-primary disabled:cursor-default disabled:opacity-100 inline-flex items-start justify-center gap-1 min-h-[25px] w-[72px] px-1 py-[3px] text-[11px] font-semibold whitespace-normal leading-[1.05]';
 
@@ -777,28 +764,6 @@ function EProductsContainer({
                         {displayDurationTag}
                       </button>
                     )}
-                    {/* {isSlowmo && (
-              <button
-                disabled
-                className="clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                Slow-mo
-              </button>
-            )}
-            {!isSlowmo && (
-              <button
-                disabled
-                className="clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                24fps
-              </button>
-            )}
-            <button
-              disabled
-              className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-            >
-              4K
-            </button> */}
                   </div>
 
                   <div
@@ -1040,15 +1005,7 @@ function EProductsContainer({
                       </div>
 
                       <div className="pointer-events-none absolute right-0 top-0 z-[70] flex flex-col items-end">
-                        {displayFrameIsSlowmo && (
-                          <button
-                            disabled
-                            className={`clip-icon slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 ${isBundle ? 'mt-[-24px]' : 'mt-[-20px]'} me-[-5px]`}
-                          >
-                            {displayFrameBadgeLabel}
-                          </button>
-                        )}
-                        {!displayFrameIsSlowmo && (
+                        {displayFrameBadgeLabel && (
                           <button
                             disabled
                             className={`clip-icon fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 ${isBundle ? 'mt-[-24px]' : 'mt-[-20px]'} me-[-5px]`}
@@ -1358,7 +1315,7 @@ function EProductsContainer({
               )}
             </>
           )}
-          {/* 4K + slowmo + eproductpreview + price + description + add to cart + view product for LIST <= 600px */}
+          {/* 4K + frame-rate + eproductpreview + price + description + add to cart + view product for LIST <= 600px */}
           {shouldRenderListCompactRange && (
             <div className={cardContentClassName}>
               <div className={`relative evideo eproduct-top-part-card-list`}>
@@ -1422,15 +1379,7 @@ function EProductsContainer({
                       {displayResolutionBadgeLabel}
                     </button>
                   </div>
-                  {displayFrameIsSlowmo && (
-                    <button
-                      disabled
-                      className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-                    >
-                      {displayFrameBadgeLabel}
-                    </button>
-                  )}
-                  {!displayFrameIsSlowmo && (
+                  {displayFrameBadgeLabel && (
                     <button
                       disabled
                       className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
@@ -1658,15 +1607,7 @@ function EProductsContainer({
                   >
                     {displayResolutionBadgeLabel}
                   </button>
-                  {displayFrameIsSlowmo && (
-                    <button
-                      disabled
-                      className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-                    >
-                      {displayFrameBadgeLabel}
-                    </button>
-                  )}
-                  {!displayFrameIsSlowmo && (
+                  {displayFrameBadgeLabel && (
                     <button
                       disabled
                       className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
@@ -1815,28 +1756,6 @@ function EProductsContainer({
       </article>
       {/* ); */}
       {/* })} */}
-      {/* {isSlowmo && (
-              <button
-                disabled
-                className="clip-icon-list slow-mo rounded-md flex items-center justify-center border border-border bg-background  text-white text-sm hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                Slow-mo
-              </button>
-            )}
-            {!isSlowmo && (
-              <button
-                disabled
-                className="clip-icon-list fps rounded-md flex items-center justify-center border border-border bg-background  text-white text-md hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100"
-              >
-                24fps
-              </button>
-            )}
-            <button
-              disabled
-              className="clip-icon-list four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
-            >
-              4K
-            </button> */}
     </>
   );
 }
