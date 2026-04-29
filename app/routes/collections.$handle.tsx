@@ -341,8 +341,9 @@ const DEFAULT_DURATION_MAX_FILTER_INDEX = DURATION_NOTCHES.length - 1;
 const DEFAULT_DURATION_ALL_FILTER = true;
 const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
 const PRICE_FILTER_MIN = 0;
-const STOCK_PRICE_FILTER_MAX = 200;
+const STOCK_PRICE_FILTER_MAX = 400;
 const DEFAULT_STOCK_PRICE_FILTER_MAX = STOCK_PRICE_FILTER_MAX;
+const LEGACY_STOCK_PRICE_FILTER_MAX = 200;
 const PRINTS_PRICE_FILTER_MAX = 400;
 const DEFAULT_PRINTS_PRICE_FILTER_MAX = PRINTS_PRICE_FILTER_MAX;
 const bundleDurationRegex = /^d(\d+)-(.+)$/i;
@@ -2188,10 +2189,14 @@ export default function Collection() {
       if (savedPriceFilter !== null) {
         const parsedPriceFilter = Number.parseInt(savedPriceFilter, 10);
         if (Number.isFinite(parsedPriceFilter)) {
+          const migratedPriceFilter =
+            parsedPriceFilter === LEGACY_STOCK_PRICE_FILTER_MAX
+              ? DEFAULT_STOCK_PRICE_FILTER_MAX
+              : parsedPriceFilter;
           setStockPriceFilterMax(
             Math.min(
               STOCK_PRICE_FILTER_MAX,
-              Math.max(PRICE_FILTER_MIN, parsedPriceFilter),
+              Math.max(PRICE_FILTER_MIN, migratedPriceFilter),
             ),
           );
         }

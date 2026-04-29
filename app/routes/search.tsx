@@ -134,8 +134,9 @@ const DEFAULT_DURATION_ALL_FILTER = true;
 const DEFAULT_RESOLUTION_FILTER_INDEX = 0;
 const DEFAULT_FRAME_RATE_FILTER: FrameRateFilter = 'all';
 const PRICE_FILTER_MIN = 0;
-const STOCK_PRICE_FILTER_MAX = 200;
+const STOCK_PRICE_FILTER_MAX = 400;
 const DEFAULT_STOCK_PRICE_FILTER_MAX = STOCK_PRICE_FILTER_MAX;
+const LEGACY_STOCK_PRICE_FILTER_MAX = 200;
 const PRINTS_PRICE_FILTER_MAX = 400;
 const DEFAULT_PRINTS_PRICE_FILTER_MAX = PRINTS_PRICE_FILTER_MAX;
 const bundleDurationRegex = /^d(\d+)-(.+)$/i;
@@ -1545,10 +1546,14 @@ export default function SearchPage() {
       if (savedStockPriceFilter !== null) {
         const parsedStockPriceFilter = Number.parseInt(savedStockPriceFilter, 10);
         if (Number.isFinite(parsedStockPriceFilter)) {
+          const migratedStockPriceFilter =
+            parsedStockPriceFilter === LEGACY_STOCK_PRICE_FILTER_MAX
+              ? DEFAULT_STOCK_PRICE_FILTER_MAX
+              : parsedStockPriceFilter;
           setStockPriceFilterMax(
             Math.min(
               STOCK_PRICE_FILTER_MAX,
-              Math.max(PRICE_FILTER_MIN, parsedStockPriceFilter),
+              Math.max(PRICE_FILTER_MIN, migratedStockPriceFilter),
             ),
           );
         }
