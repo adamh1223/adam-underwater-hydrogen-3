@@ -1,6 +1,7 @@
 import {useEffect, useRef} from 'react';
 import {geoGraticule, geoOrthographic, geoPath} from 'd3-geo';
 import {feature} from 'topojson-client';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 const DEG = Math.PI / 180;
 const GLOBE_SECTION_HEIGHT = 360;
@@ -204,22 +205,55 @@ interface LocationGlobeProps {
   formattedLocation: string;
 }
 
+const OFMAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+const MAP_ZOOM = 9.5;
+
+// Inject the pulsing dot CSS once globally
+function ensureMarkerStyles() {
+  if (document.getElementById('lgm-style')) return;
+  const s = document.createElement('style');
+  s.id = 'lgm-style';
+  s.textContent = `
+    @keyframes lgm-ring {
+      0%   { transform: scale(1);   opacity: 0.8; }
+      100% { transform: scale(2.8); opacity: 0; }
+    }
+    .lgm-wrap { position: relative; width: 22px; height: 22px; }
+    .lgm-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid hsl(198.6,88.7%,48.4%);
+      animation: lgm-ring 1.8s ease-out infinite;
+    }
+    .lgm-core {
+      position: absolute; top: 50%; left: 50%;
+      width: 10px; height: 10px; border-radius: 50%;
+      transform: translate(-50%,-50%);
+      background: hsl(198.6,88.7%,48.4%);
+      box-shadow: 0 0 8px 2px hsla(198.6,88.7%,48.4%,0.6);
+    }
+  `;
+  document.head.appendChild(s);
+}
+
 export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const mapDivRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
 
   useEffect(() => {
     if (!formattedLocation) return;
 
-    const canvas: HTMLCanvasElement | null = canvasRef.current;
-    const viewport: HTMLDivElement | null = viewportRef.current;
-    if (!canvas || !viewport) return;
+    if (!canvasRef.current || !viewportRef.current) return;
+    const canvas: HTMLCanvasElement = canvasRef.current;
+    const viewport: HTMLDivElement = viewportRef.current;
     const ctxOrNull = canvas.getContext('2d', {alpha: false});
     if (!ctxOrNull) return;
     const ctx: CanvasRenderingContext2D = ctxOrNull;
 
     let rafId = 0;
     let alive = true;
+    let mapInitialized = false;
     let viewportWidth = 0;
     let viewportHeight = 0;
     let baseRadius = 1;
@@ -322,6 +356,11 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       } else if (phase === 'settled' && dotCoords) {
         const pulseT = ((now - settledTime) % PULSE_PERIOD_MS) / PULSE_PERIOD_MS;
         dotAlpha = 0.5 - 0.5 * Math.cos(pulseT * 2 * Math.PI);
+        // Kick off the real map once, after a short delay so the dot is visible first
+        if (!mapInitialized) {
+          mapInitialized = true;
+          setTimeout(() => initMap(), 600);
+        }
       }
 
       const activeLand =
@@ -372,10 +411,51 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       },
     );
 
+    async function initMap() {
+      if (!alive || !mapDivRef.current || !dotCoords) return;
+      const [lon, lat] = [dotCoords[1], dotCoords[0]];
+
+      const mlgl = await import('maplibre-gl');
+      if (!alive || !mapDivRef.current) return;
+
+      ensureMarkerStyles();
+
+      const map = new mlgl.Map({
+        container: mapDivRef.current,
+        style: OFMAP_STYLE,
+        center: [lon, lat],
+        zoom: MAP_ZOOM,
+        attributionControl: false,
+        pitchWithRotate: false,
+        dragRotate: false,
+      });
+      mapRef.current = map;
+
+      map.on('load', () => {
+        if (!alive) return;
+
+        // Pulsing dot marker
+        const el = document.createElement('div');
+        el.className = 'lgm-wrap';
+        el.innerHTML = '<div class="lgm-ring"></div><div class="lgm-core"></div>';
+        new mlgl.Marker({element: el, anchor: 'center'}).setLngLat([lon, lat]).addTo(map);
+
+        // Crossfade: map in, canvas out
+        const mapDiv = mapDivRef.current;
+        const cvs = canvasRef.current;
+        if (mapDiv) { mapDiv.style.transition = 'opacity 0.9s ease'; mapDiv.style.opacity = '1'; }
+        if (cvs)    { cvs.style.transition    = 'opacity 0.9s ease'; cvs.style.opacity    = '0'; }
+
+        // Stop canvas RAF after fade
+        setTimeout(() => { alive = false; cancelAnimationFrame(rafId); }, 950);
+      });
+    }
+
     return () => {
       alive = false;
       cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
     };
   }, [formattedLocation]);
 
@@ -395,10 +475,15 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       >
         <canvas
           ref={canvasRef}
+          style={{display: 'block', width: '100%', height: '100%'}}
+        />
+        {/* MapLibre map — fades in over the canvas once the globe animation settles */}
+        <div
+          ref={mapDivRef}
           style={{
-            display: 'block',
-            width: '100%',
-            height: '100%',
+            position: 'absolute',
+            inset: 0,
+            opacity: 0,
           }}
         />
       </div>
