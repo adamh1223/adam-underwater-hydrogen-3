@@ -42,6 +42,7 @@ export default async function handleRequest(
       'wss://patient-mite-notably.ngrok-free.app:3000',
       'https://cdn.shopify.com',
       r2PublicOrigin,
+      'https://nominatim.openstreetmap.org',
     ],
     styleSrc: [
       "'self'",

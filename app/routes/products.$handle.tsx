@@ -34,6 +34,7 @@ import IndividualVideoBundle, {
   type BundleDetailClip,
 } from '~/components/eproducts/IndividualVideoBundle';
 import VideoResolutionSwipeSection from '~/components/eproducts/VideoResolutionSwipeSection';
+import {LocationGlobe} from '~/components/eproducts/LocationGlobe';
 import {markWarmedImageUrl} from '~/lib/imageWarmup';
 import {ProductImages, SimpleProductImages} from '~/lib/types';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -3094,6 +3095,9 @@ export default function Product() {
                 activeVideoSwipeComparison.higherResolutionLabel
               }
             />
+          )}
+          {isVideo && formattedLocation && (
+            <LocationGlobe formattedLocation={formattedLocation} />
           )}
           <section className="you-may-also-like mt-3">
             {/* section title */}
