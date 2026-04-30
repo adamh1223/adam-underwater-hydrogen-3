@@ -60,7 +60,7 @@ import {Button} from '~/components/ui/button';
 import {
   ADMIN_METAFIELD_SET,
   GET_REVIEW_QUERY,
-  RECOMMENDED_PRODUCTS_QUERY,
+  RELATED_PRODUCTS_QUERY,
 } from '~/lib/homeQueries';
 import SimpleRecommendedProducts from '~/components/products/simpleRecommendedProducts';
 import {FaHeart, FaRegHeart} from 'react-icons/fa';
@@ -885,7 +885,7 @@ async function loadCriticalData({
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions},
     }),
-    storefront.query(RECOMMENDED_PRODUCTS_QUERY),
+    storefront.query(RELATED_PRODUCTS_QUERY),
     // Add other queries here, so that they are loaded in parallel
   ]);
   if (!product?.id) {
@@ -1046,7 +1046,7 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
   // For example: product reviews, product recommendations, social feeds.
 
   const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
+    .query(RELATED_PRODUCTS_QUERY)
     .catch((error) => {
       // Log query errors, but don't throw them so the page can still render
       console.error(error, '00000000000000000000000000000000000000000000000');

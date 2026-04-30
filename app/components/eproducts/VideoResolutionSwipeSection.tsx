@@ -25,19 +25,6 @@ const STOCK_SWIPE_IMAGE_EXTENSIONS = [
   'JPEG',
   'WEBP',
 ];
-const DEFAULT_HIGHER_RESOLUTION_LABELS = ['8K', '6K', '5K', '10K', '12K'];
-
-function buildLegacySwipeImageCandidates(
-  resolutionLabel: string,
-  vidKey: string,
-) {
-  const normalizedResolution = resolutionLabel.toLowerCase();
-
-  return STOCK_SWIPE_IMAGE_EXTENSIONS.map(
-    (extension) =>
-      `${STOCK_SWIPE_ASSET_BASE_URL}/swipe${normalizedResolution}-${vidKey}.${extension}`,
-  );
-}
 
 function parseResolutionNumber(label: string): number | null {
   const match = label.trim().toUpperCase().match(/^(\d+)\s*K$/);
@@ -207,21 +194,12 @@ export default function VideoResolutionSwipeSection({
     [vidKey],
   );
   const higherResolutionCandidates = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          [
-            higherResolutionLabel,
-            ...DEFAULT_HIGHER_RESOLUTION_LABELS,
-          ]
-            .map((label) =>
-              typeof label === 'string'
-                ? normalizeHigherResolutionLabel(label)
-                : null,
-            )
-            .filter((label): label is string => Boolean(label)),
-        ),
-      ),
+    () => {
+      const normalized = normalizeHigherResolutionLabel(
+        typeof higherResolutionLabel === 'string' ? higherResolutionLabel : '',
+      );
+      return normalized ? [normalized] : [];
+    },
     [higherResolutionLabel],
   );
 
@@ -242,22 +220,15 @@ export default function VideoResolutionSwipeSection({
           productNumber !== null
             ? buildModernRightImageCandidates(resolutionLabel, productNumber)
             : [];
-        const legacyLeftCandidates = buildLegacySwipeImageCandidates('4k', vidKey);
-        const legacyRightCandidates = buildLegacySwipeImageCandidates(
-          resolutionLabel,
-          vidKey,
-        );
 
-        const resolvedLeftUrl = await preloadFirstAvailableImage([
-          ...modernLeftCandidates,
-          ...legacyLeftCandidates,
-        ]);
+        const resolvedLeftUrl = await preloadFirstAvailableImage(
+          modernLeftCandidates,
+        );
         if (cancelled || !resolvedLeftUrl) continue;
 
-        const resolvedRightUrl = await preloadFirstAvailableImage([
-          ...modernRightCandidates,
-          ...legacyRightCandidates,
-        ]);
+        const resolvedRightUrl = await preloadFirstAvailableImage(
+          modernRightCandidates,
+        );
         if (cancelled) return;
         if (!resolvedRightUrl) continue;
 

@@ -90,9 +90,82 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 25, sortKey: UPDATED_AT, reverse: true) {
+    products(
+      first: 50
+      query: "tag:recommended"
+      sortKey: UPDATED_AT
+      reverse: true
+    ) {
       nodes {
         ...RecommendedProduct
+      }
+    }
+  }
+` as const;
+
+export const RELATED_PRODUCTS_QUERY = `#graphql
+  fragment RelatedProduct on Product {
+    id
+    title
+    description
+    handle
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+    selectedOrFirstAvailableVariant {
+      id
+      price {
+        amount
+        currencyCode
+      }
+      compareAtPrice {
+        amount
+        currencyCode
+      }
+    }
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          id
+          price {
+            amount
+            currencyCode
+          }
+          compareAtPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        amount
+        currencyCode
+      }
+    }
+    tags
+    images(first: 250) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+  }
+  query RelatedProducts($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    products(first: 50, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        ...RelatedProduct
       }
     }
   }
@@ -101,7 +174,7 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
 export const FEATURED_REVIEWS_QUERY = `#graphql
   query FeaturedReviews($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 25, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 250, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         id
         title
