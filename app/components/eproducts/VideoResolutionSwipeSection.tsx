@@ -26,6 +26,12 @@ const STOCK_SWIPE_IMAGE_EXTENSIONS = [
   'WEBP',
 ];
 
+function addCacheBustParam(url: string, cacheBustToken: string): string {
+  if (!cacheBustToken) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}cb=${encodeURIComponent(cacheBustToken)}`;
+}
+
 function parseResolutionNumber(label: string): number | null {
   const match = label.trim().toUpperCase().match(/^(\d+)\s*K$/);
   if (!match) return null;
@@ -202,6 +208,10 @@ export default function VideoResolutionSwipeSection({
     },
     [higherResolutionLabel],
   );
+  const cacheBustToken = useMemo(
+    () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
+    [vidKey, higherResolutionLabel],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -214,11 +224,15 @@ export default function VideoResolutionSwipeSection({
       for (const resolutionLabel of higherResolutionCandidates) {
         const modernLeftCandidates =
           productNumber !== null
-            ? buildModernLeftImageCandidates(resolutionLabel, productNumber)
+            ? buildModernLeftImageCandidates(resolutionLabel, productNumber).map(
+                (candidate) => addCacheBustParam(candidate, cacheBustToken),
+              )
             : [];
         const modernRightCandidates =
           productNumber !== null
-            ? buildModernRightImageCandidates(resolutionLabel, productNumber)
+            ? buildModernRightImageCandidates(resolutionLabel, productNumber).map(
+                (candidate) => addCacheBustParam(candidate, cacheBustToken),
+              )
             : [];
 
         const resolvedLeftUrl = await preloadFirstAvailableImage(
@@ -244,7 +258,7 @@ export default function VideoResolutionSwipeSection({
     return () => {
       cancelled = true;
     };
-  }, [higherResolutionCandidates, productNumber, vidKey]);
+  }, [cacheBustToken, higherResolutionCandidates, productNumber, vidKey]);
 
   const updateDividerFromClientX = useCallback((clientX: number) => {
     const container = compareRef.current;
