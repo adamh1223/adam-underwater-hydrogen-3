@@ -20,7 +20,7 @@ const DECEL_MS = 1800;
 const QUICK_LAND_MS = 500;
 const PULSE_PERIOD_MS = 2000;
 const STARFIELD_SEED = 412877;
-const STAR_COUNT = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4 ? 400 : 800;
+const STAR_COUNT = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4 ? 800 : 2000;
 const STAR_FOV_DEG = 105;
 const STAR_CAMERA_ORBIT_RADIUS = 0.6;
 const SETTLED_IDLE_FPS = 10;
@@ -118,6 +118,7 @@ const CITIES: City[] = [
   ['Lagos',             3.4,   6.5, 1],
   ['Nairobi',          36.8,  -1.3, 1],
   ['Johannesburg',     28.0, -26.2, 1],
+  ['Cape Town',        18.4, -33.9, 1],
   ['Casablanca',       -7.6,  33.6, 2],
   ['Addis Ababa',      38.7,   9.0, 2],
   ['Kinshasa',         15.3,  -4.3, 1],
@@ -326,7 +327,7 @@ function getStarfield(): StarParticle[] {
           ? 4.8 + rand() * 6.5
           : 11.5 + rand() * 22;
     const radius = layer === 1 ? 0.14 + rand() * 0.14 : layer === 2 ? 0.2 + rand() * 0.2 : 0.3 + rand() * 0.32;
-    const alpha = layer === 1 ? 0.12 + rand() * 0.18 : layer === 2 ? 0.2 + rand() * 0.28 : 0.34 + rand() * 0.34;
+    const alpha = layer === 1 ? 0.28 + rand() * 0.32 : layer === 2 ? 0.42 + rand() * 0.38 : 0.65 + rand() * 0.30;
     // Uniform point on unit sphere, used as celestial directions.
     const lat = Math.asin(rand() * 2 - 1);
     const lon = rand() * 2 * Math.PI - Math.PI;
@@ -433,7 +434,7 @@ function drawStarfield(
 
     // Minimal soft bloom for the nearest stars only (kept lightweight).
     if (star.layer === 3) {
-      const bloomAlpha = alpha * 0.22;
+      const bloomAlpha = alpha * 0.45;
       ctx.fillStyle = `rgba(235,245,255,${bloomAlpha.toFixed(3)})`;
       ctx.fillRect(x - half - 1, y - half - 1, pointSize + 2, pointSize + 2);
     }
@@ -1078,16 +1079,23 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       performance.now(),
     );
 
+    // Load the small globe-view land file (54 KB) independently so land appears
+    // on the first frame instead of waiting for the larger zoom-layer files.
+    loadLandFeature('110m').then(f110 => {
+      if (!alive) return;
+      land110 = f110;
+    });
+
+    // Larger files (lakes, rivers, admin1, countries) load in parallel and are
+    // only needed once the zoom animation starts.
     Promise.all([
-      loadLandFeature('110m'),
       loadLandFeature('50m'),
       loadLakesData(),
       loadRiversData(),
       loadAdmin1Data(),
       loadCountriesData(),
-    ]).then(([f110, f50, lakesData, riversData, adm1, ctryData]) => {
+    ]).then(([f50, lakesData, riversData, adm1, ctryData]) => {
       if (!alive) return;
-      land110   = f110;
       land50    = f50;
       lakes     = lakesData;
       rivers    = preprocessRivers(riversData);
