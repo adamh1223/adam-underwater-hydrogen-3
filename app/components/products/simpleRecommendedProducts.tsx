@@ -163,7 +163,10 @@ function SimpleRecommendedProducts({
                   productKeywordSet,
                 );
 
-                if (currentProductKeywordSet.size > 0 && sharedKeywordCount <= 0) {
+                // For videos: require at least one shared keyword (existing behaviour).
+                // For prints: always include — keyword score just controls sort order,
+                // so we fall back to any print when nothing matches closely.
+                if (isVideo && currentProductKeywordSet.size > 0 && sharedKeywordCount <= 0) {
                   return null;
                 }
 

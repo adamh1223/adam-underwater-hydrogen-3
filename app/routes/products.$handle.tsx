@@ -62,6 +62,7 @@ import {
   ADMIN_METAFIELD_SET,
   GET_REVIEW_QUERY,
   RELATED_PRODUCTS_QUERY,
+  RELATED_PRINTS_QUERY,
 } from '~/lib/homeQueries';
 import SimpleRecommendedProducts from '~/components/products/simpleRecommendedProducts';
 import {FaHeart, FaRegHeart} from 'react-icons/fa';
@@ -1049,13 +1050,19 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
   const recommendedProducts = context.storefront
     .query(RELATED_PRODUCTS_QUERY)
     .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
       console.error(error, '00000000000000000000000000000000000000000000000');
       return null;
     });
 
+  // Dedicated prints query — filters by tag:Prints so we always get print
+  // products regardless of which products were most recently updated.
+  const recommendedPrints = context.storefront
+    .query(RELATED_PRINTS_QUERY)
+    .catch(() => null);
+
   return {
     recommendedProducts,
+    recommendedPrints,
   };
 }
 // Use the same fix for about page recommended products
@@ -1063,6 +1070,7 @@ export default function Product() {
   const {
     product,
     recommendedProducts,
+    recommendedPrints,
     cart,
     reviews,
     customer,
@@ -3130,7 +3138,7 @@ export default function Product() {
             )} */}
 
               <SimpleRecommendedProducts
-                products={recommendedProducts}
+                products={isVideo ? recommendedProducts : (recommendedPrints as any)}
                 isVideo={isVideo}
                 currentProductID={product.id}
                 currentProductTitle={product.title}

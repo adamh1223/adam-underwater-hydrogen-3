@@ -103,6 +103,55 @@ export const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
 ` as const;
 
+// Fetches prints specifically (tag:Prints) — avoids the situation where the
+// general RELATED_PRODUCTS_QUERY returns only recently-updated video products.
+export const RELATED_PRINTS_QUERY = `#graphql
+  fragment RelatedPrint on Product {
+    id
+    title
+    description
+    handle
+    featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+    selectedOrFirstAvailableVariant {
+      id
+      price { amount currencyCode }
+      compareAtPrice { amount currencyCode }
+    }
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          id
+          price { amount currencyCode }
+          compareAtPrice { amount currencyCode }
+        }
+      }
+    }
+    priceRange {
+      minVariantPrice { amount currencyCode }
+    }
+    tags
+    images(first: 250) {
+      nodes { id url altText width height }
+    }
+  }
+  query RelatedPrints($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    products(first: 100, query: "tag:Prints") {
+      nodes {
+        ...RelatedPrint
+      }
+    }
+  }
+` as const;
+
 export const RELATED_PRODUCTS_QUERY = `#graphql
   fragment RelatedProduct on Product {
     id
