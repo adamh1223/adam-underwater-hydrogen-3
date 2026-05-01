@@ -497,12 +497,15 @@ function drawGlobe(
   dotCoords:        [number, number] | null,
   dotAlpha:         number,
   nowMs:            number,
+  fastMode:         boolean,
 ) {
   const cx = vw / 2;
   const cy = vh / 2;
   const zp = Math.max(0, Math.min((currentScale - baseScale) / (maxScale - baseScale), 1));
 
-  const pathPrecision = zp < 0.1 ? 3 : zp < 0.4 ? 1 : 0.5;
+  // During active interaction use coarser paths — far fewer segments to compute,
+  // making each frame cheaper so the target FPS is actually achieved.
+  const pathPrecision = fastMode ? 2 : (zp < 0.1 ? 3 : zp < 0.4 ? 1 : 0.5);
   const projection = sharedProjection
     .translate([cx, cy])
     .scale(currentScale)
@@ -978,11 +981,15 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     function frame(now: number) {
       if (!alive) return;
 
-      // FPS cap: 24fps during animation, 60fps while interacting, SETTLED_IDLE_FPS idle
       const isInteracting = dragging || pinching;
+      const isZoomAnimating = phase === 'settled' && btnZoomFrom !== btnZoomTo;
+      // 60fps while dragging/pinching or button zoom is in flight (needs smooth motion)
+      // 30fps while dot is pulsing (smooth cosine animation)
+      // SETTLED_IDLE_FPS otherwise (static scene, minimal CPU use)
       const targetFps =
         phase !== 'settled' ? 24 :
-        isInteracting       ? 60 :
+        isInteracting || isZoomAnimating ? 60 :
+        dotCoords !== null  ? 30 :
                               SETTLED_IDLE_FPS;
       if (now - lastDrawTime < 1000 / targetFps) {
         rafId = requestAnimationFrame(frame);
@@ -1081,35 +1088,24 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
           }
         }
       } else {
-        // Full render path
+        // Full render path — use fastMode during active interaction for coarser
+        // (cheaper) paths so the target FPS is actually achieved each frame.
+        const fast = isInteracting || isZoomAnimating;
         drawGlobe(ctx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
-                  baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now);
-        // Save static frame to offscreen (without dot, so we can overdraw it)
-        if (phase === 'settled' && !dragging && !pinching && offCtx) {
+                  baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now, fast);
+        // Save static frame to offscreen only when idle (not interacting/animating)
+        if (phase === 'settled' && !fast && offCtx) {
           drawGlobe(offCtx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
-                    baseRadius, zoomRadius, vw, vh, null, 0, now);
+                    baseRadius, zoomRadius, vw, vh, null, 0, now, false);
           cacheKey = thisKey;
         }
       }
       rafId = requestAnimationFrame(frame);
     }
     drawGlobe(
-      ctx,
-      land110,
-      lakes,
-      rivers,
-      admin1,
-      countries,
-      lambdaC,
-      phiC,
-      currentScale,
-      baseRadius,
-      zoomRadius,
-      vw,
-      vh,
-      dotCoords,
-      0,
-      performance.now(),
+      ctx, land110, lakes, rivers, admin1, countries,
+      lambdaC, phiC, currentScale, baseRadius, zoomRadius,
+      vw, vh, dotCoords, 0, performance.now(), false,
     );
 
     // Load the small globe-view land file (54 KB) independently so land appears

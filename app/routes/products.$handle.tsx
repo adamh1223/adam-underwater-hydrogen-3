@@ -1484,6 +1484,7 @@ export default function Product() {
   const isVideo = hasVideoTag(product.tags);
   const isBundle = product.tags.includes('Bundle');
   const isArtistPick = product.tags.includes('a');
+  const isMostPopular = product.tags.includes('most-popular');
   const isPrint = !isVideo;
   const isVideoBundle = isVideo && isBundle;
   const selectedVideoFrameRateLabel = getSelectedVideoFrameRateLabel(tags);
@@ -2098,6 +2099,22 @@ export default function Product() {
       : ''
   }`;
   const productActionIconClassName = 'h-4 w-4';
+  const renderMostPopularBadge = (className = '') => (
+    <button
+      disabled
+      className={`artist-pick rounded-md flex items-center justify-center border border-border bg-background text-[#d4af37] text-sm hover:bg-background disabled:cursor-default disabled:opacity-100 ${className}`}
+    >
+      Most Popular
+      <div className="flex justify-center items-end">
+        <img
+          src="https://downloads.adamunderwater.com/store-1-au/public/badge1.png"
+          alt=""
+          className="badge-img"
+        />
+      </div>
+    </button>
+  );
+
   const renderArtistPickBadge = (className = '') => (
     <button
       disabled
@@ -2299,6 +2316,11 @@ export default function Product() {
             {isArtistPick && (
               <div className="float-right ml-3 mb-2">
                 {renderArtistPickBadge('text-sm')}
+              </div>
+            )}
+            {isMostPopular && (
+              <div className="float-right ml-3 mb-2">
+                {renderMostPopularBadge('text-sm')}
               </div>
             )}
             <nav
