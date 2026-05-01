@@ -262,6 +262,21 @@ async function geocode(location: string): Promise<[number, number] | null> {
 function easeInOut(t: number) { return 0.5 - 0.5 * Math.cos(t * Math.PI); }
 function easeOut(t:   number) { return 1 - Math.pow(1 - t, 3); }
 
+function isPointVisibleOnFrontHemisphere(
+  centerLonRad: number,
+  centerLatRad: number,
+  pointLonDeg: number,
+  pointLatDeg: number,
+): boolean {
+  const pointLonRad = pointLonDeg * DEG;
+  const pointLatRad = pointLatDeg * DEG;
+  // cos(angularDistance) > 0  => point is on the front hemisphere (<= 90 deg away)
+  const cosAngularDistance =
+    Math.sin(centerLatRad) * Math.sin(pointLatRad) +
+    Math.cos(centerLatRad) * Math.cos(pointLatRad) * Math.cos(pointLonRad - centerLonRad);
+  return cosAngularDistance > 0.0001;
+}
+
 // ── Renderer ──────────────────────────────────────────────────────────────────
 
 function drawGlobe(
@@ -537,7 +552,11 @@ function drawGlobe(
   }
 
   // Location dot
-  if (dotCoords && dotAlpha > 0) {
+  if (
+    dotCoords &&
+    dotAlpha > 0 &&
+    isPointVisibleOnFrontHemisphere(lambdaC, phiC, dotCoords[1], dotCoords[0])
+  ) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, currentScale, 0, 2 * Math.PI);
