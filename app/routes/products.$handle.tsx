@@ -3088,6 +3088,9 @@ export default function Product() {
               </div>
             </section>
           )}
+          {isVideo && formattedLocation && (
+            <LocationGlobe formattedLocation={formattedLocation} />
+          )}
           {isVideo && activeVideoSwipeComparison && (
             <VideoResolutionSwipeSection
               vidKey={activeVideoSwipeComparison.vidKey}
@@ -3095,9 +3098,6 @@ export default function Product() {
                 activeVideoSwipeComparison.higherResolutionLabel
               }
             />
-          )}
-          {isVideo && formattedLocation && (
-            <LocationGlobe formattedLocation={formattedLocation} />
           )}
           <section className="you-may-also-like mt-3">
             {/* section title */}

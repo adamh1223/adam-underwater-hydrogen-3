@@ -812,6 +812,11 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       btnZoomDurationMs = BTN_ZOOM_MS;
     };
     actionsRef.current.zoomMax = () => {
+      if (geocoded) {
+        const diff = ((targetLambdaC - lambdaC) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+        lambdaC = lambdaC + diff;
+        phiC = targetPhiC;
+      }
       btnZoomFrom  = currentScale;
       btnZoomTo    = zoomRadius;
       btnZoomStart = performance.now();
@@ -935,8 +940,12 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       } else {
         // Settled: animate button-triggered zoom
         const t = Math.min((now - btnZoomStart) / btnZoomDurationMs, 1);
-        currentScale = btnZoomFrom + (btnZoomTo - btnZoomFrom) * easeInOut(t);
-        if (t >= 1) { currentScale = btnZoomTo; btnZoomFrom = btnZoomTo; }
+        const e = easeInOut(t);
+        currentScale = btnZoomFrom + (btnZoomTo - btnZoomFrom) * e;
+        if (t >= 1) {
+          currentScale = btnZoomTo;
+          btnZoomFrom = btnZoomTo;
+        }
       }
 
       let dotAlpha = 0;
