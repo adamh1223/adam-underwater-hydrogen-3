@@ -20,7 +20,7 @@ const DECEL_MS = 1800;
 const QUICK_LAND_MS = 500;
 const PULSE_PERIOD_MS = 2000;
 const STARFIELD_SEED = 412877;
-const STAR_COUNT = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4 ? 800 : 2000;
+const STAR_COUNT = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4 ? 400 : 800;
 const STAR_FOV_DEG = 105;
 const STAR_CAMERA_ORBIT_RADIUS = 0.6;
 const SETTLED_IDLE_FPS = 10;
@@ -64,7 +64,7 @@ type City = [string, number, number, 1 | 2 | 3];
 const CITIES: City[] = [
   // US West Coast / target region
   ['Los Angeles',    -118.2,  34.1, 1],
-  ['San Francisco',  -122.4,  37.8, 2],
+  ['San Francisco',  -122.4,  37.8, 1],
   ['San Diego',      -117.2,  32.7, 2],
   ['Las Vegas',      -115.1,  36.2, 2],
   ['Phoenix',        -112.1,  33.4, 2],
@@ -72,6 +72,7 @@ const CITIES: City[] = [
   ['Portland',       -122.7,  45.5, 2],
   ['Sacramento',     -121.5,  38.6, 3],
   ['Santa Barbara',  -119.7,  34.4, 3],
+  ['Monterey',       -121.9,  36.6, 3],
   ['Fresno',         -119.8,  36.7, 3],
   ['Tijuana',        -117.0,  32.5, 3],
   // US East / Central
@@ -327,7 +328,7 @@ function getStarfield(): StarParticle[] {
           ? 4.8 + rand() * 6.5
           : 11.5 + rand() * 22;
     const radius = layer === 1 ? 0.14 + rand() * 0.14 : layer === 2 ? 0.2 + rand() * 0.2 : 0.3 + rand() * 0.32;
-    const alpha = layer === 1 ? 0.28 + rand() * 0.32 : layer === 2 ? 0.42 + rand() * 0.38 : 0.65 + rand() * 0.30;
+    const alpha = layer === 1 ? 0.25 + rand() * 0.35 : layer === 2 ? 0.40 + rand() * 0.40 : 0.60 + rand() * 0.35;
     // Uniform point on unit sphere, used as celestial directions.
     const lat = Math.asin(rand() * 2 - 1);
     const lon = rand() * 2 * Math.PI - Math.PI;
@@ -434,12 +435,44 @@ function drawStarfield(
 
     // Minimal soft bloom for the nearest stars only (kept lightweight).
     if (star.layer === 3) {
-      const bloomAlpha = alpha * 0.45;
+      const bloomAlpha = alpha * 0.22;
       ctx.fillStyle = `rgba(235,245,255,${bloomAlpha.toFixed(3)})`;
       ctx.fillRect(x - half - 1, y - half - 1, pointSize + 2, pointSize + 2);
     }
   }
 }
+
+// Only label lakes that are large / well-known natural bodies of water.
+// Excludes small reservoirs (Mead, Powell, Shasta, etc.).
+const LAKE_LABEL_ALLOWLIST = new Set([
+  // North America
+  'Lake Superior','Lake Michigan','Lake Huron','Lake Erie','Lake Ontario',
+  'Lake Tahoe','Great Salt Lake','Salton Sea',
+  'Lake Winnipeg','Great Bear Lake','Great Slave Lake','Lake Athabasca',
+  'Lake Champlain','Lake of the Woods','Reindeer Lake','Yellowstone Lake',
+  'Lake Saint Clair','Saginaw Bay','Georgian Bay','Whitefish Bay',
+  'Lake Winnebago','Lake Winnipegosis','North Channel','Southern Indian Lake',
+  // South America
+  'Lago Titicaca','Mar Chiquita','Lago Argentino','Lago Buenos Aires',
+  'Lagoa Mirim','Lago de Nicaragua','Lago Llanquihue',
+  // Africa
+  'Lake Victoria','Lake Tanganyika','Lake Malawi','Lake Chad',
+  'Lake Turkana','Lake Albert','Lake Edward','Lake Tana','Lake Bangweulu',
+  'Lake Kivu',
+  // Europe
+  'Lake Geneva','Vänern','Vättern','Mälaren','Lake Saimaa','Lake Peipus',
+  'Lake Ladoga','Lake Onega','IJsselmeer','Lough Neagh',
+  'Oulujärvi','Pielinen','Päijänne','Inarijrvi',
+  // Asia & Middle East
+  'Lake Baikal','Lake Balkhash','Issyk-Kul','Qinghai Hu',
+  'Khövsgöl Nuur','Nam Co','Uvs Nuur','Alakol','Lake Zaysan',
+  'Tai Hu','Poyang Hu','Hongze Hu','Tonlé Sap',
+  'Lake Van','Lake Urmia','Dead Sea','North Aral Sea','South Aral Sea',
+  'Bosten Hu','Siling Co','Hulun Nuur',
+  // Oceania
+  'Lake Eyre North','Lake Taupo','Lake Gairdner','Lake Torrens',
+  'Lake Disappointment','Nettilling Lake',
+]);
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
 
@@ -596,7 +629,7 @@ function drawGlobe(
     const lakeFts: any[] = lakesFeature?.features ?? [];
     for (const feat of lakeFts) {
       const name: string = feat?.properties?.name ?? '';
-      if (!name) continue;
+      if (!name || !LAKE_LABEL_ALLOWLIST.has(name)) continue;
       try {
         const centroid = cachedCentroid(feat);
         if (!isPointVisibleOnFrontHemisphere(lambdaC, phiC, centroid[0], centroid[1])) continue;
