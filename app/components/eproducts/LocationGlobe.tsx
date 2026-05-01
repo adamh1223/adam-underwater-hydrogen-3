@@ -562,8 +562,8 @@ function drawGlobe(
     ctx.stroke();
   }
 
-  // Rivers — 3 batched path calls instead of one per feature
-  if (riversFeature && zp > 0.02) {
+  // Rivers — skipped during fast interaction (invisible while moving)
+  if (riversFeature && zp > 0.02 && !fastMode) {
     const zpRiver = Math.max(0, (zp - 0.02) / 0.98);
     if (zpRiver > 0.2 && riversFeature._major) {
       ctx.beginPath(); path(riversFeature._major as any);
@@ -620,7 +620,6 @@ function drawGlobe(
     ctx.restore();
   }
 
-  // ── Lake labels — higher threshold so they disappear earlier when zooming out
   if (zp > 0.12) {
     const lakeA = Math.min(1, (zp - 0.12) / 0.08);
     ctx.save();
@@ -983,17 +982,19 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
 
       const isInteracting = dragging || pinching;
       const isZoomAnimating = phase === 'settled' && btnZoomFrom !== btnZoomTo;
-      // 60fps while dragging/pinching or button zoom is in flight (needs smooth motion)
-      // 30fps while dot is pulsing (smooth cosine animation)
-      // SETTLED_IDLE_FPS otherwise (static scene, minimal CPU use)
-      const targetFps =
-        phase !== 'settled' ? 24 :
-        isInteracting || isZoomAnimating ? 60 :
-        dotCoords !== null  ? 30 :
-                              SETTLED_IDLE_FPS;
-      if (now - lastDrawTime < 1000 / targetFps) {
-        rafId = requestAnimationFrame(frame);
-        return;
+
+      // During active interaction run uncapped at the display's native refresh
+      // rate (60 / 90 / 120 Hz). Every layer except ocean+land+lakes is skipped
+      // in fastMode so frames are cheap enough to sustain this.
+      if (!isInteracting && !isZoomAnimating) {
+        const targetFps =
+          phase !== 'settled' ? 24 :
+          dotCoords !== null  ? 30 :
+                                SETTLED_IDLE_FPS;
+        if (now - lastDrawTime < 1000 / targetFps) {
+          rafId = requestAnimationFrame(frame);
+          return;
+        }
       }
       const elapsed = now - startTime;
 
