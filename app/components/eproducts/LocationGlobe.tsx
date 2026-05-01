@@ -7,8 +7,9 @@ const GLOBE_SECTION_HEIGHT = 360;
 const BASE_RADIUS_FACTOR = 0.37;
 const TARGET_ZOOM_FACTOR = 80;   // final animation zoom (more detail)
 const ZOOM_DURATION_MS = 2200;
-const ZOOM_STEP = Math.SQRT2;    // scale multiplier per +/- click (~9 clicks full range)
+const ZOOM_STEP = 2;             // scale multiplier per +/- click (larger step per tap)
 const BTN_ZOOM_MS = 220;         // duration of button-triggered zoom animation
+const BTN_ZOOM_EXTREME_MS = 1200; // slower easing for MAX/MIN jumps
 const OCEAN = '#0a1628';
 const LAKE  = '#0e2244';   // interior water — distinct from ocean but same family
 const LAND = '#1a3a2a';
@@ -19,7 +20,7 @@ const DECEL_MS = 1800;
 const QUICK_LAND_MS = 500;
 const PULSE_PERIOD_MS = 2000;
 const STARFIELD_SEED = 412877;
-const STAR_COUNT = 1800;
+const STAR_COUNT = 3200;
 const STAR_FOV_DEG = 105;
 const STAR_CAMERA_ORBIT_RADIUS = 0.6;
 
@@ -377,11 +378,7 @@ function drawStarfield(
   const fov = STAR_FOV_DEG * DEG;
   const focal = (vw * 0.5) / Math.tan(fov / 2);
 
-  const spaceGradient = ctx.createLinearGradient(0, 0, 0, vh);
-  spaceGradient.addColorStop(0, '#030713');
-  spaceGradient.addColorStop(0.55, '#040b1d');
-  spaceGradient.addColorStop(1, '#020611');
-  ctx.fillStyle = spaceGradient;
+  ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, vw, vh);
 
   const stars = getStarfield();
@@ -407,9 +404,9 @@ function drawStarfield(
     const coreR = star.radius * (star.layer === 3 ? 1.2 : star.layer === 2 ? 1.08 : 0.95);
     const haloR = coreR + (star.layer === 3 ? 1.25 : star.layer === 2 ? 0.92 : 0.65) * twinkle;
     const halo = ctx.createRadialGradient(x, y, 0, x, y, haloR);
-    halo.addColorStop(0, `rgba(220, 238, 255, ${(star.alpha * 0.5 * twinkle).toFixed(3)})`);
-    halo.addColorStop(0.45, `rgba(114, 184, 255, ${(star.alpha * (0.05 + (1 - depthT) * 0.06) * twinkle).toFixed(3)})`);
-    halo.addColorStop(1, 'rgba(114, 184, 255, 0)');
+    halo.addColorStop(0, `rgba(255, 255, 255, ${(star.alpha * 0.45 * twinkle).toFixed(3)})`);
+    halo.addColorStop(0.45, `rgba(245, 248, 255, ${(star.alpha * (0.045 + (1 - depthT) * 0.045) * twinkle).toFixed(3)})`);
+    halo.addColorStop(1, 'rgba(245, 248, 255, 0)');
     ctx.beginPath();
     ctx.arc(x, y, haloR, 0, 2 * Math.PI);
     ctx.fillStyle = halo;
@@ -417,7 +414,7 @@ function drawStarfield(
 
     ctx.beginPath();
     ctx.arc(x, y, Math.max(0.24, coreR * 0.65), 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(235, 245, 255, ${(star.alpha * 0.95 * twinkle).toFixed(3)})`;
+    ctx.fillStyle = `rgba(255, 255, 255, ${(star.alpha * 0.95 * twinkle).toFixed(3)})`;
     ctx.fill();
   }
 }
@@ -735,8 +732,16 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const viewportRef  = useRef<HTMLDivElement>(null);
   // Exposed to button onClick handlers without re-renders
-  const actionsRef   = useRef<{zoomIn: () => void; zoomOut: () => void}>({
-    zoomIn: () => {}, zoomOut: () => {},
+  const actionsRef = useRef<{
+    zoomIn: () => void;
+    zoomOut: () => void;
+    zoomMax: () => void;
+    zoomMin: () => void;
+  }>({
+    zoomIn: () => {},
+    zoomOut: () => {},
+    zoomMax: () => {},
+    zoomMin: () => {},
   });
   const [isSettled, setIsSettled] = useState(false);
 
@@ -788,6 +793,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
 
     // ── Interactive zoom (button presses) ──────────────────────────────────────
     let btnZoomFrom = baseRadius, btnZoomTo = baseRadius, btnZoomStart = 0;
+    let btnZoomDurationMs = BTN_ZOOM_MS;
 
     function clampScale(s: number) {
       return Math.max(baseRadius, Math.min(zoomRadius, s));
@@ -797,11 +803,25 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       btnZoomFrom  = currentScale;
       btnZoomTo    = clampScale(currentScale * ZOOM_STEP);
       btnZoomStart = performance.now();
+      btnZoomDurationMs = BTN_ZOOM_MS;
     };
     actionsRef.current.zoomOut = () => {
       btnZoomFrom  = currentScale;
       btnZoomTo    = clampScale(currentScale / ZOOM_STEP);
       btnZoomStart = performance.now();
+      btnZoomDurationMs = BTN_ZOOM_MS;
+    };
+    actionsRef.current.zoomMax = () => {
+      btnZoomFrom  = currentScale;
+      btnZoomTo    = zoomRadius;
+      btnZoomStart = performance.now();
+      btnZoomDurationMs = BTN_ZOOM_EXTREME_MS;
+    };
+    actionsRef.current.zoomMin = () => {
+      btnZoomFrom  = currentScale;
+      btnZoomTo    = baseRadius;
+      btnZoomStart = performance.now();
+      btnZoomDurationMs = BTN_ZOOM_EXTREME_MS;
     };
 
     // ── Drag / pan ─────────────────────────────────────────────────────────────
@@ -914,7 +934,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         }
       } else {
         // Settled: animate button-triggered zoom
-        const t = Math.min((now - btnZoomStart) / BTN_ZOOM_MS, 1);
+        const t = Math.min((now - btnZoomStart) / btnZoomDurationMs, 1);
         currentScale = btnZoomFrom + (btnZoomTo - btnZoomFrom) * easeInOut(t);
         if (t >= 1) { currentScale = btnZoomTo; btnZoomFrom = btnZoomTo; }
       }
@@ -1043,8 +1063,20 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
             display: 'flex', flexDirection: 'column', gap: 6,
             zIndex: 10,
           }}>
+            <button
+              style={{...btnBase, fontSize: 12, fontWeight: 700, letterSpacing: '0.06em'}}
+              onClick={() => actionsRef.current.zoomMax()}
+            >
+              MAX
+            </button>
             <button style={btnBase} onClick={() => actionsRef.current.zoomIn()}>+</button>
             <button style={btnBase} onClick={() => actionsRef.current.zoomOut()}>−</button>
+            <button
+              style={{...btnBase, fontSize: 12, fontWeight: 700, letterSpacing: '0.06em'}}
+              onClick={() => actionsRef.current.zoomMin()}
+            >
+              MIN
+            </button>
           </div>
         )}
       </div>
