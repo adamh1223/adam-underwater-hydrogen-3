@@ -239,7 +239,7 @@ async function loadCountriesData(): Promise<typeof cachedCountries> {
 async function loadLakesData(): Promise<any | null> {
   if (cachedLakes) return cachedLakes;
   if (loadLakesPromise) return loadLakesPromise;
-  loadLakesPromise = fetch('/lakes-10m.geojson')
+  loadLakesPromise = fetch('/lakes-10m.json')
     .then(r => r.json())
     .then(geojson => { cachedLakes = geojson; return geojson; })
     .catch(err => { console.error('[LocationGlobe] lakes load failed:', err); loadLakesPromise = null; return null; });
@@ -249,7 +249,7 @@ async function loadLakesData(): Promise<any | null> {
 async function loadRiversData(): Promise<any | null> {
   if (cachedRivers) return cachedRivers;
   if (loadRiversPromise) return loadRiversPromise;
-  loadRiversPromise = fetch('/rivers-50m.geojson')
+  loadRiversPromise = fetch('/rivers-50m.json')
     .then(r => r.json())
     .then(gj => { cachedRivers = gj; return gj; })
     .catch(err => { console.error('[LocationGlobe] rivers load failed:', err); loadRiversPromise = null; return null; });
@@ -259,7 +259,7 @@ async function loadRiversData(): Promise<any | null> {
 async function loadAdmin1Data(): Promise<any | null> {
   if (cachedAdmin1) return cachedAdmin1;
   if (loadAdmin1Promise) return loadAdmin1Promise;
-  loadAdmin1Promise = fetch('/admin1-50m.geojson')
+  loadAdmin1Promise = fetch('/admin1-50m.json')
     .then(r => r.json())
     .then(geojson => { cachedAdmin1 = geojson; return geojson; })
     .catch(err => { console.error('[LocationGlobe] admin1 load failed:', err); loadAdmin1Promise = null; return null; });
