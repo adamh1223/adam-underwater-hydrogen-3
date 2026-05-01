@@ -161,11 +161,13 @@ let cached50m:     any | null = null;
 let cachedCountries: {borders: any; countryFeatures: any[]} | null = null;
 let cachedAdmin1: any | null = null;
 let cachedLakes:  any | null = null;
+let cachedRivers: any | null = null;
 let load110mPromise:     Promise<any | null>  | null = null;
 let load50mPromise:      Promise<any | null>  | null = null;
 let loadCountriesPromise: Promise<{borders: any; countryFeatures: any[]} | null> | null = null;
 let loadAdmin1Promise: Promise<any | null> | null = null;
-let loadLakesPromise:  Promise<any | null> | null = null;
+let loadLakesPromise:   Promise<any | null> | null = null;
+let loadRiversPromise:  Promise<any | null> | null = null;
 
 const graticule = geoGraticule().step([30, 30])();
 
@@ -224,6 +226,16 @@ async function loadLakesData(): Promise<any | null> {
   return loadLakesPromise;
 }
 
+async function loadRiversData(): Promise<any | null> {
+  if (cachedRivers) return cachedRivers;
+  if (loadRiversPromise) return loadRiversPromise;
+  loadRiversPromise = fetch('/rivers-50m.geojson')
+    .then(r => r.json())
+    .then(gj => { cachedRivers = gj; return gj; })
+    .catch(err => { console.error('[LocationGlobe] rivers load failed:', err); loadRiversPromise = null; return null; });
+  return loadRiversPromise;
+}
+
 async function loadAdmin1Data(): Promise<any | null> {
   if (cachedAdmin1) return cachedAdmin1;
   if (loadAdmin1Promise) return loadAdmin1Promise;
@@ -256,6 +268,7 @@ function drawGlobe(
   ctx: CanvasRenderingContext2D,
   landFeature:      any | null,
   lakesFeature:     any | null,
+  riversFeature:    any | null,
   admin1Feature:    any | null,
   countriesData:    {borders: any; countryFeatures: any[]} | null,
   lambdaC:          number,
@@ -324,6 +337,26 @@ function drawGlobe(
     ctx.stroke();
   }
 
+  // Rivers — only appear as zoom increases; line width and opacity scale with zp
+  if (riversFeature && zp > 0.1) {
+    const riverFeats: any[] = riversFeature.features ?? [];
+    // zp 0→1: rivers fade in and thicken proportionally
+    const zpRiver = Math.max(0, (zp - 0.1) / 0.9); // 0 at globe, 1 at full zoom
+    for (const feat of riverFeats) {
+      const rank: number = feat?.properties?.rank ?? 9;
+      // Minor rivers only show when well zoomed in
+      if (rank > 5 && zpRiver < 0.5) continue;
+      if (rank > 3 && zpRiver < 0.2) continue;
+      ctx.beginPath();
+      path(feat as any);
+      const baseOpacity = rank <= 3 ? 0.9  : rank <= 5 ? 0.75 : 0.6;
+      const baseWidth   = rank <= 3 ? 1.6  : rank <= 5 ? 1.1  : 0.7;
+      ctx.strokeStyle = `rgba(14,34,68,${(baseOpacity * zpRiver).toFixed(3)})`;
+      ctx.lineWidth   = baseWidth * zpRiver;
+      ctx.stroke();
+    }
+  }
+
   // ── Zoomed layers: state borders, country borders, labels, cities ──────────
   if (zp > 0.15 && admin1Feature) {
     const layerAlpha = Math.min(1, (zp - 0.15) / 0.4);
@@ -357,6 +390,54 @@ function drawGlobe(
         ctx.fillStyle = `hsla(215,20.2%,65.1%,${abbrevA})`;
         ctx.fillText(abbrev, pt[0], pt[1]);
       } catch { /* skip degenerate geometries */ }
+    }
+    ctx.restore();
+  }
+
+  // ── Water labels: lakes + rivers (italic, light blue) ─────────────────────
+  if (zp > 0.2) {
+    const waterA = Math.min(1, (zp - 0.2) / 0.5);
+    ctx.save();
+    ctx.font = `italic 10px system-ui,sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const labelColor = `hsla(210,75%,78%,${waterA.toFixed(3)})`;
+    const shadowColor = `rgba(0,0,0,${(0.5 * waterA).toFixed(3)})`;
+
+    // Lake labels
+    const lakeFts: any[] = lakesFeature?.features ?? [];
+    for (const feat of lakeFts) {
+      const name: string = feat?.properties?.name ?? '';
+      if (!name) continue;
+      try {
+        const centroid = geoCentroid(feat as any);
+        const pt = projection(centroid);
+        if (!pt) continue;
+        if (pt[0] < 0 || pt[0] > vw || pt[1] < 0 || pt[1] > vh) continue;
+        ctx.fillStyle = shadowColor;
+        ctx.fillText(name, pt[0] + 1, pt[1] + 1);
+        ctx.fillStyle = labelColor;
+        ctx.fillText(name, pt[0], pt[1]);
+      } catch { /* skip */ }
+    }
+
+    // River labels — only rank ≤ 5 (major rivers), label at geometric centroid
+    ctx.font = `italic 9px system-ui,sans-serif`;
+    const riverFts: any[] = riversFeature?.features ?? [];
+    for (const feat of riverFts) {
+      const name: string = feat?.properties?.name ?? '';
+      const rank: number = feat?.properties?.rank ?? 9;
+      if (!name || rank > 5) continue;
+      try {
+        const centroid = geoCentroid(feat as any);
+        const pt = projection(centroid);
+        if (!pt) continue;
+        if (pt[0] < 0 || pt[0] > vw || pt[1] < 0 || pt[1] > vh) continue;
+        ctx.fillStyle = shadowColor;
+        ctx.fillText(name, pt[0] + 1, pt[1] + 1);
+        ctx.fillStyle = labelColor;
+        ctx.fillText(name, pt[0], pt[1]);
+      } catch { /* skip */ }
     }
     ctx.restore();
   }
@@ -527,7 +608,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let zoomStartTime = 0, settledTime = 0;
     let phase: 'spinning' | 'landing' | 'zooming' | 'settled' = 'spinning';
     let land110: any = null, land50: any = null;
-    let lakes: any = null;
+    let lakes: any = null, rivers: any = null;
     let admin1: any = null;
     let countries: {borders: any; countryFeatures: any[]} | null = null;
     let dotCoords: [number, number] | null = null;
@@ -677,7 +758,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       }
 
       const activeLand = (phase === 'zooming' || phase === 'settled') ? (land50 ?? land110) : land110;
-      drawGlobe(ctx, activeLand, lakes, admin1, countries, lambdaC, phiC, currentScale,
+      drawGlobe(ctx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
                 baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha);
       rafId = requestAnimationFrame(frame);
     }
@@ -687,14 +768,16 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       loadLandFeature('110m'),
       loadLandFeature('50m'),
       loadLakesData(),
+      loadRiversData(),
       loadAdmin1Data(),
       loadCountriesData(),
       geocode(formattedLocation),
-    ]).then(([f110, f50, lakesData, adm1, ctryData, geoResult]) => {
+    ]).then(([f110, f50, lakesData, riversData, adm1, ctryData, geoResult]) => {
       if (!alive) return;
       land110   = f110;
       land50    = f50;
       lakes     = lakesData;
+      rivers    = riversData;
       admin1    = adm1;
       countries = ctryData;
       if (geoResult) {
