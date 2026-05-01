@@ -10,6 +10,7 @@ const ZOOM_DURATION_MS = 2200;
 const ZOOM_STEP = Math.SQRT2;    // scale multiplier per +/- click (~9 clicks full range)
 const BTN_ZOOM_MS = 220;         // duration of button-triggered zoom animation
 const OCEAN = '#0a1628';
+const LAKE  = '#0e2244';   // interior water — distinct from ocean but same family
 const LAND = '#1a3a2a';
 const LAND_STROKE = '#2d6a44';
 const SPIN_SPEED_DEG_PER_MS = 0.09;
@@ -159,10 +160,12 @@ let cached110m:    any | null = null;
 let cached50m:     any | null = null;
 let cachedCountries: {borders: any; countryFeatures: any[]} | null = null;
 let cachedAdmin1: any | null = null;
+let cachedLakes:  any | null = null;
 let load110mPromise:     Promise<any | null>  | null = null;
 let load50mPromise:      Promise<any | null>  | null = null;
 let loadCountriesPromise: Promise<{borders: any; countryFeatures: any[]} | null> | null = null;
 let loadAdmin1Promise: Promise<any | null> | null = null;
+let loadLakesPromise:  Promise<any | null> | null = null;
 
 const graticule = geoGraticule().step([30, 30])();
 
@@ -211,6 +214,16 @@ async function loadCountriesData(): Promise<typeof cachedCountries> {
   return loadCountriesPromise;
 }
 
+async function loadLakesData(): Promise<any | null> {
+  if (cachedLakes) return cachedLakes;
+  if (loadLakesPromise) return loadLakesPromise;
+  loadLakesPromise = fetch('/lakes-10m.geojson')
+    .then(r => r.json())
+    .then(geojson => { cachedLakes = geojson; return geojson; })
+    .catch(err => { console.error('[LocationGlobe] lakes load failed:', err); loadLakesPromise = null; return null; });
+  return loadLakesPromise;
+}
+
 async function loadAdmin1Data(): Promise<any | null> {
   if (cachedAdmin1) return cachedAdmin1;
   if (loadAdmin1Promise) return loadAdmin1Promise;
@@ -242,6 +255,7 @@ function easeOut(t:   number) { return 1 - Math.pow(1 - t, 3); }
 function drawGlobe(
   ctx: CanvasRenderingContext2D,
   landFeature:      any | null,
+  lakesFeature:     any | null,
   admin1Feature:    any | null,
   countriesData:    {borders: any; countryFeatures: any[]} | null,
   lambdaC:          number,
@@ -296,6 +310,17 @@ function drawGlobe(
     ctx.fill();
     ctx.strokeStyle = LAND_STROKE;
     ctx.lineWidth = 0.6;
+    ctx.stroke();
+  }
+
+  // Lakes — drawn over land so they punch through as water
+  if (lakesFeature) {
+    ctx.beginPath();
+    path(lakesFeature as any);
+    ctx.fillStyle = LAKE;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(14,34,68,0.6)';
+    ctx.lineWidth = 0.5;
     ctx.stroke();
   }
 
@@ -502,6 +527,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let zoomStartTime = 0, settledTime = 0;
     let phase: 'spinning' | 'landing' | 'zooming' | 'settled' = 'spinning';
     let land110: any = null, land50: any = null;
+    let lakes: any = null;
     let admin1: any = null;
     let countries: {borders: any; countryFeatures: any[]} | null = null;
     let dotCoords: [number, number] | null = null;
@@ -651,7 +677,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       }
 
       const activeLand = (phase === 'zooming' || phase === 'settled') ? (land50 ?? land110) : land110;
-      drawGlobe(ctx, activeLand, admin1, countries, lambdaC, phiC, currentScale,
+      drawGlobe(ctx, activeLand, lakes, admin1, countries, lambdaC, phiC, currentScale,
                 baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha);
       rafId = requestAnimationFrame(frame);
     }
@@ -660,13 +686,15 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     Promise.all([
       loadLandFeature('110m'),
       loadLandFeature('50m'),
+      loadLakesData(),
       loadAdmin1Data(),
       loadCountriesData(),
       geocode(formattedLocation),
-    ]).then(([f110, f50, adm1, ctryData, geoResult]) => {
+    ]).then(([f110, f50, lakesData, adm1, ctryData, geoResult]) => {
       if (!alive) return;
       land110   = f110;
       land50    = f50;
+      lakes     = lakesData;
       admin1    = adm1;
       countries = ctryData;
       if (geoResult) {
