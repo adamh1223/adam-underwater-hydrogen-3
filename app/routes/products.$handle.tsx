@@ -2845,6 +2845,9 @@ export default function Product() {
               </div>
             </div>
           )}
+          {!isVideo && formattedLocation && (
+            <LocationGlobe formattedLocation={formattedLocation} />
+          )}
           {!isVideo && (
             <>
               <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 lg:mt-6 extra-info">
@@ -3090,19 +3093,19 @@ export default function Product() {
           )}
           {isVideo && (activeVideoSwipeComparison || formattedLocation) && (
             <div className="video-comparison-stack flex flex-col">
-              {activeVideoSwipeComparison && (
+              {formattedLocation && (
                 <div className="order-1">
+                  <LocationGlobe formattedLocation={formattedLocation} />
+                </div>
+              )}
+              {activeVideoSwipeComparison && (
+                <div className="order-2">
                   <VideoResolutionSwipeSection
                     vidKey={activeVideoSwipeComparison.vidKey}
                     higherResolutionLabel={
                       activeVideoSwipeComparison.higherResolutionLabel
                     }
                   />
-                </div>
-              )}
-              {formattedLocation && (
-                <div className="order-2">
-                  <LocationGlobe formattedLocation={formattedLocation} />
                 </div>
               )}
             </div>

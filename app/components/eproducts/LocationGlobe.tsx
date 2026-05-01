@@ -583,17 +583,15 @@ function drawGlobe(
     ctx.restore();
   }
 
-  // ── Water labels: lakes + rivers (italic, light blue) ─────────────────────
-  if (zp > 0.04) {
-    const waterA = Math.min(1, (zp - 0.04) / 0.08);
+  // ── Lake labels — higher threshold so they disappear earlier when zooming out
+  if (zp > 0.12) {
+    const lakeA = Math.min(1, (zp - 0.12) / 0.08);
     ctx.save();
     ctx.font = `italic 10px system-ui,sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const labelColor = `hsla(210,75%,78%,${waterA.toFixed(3)})`;
-    const shadowColor = `rgba(0,0,0,${(0.5 * waterA).toFixed(3)})`;
-
-    // Lake labels
+    const labelColor = `hsla(210,75%,78%,${lakeA.toFixed(3)})`;
+    const shadowColor = `rgba(0,0,0,${(0.5 * lakeA).toFixed(3)})`;
     const lakeFts: any[] = lakesFeature?.features ?? [];
     for (const feat of lakeFts) {
       const name: string = feat?.properties?.name ?? '';
@@ -610,7 +608,6 @@ function drawGlobe(
         ctx.fillText(name, pt[0], pt[1]);
       } catch { /* skip */ }
     }
-
     ctx.restore();
   }
 
