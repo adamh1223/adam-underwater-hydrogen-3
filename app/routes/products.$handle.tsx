@@ -3088,16 +3088,24 @@ export default function Product() {
               </div>
             </section>
           )}
-          {isVideo && formattedLocation && (
-            <LocationGlobe formattedLocation={formattedLocation} />
-          )}
-          {isVideo && activeVideoSwipeComparison && (
-            <VideoResolutionSwipeSection
-              vidKey={activeVideoSwipeComparison.vidKey}
-              higherResolutionLabel={
-                activeVideoSwipeComparison.higherResolutionLabel
-              }
-            />
+          {isVideo && (activeVideoSwipeComparison || formattedLocation) && (
+            <div className="video-comparison-stack flex flex-col">
+              {activeVideoSwipeComparison && (
+                <div className="order-1">
+                  <VideoResolutionSwipeSection
+                    vidKey={activeVideoSwipeComparison.vidKey}
+                    higherResolutionLabel={
+                      activeVideoSwipeComparison.higherResolutionLabel
+                    }
+                  />
+                </div>
+              )}
+              {formattedLocation && (
+                <div className="order-2">
+                  <LocationGlobe formattedLocation={formattedLocation} />
+                </div>
+              )}
+            </div>
           )}
           <section className="you-may-also-like mt-3">
             {/* section title */}

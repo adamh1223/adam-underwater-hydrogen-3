@@ -20,9 +20,11 @@ const DECEL_MS = 1800;
 const QUICK_LAND_MS = 500;
 const PULSE_PERIOD_MS = 2000;
 const STARFIELD_SEED = 412877;
-const STAR_COUNT = 3200;
+const STAR_COUNT = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4 ? 400 : 800;
 const STAR_FOV_DEG = 105;
 const STAR_CAMERA_ORBIT_RADIUS = 0.6;
+const SETTLED_IDLE_FPS = 10;
+const MAX_CANVAS_DPR = 1.25;
 
 // ── Static datasets ───────────────────────────────────────────────────────────
 
@@ -280,6 +282,28 @@ async function geocode(location: string): Promise<[number, number] | null> {
 function easeInOut(t: number) { return 0.5 - 0.5 * Math.cos(t * Math.PI); }
 function easeOut(t:   number) { return 1 - Math.pow(1 - t, 3); }
 
+// geoCentroid is expensive (traverses all coordinates). Cache by feature object reference.
+const geoCentroidCache = new WeakMap<object, [number, number]>();
+function cachedCentroid(feat: any): [number, number] {
+  let c = geoCentroidCache.get(feat);
+  if (!c) {
+    c = geoCentroid(feat as any) as [number, number];
+    geoCentroidCache.set(feat, c);
+  }
+  return c;
+}
+
+// Pre-group river features by rank so drawGlobe makes 3 batched path calls, not 462.
+function preprocessRivers(gj: any): any {
+  if (!gj?.features || gj._preprocessed) return gj;
+  const feats: any[] = gj.features;
+  gj._major  = {type: 'FeatureCollection', features: feats.filter((f: any) => (f?.properties?.rank ?? 9) <= 3)};
+  gj._medium = {type: 'FeatureCollection', features: feats.filter((f: any) => { const r = f?.properties?.rank ?? 9; return r > 3 && r <= 5; })};
+  gj._minor  = {type: 'FeatureCollection', features: feats.filter((f: any) => (f?.properties?.rank ?? 9) > 5)};
+  gj._preprocessed = true;
+  return gj;
+}
+
 function createSeededRandom(seed: number) {
   let s = seed >>> 0;
   return () => {
@@ -399,27 +423,28 @@ function drawStarfield(
     const y = cy - (view.y / view.z) * focal;
     if (x < -24 || x > vw + 24 || y < -24 || y > vh + 24) continue;
 
-    const depthT = Math.max(0, Math.min(1, (star.distance - 2.3) / 31.2));
     const twinkle = 0.72 + 0.28 * Math.sin(nowMs * star.twinkleSpeed + star.twinklePhase);
-    const coreR = star.radius * (star.layer === 3 ? 1.2 : star.layer === 2 ? 1.08 : 0.95);
-    const haloR = coreR + (star.layer === 3 ? 1.25 : star.layer === 2 ? 0.92 : 0.65) * twinkle;
-    const halo = ctx.createRadialGradient(x, y, 0, x, y, haloR);
-    halo.addColorStop(0, `rgba(255, 255, 255, ${(star.alpha * 0.45 * twinkle).toFixed(3)})`);
-    halo.addColorStop(0.45, `rgba(245, 248, 255, ${(star.alpha * (0.045 + (1 - depthT) * 0.045) * twinkle).toFixed(3)})`);
-    halo.addColorStop(1, 'rgba(245, 248, 255, 0)');
-    ctx.beginPath();
-    ctx.arc(x, y, haloR, 0, 2 * Math.PI);
-    ctx.fillStyle = halo;
-    ctx.fill();
+    const pointSize = star.layer === 3 ? 1.4 : star.layer === 2 ? 1.05 : 0.75;
+    const alpha = Math.max(0.06, star.alpha * twinkle);
+    const half = pointSize * 0.5;
 
-    ctx.beginPath();
-    ctx.arc(x, y, Math.max(0.24, coreR * 0.65), 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(255, 255, 255, ${(star.alpha * 0.95 * twinkle).toFixed(3)})`;
-    ctx.fill();
+    ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
+    ctx.fillRect(x - half, y - half, pointSize, pointSize);
+
+    // Minimal soft bloom for the nearest stars only (kept lightweight).
+    if (star.layer === 3) {
+      const bloomAlpha = alpha * 0.22;
+      ctx.fillStyle = `rgba(235,245,255,${bloomAlpha.toFixed(3)})`;
+      ctx.fillRect(x - half - 1, y - half - 1, pointSize + 2, pointSize + 2);
+    }
   }
 }
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
+
+// Reuse a single projection instance — updating it is far cheaper than
+// allocating a new geoOrthographic() every frame.
+const sharedProjection = geoOrthographic().clipAngle(90);
 
 function drawGlobe(
   ctx: CanvasRenderingContext2D,
@@ -443,18 +468,20 @@ function drawGlobe(
   const cy = vh / 2;
   const zp = Math.max(0, Math.min((currentScale - baseScale) / (maxScale - baseScale), 1));
 
-  const projection = geoOrthographic()
+  const pathPrecision = zp < 0.1 ? 3 : zp < 0.4 ? 1 : 0.5;
+  const projection = sharedProjection
     .translate([cx, cy])
     .scale(currentScale)
     .rotate([-(lambdaC / DEG), -(phiC / DEG)])
-    .clipAngle(90)
-    .precision(0.5);
+    .precision(pathPrecision);
   const path = geoPath(projection, ctx);
 
   ctx.clearRect(0, 0, vw, vh);
 
-  // Panoramic space background behind the globe.
-  drawStarfield(ctx, vw, vh, lambdaC, phiC, nowMs);
+  // Stars only visible when globe is smaller than the canvas; skip when zoomed in.
+  if (zp < 0.25) {
+    drawStarfield(ctx, vw, vh, lambdaC, phiC, nowMs);
+  }
 
   // Ocean
   const gr = currentScale;
@@ -498,29 +525,29 @@ function drawGlobe(
     ctx.stroke();
   }
 
-  // Rivers — only appear as zoom increases; line width and opacity scale with zp
-  if (riversFeature && zp > 0.1) {
-    const riverFeats: any[] = riversFeature.features ?? [];
-    // zp 0→1: rivers fade in and thicken proportionally
-    const zpRiver = Math.max(0, (zp - 0.1) / 0.9); // 0 at globe, 1 at full zoom
-    for (const feat of riverFeats) {
-      const rank: number = feat?.properties?.rank ?? 9;
-      // Minor rivers only show when well zoomed in
-      if (rank > 5 && zpRiver < 0.5) continue;
-      if (rank > 3 && zpRiver < 0.2) continue;
-      ctx.beginPath();
-      path(feat as any);
-      const baseOpacity = rank <= 3 ? 0.9  : rank <= 5 ? 0.75 : 0.6;
-      const baseWidth   = rank <= 3 ? 1.6  : rank <= 5 ? 1.1  : 0.7;
-      ctx.strokeStyle = `rgba(14,34,68,${(baseOpacity * zpRiver).toFixed(3)})`;
-      ctx.lineWidth   = baseWidth * zpRiver;
-      ctx.stroke();
+  // Rivers — 3 batched path calls instead of one per feature
+  if (riversFeature && zp > 0.02) {
+    const zpRiver = Math.max(0, (zp - 0.02) / 0.98);
+    if (zpRiver > 0.2 && riversFeature._major) {
+      ctx.beginPath(); path(riversFeature._major as any);
+      ctx.strokeStyle = `rgba(14,34,68,${(0.9 * zpRiver).toFixed(3)})`;
+      ctx.lineWidth = 1.6 * zpRiver; ctx.stroke();
+    }
+    if (zpRiver > 0.3 && riversFeature._medium) {
+      ctx.beginPath(); path(riversFeature._medium as any);
+      ctx.strokeStyle = `rgba(14,34,68,${(0.75 * zpRiver).toFixed(3)})`;
+      ctx.lineWidth = 1.1 * zpRiver; ctx.stroke();
+    }
+    if (zpRiver > 0.6 && riversFeature._minor) {
+      ctx.beginPath(); path(riversFeature._minor as any);
+      ctx.strokeStyle = `rgba(14,34,68,${(0.6 * zpRiver).toFixed(3)})`;
+      ctx.lineWidth = 0.7 * zpRiver; ctx.stroke();
     }
   }
 
   // ── Zoomed layers: state borders, country borders, labels, cities ──────────
-  if (zp > 0.15 && admin1Feature) {
-    const layerAlpha = Math.min(1, (zp - 0.15) / 0.4);
+  if (zp > 0.03 && admin1Feature) {
+    const layerAlpha = Math.min(1, (zp - 0.03) / 0.08);
 
     // State / province borders
     ctx.beginPath();
@@ -540,7 +567,8 @@ function drawGlobe(
       const abbrev: string = feat?.properties?.postal ?? '';
       if (!abbrev) continue;
       try {
-        const centroid = geoCentroid(feat as any);
+        const centroid = cachedCentroid(feat);
+        if (!isPointVisibleOnFrontHemisphere(lambdaC, phiC, centroid[0], centroid[1])) continue;
         const pt = projection(centroid);
         if (!pt) continue;
         if (pt[0] < 0 || pt[0] > vw || pt[1] < 0 || pt[1] > vh) continue;
@@ -556,8 +584,8 @@ function drawGlobe(
   }
 
   // ── Water labels: lakes + rivers (italic, light blue) ─────────────────────
-  if (zp > 0.2) {
-    const waterA = Math.min(1, (zp - 0.2) / 0.5);
+  if (zp > 0.04) {
+    const waterA = Math.min(1, (zp - 0.04) / 0.08);
     ctx.save();
     ctx.font = `italic 10px system-ui,sans-serif`;
     ctx.textAlign = 'center';
@@ -571,7 +599,8 @@ function drawGlobe(
       const name: string = feat?.properties?.name ?? '';
       if (!name) continue;
       try {
-        const centroid = geoCentroid(feat as any);
+        const centroid = cachedCentroid(feat);
+        if (!isPointVisibleOnFrontHemisphere(lambdaC, phiC, centroid[0], centroid[1])) continue;
         const pt = projection(centroid);
         if (!pt) continue;
         if (pt[0] < 0 || pt[0] > vw || pt[1] < 0 || pt[1] > vh) continue;
@@ -582,29 +611,11 @@ function drawGlobe(
       } catch { /* skip */ }
     }
 
-    // River labels — only rank ≤ 5 (major rivers), label at geometric centroid
-    ctx.font = `italic 9px system-ui,sans-serif`;
-    const riverFts: any[] = riversFeature?.features ?? [];
-    for (const feat of riverFts) {
-      const name: string = feat?.properties?.name ?? '';
-      const rank: number = feat?.properties?.rank ?? 9;
-      if (!name || rank > 5) continue;
-      try {
-        const centroid = geoCentroid(feat as any);
-        const pt = projection(centroid);
-        if (!pt) continue;
-        if (pt[0] < 0 || pt[0] > vw || pt[1] < 0 || pt[1] > vh) continue;
-        ctx.fillStyle = shadowColor;
-        ctx.fillText(name, pt[0] + 1, pt[1] + 1);
-        ctx.fillStyle = labelColor;
-        ctx.fillText(name, pt[0], pt[1]);
-      } catch { /* skip */ }
-    }
     ctx.restore();
   }
 
-  if (zp > 0.15 && countriesData) {
-    const layerAlpha = Math.min(1, (zp - 0.15) / 0.4); // fade in
+  if (zp > 0.03 && countriesData) {
+    const layerAlpha = Math.min(1, (zp - 0.03) / 0.08); // fade in
 
     // Country borders (brighter / thicker than state lines)
     ctx.beginPath();
@@ -622,7 +633,8 @@ function drawGlobe(
       const name = COUNTRY_NAMES[String(feat.id)] ?? null;
       if (!name) continue;
       try {
-        const centroid = geoCentroid(feat as any);
+        const centroid = cachedCentroid(feat);
+        if (!isPointVisibleOnFrontHemisphere(lambdaC, phiC, centroid[0], centroid[1])) continue;
         const pt = projection(centroid);
         if (!pt) continue;
         if (pt[0] < -40 || pt[0] > vw + 40 || pt[1] < -40 || pt[1] > vh + 40) continue;
@@ -643,6 +655,7 @@ function drawGlobe(
       if (tier === 3 && zp < 0.6) continue;
       if (tier === 2 && zp < 0.4) continue;
 
+      if (!isPointVisibleOnFrontHemisphere(lambdaC, phiC, lon, lat)) continue;
       const pt = projection([lon, lat]);
       if (!pt) continue;
       if (pt[0] < -20 || pt[0] > vw + 20 || pt[1] < -20 || pt[1] > vh + 20) continue;
@@ -755,12 +768,21 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     const ctx: CanvasRenderingContext2D = ctxOrNull;
 
     let rafId = 0, alive = true;
+    let globeInView = false;
+    let lastDrawTime = 0;
+
+    // Offscreen cache: when settled+idle and the view hasn't changed, blit this
+    // instead of re-running the full d3-geo render. Only the pulsing dot redraws.
+    const offscreen = document.createElement('canvas');
+    let offCtx: CanvasRenderingContext2D | null = null;
+    let cacheKey = '';       // encodes lambdaC/phiC/scale/vw/vh/dataVersion
+    let dataVersion = 0;     // bumped when geodata loads
     let vw = 0, vh = 0, baseRadius = 1, zoomRadius = 1;
 
     function syncSize() {
       vw = Math.max(1, Math.round(viewport.clientWidth));
       vh = Math.max(1, Math.round(viewport.clientHeight));
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_CANVAS_DPR);
       baseRadius = Math.max(1, Math.min(vw, vh) * BASE_RADIUS_FACTOR);
       zoomRadius = baseRadius * TARGET_ZOOM_FACTOR;
       canvas.width  = Math.round(vw * dpr);
@@ -768,10 +790,31 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       canvas.style.width  = `${vw}px`;
       canvas.style.height = `${vh}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      offscreen.width  = canvas.width;
+      offscreen.height = canvas.height;
+      offCtx = offscreen.getContext('2d', {alpha: false});
+      if (offCtx) offCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cacheKey = ''; // invalidate after resize
     }
     syncSize();
     const ro = new ResizeObserver(syncSize);
     ro.observe(viewport);
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries[0]?.isIntersecting ?? true;
+      if (visible === globeInView) return;
+      globeInView = visible;
+      if (visible) {
+        // Back in view — resume RAF if animation was started
+        if (alive && animationStarted && rafId === 0) {
+          rafId = requestAnimationFrame(frame);
+        }
+      } else {
+        // Scrolled away — cancel RAF entirely (saves CPU/GPU on mobile)
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    }, {threshold: 0.01});
+    io.observe(viewport);
 
     let lambdaC = 0, phiC = 0;
     let targetLambdaC = 0, targetPhiC = 0;
@@ -903,6 +946,17 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     // ── Frame loop ─────────────────────────────────────────────────────────────
     function frame(now: number) {
       if (!alive) return;
+
+      // FPS cap: 24fps during animation, 60fps while interacting, SETTLED_IDLE_FPS idle
+      const isInteracting = dragging || pinching;
+      const targetFps =
+        phase !== 'settled' ? 24 :
+        isInteracting       ? 60 :
+                              SETTLED_IDLE_FPS;
+      if (now - lastDrawTime < 1000 / targetFps) {
+        rafId = requestAnimationFrame(frame);
+        return;
+      }
       const elapsed = now - startTime;
 
       if (phase === 'spinning') {
@@ -958,8 +1012,54 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       }
 
       const activeLand = (phase === 'zooming' || phase === 'settled') ? (land50 ?? land110) : land110;
-      drawGlobe(ctx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
-                baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now);
+      lastDrawTime = now;
+
+      // Offscreen cache: during settled idle the view is static — only the dot
+      // alpha changes. Blit the cached static frame and redraw just the dot.
+      const thisKey = `${lambdaC.toFixed(4)},${phiC.toFixed(4)},${Math.round(currentScale)},${vw},${vh},${dataVersion}`;
+      const useCache = phase === 'settled' && !dragging && !pinching && thisKey === cacheKey && offCtx;
+
+      if (useCache) {
+        // The offscreen canvas has raw pixel dimensions canvas.width × canvas.height.
+        // ctx has a DPR transform active. Blitting with that transform would scale
+        // the image by dpr², showing only a zoomed-in corner. Reset to identity first.
+        const dpr = Math.min(window.devicePixelRatio || 1, MAX_CANVAS_DPR);
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.drawImage(offscreen, 0, 0);  // 1:1 raw-pixel blit
+        ctx.restore();                    // back to DPR transform for the dot
+
+        if (dotCoords && dotAlpha > 0 && isPointVisibleOnFrontHemisphere(lambdaC, phiC, dotCoords[1], dotCoords[0])) {
+          const cx = vw / 2, cy = vh / 2;
+          sharedProjection.translate([cx, cy]).scale(currentScale).rotate([-(lambdaC / DEG), -(phiC / DEG)]);
+          const pt = sharedProjection([dotCoords[1], dotCoords[0]]);
+          if (pt) {
+            ctx.save();
+            ctx.beginPath(); ctx.arc(cx, cy, currentScale, 0, 2 * Math.PI); ctx.clip();
+            const a = dotAlpha;
+            const glow = ctx.createRadialGradient(pt[0], pt[1], 0, pt[0], pt[1], 18);
+            glow.addColorStop(0, `hsla(198.6,88.7%,48.4%,${(0.55 * a).toFixed(3)})`);
+            glow.addColorStop(1, 'hsla(198.6,88.7%,48.4%,0)');
+            ctx.beginPath(); ctx.arc(pt[0], pt[1], 18, 0, 2 * Math.PI); ctx.fillStyle = glow; ctx.fill();
+            ctx.beginPath(); ctx.arc(pt[0], pt[1], 5, 0, 2 * Math.PI);
+            ctx.fillStyle = `hsla(198.6,88.7%,48.4%,${a.toFixed(3)})`; ctx.fill();
+            ctx.beginPath(); ctx.arc(pt[0], pt[1], 2.5, 0, 2 * Math.PI);
+            ctx.fillStyle = `hsla(198.6,88.7%,75%,${a.toFixed(3)})`; ctx.fill();
+            ctx.restore();
+            void dpr;
+          }
+        }
+      } else {
+        // Full render path
+        drawGlobe(ctx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
+                  baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now);
+        // Save static frame to offscreen (without dot, so we can overdraw it)
+        if (phase === 'settled' && !dragging && !pinching && offCtx) {
+          drawGlobe(offCtx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
+                    baseRadius, zoomRadius, vw, vh, null, 0, now);
+          cacheKey = thisKey;
+        }
+      }
       rafId = requestAnimationFrame(frame);
     }
     drawGlobe(
@@ -993,9 +1093,10 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       land110   = f110;
       land50    = f50;
       lakes     = lakesData;
-      rivers    = riversData;
+      rivers    = preprocessRivers(riversData);
       admin1    = adm1;
       countries = ctryData;
+      dataVersion++;
     });
 
     geocode(formattedLocation).then((geoResult) => {
@@ -1017,7 +1118,11 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         lambdaC = spinStartLambda;
         phiC = 0;
         startTime = performance.now();
-        rafId = requestAnimationFrame(frame);
+        // Only start the RAF if the globe is already in view; the IO will start it
+        // when/if it scrolls into view later.
+        if (globeInView) {
+          rafId = requestAnimationFrame(frame);
+        }
       }
     });
 
@@ -1025,6 +1130,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       alive = false;
       cancelAnimationFrame(rafId);
       ro.disconnect();
+      io.disconnect();
       canvas.removeEventListener('pointerdown',  onPointerDown);
       canvas.removeEventListener('pointermove',  onPointerMove);
       canvas.removeEventListener('pointerup',    onPointerUp);
@@ -1046,13 +1152,23 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     color: 'rgba(255,255,255,0.85)',
     fontSize: 22, lineHeight: 1,
     cursor: 'pointer',
-    backdropFilter: 'blur(6px)',
     userSelect: 'none',
     WebkitUserSelect: 'none',
   };
 
   return (
-    <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen py-8">
+    // contain:strict isolates paints so canvas redraws never cause outside repaints
+    <section
+      className="relative left-1/2 right-1/2 -mx-[50vw] w-screen py-8"
+      style={{contain: 'layout style paint'}}
+    >
+      {/* box-shadow instead of filter:drop-shadow — box-shadow is GPU-composited
+          and never triggers a software-raster pass that slows the whole page */}
+      <div style={{
+        boxShadow: '0 0 40px rgba(14,165,233,0.18)',
+        borderRadius: 4,
+        overflow: 'hidden',
+      }}>
       <div
         ref={viewportRef}
         style={{
@@ -1060,10 +1176,13 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
           height: GLOBE_SECTION_HEIGHT,
           position: 'relative',
           overflow: 'hidden',
-          filter: 'drop-shadow(0 0 32px rgba(14,165,233,0.2))',
         }}
       >
-        <canvas ref={canvasRef} style={{display: 'block', width: '100%', height: '100%'}} />
+        {/* translateZ(0) promotes canvas to its own GPU compositing layer */}
+        <canvas
+          ref={canvasRef}
+          style={{display: 'block', width: '100%', height: '100%', transform: 'translateZ(0)'}}
+        />
 
         {/* +/- zoom buttons — visible once animation settles */}
         {isSettled && (
@@ -1089,6 +1208,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
           </div>
         )}
       </div>
+      </div>{/* end box-shadow wrapper */}
       <p className="mt-3 text-center text-sm text-muted-foreground tracking-wider uppercase">
         {formattedLocation}
       </p>
