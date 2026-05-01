@@ -43,7 +43,6 @@ export default async function handleRequest(
       'https://cdn.shopify.com',
       r2PublicOrigin,
       'https://nominatim.openstreetmap.org',
-      'https://tiles.openfreemap.org',
     ],
     styleSrc: [
       "'self'",
@@ -57,7 +56,6 @@ export default async function handleRequest(
       'data:',
       'blob:',
       'https://cdn.shopify.com',
-      'https://tiles.openfreemap.org',
       ...additionalMediaOrigins,
     ],
     fontSrc: [
@@ -88,8 +86,7 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
-  // Append worker-src for MapLibre GL's WebGL worker (blob: URL)
-  responseHeaders.set('Content-Security-Policy', `${header} worker-src 'self' blob:;`);
+  responseHeaders.set('Content-Security-Policy', header);
 
   return new Response(body, {
     headers: responseHeaders,
