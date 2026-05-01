@@ -5,7 +5,7 @@ import {feature, mesh} from 'topojson-client';
 const DEG = Math.PI / 180;
 const GLOBE_SECTION_HEIGHT = 360;
 const BASE_RADIUS_FACTOR = 0.37;
-const TARGET_ZOOM_FACTOR = 60;   // final animation zoom (more detail)
+const TARGET_ZOOM_FACTOR = 80;   // final animation zoom (more detail)
 const ZOOM_DURATION_MS = 2200;
 const ZOOM_STEP = Math.SQRT2;    // scale multiplier per +/- click (~9 clicks full range)
 const BTN_ZOOM_MS = 220;         // duration of button-triggered zoom animation
