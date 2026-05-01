@@ -18,6 +18,10 @@ const LAND_IN_MS = 3200;
 const DECEL_MS = 1800;
 const QUICK_LAND_MS = 500;
 const PULSE_PERIOD_MS = 2000;
+const STARFIELD_SEED = 412877;
+const STAR_COUNT = 1800;
+const STAR_FOV_DEG = 105;
+const STAR_CAMERA_ORBIT_RADIUS = 0.6;
 
 // ── Static datasets ───────────────────────────────────────────────────────────
 
@@ -162,6 +166,7 @@ let cachedCountries: {borders: any; countryFeatures: any[]} | null = null;
 let cachedAdmin1: any | null = null;
 let cachedLakes:  any | null = null;
 let cachedRivers: any | null = null;
+let cachedStars: StarParticle[] | null = null;
 let load110mPromise:     Promise<any | null>  | null = null;
 let load50mPromise:      Promise<any | null>  | null = null;
 let loadCountriesPromise: Promise<{borders: any; countryFeatures: any[]} | null> | null = null;
@@ -170,6 +175,18 @@ let loadLakesPromise:   Promise<any | null> | null = null;
 let loadRiversPromise:  Promise<any | null> | null = null;
 
 const graticule = geoGraticule().step([30, 30])();
+
+type StarParticle = {
+  x: number;
+  y: number;
+  z: number;
+  distance: number;
+  radius: number;
+  alpha: number;
+  layer: 1 | 2 | 3;
+  twinkleSpeed: number;
+  twinklePhase: number;
+};
 
 async function loadLandFeature(res: '110m' | '50m'): Promise<any | null> {
   if (res === '110m') {
@@ -262,6 +279,76 @@ async function geocode(location: string): Promise<[number, number] | null> {
 function easeInOut(t: number) { return 0.5 - 0.5 * Math.cos(t * Math.PI); }
 function easeOut(t:   number) { return 1 - Math.pow(1 - t, 3); }
 
+function createSeededRandom(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0x100000000;
+  };
+}
+
+function getStarfield(): StarParticle[] {
+  if (cachedStars) return cachedStars;
+  const rand = createSeededRandom(STARFIELD_SEED);
+  const stars: StarParticle[] = [];
+  for (let i = 0; i < STAR_COUNT; i += 1) {
+    const depthBucket = rand();
+    const layer: 1 | 2 | 3 = depthBucket < 0.12 ? 3 : depthBucket < 0.55 ? 2 : 1;
+    const distance =
+      layer === 3
+        ? 2.3 + rand() * 2.5
+        : layer === 2
+          ? 4.8 + rand() * 6.5
+          : 11.5 + rand() * 22;
+    const radius = layer === 1 ? 0.45 + rand() * 0.35 : layer === 2 ? 0.65 + rand() * 0.55 : 0.95 + rand() * 0.95;
+    const alpha = layer === 1 ? 0.14 + rand() * 0.22 : layer === 2 ? 0.28 + rand() * 0.34 : 0.45 + rand() * 0.45;
+    // Uniform point on unit sphere, used as celestial directions.
+    const lat = Math.asin(rand() * 2 - 1);
+    const lon = rand() * 2 * Math.PI - Math.PI;
+    const cosLat = Math.cos(lat);
+    const dirX = cosLat * Math.sin(lon);
+    const dirY = Math.sin(lat);
+    const dirZ = cosLat * Math.cos(lon);
+    stars.push({
+      x: dirX * distance,
+      y: dirY * distance,
+      z: dirZ * distance,
+      distance,
+      radius,
+      alpha: Math.min(alpha, 0.95),
+      layer,
+      twinkleSpeed: 0.00035 + rand() * 0.00095,
+      twinklePhase: rand() * 2 * Math.PI,
+    });
+  }
+  cachedStars = stars;
+  return stars;
+}
+
+function rotatePointToView(
+  x: number,
+  y: number,
+  z: number,
+  lambdaC: number,
+  phiC: number,
+) {
+  // Match globe interaction orientation: yaw by lambda, pitch by phi.
+  const yaw = -lambdaC;
+  const pitch = -phiC;
+
+  const cosYaw = Math.cos(yaw);
+  const sinYaw = Math.sin(yaw);
+  const x1 = x * cosYaw - z * sinYaw;
+  const z1 = x * sinYaw + z * cosYaw;
+
+  const cosPitch = Math.cos(pitch);
+  const sinPitch = Math.sin(pitch);
+  const y2 = y * cosPitch - z1 * sinPitch;
+  const z2 = y * sinPitch + z1 * cosPitch;
+
+  return {x: x1, y: y2, z: z2};
+}
+
 function isPointVisibleOnFrontHemisphere(
   centerLonRad: number,
   centerLatRad: number,
@@ -275,6 +362,60 @@ function isPointVisibleOnFrontHemisphere(
     Math.sin(centerLatRad) * Math.sin(pointLatRad) +
     Math.cos(centerLatRad) * Math.cos(pointLatRad) * Math.cos(pointLonRad - centerLonRad);
   return cosAngularDistance > 0.0001;
+}
+
+function drawStarfield(
+  ctx: CanvasRenderingContext2D,
+  vw: number,
+  vh: number,
+  lambdaC: number,
+  phiC: number,
+  nowMs: number,
+) {
+  const cx = vw / 2;
+  const cy = vh / 2;
+  const fov = STAR_FOV_DEG * DEG;
+  const focal = (vw * 0.5) / Math.tan(fov / 2);
+
+  const spaceGradient = ctx.createLinearGradient(0, 0, 0, vh);
+  spaceGradient.addColorStop(0, '#030713');
+  spaceGradient.addColorStop(0.55, '#040b1d');
+  spaceGradient.addColorStop(1, '#020611');
+  ctx.fillStyle = spaceGradient;
+  ctx.fillRect(0, 0, vw, vh);
+
+  const stars = getStarfield();
+  const camX = Math.sin(lambdaC) * STAR_CAMERA_ORBIT_RADIUS;
+  const camY = Math.sin(phiC) * STAR_CAMERA_ORBIT_RADIUS * 0.8;
+  const camZ = Math.cos(lambdaC) * Math.cos(phiC) * STAR_CAMERA_ORBIT_RADIUS;
+
+  for (const star of stars) {
+    // Translate by a subtle orbiting camera to create depth parallax.
+    const relX = star.x - camX;
+    const relY = star.y - camY;
+    const relZ = star.z - camZ;
+    const view = rotatePointToView(relX, relY, relZ, lambdaC, phiC);
+    // Only render stars in front of the camera frustum.
+    if (view.z <= 0.02) continue;
+
+    const x = cx + (view.x / view.z) * focal;
+    const y = cy - (view.y / view.z) * focal;
+    if (x < -24 || x > vw + 24 || y < -24 || y > vh + 24) continue;
+
+    const depthT = Math.max(0, Math.min(1, (star.distance - 2.3) / 31.2));
+    const twinkle = 0.72 + 0.28 * Math.sin(nowMs * star.twinkleSpeed + star.twinklePhase);
+    const layerBoost = star.layer === 3 ? 1.35 : star.layer === 2 ? 1.12 : 0.92;
+    const glow = (star.layer === 3 ? 2.5 : star.layer === 2 ? 1.7 : 1.1) * twinkle;
+    ctx.beginPath();
+    ctx.arc(x, y, star.radius + glow, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(114, 184, 255, ${(star.alpha * (0.05 + (1 - depthT) * 0.08) * twinkle).toFixed(3)})`;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, star.radius * layerBoost, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(220, 238, 255, ${(star.alpha * twinkle).toFixed(3)})`;
+    ctx.fill();
+  }
 }
 
 // ── Renderer ──────────────────────────────────────────────────────────────────
@@ -295,6 +436,7 @@ function drawGlobe(
   vh:               number,
   dotCoords:        [number, number] | null,
   dotAlpha:         number,
+  nowMs:            number,
 ) {
   const cx = vw / 2;
   const cy = vh / 2;
@@ -309,6 +451,9 @@ function drawGlobe(
   const path = geoPath(projection, ctx);
 
   ctx.clearRect(0, 0, vw, vh);
+
+  // Panoramic space background behind the globe.
+  drawStarfield(ctx, vw, vh, lambdaC, phiC, nowMs);
 
   // Ocean
   const gr = currentScale;
@@ -778,7 +923,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
 
       const activeLand = (phase === 'zooming' || phase === 'settled') ? (land50 ?? land110) : land110;
       drawGlobe(ctx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
-                baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha);
+                baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now);
       rafId = requestAnimationFrame(frame);
     }
     rafId = requestAnimationFrame(frame);
