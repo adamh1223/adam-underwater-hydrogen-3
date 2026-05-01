@@ -300,8 +300,8 @@ function getStarfield(): StarParticle[] {
         : layer === 2
           ? 4.8 + rand() * 6.5
           : 11.5 + rand() * 22;
-    const radius = layer === 1 ? 0.45 + rand() * 0.35 : layer === 2 ? 0.65 + rand() * 0.55 : 0.95 + rand() * 0.95;
-    const alpha = layer === 1 ? 0.14 + rand() * 0.22 : layer === 2 ? 0.28 + rand() * 0.34 : 0.45 + rand() * 0.45;
+    const radius = layer === 1 ? 0.14 + rand() * 0.14 : layer === 2 ? 0.2 + rand() * 0.2 : 0.3 + rand() * 0.32;
+    const alpha = layer === 1 ? 0.12 + rand() * 0.18 : layer === 2 ? 0.2 + rand() * 0.28 : 0.34 + rand() * 0.34;
     // Uniform point on unit sphere, used as celestial directions.
     const lat = Math.asin(rand() * 2 - 1);
     const lon = rand() * 2 * Math.PI - Math.PI;
@@ -404,16 +404,20 @@ function drawStarfield(
 
     const depthT = Math.max(0, Math.min(1, (star.distance - 2.3) / 31.2));
     const twinkle = 0.72 + 0.28 * Math.sin(nowMs * star.twinkleSpeed + star.twinklePhase);
-    const layerBoost = star.layer === 3 ? 1.35 : star.layer === 2 ? 1.12 : 0.92;
-    const glow = (star.layer === 3 ? 2.5 : star.layer === 2 ? 1.7 : 1.1) * twinkle;
+    const coreR = star.radius * (star.layer === 3 ? 1.2 : star.layer === 2 ? 1.08 : 0.95);
+    const haloR = coreR + (star.layer === 3 ? 1.25 : star.layer === 2 ? 0.92 : 0.65) * twinkle;
+    const halo = ctx.createRadialGradient(x, y, 0, x, y, haloR);
+    halo.addColorStop(0, `rgba(220, 238, 255, ${(star.alpha * 0.5 * twinkle).toFixed(3)})`);
+    halo.addColorStop(0.45, `rgba(114, 184, 255, ${(star.alpha * (0.05 + (1 - depthT) * 0.06) * twinkle).toFixed(3)})`);
+    halo.addColorStop(1, 'rgba(114, 184, 255, 0)');
     ctx.beginPath();
-    ctx.arc(x, y, star.radius + glow, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(114, 184, 255, ${(star.alpha * (0.05 + (1 - depthT) * 0.08) * twinkle).toFixed(3)})`;
+    ctx.arc(x, y, haloR, 0, 2 * Math.PI);
+    ctx.fillStyle = halo;
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(x, y, star.radius * layerBoost, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(220, 238, 255, ${(star.alpha * twinkle).toFixed(3)})`;
+    ctx.arc(x, y, Math.max(0.24, coreR * 0.65), 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(235, 245, 255, ${(star.alpha * 0.95 * twinkle).toFixed(3)})`;
     ctx.fill();
   }
 }
@@ -767,7 +771,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let lambdaC = 0, phiC = 0;
     let targetLambdaC = 0, targetPhiC = 0;
     let currentScale = baseRadius;
-    let startTime = performance.now();
+    let startTime = 0;
     let landStartTime = 0, landingDurationMs = DECEL_MS;
     let zoomStartTime = 0, settledTime = 0;
     let phase: 'spinning' | 'landing' | 'zooming' | 'settled' = 'spinning';
@@ -777,7 +781,10 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let countries: {borders: any; countryFeatures: any[]} | null = null;
     let dotCoords: [number, number] | null = null;
     let geocoded = false;
+    let animationStarted = false;
     let landingStartLambda = 0, landingStartPhi = 0;
+    let spinStartLambda = 0;
+    const spinOmega = SPIN_SPEED_DEG_PER_MS * DEG;
 
     // ── Interactive zoom (button presses) ──────────────────────────────────────
     let btnZoomFrom = baseRadius, btnZoomTo = baseRadius, btnZoomStart = 0;
@@ -874,7 +881,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       const elapsed = now - startTime;
 
       if (phase === 'spinning') {
-        lambdaC = elapsed * SPIN_SPEED_DEG_PER_MS * DEG;
+        lambdaC = spinStartLambda + elapsed * spinOmega;
         currentScale = baseRadius;
         if (elapsed >= LAND_IN_MS) {
           phase = 'landing';
@@ -926,7 +933,24 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
                 baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now);
       rafId = requestAnimationFrame(frame);
     }
-    rafId = requestAnimationFrame(frame);
+    drawGlobe(
+      ctx,
+      land110,
+      lakes,
+      rivers,
+      admin1,
+      countries,
+      lambdaC,
+      phiC,
+      currentScale,
+      baseRadius,
+      zoomRadius,
+      vw,
+      vh,
+      dotCoords,
+      0,
+      performance.now(),
+    );
 
     Promise.all([
       loadLandFeature('110m'),
@@ -935,8 +959,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       loadRiversData(),
       loadAdmin1Data(),
       loadCountriesData(),
-      geocode(formattedLocation),
-    ]).then(([f110, f50, lakesData, riversData, adm1, ctryData, geoResult]) => {
+    ]).then(([f110, f50, lakesData, riversData, adm1, ctryData]) => {
       if (!alive) return;
       land110   = f110;
       land50    = f50;
@@ -944,19 +967,28 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       rivers    = riversData;
       admin1    = adm1;
       countries = ctryData;
+    });
+
+    geocode(formattedLocation).then((geoResult) => {
+      if (!alive) return;
       if (geoResult) {
         dotCoords     = geoResult;
         geocoded      = true;
         targetLambdaC = geoResult[1] * DEG;
         targetPhiC    = geoResult[0] * DEG;
-        if (phase === 'landing') {
-          landStartTime      = performance.now();
-          landingDurationMs  = DECEL_MS;
-          landingStartLambda = lambdaC;
-          landingStartPhi    = phiC;
-          const diff = ((targetLambdaC - lambdaC) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
-          targetLambdaC = lambdaC + diff;
+      }
+      // Start only after geocode resolves so the spin is pre-aligned and never zips abruptly.
+      if (!animationStarted) {
+        animationStarted = true;
+        if (geocoded) {
+          spinStartLambda = targetLambdaC - spinOmega * LAND_IN_MS;
+        } else {
+          spinStartLambda = 0;
         }
+        lambdaC = spinStartLambda;
+        phiC = 0;
+        startTime = performance.now();
+        rafId = requestAnimationFrame(frame);
       }
     });
 
