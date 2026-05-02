@@ -820,25 +820,52 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let vw = 0, vh = 0, baseRadius = 1, zoomRadius = 1;
 
     function syncSize() {
-      vw = Math.max(1, Math.round(viewport.clientWidth));
-      vh = Math.max(1, Math.round(viewport.clientHeight));
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_CANVAS_DPR);
+      const newVw = Math.max(1, Math.round(viewport.clientWidth));
+      const newVh = Math.max(1, Math.round(viewport.clientHeight));
+      const newW  = Math.round(newVw * dpr);
+      const newH  = Math.round(newVh * dpr);
+
+      // ── Snapshot current canvas pixels before the resize clears them ──────
+      // Setting canvas.width/height is a synchronous clear. We preserve the
+      // current frame and immediately blit it back so the canvas is NEVER blank,
+      // even for a single display frame during continuous viewport drag.
+      let snapshot: HTMLCanvasElement | null = null;
+      if (canvas.width > 0 && canvas.height > 0) {
+        snapshot = document.createElement('canvas');
+        snapshot.width  = canvas.width;
+        snapshot.height = canvas.height;
+        snapshot.getContext('2d')?.drawImage(canvas, 0, 0);
+      }
+
+      vw = newVw; vh = newVh;
       baseRadius = Math.max(1, Math.min(vw, vh) * BASE_RADIUS_FACTOR);
       zoomRadius = baseRadius * TARGET_ZOOM_FACTOR;
-      canvas.width  = Math.round(vw * dpr);
-      canvas.height = Math.round(vh * dpr);
+      canvas.width  = newW;
+      canvas.height = newH;
       canvas.style.width  = `${vw}px`;
       canvas.style.height = `${vh}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      offscreen.width  = canvas.width;
-      offscreen.height = canvas.height;
+
+      // Immediately restore snapshot scaled to new size (looks correct until
+      // the next proper RAF frame renders the updated projection)
+      if (snapshot) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // raw-pixel coordinates
+        ctx.drawImage(snapshot, 0, 0, newW, newH);
+        ctx.restore();
+      }
+
+      offscreen.width  = newW;
+      offscreen.height = newH;
       offCtx = offscreen.getContext('2d', {alpha: false});
       if (offCtx) offCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cacheKey = ''; // invalidate after resize
-      // Resizing clears the canvas bitmap; temporarily disable low-FPS throttling
-      // so redraw keeps up while the user drags viewport width.
+      cacheKey = '';
       resizingUntil = performance.now() + 220;
       lastDrawTime = 0;
+      globeInView = true;
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(frame);
     }
     syncSize();
     const ro = new ResizeObserver(syncSize);
@@ -854,8 +881,13 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         }
       } else {
         // Scrolled away — cancel RAF entirely (saves CPU/GPU on mobile)
-        cancelAnimationFrame(rafId);
-        rafId = 0;
+        // But don't cancel during an active resize — the IO can briefly report
+        // isIntersecting=false as the viewport boundary changes, which would
+        // leave the canvas blank until something else restarts the loop.
+        if (performance.now() >= resizingUntil) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
       }
     }, {threshold: 0.01});
     io.observe(viewport);
@@ -1174,6 +1206,9 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         // Only start the RAF if the globe is already in view; the IO will start it
         // when/if it scrolls into view later.
         if (globeInView) {
+          // Cancel any pre-existing RAF (e.g. started by syncSize during resize)
+          // before creating a new one to prevent duplicate concurrent loops.
+          cancelAnimationFrame(rafId);
           rafId = requestAnimationFrame(frame);
         }
       }
