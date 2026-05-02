@@ -3782,6 +3782,29 @@ span {
   }
 }
 
+/* Resolution badge glow — fires whenever the parent card group is highlighted,
+   mirroring the card's own group-hover / active / focus-within logic exactly.
+   Each badge carries --badge-glow for its colour; 4K falls back to primary.   */
+.clip-icon,
+.clip-icon-grid,
+.clip-icon-list {
+  transition: box-shadow 0.3s ease;
+}
+
+.group:hover .clip-icon,
+.group:active .clip-icon,
+.group:focus-within .clip-icon,
+.group:hover .clip-icon-grid,
+.group:active .clip-icon-grid,
+.group:focus-within .clip-icon-grid,
+.group:hover .clip-icon-list,
+.group:active .clip-icon-list,
+.group:focus-within .clip-icon-list {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--badge-glow, hsl(var(--primary))) 45%, transparent),
+    0 0 14px color-mix(in srgb, var(--badge-glow, hsl(var(--primary))) 28%, transparent);
+}
+
 .four-k {
 }
 .slow-mo {

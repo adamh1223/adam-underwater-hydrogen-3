@@ -153,18 +153,19 @@ function getFrameBadgeLabelFromTags(tags: string[]): string | null {
 
 function getResolutionBadgeStyle(resolutionLabel: string): React.CSSProperties {
   const normalized = resolutionLabel.trim().toUpperCase();
-  const baseStyle: React.CSSProperties = {borderColor: 'currentColor'};
+  const base = {borderColor: 'currentColor'};
 
   if (normalized === '5K') {
-    return {color: '#cd7f32', ...baseStyle};
+    return {color: '#A8661E', '--badge-glow': '#A8661E', ...base} as React.CSSProperties;
   }
   if (normalized === '6K') {
-    return {color: '#c0c0c0', ...baseStyle};
+    return {color: '#c0c0c0', '--badge-glow': '#c0c0c0', ...base} as React.CSSProperties;
   }
   if (normalized === '8K') {
-    return {color: '#d4af37', ...baseStyle};
+    return {color: '#d4af37', '--badge-glow': '#d4af37', ...base} as React.CSSProperties;
   }
-  return baseStyle;
+  // 4K — no custom glow colour; CSS falls back to primary blue
+  return base as React.CSSProperties;
 }
 
 function EProductsContainer({
@@ -1559,7 +1560,7 @@ function EProductsContainer({
                 <div className="absolute inset-x-0 top-[7px] z-50 flex items-start justify-start ps-[4px] gap-x-1">
                   <button
                     disabled
-                    className="four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
+                    className="clip-icon four-k rounded-md border flex items-center justify-center border-border bg-background  text-primary hover:bg-background  disabled:cursor-default disabled:opacity-100"
                     style={displayResolutionBadgeStyle}
                   >
                     {displayResolutionBadgeLabel}
