@@ -22,7 +22,7 @@ const PULSE_PERIOD_MS = 2000;
 const STARFIELD_SEED = 412877;
 const STAR_COUNT = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4 ? 400 : 800;
 const STAR_FOV_DEG = 105;
-const STAR_CAMERA_ORBIT_RADIUS = 0.6;
+const STAR_CAMERA_ORBIT_RADIUS = 2.0;
 const SETTLED_IDLE_FPS = 10;
 const MAX_CANVAS_DPR = 1.25;
 
@@ -329,10 +329,10 @@ function getStarfield(): StarParticle[] {
     const layer: 1 | 2 | 3 = depthBucket < 0.12 ? 3 : depthBucket < 0.55 ? 2 : 1;
     const distance =
       layer === 3
-        ? 2.3 + rand() * 2.5
+        ? 5.0 + rand() * 4.0
         : layer === 2
-          ? 4.8 + rand() * 6.5
-          : 11.5 + rand() * 22;
+          ? 10.0 + rand() * 10.0
+          : 22.0 + rand() * 30.0;
     const radius = layer === 1 ? 0.14 + rand() * 0.14 : layer === 2 ? 0.2 + rand() * 0.2 : 0.3 + rand() * 0.32;
     const alpha = layer === 1 ? 0.25 + rand() * 0.35 : layer === 2 ? 0.40 + rand() * 0.40 : 0.60 + rand() * 0.35;
     // Uniform point on unit sphere, used as celestial directions.
@@ -432,7 +432,7 @@ function drawStarfield(
     if (x < -24 || x > vw + 24 || y < -24 || y > vh + 24) continue;
 
     const twinkle = 0.72 + 0.28 * Math.sin(nowMs * star.twinkleSpeed + star.twinklePhase);
-    const pointSize = star.layer === 3 ? 1.4 : star.layer === 2 ? 1.05 : 0.75;
+    const pointSize = star.layer === 3 ? 0.9 : star.layer === 2 ? 0.65 : 0.45;
     const alpha = Math.max(0.06, star.alpha * twinkle);
     const half = pointSize * 0.5;
 
