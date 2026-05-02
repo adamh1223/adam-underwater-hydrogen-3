@@ -1,7 +1,7 @@
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import type {CartPendingLinePreview} from '~/lib/cartPendingLine';
 import {
   FetcherWithComponents,
@@ -521,10 +521,38 @@ export function CartSummary({
   // const defaultOrderValue = includesEProducts ? false : true;
   const [hideExtraInfo, setHideExtraInfo] = useState(!!clipNames?.length);
   useEffect(() => {
-    // might need to bring over
     setHideExtraInfo(!!clipNames?.length);
   }, [clipNames]);
+
+  // isOrderReady: true = checkout allowed, false = licensing form required.
+  // Start false when clips exist, true otherwise.
   const [isOrderReady, setIsOrderReady] = useState(!clipNames?.length);
+
+  // Track whether the user explicitly submitted the licensing form so we don't
+  // accidentally reset their submission when clipNames changes.
+  const formSubmittedRef = useRef(false);
+
+  // Guard against the race where clipNames is empty on first render (cart still
+  // loading) so isOrderReady initialises true, then clips arrive and it stays
+  // true even though the user hasn't filled in the form yet.
+  useEffect(() => {
+    const hasClips = (clipNames?.length ?? 0) > 0;
+    if (hasClips && !formSubmittedRef.current) {
+      // Clips are now in the cart but form hasn't been submitted — require it.
+      setIsOrderReady(false);
+    }
+    if (!hasClips) {
+      // Cart has no clips — reset so it doesn't block checkout on a future add.
+      formSubmittedRef.current = false;
+      setIsOrderReady(true);
+    }
+  }, [clipNames?.length]);
+
+  // Wrapper so form submission marks the ref before setting the flag.
+  const handleFormSubmitted = useCallback((value: boolean) => {
+    if (value) formSubmittedRef.current = true;
+    setIsOrderReady(value);
+  }, []);
 
   useEffect(() => {
     if (isOrderReady) {
@@ -669,7 +697,7 @@ export function CartSummary({
 
           <div className="flex items-center justify-center pt-7 gap-2">
             <StockForm
-              updateCheck={setIsOrderReady}
+              updateCheck={handleFormSubmitted}
               clipNames={clipNames}
               isSubmitted={isOrderReady}
             />

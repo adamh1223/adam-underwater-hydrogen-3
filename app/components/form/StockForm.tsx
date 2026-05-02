@@ -19,7 +19,7 @@ function StockForm({
   clipNames,
   isSubmitted,
 }: {
-  updateCheck: React.Dispatch<React.SetStateAction<boolean>>;
+  updateCheck: (value: boolean) => void;
   clipNames: string[];
   isSubmitted: boolean;
 }) {
