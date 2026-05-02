@@ -1016,6 +1016,22 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     function frame(now: number) {
       if (!alive) return;
 
+      // startTime stays 0 until the geocode callback fires and properly
+      // initialises the animation. If we advance phase logic before that,
+      // elapsed = now - 0 = time-since-page-load (could be 30 000+ ms on
+      // client-side navigation), which instantly fast-forwards the whole
+      // animation. Just draw the idle globe and wait.
+      if (startTime === 0) {
+        drawGlobe(
+          ctx, land110, null, null, null, null,
+          0, 0, baseRadius, baseRadius, zoomRadius,
+          vw, vh, null, 0, now, false,
+        );
+        lastDrawTime = now;
+        rafId = requestAnimationFrame(frame);
+        return;
+      }
+
       const isInteracting = dragging || pinching;
       const isZoomAnimating = phase === 'settled' && btnZoomFrom !== btnZoomTo;
       const isResizeActive = now < resizingUntil;
