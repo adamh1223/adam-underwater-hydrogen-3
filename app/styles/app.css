@@ -1135,7 +1135,7 @@ button.reset:hover:not(:has(> *)) {
 
 .product-price-on-sale {
   display: flex;
-  grid-gap: 6px;
+  grid-gap: 5px;
 }
 
 .cart-line-text .product-price-on-sale {

@@ -15,7 +15,7 @@
 }
 .list-view-large-row {
   display: grid;
-  grid-template-columns: minmax(0, 60%) minmax(0, 40%);
+  grid-template-columns: minmax(0, 70%) minmax(0, 30%);
   width: 100%;
   min-width: 0;
 }
@@ -832,7 +832,7 @@
  */
 .eproduct-list-range-compact .eproduct-top-part-card-list {
   display: block;
-  padding: 8px 0 8px 8px;
+  padding: 4px 0 4px 4px;
 }
 .eproduct-list-range-compact .eproduct-bottom-part-card-list {
   display: flex;

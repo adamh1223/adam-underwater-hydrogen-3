@@ -196,8 +196,7 @@ function EProductsContainer({
 }) {
   const location = useLocation();
   const shouldDisableFocusWithinHighlight =
-    disableFocusWithinHighlight ||
-    isStockCollectionPath(location.pathname);
+    disableFocusWithinHighlight || isStockCollectionPath(location.pathname);
   const focusWithinCardEffects = shouldDisableFocusWithinHighlight
     ? ''
     : compactHighlightGlow
@@ -256,7 +255,9 @@ function EProductsContainer({
     selectedVariantForCard?.compareAtPrice ?? null;
   const pendingOptionValuesByName = useMemo(() => {
     const optionValuesByName: Record<string, string[]> = {};
-    const productOptions = Array.isArray(product.options) ? product.options : [];
+    const productOptions = Array.isArray(product.options)
+      ? product.options
+      : [];
 
     for (const option of productOptions) {
       const optionName = option?.name;
@@ -281,7 +282,9 @@ function EProductsContainer({
   const pendingSelectedOptions = useMemo(() => {
     if (!selectedVariantId) return [];
 
-    const productOptions = Array.isArray(product.options) ? product.options : [];
+    const productOptions = Array.isArray(product.options)
+      ? product.options
+      : [];
     return productOptions
       .map((option) => {
         const optionName = option?.name;
@@ -316,45 +319,46 @@ function EProductsContainer({
     const mergedTags = [...baseTags, ...sourceTags];
     return Array.from(new Set(mergedTags));
   }, [isBundle, product.tags]);
-  const pendingLinePreview = useMemo<CartPendingLinePreviewPayload | null>(() => {
-    if (!selectedVariantId) return null;
+  const pendingLinePreview =
+    useMemo<CartPendingLinePreviewPayload | null>(() => {
+      if (!selectedVariantId) return null;
 
-    return {
-      merchandiseId: selectedVariantId,
-      productId: product.id,
-      productHandle: product.handle,
-      productTitle: product.title,
-      productTags: pendingProductTags,
-      optionValuesByName: pendingOptionValuesByName,
+      return {
+        merchandiseId: selectedVariantId,
+        productId: product.id,
+        productHandle: product.handle,
+        productTitle: product.title,
+        productTags: pendingProductTags,
+        optionValuesByName: pendingOptionValuesByName,
+        productTypeLabel,
+        imageUrl:
+          selectedVariantForCard?.image?.url ??
+          product?.images?.nodes?.[0]?.url ??
+          product?.featuredImage?.url ??
+          null,
+        priceAmount: displayCardPrice?.amount ?? null,
+        priceCurrencyCode: displayCardPrice?.currencyCode ?? null,
+        compareAtAmount: displayCardCompareAtPrice?.amount ?? null,
+        selectedOptions: pendingSelectedOptions,
+        showQuantityButtons: false,
+        isVerticalImage: false,
+      };
+    }, [
+      displayCardCompareAtPrice?.amount,
+      displayCardPrice?.amount,
+      displayCardPrice?.currencyCode,
+      pendingOptionValuesByName,
+      pendingProductTags,
+      pendingSelectedOptions,
+      product.featuredImage?.url,
+      product.handle,
+      product.id,
+      product.images?.nodes,
+      product.title,
       productTypeLabel,
-      imageUrl:
-        selectedVariantForCard?.image?.url ??
-        product?.images?.nodes?.[0]?.url ??
-        product?.featuredImage?.url ??
-        null,
-      priceAmount: displayCardPrice?.amount ?? null,
-      priceCurrencyCode: displayCardPrice?.currencyCode ?? null,
-      compareAtAmount: displayCardCompareAtPrice?.amount ?? null,
-      selectedOptions: pendingSelectedOptions,
-      showQuantityButtons: false,
-      isVerticalImage: false,
-    };
-  }, [
-    displayCardCompareAtPrice?.amount,
-    displayCardPrice?.amount,
-    displayCardPrice?.currencyCode,
-    pendingOptionValuesByName,
-    pendingProductTags,
-    pendingSelectedOptions,
-    product.featuredImage?.url,
-    product.handle,
-    product.id,
-    product.images?.nodes,
-    product.title,
-    productTypeLabel,
-    selectedVariantForCard?.image?.url,
-    selectedVariantId,
-  ]);
+      selectedVariantForCard?.image?.url,
+      selectedVariantId,
+    ]);
   const addToCartLines = useMemo(() => {
     if (!selectedVariantId) return [];
 
@@ -387,7 +391,9 @@ function EProductsContainer({
   const durationTag = parseDisplayDurationFromTags(product.tags);
   const isArtistPick = product.tags.includes('a');
   const highestResolutionLabelFromOptions = useMemo(() => {
-    const productOptions = Array.isArray(product.options) ? product.options : [];
+    const productOptions = Array.isArray(product.options)
+      ? product.options
+      : [];
     const resolutionOption = productOptions.find(
       (option) =>
         typeof option?.name === 'string' &&
@@ -421,13 +427,14 @@ function EProductsContainer({
   }, [product.id]);
 
   const displayDurationTag = isBundle
-    ? bundleClipMetadata.durationByClip.get(activeBundleClipIndex) ?? durationTag
+    ? (bundleClipMetadata.durationByClip.get(activeBundleClipIndex) ??
+      durationTag)
     : durationTag;
   const hasDisplayDurationTag = Boolean(displayDurationTag);
 
   const displayResolutionBadgeLabel = isBundle
-    ? bundleClipMetadata.resolutionByClip.get(activeBundleClipIndex) ??
-      fallbackResolutionBadgeLabel
+    ? (bundleClipMetadata.resolutionByClip.get(activeBundleClipIndex) ??
+      fallbackResolutionBadgeLabel)
     : fallbackResolutionBadgeLabel;
   const displayResolutionBadgeStyle = getResolutionBadgeStyle(
     displayResolutionBadgeLabel,
@@ -436,8 +443,8 @@ function EProductsContainer({
   const frameBadgeLabelFromTags = getFrameBadgeLabelFromTags(product.tags);
   const fallbackFrameBadgeLabel = frameBadgeLabelFromTags;
   const displayFrameBadgeLabel = isBundle
-    ? bundleClipMetadata.frameByClip.get(activeBundleClipIndex) ??
-      fallbackFrameBadgeLabel
+    ? (bundleClipMetadata.frameByClip.get(activeBundleClipIndex) ??
+      fallbackFrameBadgeLabel)
     : fallbackFrameBadgeLabel;
   const bundleDiscountBadgeClassName =
     'rounded-md border border-primary bg-background text-primary disabled:cursor-default disabled:opacity-100 inline-flex items-start justify-center gap-1 min-h-[25px] w-[72px] px-1 py-[3px] text-[11px] font-semibold whitespace-normal leading-[1.05]';
@@ -488,8 +495,8 @@ function EProductsContainer({
     .filter(Boolean)
     .join(', ');
   const displaySubTitleText = isBundle
-    ? bundleClipMetadata.clipNameByClip.get(activeBundleClipIndex) ??
-      formattedLocation
+    ? (bundleClipMetadata.clipNameByClip.get(activeBundleClipIndex) ??
+      formattedLocation)
     : formattedLocation;
   // Disabled by request; keep original condition documented.
   // const shouldRenderListDescription = layout === 'list' && Boolean((product as any).descriptionHtml);
@@ -579,10 +586,7 @@ function EProductsContainer({
         ? favoriteButtonElement.getBoundingClientRect().left - 6
         : Number.POSITIVE_INFINITY,
     );
-    const maxAllowedShift = Math.max(
-      0,
-      safeRightBoundary - titleRect.right,
-    );
+    const maxAllowedShift = Math.max(0, safeRightBoundary - titleRect.right);
     const nextShift = Math.min(requiredShift, maxAllowedShift);
 
     setListTitleOverlapShiftPx((currentShift) =>
@@ -639,12 +643,15 @@ function EProductsContainer({
    * The preview finds its closest card ancestor from the DOM and passes it
    * so we can apply the splash animation class.
    */
-  const handleBundleNavigate = useCallback((cardElement: HTMLElement | null) => {
-    navigateWithCardSplash({
-      card: cardElement,
-      navigate: () => navigate(`/products/${product.handle}`),
-    });
-  }, [navigate, product.handle]);
+  const handleBundleNavigate = useCallback(
+    (cardElement: HTMLElement | null) => {
+      navigateWithCardSplash({
+        card: cardElement,
+        navigate: () => navigate(`/products/${product.handle}`),
+      });
+    },
+    [navigate, product.handle],
+  );
 
   const addToFavorites = async () => {
     try {
@@ -712,7 +719,9 @@ function EProductsContainer({
       ? ' favorite-toggle-btn--active'
       : ''
   }${
-    favoriteBorderTraceState === 'adding' ? ' favorite-toggle-btn--animating' : ''
+    favoriteBorderTraceState === 'adding'
+      ? ' favorite-toggle-btn--animating'
+      : ''
   }${
     favoriteBorderTraceState === 'removing'
       ? ' favorite-toggle-btn--animating-reverse'
@@ -739,7 +748,7 @@ function EProductsContainer({
           {/* BEGIN GRID ---------------------------------------*/}
 
           {/* GRID VIEW WHOLE THING */}
-         
+
           {layout === 'grid' && (
             <div className={cardContentClassName}>
               {layout === 'grid' && (
@@ -752,7 +761,12 @@ function EProductsContainer({
                       >
                         Artist's Pick
                         <div className="flex justify-center items-end">
-                          <img src={'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'} className="badge-img" />
+                          <img
+                            src={
+                              'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'
+                            }
+                            className="badge-img"
+                          />
                         </div>
                       </button>
                     )}
@@ -999,7 +1013,9 @@ function EProductsContainer({
                             className={`${bundleDiscountBadgeClassName} ms-[-5px]`}
                           >
                             <LuTag className="h-3 w-3 shrink-0" />
-                            <span className="min-w-0 text-left">20% off per clip</span>
+                            <span className="min-w-0 text-left">
+                              20% off per clip
+                            </span>
                           </button>
                         )}
                       </div>
@@ -1091,7 +1107,10 @@ function EProductsContainer({
                             lines={addToCartLines}
                             disabled={disableButton}
                             onClick={() => {
-                              open('cart', 'eproducts-grid-add-to-cart-compact');
+                              open(
+                                'cart',
+                                'eproducts-grid-add-to-cart-compact',
+                              );
                             }}
                             replaceExistingLineProductId={product.id}
                           >
@@ -1139,8 +1158,8 @@ function EProductsContainer({
                 ref={listTitleContainerRef}
                 className={`product-title-container border-b py-1 min-h-[50px] ${
                   isArtistPick
-                    ? 'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 px-2'
-                    : 'text-center flex items-center justify-center'
+                    ? 'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1 px-1'
+                    : 'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-1 px-1'
                 }`}
               >
                 {isArtistPick && (
@@ -1175,9 +1194,7 @@ function EProductsContainer({
                 )}
                 <Link
                   ref={listTitleContentRef}
-                  className={`product-item flex w-full min-w-0 flex-col items-center justify-center text-center transition-transform duration-150 ${
-                    isArtistPick ? 'px-1' : ''
-                  }`}
+                  className="product-item flex w-full min-w-0 flex-col items-center justify-center text-center transition-transform duration-150"
                   key={product.id}
                   prefetch="intent"
                   to={variantUrl}
@@ -1185,11 +1202,6 @@ function EProductsContainer({
                   <div
                     ref={listTitleTextBlockRef}
                     className="flex flex-col items-center justify-center text-center transition-transform duration-150"
-                    style={
-                      !isArtistPick && listTitleOverlapShiftPx > 0
-                        ? {transform: `translateX(${listTitleOverlapShiftPx}px)`}
-                        : undefined
-                    }
                   >
                     <h2 className={` product-title-font-list`}>
                       {product.title}
@@ -1199,120 +1211,60 @@ function EProductsContainer({
                     </p>
                   </div>
                 </Link>
-                {isArtistPick && (
-                  <div
-                    className="cursor-pointer z-[70] justify-self-end"
-                    data-bundle-no-nav
-                  >
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            ref={listFavoriteButtonRef}
-                            onClick={
-                              wishlistItem
-                                ? removeFromFavorites
-                                : addToFavorites
-                            }
-                            disabled={!loginValue}
-                            className={wishlistListButtonClassName}
-                          >
-                            {pendingWishlistChange ? (
-                              <div className="flex justify-center items-center">
-                                <ReloadIcon className="animate-spin favorite-toggle-spinner" />
-                              </div>
-                            ) : (
-                              <>
-                                {wishlistItem ? (
-                                  <div className="flex justify-center items-center">
-                                    <FaHeart />
-                                  </div>
-                                ) : (
-                                  <>
-                                    {loginValue ? (
-                                      <div className="flex justify-center items-center">
-                                        <FaRegHeart />
-                                      </div>
-                                    ) : (
-                                      <Link to="/account/login">
-                                        <div className="flex justify-center items-center">
-                                          <FaRegHeart />
-                                        </div>
-                                      </Link>
-                                    )}
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-sm z-1000">
-                          {wishlistItem
-                            ? 'Remove from Favorites'
-                            : 'Save to Favorites'}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                )}
-              </div>
-
-              {!isArtistPick && (
+                {/* Favorite button: right column for both artist-pick and non-artist-pick */}
                 <div
-                  className="cursor-pointer absolute right-2 top-2 z-50"
+                  className="cursor-pointer z-[70] justify-self-end"
                   data-bundle-no-nav
                 >
-                {/* <h1 className='z-9000'>Duration {durationTag}</h1> */}
-
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        ref={listFavoriteButtonRef}
-                        onClick={
-                          wishlistItem ? removeFromFavorites : addToFavorites
-                        }
-                        disabled={!loginValue}
-                        className={wishlistListButtonClassName}
-                      >
-                        {pendingWishlistChange ? (
-                          <div className="flex justify-center items-center">
-                            <ReloadIcon className="animate-spin favorite-toggle-spinner" />
-                          </div>
-                        ) : (
-                          <>
-                            {wishlistItem ? (
-                              <div className="flex justify-center items-center">
-                                <FaHeart />
-                              </div>
-                            ) : (
-                              <>
-                                {loginValue ? (
-                                  <div className="flex justify-center items-center">
-                                    <FaRegHeart />
-                                  </div>
-                                ) : (
-                                  <Link to="/account/login">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          ref={listFavoriteButtonRef}
+                          onClick={
+                            wishlistItem ? removeFromFavorites : addToFavorites
+                          }
+                          disabled={!loginValue}
+                          className={wishlistListButtonClassName}
+                        >
+                          {pendingWishlistChange ? (
+                            <div className="flex justify-center items-center">
+                              <ReloadIcon className="animate-spin favorite-toggle-spinner" />
+                            </div>
+                          ) : (
+                            <>
+                              {wishlistItem ? (
+                                <div className="flex justify-center items-center">
+                                  <FaHeart />
+                                </div>
+                              ) : (
+                                <>
+                                  {loginValue ? (
                                     <div className="flex justify-center items-center">
                                       <FaRegHeart />
                                     </div>
-                                  </Link>
-                                )}
-                              </>
-                            )}
-                          </>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-sm z-1000">
-                      {wishlistItem
-                        ? 'Remove from Favorites'
-                        : 'Save to Favorites'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                                  ) : (
+                                    <Link to="/account/login">
+                                      <div className="flex justify-center items-center">
+                                        <FaRegHeart />
+                                      </div>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
+                            </>
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-sm z-1000">
+                        {wishlistItem
+                          ? 'Remove from Favorites'
+                          : 'Save to Favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-              )}
+              </div>
             </>
           )}
           {/* 4K + frame-rate + eproductpreview + price + description + add to cart + view product for LIST <= 600px */}
@@ -1320,7 +1272,7 @@ function EProductsContainer({
             <div className={cardContentClassName}>
               <div className={`relative evideo eproduct-top-part-card-list`}>
                 {hasDisplayDurationTag && (
-                  <div className="absolute left-2 top-2 z-[70] flex flex-col gap-1">
+                  <div className="absolute left-[3px] top-[3px] z-[70] flex flex-col gap-1">
                     <button
                       disabled
                       className="duration-icon-list flex items-center justify-center rounded-md border border-border bg-background text-white hover:bg-background hover:text-white disabled:cursor-default disabled:opacity-100 text-sm"
@@ -1539,7 +1491,12 @@ function EProductsContainer({
                   >
                     Artist's Pick
                     <div className="flex justify-center items-end">
-                      <img src={'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'} className="badge-img" />
+                      <img
+                        src={
+                          'https://downloads.adamunderwater.com/store-1-au/public/badge1.png'
+                        }
+                        className="badge-img"
+                      />
                     </div>
                   </button>
                 </div>
@@ -1618,7 +1575,9 @@ function EProductsContainer({
                   {isBundle && (
                     <button disabled className={bundleDiscountBadgeClassName}>
                       <LuTag className="h-3 w-3 shrink-0" />
-                      <span className="min-w-0 text-left">20% off per clip</span>
+                      <span className="min-w-0 text-left">
+                        20% off per clip
+                      </span>
                     </button>
                   )}
                 </div>
