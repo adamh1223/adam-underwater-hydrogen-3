@@ -100,7 +100,7 @@
 .EProductPreviewContainer-autoplay .EProductVideo {
   /* Autoplay: fade in over the image so there's never a blank flash */
   opacity: 0;
-  transition: opacity 200ms ease-in-out;
+  transition: opacity 90ms linear;
   will-change: opacity, transform;
 }
 

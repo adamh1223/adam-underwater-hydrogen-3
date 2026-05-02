@@ -809,6 +809,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let rafId = 0, alive = true;
     let globeInView = false;
     let lastDrawTime = 0;
+    let resizingUntil = 0;
 
     // Offscreen cache: when settled+idle and the view hasn't changed, blit this
     // instead of re-running the full d3-geo render. Only the pulsing dot redraws.
@@ -834,6 +835,10 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       offCtx = offscreen.getContext('2d', {alpha: false});
       if (offCtx) offCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       cacheKey = ''; // invalidate after resize
+      // Resizing clears the canvas bitmap; temporarily disable low-FPS throttling
+      // so redraw keeps up while the user drags viewport width.
+      resizingUntil = performance.now() + 220;
+      lastDrawTime = 0;
     }
     syncSize();
     const ro = new ResizeObserver(syncSize);
@@ -988,11 +993,12 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
 
       const isInteracting = dragging || pinching;
       const isZoomAnimating = phase === 'settled' && btnZoomFrom !== btnZoomTo;
+      const isResizeActive = now < resizingUntil;
 
       // During active interaction run uncapped at the display's native refresh
       // rate (60 / 90 / 120 Hz). Every layer except ocean+land+lakes is skipped
       // in fastMode so frames are cheap enough to sustain this.
-      if (!isInteracting && !isZoomAnimating) {
+      if (!isInteracting && !isZoomAnimating && !isResizeActive) {
         const targetFps =
           phase !== 'settled' ? 24 :
           dotCoords !== null  ? 30 :
@@ -1062,7 +1068,13 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       // Offscreen cache: during settled idle the view is static — only the dot
       // alpha changes. Blit the cached static frame and redraw just the dot.
       const thisKey = `${lambdaC.toFixed(4)},${phiC.toFixed(4)},${Math.round(currentScale)},${vw},${vh},${dataVersion}`;
-      const useCache = phase === 'settled' && !dragging && !pinching && thisKey === cacheKey && offCtx;
+      const useCache =
+        phase === 'settled' &&
+        !dragging &&
+        !pinching &&
+        !isResizeActive &&
+        thisKey === cacheKey &&
+        offCtx;
 
       if (useCache) {
         // The offscreen canvas has raw pixel dimensions canvas.width × canvas.height.
@@ -1097,7 +1109,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       } else {
         // Full render path — use fastMode during active interaction for coarser
         // (cheaper) paths so the target FPS is actually achieved each frame.
-        const fast = isInteracting || isZoomAnimating;
+        const fast = isInteracting || isZoomAnimating || isResizeActive;
         drawGlobe(ctx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
                   baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now, fast);
         // Save static frame to offscreen only when idle (not interacting/animating)
