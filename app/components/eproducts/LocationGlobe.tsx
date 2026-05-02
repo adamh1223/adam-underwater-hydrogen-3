@@ -821,43 +821,17 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
 
     function syncSize() {
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_CANVAS_DPR);
-      const newVw = Math.max(1, Math.round(viewport.clientWidth));
-      const newVh = Math.max(1, Math.round(viewport.clientHeight));
-      const newW  = Math.round(newVw * dpr);
-      const newH  = Math.round(newVh * dpr);
-
-      // ── Snapshot current canvas pixels before the resize clears them ──────
-      // Setting canvas.width/height is a synchronous clear. We preserve the
-      // current frame and immediately blit it back so the canvas is NEVER blank,
-      // even for a single display frame during continuous viewport drag.
-      let snapshot: HTMLCanvasElement | null = null;
-      if (canvas.width > 0 && canvas.height > 0) {
-        snapshot = document.createElement('canvas');
-        snapshot.width  = canvas.width;
-        snapshot.height = canvas.height;
-        snapshot.getContext('2d')?.drawImage(canvas, 0, 0);
-      }
-
-      vw = newVw; vh = newVh;
+      vw = Math.max(1, Math.round(viewport.clientWidth));
+      vh = Math.max(1, Math.round(viewport.clientHeight));
       baseRadius = Math.max(1, Math.min(vw, vh) * BASE_RADIUS_FACTOR);
       zoomRadius = baseRadius * TARGET_ZOOM_FACTOR;
-      canvas.width  = newW;
-      canvas.height = newH;
+      canvas.width  = Math.round(vw * dpr);
+      canvas.height = Math.round(vh * dpr);
       canvas.style.width  = `${vw}px`;
       canvas.style.height = `${vh}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      // Immediately restore snapshot scaled to new size (looks correct until
-      // the next proper RAF frame renders the updated projection)
-      if (snapshot) {
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0); // raw-pixel coordinates
-        ctx.drawImage(snapshot, 0, 0, newW, newH);
-        ctx.restore();
-      }
-
-      offscreen.width  = newW;
-      offscreen.height = newH;
+      offscreen.width  = canvas.width;
+      offscreen.height = canvas.height;
       offCtx = offscreen.getContext('2d', {alpha: false});
       if (offCtx) offCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       cacheKey = '';
@@ -866,6 +840,25 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       globeInView = true;
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(frame);
+
+      // Synchronously redraw at the correct new dimensions so the canvas is
+      // never blank. All state vars are initialized by the time ResizeObserver
+      // fires; the initial setup call throws (TDZ) and we silently catch it.
+      try {
+        const activeLand =
+          (phase === 'zooming' || phase === 'settled') ? (land50 ?? land110) : land110;
+        const now = performance.now();
+        const pulseT = ((now - settledTime) % PULSE_PERIOD_MS) / PULSE_PERIOD_MS;
+        const dAlpha =
+          phase === 'settled' && dotCoords
+            ? 0.5 - 0.5 * Math.cos(pulseT * 2 * Math.PI)
+            : 0;
+        drawGlobe(
+          ctx, activeLand, lakes, rivers, admin1, countries,
+          lambdaC, phiC, currentScale, baseRadius, zoomRadius,
+          vw, vh, dotCoords, dAlpha, now, false,
+        );
+      } catch { /* state not yet initialised on first setup call — safe to ignore */ }
     }
     syncSize();
     const ro = new ResizeObserver(syncSize);
