@@ -6,6 +6,10 @@ import {getOptimizedImageUrl} from '~/lib/imageWarmup';
 import {isStockCollectionPath} from '~/lib/collectionPaths';
 
 type ShopifyImage = {url: string; altText: string};
+const PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP = 1400;
+const PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH = 2200;
+const PROGRESS_REVEAL_DELAY_MS_DESKTOP = 70;
+const PROGRESS_REVEAL_DELAY_MS_TOUCH = 130;
 
 function EProductPreview({
   EProduct,
@@ -27,6 +31,8 @@ function EProductPreview({
   const videoLoadFallbackTimeoutRef = useRef<number | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const vimeoPlayReceivedRef = useRef(false);
+  const vimeoProgressReceivedRef = useRef(false);
+  const vimeoProgressEventCountRef = useRef(0);
   const location = useLocation();
   const [viewportWidth, setViewportWidth] = useState<number | undefined>(
     undefined,
@@ -79,9 +85,9 @@ function EProductPreview({
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     if (!shouldEnableViewportAutoplay) {
-      scheduleVideoReveal(isCoarsePointer ? 2000 : 500);
+      scheduleVideoReveal(isCoarsePointer ? 2200 : 1200);
     } else {
-      scheduleVideoReveal(isCoarsePointer ? 3500 : 1000);
+      scheduleVideoReveal(isCoarsePointer ? 3200 : 1600);
     }
   };
 
@@ -118,9 +124,10 @@ function EProductPreview({
   useEffect(() => {
     if (!isVideoActive || !parsedWMLink) return;
     vimeoPlayReceivedRef.current = false;
+    vimeoProgressReceivedRef.current = false;
+    vimeoProgressEventCountRef.current = 0;
 
     const handleMessage = (event: MessageEvent) => {
-      if (vimeoPlayReceivedRef.current) return;
       if (
         typeof event.origin !== 'string' ||
         !event.origin.includes('vimeo.com')
@@ -148,13 +155,46 @@ function EProductPreview({
           JSON.stringify({method: 'addEventListener', value: 'play'}),
           'https://player.vimeo.com',
         );
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({method: 'addEventListener', value: 'timeupdate'}),
+          'https://player.vimeo.com',
+        );
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({method: 'addEventListener', value: 'playProgress'}),
+          'https://player.vimeo.com',
+        );
       } else if (data.event === 'play') {
+        if (vimeoPlayReceivedRef.current) return;
         vimeoPlayReceivedRef.current = true;
         clearVideoRevealTimeout();
         clearVideoLoadFallbackTimeout();
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => setIsVideoReady(true));
-        });
+        const isCoarsePointer =
+          typeof window !== 'undefined' &&
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        scheduleVideoReveal(
+          isCoarsePointer
+            ? PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH
+            : PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP,
+        );
+      } else if (
+        (data.event === 'timeupdate' || data.event === 'playProgress') &&
+        !vimeoProgressReceivedRef.current
+      ) {
+        vimeoProgressEventCountRef.current += 1;
+        if (vimeoProgressEventCountRef.current < 2) return;
+        vimeoProgressReceivedRef.current = true;
+        clearVideoRevealTimeout();
+        clearVideoLoadFallbackTimeout();
+        const isCoarsePointer =
+          typeof window !== 'undefined' &&
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        scheduleVideoReveal(
+          isCoarsePointer
+            ? PROGRESS_REVEAL_DELAY_MS_TOUCH
+            : PROGRESS_REVEAL_DELAY_MS_DESKTOP,
+        );
       }
     };
 
@@ -184,6 +224,8 @@ function EProductPreview({
     clearVideoRevealTimeout();
     clearVideoLoadFallbackTimeout();
     vimeoPlayReceivedRef.current = false;
+    vimeoProgressReceivedRef.current = false;
+    vimeoProgressEventCountRef.current = 0;
     setIsVideoReady(false);
   }, [isVideoActive]);
 

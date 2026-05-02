@@ -29,6 +29,10 @@ type BundleClip = {
 
 const wmlinkRegex = /^wmlink(\d+)_/i;
 const bundleAltRegex = /bundle(\d+)-/i;
+const PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP = 1400;
+const PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH = 2200;
+const PROGRESS_REVEAL_DELAY_MS_DESKTOP = 70;
+const PROGRESS_REVEAL_DELAY_MS_TOUCH = 130;
 
 const parseBundleWmlinks = (tags: string[]) =>
   tags
@@ -85,6 +89,8 @@ function BundleClipPreview({
   const [isVideoReady, setIsVideoReady] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const vimeoPlayReceivedRef = useRef(false);
+  const vimeoProgressReceivedRef = useRef(false);
+  const vimeoProgressEventCountRef = useRef(0);
   const videoRevealTimeoutRef = useRef<number | null>(null);
 
   const clearRevealTimeout = () => {
@@ -94,10 +100,22 @@ function BundleClipPreview({
     }
   };
 
+  const scheduleVideoReveal = (delayMs: number) => {
+    clearRevealTimeout();
+    videoRevealTimeoutRef.current = window.setTimeout(() => {
+      videoRevealTimeoutRef.current = null;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setIsVideoReady(true));
+      });
+    }, delayMs);
+  };
+
   useEffect(() => {
     if (!isVideoActive) {
       clearRevealTimeout();
       vimeoPlayReceivedRef.current = false;
+      vimeoProgressReceivedRef.current = false;
+      vimeoProgressEventCountRef.current = 0;
       setIsVideoReady(false);
     }
   }, [isVideoActive]);
@@ -106,9 +124,10 @@ function BundleClipPreview({
   useEffect(() => {
     if (!isVideoActive || !clip.wmlinkId) return;
     vimeoPlayReceivedRef.current = false;
+    vimeoProgressReceivedRef.current = false;
+    vimeoProgressEventCountRef.current = 0;
 
     const handleMessage = (event: MessageEvent) => {
-      if (vimeoPlayReceivedRef.current) return;
       if (
         typeof event.origin !== 'string' ||
         !event.origin.includes('vimeo.com')
@@ -135,12 +154,44 @@ function BundleClipPreview({
           JSON.stringify({method: 'addEventListener', value: 'play'}),
           'https://player.vimeo.com',
         );
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({method: 'addEventListener', value: 'timeupdate'}),
+          'https://player.vimeo.com',
+        );
+        iframeRef.current?.contentWindow?.postMessage(
+          JSON.stringify({method: 'addEventListener', value: 'playProgress'}),
+          'https://player.vimeo.com',
+        );
       } else if (data.event === 'play') {
+        if (vimeoPlayReceivedRef.current) return;
         vimeoPlayReceivedRef.current = true;
         clearRevealTimeout();
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => setIsVideoReady(true));
-        });
+        const isCoarsePointer =
+          typeof window !== 'undefined' &&
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        scheduleVideoReveal(
+          isCoarsePointer
+            ? PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH
+            : PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP,
+        );
+      } else if (
+        (data.event === 'timeupdate' || data.event === 'playProgress') &&
+        !vimeoProgressReceivedRef.current
+      ) {
+        vimeoProgressEventCountRef.current += 1;
+        if (vimeoProgressEventCountRef.current < 2) return;
+        vimeoProgressReceivedRef.current = true;
+        clearRevealTimeout();
+        const isCoarsePointer =
+          typeof window !== 'undefined' &&
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        scheduleVideoReveal(
+          isCoarsePointer
+            ? PROGRESS_REVEAL_DELAY_MS_TOUCH
+            : PROGRESS_REVEAL_DELAY_MS_DESKTOP,
+        );
       }
     };
 
@@ -149,38 +200,37 @@ function BundleClipPreview({
   }, [isVideoActive, clip.wmlinkId]);
 
   useEffect(() => {
-    return () => clearRevealTimeout();
+    return () => {
+      clearRevealTimeout();
+    };
   }, []);
 
   const handleVideoLoad = () => {
     if (vimeoPlayReceivedRef.current) return;
     // Fallback reveal in case Vimeo postMessage play event never arrives.
-    clearRevealTimeout();
     const isCoarsePointer =
       typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    const delay = isCoarsePointer ? 3500 : 1000;
-    videoRevealTimeoutRef.current = window.setTimeout(() => {
-      videoRevealTimeoutRef.current = null;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setIsVideoReady(true));
-      });
-    }, delay);
+    const delay = isCoarsePointer ? 2600 : 1600;
+    scheduleVideoReveal(delay);
   };
+
+  const previewImage = clip.image;
 
   return (
     <div className="EProductPreviewContainer EProductPreviewContainer-autoplay">
-      {clip.image && (
+      {previewImage && (
         <img
-          src={getOptimizedImageUrl(clip.image.url, 1280)}
+          src={getOptimizedImageUrl(previewImage.url, 1280)}
           srcSet={[480, 720, 960, 1280, 1600]
             .map(
-              (width) => `${getOptimizedImageUrl(clip.image.url, width)} ${width}w`,
+              (width) =>
+                `${getOptimizedImageUrl(previewImage.url, width)} ${width}w`,
             )
             .join(', ')}
           sizes="(max-width: 700px) 82vw, (max-width: 1200px) 42vw, 30vw"
-          alt={clip.image.altText || 'Bundle preview'}
+          alt={previewImage.altText || 'Bundle preview'}
           className="EProductImage"
           draggable={false}
         />
