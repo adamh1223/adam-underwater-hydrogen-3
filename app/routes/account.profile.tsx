@@ -275,12 +275,18 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+// Fetch the customer ID, email, AND the cached welcome15 metafield in one
+// query. If the metafield already has a value we skip the expensive order-
+// pagination scan entirely — saving up to 12 sequential API calls.
 const CUSTOMER_ID_QUERY = `#graphql
   query CustomerIdQuery {
     customer {
       id
       emailAddress {
         emailAddress
+      }
+      metafield(namespace: "custom", key: "welcome15_uses_remaining") {
+        value
       }
     }
   }
@@ -297,30 +303,42 @@ export async function loader({context}: LoaderFunctionArgs) {
     const customerEmail = customerData?.customer?.emailAddress?.emailAddress;
     if (!customerId) return {welcome15Used};
 
-    // Run both discount-usage checks in parallel — they're independent and
-    // the sequential waterfall was the main reason this page loaded slowly.
-    const [usageByOrderHistory, usageByEmail] = await Promise.all([
-      getCustomerDiscountUsage({
-        customerAccount: context.customerAccount,
-        code: WELCOME15_DISCOUNT_CODE,
-      }),
-      customerEmail
-        ? getAdminCustomerEmailDiscountUsage({
+    const cachedMetafieldValue = customerData?.customer?.metafield?.value;
+
+    if (cachedMetafieldValue !== null && cachedMetafieldValue !== undefined) {
+      // Metafield is set — use it immediately, no API scan needed.
+      welcome15Used = cachedMetafieldValue === '0';
+    } else {
+      // Metafield not yet set (first visit or new customer).
+      // Return the page immediately with the default (false) and run the
+      // expensive order-pagination scan in the background. The result is
+      // written to the metafield so the NEXT visit is instant.
+      void (async () => {
+        try {
+          const [usageByOrderHistory, usageByEmail] = await Promise.all([
+            getCustomerDiscountUsage({
+              customerAccount: context.customerAccount,
+              code: WELCOME15_DISCOUNT_CODE,
+            }),
+            customerEmail
+              ? getAdminCustomerEmailDiscountUsage({
+                  env: context.env,
+                  customerEmail,
+                  code: WELCOME15_DISCOUNT_CODE,
+                })
+              : Promise.resolve(null),
+          ]);
+          const used = Boolean(usageByOrderHistory?.used || usageByEmail?.used);
+          void setCustomerWelcome15UsesRemainingMetafield({
             env: context.env,
-            customerEmail,
-            code: WELCOME15_DISCOUNT_CODE,
-          })
-        : Promise.resolve(null),
-    ]);
-
-    welcome15Used = Boolean(usageByOrderHistory?.used || usageByEmail?.used);
-
-    // Fire-and-forget — don't block the response on a write-only metafield update.
-    void setCustomerWelcome15UsesRemainingMetafield({
-      env: context.env,
-      customerId,
-      usesRemaining: welcome15Used ? 0 : 1,
-    }).catch(() => null);
+            customerId,
+            usesRemaining: used ? 0 : 1,
+          }).catch(() => null);
+        } catch {
+          // background — ignore errors
+        }
+      })();
+    }
   } catch {
     // Silently fail — default to not used
   }
