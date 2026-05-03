@@ -482,7 +482,7 @@ function IndividualProduct({
                                     sizes={mainImageSizes}
                                     alt={url.altText || productName}
                                     loading={idx === 0 ? 'eager' : 'lazy'}
-                                    decoding="async"
+                                    decoding={idx === 0 ? 'sync' : 'async'}
                                     onLoad={() => handleImageLoaded(url.url)}
                                     className="print-carousel-main-image carousel-item cursor-zoom-in"
                                     {...{

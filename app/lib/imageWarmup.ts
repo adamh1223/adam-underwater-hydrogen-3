@@ -1,7 +1,16 @@
 const warmedImageUrls = new Set<string>();
 const imageWarmPromises = new Map<string, Promise<void>>();
-const DEFAULT_MAX_CONCURRENT_WARMS = 2;
+// Increase concurrent warms — products have many thumbnails that all need to
+// be ready before the skeleton gate opens. More concurrency = faster warmup
+// on fast connections without hurting slow ones (requests complete faster).
+const DEFAULT_MAX_CONCURRENT_WARMS = 4;
 
+/**
+ * Returns an optimised Shopify CDN URL:
+ *  - Resizes to `width` pixels
+ *  - Converts to WebP (25–35 % smaller than JPEG at same quality)
+ *  - Sets quality to 80 (visually identical, meaningfully smaller)
+ */
 export function getOptimizedImageUrl(url: string, width: number) {
   if (!url || !Number.isFinite(width) || width <= 0) return url;
 
@@ -12,6 +21,8 @@ export function getOptimizedImageUrl(url: string, width: number) {
     }
 
     parsedUrl.searchParams.set('width', String(Math.round(width)));
+    parsedUrl.searchParams.set('format', 'webp');
+    parsedUrl.searchParams.set('quality', '80');
     return parsedUrl.toString();
   } catch {
     return url;

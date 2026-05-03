@@ -4,6 +4,11 @@ import {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import {redirect} from '@shopify/remix-oxygen';
 import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 
+const R2 = 'https://downloads.adamunderwater.com/store-1-au/public';
+export function links() {
+  return [{rel: 'preload', as: 'image', href: `${R2}/contact.png`}];
+}
+
 export const meta: MetaFunction = () => {
   const title = 'Contact Adam Underwater | Book Underwater Video & Photo Services';
   const description =

@@ -131,6 +131,21 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
  */
 export function links() {
   return [
+    // ── Resource hints ─────────────────────────────────────────────────────────
+    // preconnect eliminates DNS + TCP + TLS handshake latency for each origin.
+    // On a slow mobile connection each new connection costs 200–400 ms.
+    { rel: 'preconnect', href: 'https://downloads.adamunderwater.com' },
+    { rel: 'preconnect', href: 'https://cdn.shopify.com', crossOrigin: 'anonymous' },
+    { rel: 'preconnect', href: 'https://player.vimeo.com' },
+    { rel: 'preconnect', href: 'https://i.vimeocdn.com', crossOrigin: 'anonymous' },
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+    // dns-prefetch as a fallback for browsers that don't support preconnect
+    { rel: 'dns-prefetch', href: 'https://downloads.adamunderwater.com' },
+    { rel: 'dns-prefetch', href: 'https://cdn.shopify.com' },
+    { rel: 'dns-prefetch', href: 'https://player.vimeo.com' },
+    { rel: 'dns-prefetch', href: 'https://i.vimeocdn.com' },
+    // ── Favicons ───────────────────────────────────────────────────────────────
     {
       rel: 'icon',
       href: '/favicon.ico',

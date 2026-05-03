@@ -146,96 +146,46 @@ function AccountMenu() {
       <div className="flex justify-center ms-2 account-tabs-container">
         <div className="nav-link-first-4 flex justify-center">
           <div className="nav-link-container">
-            <Button
-              variant="ghost2"
-              className="relative group px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-            >
-              <NavLink
-                to="/account/profile"
-                style={isActiveStyle}
-                className="relative z-10"
-                end
-                prefetch="intent"
-              >
-                Profile
-              </NavLink>
+            <NavLink to="/account/profile" style={isActiveStyle} end prefetch="render"
+              className="relative group inline-flex items-center justify-center px-4 py-2 rounded-md transition-colors hover:bg-accent cursor-pointer">
+              Profile
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-            </Button>
+            </NavLink>
             &nbsp;|&nbsp;
           </div>
           <div className="nav-link-container">
-            <Button
-              variant="ghost2"
-              className="relative group px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-            >
-              <NavLink
-                to="/account/orders"
-                style={isActiveStyle}
-                className="relative z-10"
-                end
-                prefetch="intent"
-              >
-                Orders
-              </NavLink>
+            <NavLink to="/account/orders" style={isActiveStyle} end prefetch="render"
+              className="relative group inline-flex items-center justify-center px-4 py-2 rounded-md transition-colors hover:bg-accent cursor-pointer">
+              Orders
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-            </Button>
+            </NavLink>
             &nbsp;|&nbsp;
           </div>
           <div className="nav-link-container">
-            <Button
-              variant="ghost2"
-              className="relative group px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-            >
-              <NavLink
-                to="/account/favorites"
-                style={isActiveStyle}
-                className="relative z-10"
-                end
-                prefetch="intent"
-              >
-                Favorites
-              </NavLink>
+            <NavLink to="/account/favorites" style={isActiveStyle} end prefetch="render"
+              className="relative group inline-flex items-center justify-center px-4 py-2 rounded-md transition-colors hover:bg-accent cursor-pointer">
+              Favorites
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-            </Button>
+            </NavLink>
             &nbsp;|&nbsp;
           </div>
-          
+
         </div>
         <div className="nav-link-last-3 flex justify-center">
           <div className="nav-link-container">
-            <Button
-              variant="ghost2"
-              className="relative group px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-            >
-              <NavLink
-                to="/account/reviews"
-                style={isActiveStyle}
-                className="relative z-10"
-                end
-                prefetch="intent"
-              >
-                Reviews
-              </NavLink>
+            <NavLink to="/account/reviews" style={isActiveStyle} end prefetch="render"
+              className="relative group inline-flex items-center justify-center px-4 py-2 rounded-md transition-colors hover:bg-accent cursor-pointer">
+              Reviews
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-            </Button>
+            </NavLink>
             &nbsp;|&nbsp;
           </div>
           <div className="nav-link-container">
-            <Button
-              variant="ghost2"
-              className="relative group px-4 py-2 rounded-md transition-colors hover:bg-accent hover:text-primary cursor-pointer"
-            >
-              <NavLink
-                to="/account/addresses"
-                style={isActiveStyle}
-                className="relative z-10"
-                end
-                prefetch="intent"
-              >
-                Addresses
-              </NavLink>
+            <NavLink to="/account/addresses" style={isActiveStyle} end prefetch="render"
+              className="relative group inline-flex items-center justify-center px-4 py-2 rounded-md transition-colors hover:bg-accent cursor-pointer">
+              Addresses
               <span className="absolute bottom-0 left-[2px] right-[2px] h-[2px] bg-primary scale-x-0 transition-transform duration-300 group-hover:scale-x-100 origin-center" />
-            </Button>
+            </NavLink>
             &nbsp;|&nbsp;
           </div>
           <div className="nav-link-container">

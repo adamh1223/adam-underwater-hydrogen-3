@@ -1,16 +1,36 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import '../../styles/components/Hero.css';
 import Sectiontitle from '../global/Sectiontitle';
 import {Card} from '../ui/card';
 
+const VIMEO_SRC =
+  'https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1&dnt=1';
+
 function HeroPrints() {
   const [isVideoReady, setIsVideoReady] = useState(false);
+  const [vimeoSrc, setVimeoSrc] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Only connect to Vimeo when the media container is visible in the viewport
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVimeoSrc(VIMEO_SRC);
+          observer.disconnect();
+        }
+      },
+      {rootMargin: '200px'},
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const handleVideoLoad = () => {
-    setTimeout(() => {
-      setIsVideoReady(true); // Switch to video only when loaded
-    }, 250);
+    setTimeout(() => setIsVideoReady(true), 250);
   };
 
   return (
@@ -24,37 +44,18 @@ function HeroPrints() {
         </p>
         <div className="flex justify-center returns">
           <Card className="mb-3 p-3">
-            <div>
-              <p className="statement">Original Photography </p>
-            </div>
-            <div>
-              <p className="statement">Customizable sizes</p>
-            </div>
-
-            <div>
-              <p className="statement">Thick and durable wooden frames</p>
-            </div>
-
-            <div>
-              <p className="statement">Anti-glare, polyester Inkjet canvas</p>
-            </div>
-
-            <div>
-              <p className="statement">
-                Canon Image PROGRAF PRO-4600
-              </p>
-            </div>
-            <div>
-              <p className="statement">Gallery Wrapped</p>
-            </div>
-            <div>
-              <p className="statement">Handcrafted in San Diego, CA</p>
-            </div>
-            
+            <div><p className="statement">Original Photography</p></div>
+            <div><p className="statement">Customizable sizes</p></div>
+            <div><p className="statement">Thick and durable wooden frames</p></div>
+            <div><p className="statement">Anti-glare, polyester Inkjet canvas</p></div>
+            <div><p className="statement">Canon Image PROGRAF PRO-4600</p></div>
+            <div><p className="statement">Gallery Wrapped</p></div>
+            <div><p className="statement">Handcrafted in San Diego, CA</p></div>
           </Card>
         </div>
       </div>
       <div
+        ref={containerRef}
         className="media-container"
         style={{
           backgroundImage:
@@ -69,18 +70,19 @@ function HeroPrints() {
           className={`placeholder ${isVideoReady ? 'hidden' : ''}`}
           loading="eager"
           fetchpriority="high"
+          decoding="sync"
         />
-        <iframe
-          src="https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1"
-          frameBorder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
-          className={`video ${isVideoReady ? 'visible' : ''}`}
-          title="Background Video"
-          loading="eager"
-          onLoad={handleVideoLoad}
-        ></iframe>
-
-        {/* <div style="padding:56.25% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1018553050?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="website"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script> */}
+        {vimeoSrc && (
+          <iframe
+            src={vimeoSrc}
+            frameBorder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            className={`video ${isVideoReady ? 'visible' : ''}`}
+            title="Background Video"
+            loading="lazy"
+            onLoad={handleVideoLoad}
+          />
+        )}
       </div>
     </section>
   );

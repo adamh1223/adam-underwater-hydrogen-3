@@ -79,6 +79,13 @@ import {warmImageUrls} from '~/lib/imageWarmup';
 //   return {collection};
 // }
 // same issue as recommended products
+const R2 = 'https://downloads.adamunderwater.com/store-1-au/public';
+export function links() {
+  return [
+    {rel: 'preload', as: 'image', href: `${R2}/print3.jpg`},
+  ];
+}
+
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
   const redirectPath = getRedirectPathFromLegacyPagePath(url.pathname);

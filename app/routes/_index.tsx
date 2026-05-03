@@ -61,6 +61,16 @@ export const meta: MetaFunction = () => {
 };
 
 
+const R2 = 'https://downloads.adamunderwater.com/store-1-au/public';
+export function links() {
+  return [
+    // Preload the hero logo — it is the LCP element on the home page
+    {rel: 'preload', as: 'image', href: `${R2}/vp3.png`},
+    // Preload the background video poster so the media section isn't blank
+    {rel: 'preload', as: 'image', href: `${R2}/print1.jpg`},
+  ];
+}
+
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);

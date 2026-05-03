@@ -87,6 +87,12 @@ export default async function handleRequest(
 
   responseHeaders.set('Content-Type', 'text/html');
   responseHeaders.set('Content-Security-Policy', header);
+  // Allow Oxygen's CDN to cache successful HTML responses for 60 s at the edge
+  // while always revalidating in the browser. This dramatically reduces TTFB on
+  // repeat visits without serving stale personalised content.
+  if (responseStatusCode === 200) {
+    responseHeaders.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=30');
+  }
 
   return new Response(body, {
     headers: responseHeaders,

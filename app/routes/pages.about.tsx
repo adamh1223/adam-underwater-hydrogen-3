@@ -6,6 +6,10 @@ import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 const SHARE_IMAGE =
   'https://downloads.adamunderwater.com/store-1-au/public/headshot3.png';
 
+export function links() {
+  return [{rel: 'preload', as: 'image', href: SHARE_IMAGE}];
+}
+
 export const meta: MetaFunction = () => {
   const title = 'About Adam Underwater | Underwater Videographer & Photographer in San Diego';
   const description =
@@ -1042,20 +1046,20 @@ export default function AboutPage() {
 
           <div className="about-icon-wrapper">
             <div className="about-icon-container">
-              <img src={'https://downloads.adamunderwater.com/store-1-au/public/padi-logo2.png'} alt="PADI certification logo" className="padi-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/padi-logo2.png'} alt="PADI certification logo" className="padi-icon" loading="lazy" />
               <p className="padi-description text-lg">
                 PADI Open Water Scuba Instructor
               </p>
             </div>
 
             <div className="about-icon-container">
-              <img src={'https://downloads.adamunderwater.com/store-1-au/public/aaus-logo.png'} alt="AAUS Scientific Diver certification logo" className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/aaus-logo.png'} alt="AAUS Scientific Diver certification logo" className="about-icon" loading="lazy" />
               <p className="text-lg description sci-description">
                 AAUS Scientific Diver
               </p>
             </div>
             <div className="about-icon-container">
-              <img src={'https://downloads.adamunderwater.com/store-1-au/public/faa-logo.png'} alt="FAA Part 107 Drone Operator certification logo" className="about-icon" />
+              <img src={'https://downloads.adamunderwater.com/store-1-au/public/faa-logo.png'} alt="FAA Part 107 Drone Operator certification logo" className="about-icon" loading="lazy" />
               <p className="text-lg description faa-description">
                 FAA Part 107 Drone Operator
               </p>

@@ -10,6 +10,12 @@ import {
 } from '~/lib/homeQueries';
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
+import {VimeoFacade} from '~/components/video/VimeoFacade';
+
+const R2 = 'https://downloads.adamunderwater.com/store-1-au/public';
+export function links() {
+  return [{rel: 'preload', as: 'image', href: `${R2}/work.png`}];
+}
 
 export const meta: MetaFunction = () => {
   const title = 'Underwater Video Portfolio | Adam Underwater — Stock Footage & Cinematography';
@@ -111,11 +117,8 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 function WorkPage() {
   const collection = useLoaderData<typeof loader>() || {};
   const [isFeaturedImageReady, setIsFeaturedImageReady] = useState(false);
-  const [isSeaforestationReady, setIsSeaforestationReady] = useState(false);
-  const [isUrchinomicsReady, setIsUrchinomicsReady] = useState(false);
   const featuredImgRef = useRef<HTMLImageElement>(null);
-  const isPageReady =
-    isFeaturedImageReady && isSeaforestationReady && isUrchinomicsReady;
+  const isPageReady = isFeaturedImageReady;
 
   const handleFeaturedImgLoad = useCallback(() => {
     setIsFeaturedImageReady(true);
@@ -155,31 +158,23 @@ function WorkPage() {
         <Sectiontitle text="Seaforestation (Trailer)" />
       </div>
       <div className="clip-wrapper flex justify-center position-relative px-[40px] pt-[20px] pb-[10px]">
-        <iframe
-          className="clip"
-          src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-          allow="autoplay; fullscreen; picture-in-picture;"
+        <VimeoFacade
+          videoId="814128392"
           title="Seaforestation Trailer"
-          loading="eager"
-          onLoad={() => setIsSeaforestationReady(true)}
-        ></iframe>
+          className="clip"
+        />
       </div>
 
-      {/* <script src="https://player.vimeo.com/api/player.js"></script> */}
       <div>
         <Sectiontitle text="Urchinomics/Sumiré Uni Co" />
       </div>
       <div className="clip-wrapper flex justify-center position-relative px-[40px] pt-[20px] pb-[15px]">
-        <iframe
-          className="clip"
-          src="https://player.vimeo.com/video/795362432?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-          allow="autoplay; fullscreen; picture-in-picture;"
+        <VimeoFacade
+          videoId="795362432"
           title="Urchinomics"
-          loading="eager"
-          onLoad={() => setIsUrchinomicsReady(true)}
-        ></iframe>
+          className="clip"
+        />
       </div>
-      <script src="https://player.vimeo.com/api/player.js"></script>
       <section>
         <div className="flex justify-center me-4">
           <img

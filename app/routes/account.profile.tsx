@@ -297,23 +297,26 @@ export async function loader({context}: LoaderFunctionArgs) {
     const customerEmail = customerData?.customer?.emailAddress?.emailAddress;
     if (!customerId) return {welcome15Used};
 
-    const usageByCustomerOrderHistory = await getCustomerDiscountUsage({
-      customerAccount: context.customerAccount,
-      code: WELCOME15_DISCOUNT_CODE,
-    });
-    const usageByCustomerEmail = customerEmail
-      ? await getAdminCustomerEmailDiscountUsage({
-          env: context.env,
-          customerEmail,
-          code: WELCOME15_DISCOUNT_CODE,
-        })
-      : null;
+    // Run both discount-usage checks in parallel — they're independent and
+    // the sequential waterfall was the main reason this page loaded slowly.
+    const [usageByOrderHistory, usageByEmail] = await Promise.all([
+      getCustomerDiscountUsage({
+        customerAccount: context.customerAccount,
+        code: WELCOME15_DISCOUNT_CODE,
+      }),
+      customerEmail
+        ? getAdminCustomerEmailDiscountUsage({
+            env: context.env,
+            customerEmail,
+            code: WELCOME15_DISCOUNT_CODE,
+          })
+        : Promise.resolve(null),
+    ]);
 
-    welcome15Used = Boolean(
-      usageByCustomerOrderHistory?.used || usageByCustomerEmail?.used,
-    );
+    welcome15Used = Boolean(usageByOrderHistory?.used || usageByEmail?.used);
 
-    await setCustomerWelcome15UsesRemainingMetafield({
+    // Fire-and-forget — don't block the response on a write-only metafield update.
+    void setCustomerWelcome15UsesRemainingMetafield({
       env: context.env,
       customerId,
       usesRemaining: welcome15Used ? 0 : 1,
