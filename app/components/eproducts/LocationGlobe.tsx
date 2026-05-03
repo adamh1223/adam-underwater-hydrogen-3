@@ -1223,11 +1223,29 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       }
     });
 
+    // ── Page-visibility recovery ───────────────────────────────────────────────
+    // On mobile, switching apps or tabs causes the browser to pause the RAF and
+    // can wipe the canvas context. On return, the canvas is blank and the loop
+    // doesn't restart on its own. Mirror the syncSize recovery exactly.
+    function onVisibilityChange() {
+      if (document.visibilityState !== 'visible' || !alive) return;
+      // Treat return-to-tab like a resize: invalidate cache, bypass throttle,
+      // force globeInView true, and restart the RAF immediately.
+      cacheKey = '';
+      lastDrawTime = 0;
+      resizingUntil = performance.now() + 400; // slightly longer window
+      globeInView = true;
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(frame);
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
     return () => {
       alive = false;
       cancelAnimationFrame(rafId);
       ro.disconnect();
       io.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       canvas.removeEventListener('pointerdown',  onPointerDown);
       canvas.removeEventListener('pointermove',  onPointerMove);
       canvas.removeEventListener('pointerup',    onPointerUp);
