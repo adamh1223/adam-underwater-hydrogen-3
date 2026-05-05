@@ -837,7 +837,10 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       cacheKey = '';
       resizingUntil = performance.now() + 220;
       lastDrawTime = 0;
-      globeInView = true;
+      // Do NOT set globeInView here — the IntersectionObserver is the sole
+      // authority on whether the globe is in the viewport. Overriding it caused
+      // the animation to start on page load before the globe was ever scrolled
+      // into view.
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(frame);
 
@@ -1035,9 +1038,20 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         return;
       }
 
-      // First on-screen frame after geocode resolved — start the clock now so
-      // elapsed only counts time the globe is actually visible.
+      // Only start the animation clock once the globe is actually in the
+      // viewport. If the RAF is running (e.g. from syncSize) but the globe
+      // hasn't been scrolled into view yet, draw the idle globe and wait.
       if (startTime === 0) {
+        if (!globeInView) {
+          drawGlobe(
+            ctx, land110, null, null, null, null,
+            0, 0, baseRadius, baseRadius, zoomRadius,
+            vw, vh, null, 0, now, false,
+          );
+          lastDrawTime = now;
+          rafId = requestAnimationFrame(frame);
+          return;
+        }
         startTime = now;
         lastDrawTime = now;
       }
@@ -1249,7 +1263,8 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       cacheKey = '';
       lastDrawTime = 0;
       resizingUntil = performance.now() + 400;
-      globeInView = true;
+      // Don't force globeInView — respect the IO's state. Only restart the RAF
+      // so the canvas repaints; the frame loop guards animation start on globeInView.
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(frame);
     }
