@@ -175,6 +175,40 @@ function WorkPage() {
           className="clip"
         />
       </div>
+
+      {/* ── Shorts ─────────────────────────────────────────── */}
+      <div className="mt-4">
+        <Sectiontitle text="Shorts" />
+      </div>
+      <div className="shorts-grid px-[40px] pt-[10px] pb-[20px]">
+        {/* TODO: replace SHORTS_VIDEO_ID with your full YouTube Short video ID
+            (visible in YouTube Studio: https://youtube.com/shorts/YOUR_ID)     */}
+        <YouTubeFacade
+          videoId="qC01qWlGLHE"
+          title="Sea Otters: The Key to Healthy Oceans"
+          className="short-clip"
+          vertical
+          showTitle
+          thumbnailUrl="https://downloads.adamunderwater.com/shared/youtube%20short%20thumbnails/ottershort.png"
+        />
+        <YouTubeFacade
+          videoId="yVxepUqTnIM"
+          title="The Future of Our Ocean Ecosystems"
+          className="short-clip"
+          vertical
+          showTitle
+          thumbnailUrl="https://downloads.adamunderwater.com/shared/youtube%20short%20thumbnails/oceanshort.png"
+        />
+        <YouTubeFacade
+          videoId="Hyber4VmqyA"
+          title="Freediving in Cape Town"
+          className="short-clip"
+          vertical
+          showTitle
+          thumbnailUrl="https://downloads.adamunderwater.com/shared/youtube%20short%20thumbnails/capeshort.png"
+        />
+      </div>
+
       <section>
         <div className="flex justify-center me-4">
           <img

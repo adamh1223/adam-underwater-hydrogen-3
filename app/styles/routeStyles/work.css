@@ -61,6 +61,23 @@
   }
 }
 
+/* ── Shorts grid — 2-column, full width ───────────────────────── */
+.shorts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.short-clip {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 8px;
+  overflow: hidden;
+  display: block;
+}
+
 @media (max-width: 700px) {
   .hero-img,
   .featured-img {
