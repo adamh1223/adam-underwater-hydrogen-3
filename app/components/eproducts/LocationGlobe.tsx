@@ -868,7 +868,12 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       if (visible === globeInView) return;
       globeInView = visible;
       if (visible) {
-        // Back in view — resume RAF if animation was started
+        // Returning to view — push startTime forward by however long we were
+        // off-screen so elapsed time only counts time the globe is visible.
+        if (pausedAt > 0 && startTime > 0 && phase !== 'settled') {
+          startTime += performance.now() - pausedAt;
+        }
+        pausedAt = 0;
         if (alive && animationStarted && rafId === 0) {
           rafId = requestAnimationFrame(frame);
         }
@@ -878,6 +883,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         // isIntersecting=false as the viewport boundary changes, which would
         // leave the canvas blank until something else restarts the loop.
         if (performance.now() >= resizingUntil) {
+          if (phase !== 'settled') pausedAt = performance.now();
           cancelAnimationFrame(rafId);
           rafId = 0;
         }
@@ -888,7 +894,8 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let lambdaC = 0, phiC = 0;
     let targetLambdaC = 0, targetPhiC = 0;
     let currentScale = baseRadius;
-    let startTime = 0;
+    let startTime = 0;    // set to performance.now() on the FIRST on-screen frame
+    let pausedAt  = 0;    // when the globe last left the viewport mid-animation
     let landStartTime = 0, landingDurationMs = DECEL_MS;
     let zoomStartTime = 0, settledTime = 0;
     let phase: 'spinning' | 'landing' | 'zooming' | 'settled' = 'spinning';
@@ -1016,12 +1023,8 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     function frame(now: number) {
       if (!alive) return;
 
-      // startTime stays 0 until the geocode callback fires and properly
-      // initialises the animation. If we advance phase logic before that,
-      // elapsed = now - 0 = time-since-page-load (could be 30 000+ ms on
-      // client-side navigation), which instantly fast-forwards the whole
-      // animation. Just draw the idle globe and wait.
-      if (startTime === 0) {
+      // If geocode hasn't resolved yet, draw the idle globe and wait.
+      if (!animationStarted) {
         drawGlobe(
           ctx, land110, null, null, null, null,
           0, 0, baseRadius, baseRadius, zoomRadius,
@@ -1030,6 +1033,13 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         lastDrawTime = now;
         rafId = requestAnimationFrame(frame);
         return;
+      }
+
+      // First on-screen frame after geocode resolved — start the clock now so
+      // elapsed only counts time the globe is actually visible.
+      if (startTime === 0) {
+        startTime = now;
+        lastDrawTime = now;
       }
 
       const isInteracting = dragging || pinching;
@@ -1211,9 +1221,9 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         }
         lambdaC = spinStartLambda;
         phiC = 0;
-        startTime = performance.now();
-        // Only start the RAF if the globe is already in view; the IO will start it
-        // when/if it scrolls into view later.
+        // startTime is intentionally NOT set here. It is set to performance.now()
+        // on the very first frame that actually runs (i.e. when the globe is on
+        // screen), so elapsed time only counts visible time.
         if (globeInView) {
           // Cancel any pre-existing RAF (e.g. started by syncSize during resize)
           // before creating a new one to prevent duplicate concurrent loops.
@@ -1231,9 +1241,14 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       if (document.visibilityState !== 'visible' || !alive) return;
       // Treat return-to-tab like a resize: invalidate cache, bypass throttle,
       // force globeInView true, and restart the RAF immediately.
+      // Compensate for time spent in background so animation doesn't jump
+      if (pausedAt > 0 && startTime > 0 && phase !== 'settled') {
+        startTime += performance.now() - pausedAt;
+        pausedAt = 0;
+      }
       cacheKey = '';
       lastDrawTime = 0;
-      resizingUntil = performance.now() + 400; // slightly longer window
+      resizingUntil = performance.now() + 400;
       globeInView = true;
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(frame);

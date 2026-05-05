@@ -56,6 +56,7 @@ export default async function handleRequest(
       'data:',
       'blob:',
       'https://cdn.shopify.com',
+      'https://img.youtube.com',
       ...additionalMediaOrigins,
     ],
     fontSrc: [
@@ -64,7 +65,12 @@ export default async function handleRequest(
       'https://cdn.shopify.com',
       'https://fonts.gstatic.com',
     ],
-    frameSrc: ['https://player.vimeo.com/', 'https://vimeo.com/'],
+    frameSrc: [
+      'https://player.vimeo.com/',
+      'https://vimeo.com/',
+      'https://www.youtube.com/',
+      'https://www.youtube-nocookie.com/',
+    ],
   });
 
   const body = await renderToReadableStream(

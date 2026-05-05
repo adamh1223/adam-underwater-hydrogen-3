@@ -851,7 +851,13 @@ function buildBundleDetailClips({
 export function links() {
   // Can't know the product image URL here, but we can prime the Shopify CDN
   // connection so the first image request has a warm TCP+TLS socket.
-  return [{rel: 'preconnect', href: 'https://cdn.shopify.com', crossOrigin: 'anonymous'}];
+  return [
+    {
+      rel: 'preconnect',
+      href: 'https://cdn.shopify.com',
+      crossOrigin: 'anonymous',
+    },
+  ];
 }
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -2303,73 +2309,57 @@ export default function Product() {
       {preloadImageUrl && (
         <link rel="preload" as="image" href={preloadImageUrl} />
       )}
-    <SkeletonGate
-      isReady={isPageReady || !shouldShowProductEntrySkeleton}
-      skeleton={
-        <ProductPageSkeleton
-          isVideo={isVideo}
-          orientation={!isVideo ? orientation : 'Landscape'}
+      <SkeletonGate
+        isReady={isPageReady || !shouldShowProductEntrySkeleton}
+        skeleton={
+          <ProductPageSkeleton
+            isVideo={isVideo}
+            orientation={!isVideo ? orientation : 'Landscape'}
+          />
+        }
+      >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(productJsonLd)}}
         />
-      }
-    >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{__html: JSON.stringify(productJsonLd)}}
-      />
-      {/* Hidden preloader for featured image to trigger skeleton gate */}
-      <img
-        ref={productImgRef}
-        src={currentGateImageUrl}
-        alt=""
-        style={{
-          position: 'absolute',
-          width: 0,
-          height: 0,
-          opacity: 0,
-          pointerEvents: 'none',
-        }}
-        onLoad={handleProductImgLoad}
-      />
-      <>
-        <section className="product pt-[12px]">
-          {/* Link tree */}
-          <div className="ps-[20px] pe-[12px] mb-3 flow-root text-left">
-            {isArtistPick && (
-              <div className="float-right ml-3 mb-2">
-                {renderArtistPickBadge('text-sm')}
-              </div>
-            )}
-            {isMostPopular && (
-              <div className="float-right ml-3 mb-2">
-                {renderMostPopularBadge('text-sm')}
-              </div>
-            )}
-            <nav
-              aria-label="Breadcrumb"
-              className="min-w-0 text-left text-lg text-muted-foreground leading-tight break-words"
-            >
-              <div className="inline-flex gap-1.5 me-2 mb-1">
-                <Link
-                  className="transition-colors hover:text-foreground"
-                  to="/"
-                >
-                  Home
-                </Link>
-                <div
-                  role="presentation"
-                  aria-hidden="true"
-                  className="[&>svg]:size-3.5 flex items-center"
-                >
-                  {<ChevronRightIcon />}
+        {/* Hidden preloader for featured image to trigger skeleton gate */}
+        <img
+          ref={productImgRef}
+          src={currentGateImageUrl}
+          alt=""
+          style={{
+            position: 'absolute',
+            width: 0,
+            height: 0,
+            opacity: 0,
+            pointerEvents: 'none',
+          }}
+          onLoad={handleProductImgLoad}
+        />
+        <>
+          <section className="product pt-[12px]">
+            {/* Link tree */}
+            <div className="ps-[20px] pe-[12px] mb-3 flow-root text-left">
+              {isArtistPick && (
+                <div className="float-right ml-3 mb-2">
+                  {renderArtistPickBadge('text-sm')}
                 </div>
-              </div>
-              {!isVideo && (
+              )}
+              {isMostPopular && (
+                <div className="float-right ml-3 mb-2">
+                  {renderMostPopularBadge('text-sm')}
+                </div>
+              )}
+              <nav
+                aria-label="Breadcrumb"
+                className="min-w-0 text-left text-lg text-muted-foreground leading-tight break-words"
+              >
                 <div className="inline-flex gap-1.5 me-2 mb-1">
                   <Link
                     className="transition-colors hover:text-foreground"
-                    to="/prints"
+                    to="/"
                   >
-                    Prints
+                    Home
                   </Link>
                   <div
                     role="presentation"
@@ -2379,858 +2369,886 @@ export default function Product() {
                     {<ChevronRightIcon />}
                   </div>
                 </div>
-              )}
-              {isVideo && (
-                <div className="inline-flex gap-1.5 me-2 mb-1">
-                  <Link
-                    className="transition-colors hover:text-foreground"
-                    to="/stock"
-                  >
-                    Stock Footage
-                  </Link>
-                  <div
-                    role="presentation"
-                    aria-hidden="true"
-                    className="[&>svg]:size-3.5 flex items-center"
-                  >
-                    {<ChevronRightIcon />}
-                  </div>
-                </div>
-              )}
-              <div className="inline text-muted-foreground">{title}</div>
-            </nav>
-          </div>
-          {windowWidth && windowWidth < 1024 && (
-            <>
-              <div className="individual-product-header-container px-[16px] pt-1">
-                <div className="title-button-wrapper">
-                  <span className="capitalize text-3xl font-bold">{title}</span>
-                  {renderProductHeaderActionButtons()}
-                </div>
-
                 {!isVideo && (
-                  <p className="text-muted-foreground">Framed Canvas Print</p>
+                  <div className="inline-flex gap-1.5 me-2 mb-1">
+                    <Link
+                      className="transition-colors hover:text-foreground"
+                      to="/prints"
+                    >
+                      Prints
+                    </Link>
+                    <div
+                      role="presentation"
+                      aria-hidden="true"
+                      className="[&>svg]:size-3.5 flex items-center"
+                    >
+                      {<ChevronRightIcon />}
+                    </div>
+                  </div>
                 )}
                 {isVideo && (
-                  <p className="text-muted-foreground">
-                    {isBundle ? 'Stock Footage Bundle' : 'Stock Footage Video'}
-                  </p>
+                  <div className="inline-flex gap-1.5 me-2 mb-1">
+                    <Link
+                      className="transition-colors hover:text-foreground"
+                      to="/stock"
+                    >
+                      Stock Footage
+                    </Link>
+                    <div
+                      role="presentation"
+                      aria-hidden="true"
+                      className="[&>svg]:size-3.5 flex items-center"
+                    >
+                      {<ChevronRightIcon />}
+                    </div>
+                  </div>
                 )}
-                <ProductPrice
-                  price={selectedVariant?.price}
-                  compareAtPrice={selectedVariant?.compareAtPrice}
-                />
-                {(!isVideo || isBundle) && reviewsCount >= 1 && (
-                  <a
-                    href="#reviews"
-                    onClick={(evt) => handleScroll('reviews', evt)}
-                    className="inline-block no-underline text-inherit w-fit"
-                  >
-                    <div className="average-product-rating inline-flex">
-                      <div className="inline-flex items-center gap-2">
-                        <div
-                          className="relative inline-flex h-5 items-center pointer-events-none"
-                          aria-hidden="true"
-                        >
-                          <Rating
-                            readOnly
-                            value={5}
-                            className="text-muted-foreground"
-                            aria-label={`Maximum rating of 5 stars`}
-                          >
-                            {FIVE_STAR_KEYS.map((starKey) => (
-                              <RatingButton
-                                key={`mobile-max-${starKey}`}
-                                className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                              />
-                            ))}
-                          </Rating>
+                <div className="inline text-muted-foreground">{title}</div>
+              </nav>
+            </div>
+            {windowWidth && windowWidth < 1024 && (
+              <>
+                <div className="individual-product-header-container px-[16px] pt-1">
+                  <div className="title-button-wrapper">
+                    <span className="capitalize text-3xl font-bold">
+                      {title}
+                    </span>
+                    {renderProductHeaderActionButtons()}
+                  </div>
+
+                  {!isVideo && (
+                    <p className="text-muted-foreground">Framed Canvas Print</p>
+                  )}
+                  {isVideo && (
+                    <p className="text-muted-foreground">
+                      {isBundle
+                        ? 'Stock Footage Bundle'
+                        : 'Stock Footage Video'}
+                    </p>
+                  )}
+                  <ProductPrice
+                    price={selectedVariant?.price}
+                    compareAtPrice={selectedVariant?.compareAtPrice}
+                  />
+                  {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                    <a
+                      href="#reviews"
+                      onClick={(evt) => handleScroll('reviews', evt)}
+                      className="inline-block no-underline text-inherit w-fit"
+                    >
+                      <div className="average-product-rating inline-flex">
+                        <div className="inline-flex items-center gap-2">
                           <div
-                            className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                            style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                            className="relative inline-flex h-5 items-center pointer-events-none"
+                            aria-hidden="true"
                           >
-                            <Rating readOnly value={5} className="stars">
+                            <Rating
+                              readOnly
+                              value={5}
+                              className="text-muted-foreground"
+                              aria-label={`Maximum rating of 5 stars`}
+                            >
                               {FIVE_STAR_KEYS.map((starKey) => (
                                 <RatingButton
-                                  key={`mobile-fill-${starKey}`}
+                                  key={`mobile-max-${starKey}`}
                                   className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                                  aria-label={`Average rating ${formattedAverageRating} out of 5`}
                                 />
                               ))}
                             </Rating>
+                            <div
+                              className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                              style={{
+                                width: `${(averageRating / 5) * 100 + 2}%`,
+                              }}
+                            >
+                              <Rating readOnly value={5} className="stars">
+                                {FIVE_STAR_KEYS.map((starKey) => (
+                                  <RatingButton
+                                    key={`mobile-fill-${starKey}`}
+                                    className="h-5 w-5 p-0 flex items-center justify-center leading-none"
+                                    aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                  />
+                                ))}
+                              </Rating>
+                            </div>
                           </div>
+                          <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                            {formattedAverageRating} (
+                            {reviewsCount === 1
+                              ? '1 review'
+                              : `${reviewsCount} reviews`}
+                            )
+                          </span>
                         </div>
-                        <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
-                          {formattedAverageRating} (
-                          {reviewsCount === 1
-                            ? '1 review'
-                            : `${reviewsCount} reviews`}
-                          )
-                        </span>
                       </div>
-                    </div>
-                  </a>
-                )}
-                {isBundle ? (
-                  <>
+                    </a>
+                  )}
+                  {isBundle ? (
+                    <>
+                      <h4 className="text-xl individual-product-location">
+                        {activeBundleClip?.clipName ??
+                          `Clip ${activeBundleClipIndex}`}
+                      </h4>
+                      {activeBundleClip?.clipLocation && (
+                        <p className="text-muted-foreground text-sm pb-2">
+                          {activeBundleClip.clipLocation}
+                        </p>
+                      )}
+                    </>
+                  ) : (
                     <h4 className="text-xl individual-product-location">
-                      {activeBundleClip?.clipName ??
-                        `Clip ${activeBundleClipIndex}`}
+                      {formattedLocation}
                     </h4>
-                    {activeBundleClip?.clipLocation && (
-                      <p className="text-muted-foreground text-sm pb-2">
-                        {activeBundleClip.clipLocation}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <h4 className="text-xl individual-product-location">
-                    {formattedLocation}
-                  </h4>
-                )}
-              </div>
-            </>
-          )}
-          {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
-          <div
-            className="lg:grid lg:grid-cols-[60%_40%] min-[1600px]:grid-cols-2 lg:gap-x-1"
-            style={productDetailGridStyle}
-          >
-            {standardCarouselImages && standardCarouselImages?.length > 1 && (
-              <IndividualProduct
-                productName={title}
-                productImages={standardCarouselImages}
-                verticalProductImages={standardVerticalCarouselImages}
-                orientation={orientation}
-                threeDViewImages={threeDImagesToUse}
-                allProductImages={allPrintProductImages}
-                enableBackgroundImageWarmup={isPageReady && isPrint}
-                initialLoadedImages={
-                  initialLoadedGateImageUrl
-                    ? [{url: initialLoadedGateImageUrl, altText: title}]
-                    : []
-                }
-              ></IndividualProduct>
+                  )}
+                </div>
+              </>
             )}
-            {isVideo && !isBundle && (
-              <IndividualVideoProduct
-                productName={title}
-                featuredImage={featuredImage?.url}
-                WMLink={parsedWMLink}
-              ></IndividualVideoProduct>
-            )}
-            {isVideo && isBundle && (
-              <IndividualVideoBundle
-                productName={title}
-                clips={bundleDetailClips}
-                activeClipIndex={activeBundleClipIndex}
-                onActiveClipChange={setActiveBundleClipIndex}
-              />
-            )}
-            {/* <ProductImage image={selectedVariant?.image} /> */}
-            {windowWidth != undefined && windowWidth < 1024 && (
-              <div className="product-main px-[16px]">
-                {windowWidth && windowWidth >= 1024 && (
-                  <>
-                    <div className="title-button-wrapper">
-                      <span className="capitalize text-3xl font-bold title-text">
-                        {title}
-                      </span>
-                      {renderProductHeaderActionButtons()}
-                    </div>
-
-                    {!isVideo && (
-                      <p className="text-muted-foreground">
-                        Framed Canvas Print
-                      </p>
-                    )}
-                    {isVideo && (
-                      <p className="text-muted-foreground">
-                        {isBundle
-                          ? 'Stock Footage Bundle'
-                          : 'Stock Footage Video'}
-                      </p>
-                    )}
-                    <ProductPrice
-                      price={selectedVariant?.price}
-                      compareAtPrice={selectedVariant?.compareAtPrice}
-                    />
-                    {(!isVideo || isBundle) && reviewsCount >= 1 && (
-                      <a
-                        href="#reviews"
-                        onClick={(evt) => handleScroll('reviews', evt)}
-                        className="inline-block no-underline text-inherit w-fit"
-                      >
-                        <div className="average-product-rating inline-flex">
-                          <div className="inline-flex items-center gap-2">
-                            <div
-                              className="relative inline-flex h-5 items-center pointer-events-none"
-                              aria-hidden="true"
-                            >
-                              <Rating
-                                readOnly
-                                value={5}
-                                className="text-muted-foreground"
-                                aria-label={`Maximum rating of 5 stars`}
-                              >
-                                {FIVE_STAR_KEYS.map((starKey) => (
-                                  <RatingButton
-                                    key={`desktop-max-${starKey}`}
-                                    className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                                  />
-                                ))}
-                              </Rating>
-                              <div
-                                className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                                style={{
-                                  width: `${(averageRating / 5) * 100 + 2}%`,
-                                }}
-                              >
-                                <Rating readOnly value={5} className="stars">
-                                  {FIVE_STAR_KEYS.map((starKey) => (
-                                    <RatingButton
-                                      key={`desktop-fill-${starKey}`}
-                                      className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                                      aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                                    />
-                                  ))}
-                                </Rating>
-                              </div>
-                            </div>
-                            <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
-                              {formattedAverageRating} (
-                              {reviewsCount === 1
-                                ? '1 review'
-                                : `${reviewsCount} reviews`}
-                              )
-                            </span>
-                          </div>
-                        </div>
-                      </a>
-                    )}
-                    {isBundle ? (
-                      <>
-                        <h4 className="text-xl individual-product-location">
-                          {activeBundleClip?.clipName ??
-                            `Clip ${activeBundleClipIndex}`}
-                        </h4>
-                        {activeBundleClip?.clipLocation && (
-                          <p className="text-muted-foreground text-sm pb-2">
-                            {activeBundleClip.clipLocation}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <h4 className="text-xl individual-product-location">
-                        {formattedLocation}
-                      </h4>
-                    )}
-                  </>
-                )}
-
-                {isBundle && activeBundleClip?.descriptionHtml && (
-                  <Card className="mb-2">
-                    <CardContent>
-                      <div
-                        className="product-description-content"
-                        dangerouslySetInnerHTML={{
-                          __html: activeBundleClip.descriptionHtml,
-                        }}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-                {!isBundle && (
-                  <Card className="mb-2">
-                    <CardContent>
-                      <div
-                        className="product-description-content"
-                        dangerouslySetInnerHTML={{__html: descriptionHtml}}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-                {isVideo && !isBundle && selectedVideoFrameRateLabel && (
-                  <p className="mt-3 mb-2">
-                    <strong>Frame Rate:</strong> {selectedVideoFrameRateLabel}
-                  </p>
-                )}
-                {isVideo && !isBundle && selectedVideoFileSizeLabel && (
-                  <p className="mb-4">
-                    <strong>File Size:</strong> {selectedVideoFileSizeLabel}
-                  </p>
-                )}
-
-                <ProductForm
-                  VideoAlreadyInCart={disableButton}
-                  cart={cart}
-                  productId={product.id}
-                  productOptions={productOptions}
-                  selectedVariant={selectedVariant}
-                  imagesToShow={layoutImagesToUse as SimpleProductImages[]}
-                  isVideo={isVideo}
-                  isPrint={isPrint}
-                  isVideoBundle={isVideoBundle}
+            {/* We are not getting a carousel when product only has vertical product images. We might need to conditionally render the individual product with and without giving it standardcarouselimages so it can still render in the absence of these. this means we have to make these optional, not mandatory, to pass into Individualproduct. */}
+            <div
+              className="lg:grid lg:grid-cols-[60%_40%] min-[1600px]:grid-cols-2 lg:gap-x-1"
+              style={productDetailGridStyle}
+            >
+              {standardCarouselImages && standardCarouselImages?.length > 1 && (
+                <IndividualProduct
+                  productName={title}
+                  productImages={standardCarouselImages}
+                  verticalProductImages={standardVerticalCarouselImages}
+                  orientation={orientation}
+                  threeDViewImages={threeDImagesToUse}
+                  allProductImages={allPrintProductImages}
+                  enableBackgroundImageWarmup={isPageReady && isPrint}
+                  initialLoadedImages={
+                    initialLoadedGateImageUrl
+                      ? [{url: initialLoadedGateImageUrl, altText: title}]
+                      : []
+                  }
+                ></IndividualProduct>
+              )}
+              {isVideo && !isBundle && (
+                <IndividualVideoProduct
+                  productName={title}
+                  featuredImage={featuredImage?.url}
+                  WMLink={parsedWMLink}
+                ></IndividualVideoProduct>
+              )}
+              {isVideo && isBundle && (
+                <IndividualVideoBundle
+                  productName={title}
+                  clips={bundleDetailClips}
+                  activeClipIndex={activeBundleClipIndex}
+                  onActiveClipChange={setActiveBundleClipIndex}
                 />
-              </div>
-            )}
-            {windowWidth != undefined && windowWidth >= 1024 && (
-              <div className="product-main px-[12px]">
-                {windowWidth && windowWidth >= 1024 && (
-                  <>
-                    <div className="title-button-wrapper">
-                      <span className="capitalize text-3xl font-bold title-text">
-                        {title}
-                      </span>
-                      {renderProductHeaderActionButtons()}
-                    </div>
-
-                    {!isVideo && (
-                      <p className="text-muted-foreground">
-                        Framed Canvas Print
-                      </p>
-                    )}
-                    {isVideo && (
-                      <p className="text-muted-foreground">
-                        {isBundle
-                          ? 'Stock Footage Bundle'
-                          : 'Stock Footage Video'}
-                      </p>
-                    )}
-                    <ProductPrice
-                      price={selectedVariant?.price}
-                      compareAtPrice={selectedVariant?.compareAtPrice}
-                    />
-                    {(!isVideo || isBundle) && reviewsCount >= 1 && (
-                      <a
-                        href="#reviews"
-                        onClick={(evt) => handleScroll('reviews', evt)}
-                        className="inline-block no-underline text-inherit w-fit"
-                      >
-                        <div className="average-product-rating inline-flex">
-                          <div className="inline-flex items-center gap-2">
-                            <div
-                              className="relative inline-flex h-5 items-center pointer-events-none"
-                              aria-hidden="true"
-                            >
-                              <Rating
-                                readOnly
-                                value={5}
-                                className="text-muted-foreground"
-                                aria-label={`Maximum rating of 5 stars`}
-                              >
-                                {FIVE_STAR_KEYS.map((starKey) => (
-                                  <RatingButton
-                                    key={`desktop-max-${starKey}`}
-                                    className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                                  />
-                                ))}
-                              </Rating>
-                              <div
-                                className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                                style={{
-                                  width: `${(averageRating / 5) * 100 + 2}%`,
-                                }}
-                              >
-                                <Rating readOnly value={5} className="stars">
-                                  {FIVE_STAR_KEYS.map((starKey) => (
-                                    <RatingButton
-                                      key={`desktop-fill-${starKey}`}
-                                      className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                                      aria-label={`Average rating ${formattedAverageRating} out of 5`}
-                                    />
-                                  ))}
-                                </Rating>
-                              </div>
-                            </div>
-                            <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
-                              {formattedAverageRating} (
-                              {reviewsCount === 1
-                                ? '1 review'
-                                : `${reviewsCount} reviews`}
-                              )
-                            </span>
-                          </div>
-                        </div>
-                      </a>
-                    )}
-                    {isBundle ? (
-                      <>
-                        <h4 className="text-xl individual-product-location">
-                          {activeBundleClip?.clipName ??
-                            `Clip ${activeBundleClipIndex}`}
-                        </h4>
-                        {activeBundleClip?.clipLocation && (
-                          <p className="text-muted-foreground text-sm pb-2">
-                            {activeBundleClip.clipLocation}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <h4 className="text-xl individual-product-location">
-                        {formattedLocation}
-                      </h4>
-                    )}
-                  </>
-                )}
-
-                {isBundle && activeBundleClip?.descriptionHtml && (
-                  <div
-                    className="product-description-content"
-                    dangerouslySetInnerHTML={{
-                      __html: activeBundleClip.descriptionHtml,
-                    }}
-                  />
-                )}
-                {!isBundle && (
-                  <div
-                    className="product-description-content"
-                    dangerouslySetInnerHTML={{__html: descriptionHtml}}
-                  />
-                )}
-                {isVideo && !isBundle && selectedVideoFrameRateLabel && (
-                  <p className="mt-3 mb-2">
-                    <strong>Frame Rate:</strong> {selectedVideoFrameRateLabel}
-                  </p>
-                )}
-                {isVideo && !isBundle && selectedVideoFileSizeLabel ? (
-                  <p className="mb-4">
-                    <strong>File Size:</strong> {selectedVideoFileSizeLabel}
-                  </p>
-                ) : (
-                  <br />
-                )}
-
-                <ProductForm
-                  VideoAlreadyInCart={disableButton}
-                  cart={cart}
-                  productId={product.id}
-                  productOptions={productOptions}
-                  selectedVariant={selectedVariant}
-                  imagesToShow={layoutImagesToUse as SimpleProductImages[]}
-                  isVideo={isVideo}
-                  isPrint={isPrint}
-                  isVideoBundle={isVideoBundle}
-                />
-              </div>
-            )}
-          </div>
-          {windowWidth && windowWidth < 1024 && !isVideo && (
-            <>
-              <hr />
-              <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
-                <div className="grid grid-cols-1">
-                  <div className="flex justify-center items-center">
-                    <img
-                      src={
-                        'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'
-                      }
-                      alt=""
-                      style={{height: '2.2rem'}}
-                    />
-                  </div>
-                  <div className="flex justify-center mt-3">
-                    <p>Made in USA</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1">
-                  <div className="flex justify-center items-center">
-                    <img
-                      src={
-                        'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'
-                      }
-                      alt=""
-                      style={{height: '2.4rem'}}
-                    />
-                  </div>
-                  <div className="flex justify-center mt-2">
-                    <p>Premium Quality</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1">
-                  <div className="flex justify-center items-center">
-                    <img
-                      src={
-                        'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'
-                      }
-                      alt=""
-                      style={{height: '2.7rem'}}
-                    />
-                  </div>
-                  <div className="flex justify-center">
-                    <p>14-day returns</p>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-          {windowWidth && windowWidth < 1024 && !isVideo && (
-            <div className="items-top ">
-              <div className="flex justify-end card-accordion-container">
-                <Card className="py-2 px-4 mx-[20px] mb-2 w-full">
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger className="cursor-pointer">
-                        Print Specs
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <SpecsGrid
-                          sectionClassName="print-specs"
-                          items={PRINT_SPECS}
-                        />
-                      </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="item-2">
-                      <AccordionTrigger className="cursor-pointer">
-                        Frame Specs
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <SpecsGrid
-                          sectionClassName="frame-specs"
-                          items={FRAME_SPECS}
-                        />
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </Card>
-              </div>
-            </div>
-          )}
-          {!isVideo && formattedLocation && (
-            <LocationGlobe formattedLocation={formattedLocation} />
-          )}
-          {!isVideo && (
-            <>
-              <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 lg:mt-6 extra-info">
-                <div className="grid grid-cols-1">
-                  <div className="how-its-made">
-                    {/* section title */}
-                    <div className="section-title-container">
-                      <div className="flex items-center justify-center w-full">
-                        <div className="flex-1 h-px bg-muted" />
-                        <span className="px-4">
-                          <div>How it&apos;s Made</div>
+              )}
+              {/* <ProductImage image={selectedVariant?.image} /> */}
+              {windowWidth != undefined && windowWidth < 1024 && (
+                <div className="product-main px-[16px]">
+                  {windowWidth && windowWidth >= 1024 && (
+                    <>
+                      <div className="title-button-wrapper">
+                        <span className="capitalize text-3xl font-bold title-text">
+                          {title}
                         </span>
-                        <div className="flex-1 h-px bg-muted" />
+                        {renderProductHeaderActionButtons()}
                       </div>
+
+                      {!isVideo && (
+                        <p className="text-muted-foreground">
+                          Framed Canvas Print
+                        </p>
+                      )}
+                      {isVideo && (
+                        <p className="text-muted-foreground">
+                          {isBundle
+                            ? 'Stock Footage Bundle'
+                            : 'Stock Footage Video'}
+                        </p>
+                      )}
+                      <ProductPrice
+                        price={selectedVariant?.price}
+                        compareAtPrice={selectedVariant?.compareAtPrice}
+                      />
+                      {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                        <a
+                          href="#reviews"
+                          onClick={(evt) => handleScroll('reviews', evt)}
+                          className="inline-block no-underline text-inherit w-fit"
+                        >
+                          <div className="average-product-rating inline-flex">
+                            <div className="inline-flex items-center gap-2">
+                              <div
+                                className="relative inline-flex h-5 items-center pointer-events-none"
+                                aria-hidden="true"
+                              >
+                                <Rating
+                                  readOnly
+                                  value={5}
+                                  className="text-muted-foreground"
+                                  aria-label={`Maximum rating of 5 stars`}
+                                >
+                                  {FIVE_STAR_KEYS.map((starKey) => (
+                                    <RatingButton
+                                      key={`desktop-max-${starKey}`}
+                                      className="h-5 w-5 p-0 flex items-center justify-center leading-none"
+                                    />
+                                  ))}
+                                </Rating>
+                                <div
+                                  className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                                  style={{
+                                    width: `${(averageRating / 5) * 100 + 2}%`,
+                                  }}
+                                >
+                                  <Rating readOnly value={5} className="stars">
+                                    {FIVE_STAR_KEYS.map((starKey) => (
+                                      <RatingButton
+                                        key={`desktop-fill-${starKey}`}
+                                        className="h-5 w-5 p-0 flex items-center justify-center leading-none"
+                                        aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                      />
+                                    ))}
+                                  </Rating>
+                                </div>
+                              </div>
+                              <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                                {formattedAverageRating} (
+                                {reviewsCount === 1
+                                  ? '1 review'
+                                  : `${reviewsCount} reviews`}
+                                )
+                              </span>
+                            </div>
+                          </div>
+                        </a>
+                      )}
+                      {isBundle ? (
+                        <>
+                          <h4 className="text-xl individual-product-location">
+                            {activeBundleClip?.clipName ??
+                              `Clip ${activeBundleClipIndex}`}
+                          </h4>
+                          {activeBundleClip?.clipLocation && (
+                            <p className="text-muted-foreground text-sm pb-2">
+                              {activeBundleClip.clipLocation}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <h4 className="text-xl individual-product-location">
+                          {formattedLocation}
+                        </h4>
+                      )}
+                    </>
+                  )}
+
+                  {isBundle && activeBundleClip?.descriptionHtml && (
+                    <Card className="mb-2">
+                      <CardContent>
+                        <div
+                          className="product-description-content"
+                          dangerouslySetInnerHTML={{
+                            __html: activeBundleClip.descriptionHtml,
+                          }}
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
+                  {!isBundle && (
+                    <Card className="mb-2">
+                      <CardContent>
+                        <div
+                          className="product-description-content"
+                          dangerouslySetInnerHTML={{__html: descriptionHtml}}
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
+                  {isVideo && !isBundle && selectedVideoFrameRateLabel && (
+                    <p className="mt-3 mb-2">
+                      <strong>Frame Rate:</strong> {selectedVideoFrameRateLabel}
+                    </p>
+                  )}
+                  {isVideo && !isBundle && selectedVideoFileSizeLabel && (
+                    <p className="mb-4">
+                      <strong>File Size:</strong> {selectedVideoFileSizeLabel}
+                    </p>
+                  )}
+
+                  <ProductForm
+                    VideoAlreadyInCart={disableButton}
+                    cart={cart}
+                    productId={product.id}
+                    productOptions={productOptions}
+                    selectedVariant={selectedVariant}
+                    imagesToShow={layoutImagesToUse as SimpleProductImages[]}
+                    isVideo={isVideo}
+                    isPrint={isPrint}
+                    isVideoBundle={isVideoBundle}
+                  />
+                </div>
+              )}
+              {windowWidth != undefined && windowWidth >= 1024 && (
+                <div className="product-main px-[12px]">
+                  {windowWidth && windowWidth >= 1024 && (
+                    <>
+                      <div className="title-button-wrapper">
+                        <span className="capitalize text-3xl font-bold title-text">
+                          {title}
+                        </span>
+                        {renderProductHeaderActionButtons()}
+                      </div>
+
+                      {!isVideo && (
+                        <p className="text-muted-foreground">
+                          Framed Canvas Print
+                        </p>
+                      )}
+                      {isVideo && (
+                        <p className="text-muted-foreground">
+                          {isBundle
+                            ? 'Stock Footage Bundle'
+                            : 'Stock Footage Video'}
+                        </p>
+                      )}
+                      <ProductPrice
+                        price={selectedVariant?.price}
+                        compareAtPrice={selectedVariant?.compareAtPrice}
+                      />
+                      {(!isVideo || isBundle) && reviewsCount >= 1 && (
+                        <a
+                          href="#reviews"
+                          onClick={(evt) => handleScroll('reviews', evt)}
+                          className="inline-block no-underline text-inherit w-fit"
+                        >
+                          <div className="average-product-rating inline-flex">
+                            <div className="inline-flex items-center gap-2">
+                              <div
+                                className="relative inline-flex h-5 items-center pointer-events-none"
+                                aria-hidden="true"
+                              >
+                                <Rating
+                                  readOnly
+                                  value={5}
+                                  className="text-muted-foreground"
+                                  aria-label={`Maximum rating of 5 stars`}
+                                >
+                                  {FIVE_STAR_KEYS.map((starKey) => (
+                                    <RatingButton
+                                      key={`desktop-max-${starKey}`}
+                                      className="h-5 w-5 p-0 flex items-center justify-center leading-none"
+                                    />
+                                  ))}
+                                </Rating>
+                                <div
+                                  className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                                  style={{
+                                    width: `${(averageRating / 5) * 100 + 2}%`,
+                                  }}
+                                >
+                                  <Rating readOnly value={5} className="stars">
+                                    {FIVE_STAR_KEYS.map((starKey) => (
+                                      <RatingButton
+                                        key={`desktop-fill-${starKey}`}
+                                        className="h-5 w-5 p-0 flex items-center justify-center leading-none"
+                                        aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                                      />
+                                    ))}
+                                  </Rating>
+                                </div>
+                              </div>
+                              <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                                {formattedAverageRating} (
+                                {reviewsCount === 1
+                                  ? '1 review'
+                                  : `${reviewsCount} reviews`}
+                                )
+                              </span>
+                            </div>
+                          </div>
+                        </a>
+                      )}
+                      {isBundle ? (
+                        <>
+                          <h4 className="text-xl individual-product-location">
+                            {activeBundleClip?.clipName ??
+                              `Clip ${activeBundleClipIndex}`}
+                          </h4>
+                          {activeBundleClip?.clipLocation && (
+                            <p className="text-muted-foreground text-sm pb-2">
+                              {activeBundleClip.clipLocation}
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <h4 className="text-xl individual-product-location">
+                          {formattedLocation}
+                        </h4>
+                      )}
+                    </>
+                  )}
+
+                  {isBundle && activeBundleClip?.descriptionHtml && (
+                    <div
+                      className="product-description-content"
+                      dangerouslySetInnerHTML={{
+                        __html: activeBundleClip.descriptionHtml,
+                      }}
+                    />
+                  )}
+                  {!isBundle && (
+                    <div
+                      className="product-description-content"
+                      dangerouslySetInnerHTML={{__html: descriptionHtml}}
+                    />
+                  )}
+                  {isVideo && !isBundle && selectedVideoFrameRateLabel && (
+                    <p className="mt-3 mb-2">
+                      <strong>Frame Rate:</strong> {selectedVideoFrameRateLabel}
+                    </p>
+                  )}
+                  {isVideo && !isBundle && selectedVideoFileSizeLabel ? (
+                    <p className="mb-4">
+                      <strong>File Size:</strong> {selectedVideoFileSizeLabel}
+                    </p>
+                  ) : (
+                    <br />
+                  )}
+
+                  <ProductForm
+                    VideoAlreadyInCart={disableButton}
+                    cart={cart}
+                    productId={product.id}
+                    productOptions={productOptions}
+                    selectedVariant={selectedVariant}
+                    imagesToShow={layoutImagesToUse as SimpleProductImages[]}
+                    isVideo={isVideo}
+                    isPrint={isPrint}
+                    isVideoBundle={isVideoBundle}
+                  />
+                </div>
+              )}
+            </div>
+            {windowWidth && windowWidth < 1024 && !isVideo && (
+              <>
+                <hr />
+                <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
+                  <div className="grid grid-cols-1">
+                    <div className="flex justify-center items-center">
+                      <img
+                        src={
+                          'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'
+                        }
+                        alt=""
+                        style={{height: '2.2rem'}}
+                      />
                     </div>
-                    {/* section body */}
-                    <div className="how-its-made-container">
-                      <div className="how-its-made-clip-wrapper flex justify-center position-relative">
-                        <div className="grid grid-cols-1 px-2 product-carousel-container relative w-[96%] max-w-full mx-auto">
-                          <div className="bundle-detail-carousel">
-                            <div className="bundle-detail-media-frame">
-                              <div className="bundle-detail-main-media flex items-center justify-center">
-                                <iframe
+                    <div className="flex justify-center mt-3">
+                      <p>Made in USA</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1">
+                    <div className="flex justify-center items-center">
+                      <img
+                        src={
+                          'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'
+                        }
+                        alt=""
+                        style={{height: '2.4rem'}}
+                      />
+                    </div>
+                    <div className="flex justify-center mt-2">
+                      <p>Premium Quality</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1">
+                    <div className="flex justify-center items-center">
+                      <img
+                        src={
+                          'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'
+                        }
+                        alt=""
+                        style={{height: '2.7rem'}}
+                      />
+                    </div>
+                    <div className="flex justify-center">
+                      <p>14-day returns</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+            {windowWidth && windowWidth < 1024 && !isVideo && (
+              <div className="items-top ">
+                <div className="flex justify-end card-accordion-container">
+                  <Card className="py-2 px-4 mx-[20px] mb-2 w-full">
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="item-1">
+                        <AccordionTrigger className="cursor-pointer">
+                          Print Specs
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <SpecsGrid
+                            sectionClassName="print-specs"
+                            items={PRINT_SPECS}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="item-2">
+                        <AccordionTrigger className="cursor-pointer">
+                          Frame Specs
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <SpecsGrid
+                            sectionClassName="frame-specs"
+                            items={FRAME_SPECS}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </Card>
+                </div>
+              </div>
+            )}
+            {!isVideo && formattedLocation && (
+              <LocationGlobe formattedLocation={formattedLocation} />
+            )}
+            {!isVideo && (
+              <>
+                <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4 lg:mt-6 extra-info">
+                  <div className="grid grid-cols-1">
+                    <div className="how-its-made">
+                      {/* section title */}
+                      <div className="section-title-container">
+                        <div className="flex items-center justify-center w-full">
+                          <div className="flex-1 h-px bg-muted" />
+                          <span className="px-4">
+                            <div>How it&apos;s Made</div>
+                          </span>
+                          <div className="flex-1 h-px bg-muted" />
+                        </div>
+                      </div>
+                      {/* section body */}
+                      <div className="how-its-made-container">
+                        <div className="how-its-made-clip-wrapper flex justify-center position-relative">
+                          <div className="grid grid-cols-1 px-2 product-carousel-container relative w-[96%] max-w-full mx-auto">
+                            <div className="bundle-detail-carousel">
+                              <div className="bundle-detail-media-frame">
+                                <div className="bundle-detail-main-media flex items-center justify-center">
+                                  {/* <iframe
                                   className="bundle-detail-iframe"
                                   src="https://player.vimeo.com/video/814128392?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
                                   allow="autoplay; fullscreen; picture-in-picture;"
                                   title="Seaforestation Trailer"
                                   loading="lazy"
-                                ></iframe>
+                                ></iframe> */}
+                                  <div>Coming Soon!</div>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
+                        <div className="flex justify-center ">
+                          <div className="how-its-made-description-container justify-start xl:mt-2">
+                            <Card className="mx-4">
+                              <CardContent>
+                                Quality matters - In this video, I break down
+                                how I make each framed canvas print by hand,
+                                using premium materials.
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-center ">
-                        <div className="how-its-made-description-container justify-start xl:mt-2">
-                          <Card className="mx-4">
-                            <CardContent>
-                              Quality matters - In this video, I break down how
-                              I make each framed canvas print by hand, using
-                              premium materials.
-                            </CardContent>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 self-start content-start">
+                    <div className="pt-[10px]">
+                      {windowWidth && windowWidth >= 1024 && !isVideo && (
+                        <>
+                          <hr />
+                          <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
+                            <div className="grid grid-cols-1">
+                              <div className="flex justify-center items-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.2rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center mt-3">
+                                <p>Made in USA</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1">
+                              <div className="flex justify-center items-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.4rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center mt-2">
+                                <p>Premium Quality</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1">
+                              <div className="flex justify-center items-center">
+                                <img
+                                  src={
+                                    'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'
+                                  }
+                                  alt=""
+                                  style={{height: '2.7rem'}}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                <p>14-day returns</p>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    {windowWidth && windowWidth >= 1024 && !isVideo && (
+                      <div className="items-top ">
+                        <div className="flex justify-end card-accordion-container me-3">
+                          <Card className="py-2 px-4 w-full">
+                            <Accordion
+                              type="single"
+                              collapsible
+                              className="w-full"
+                            >
+                              <AccordionItem value="item-1">
+                                <AccordionTrigger className="cursor-pointer">
+                                  Print Specs
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <SpecsGrid
+                                    sectionClassName="print-specs"
+                                    items={PRINT_SPECS}
+                                  />
+                                </AccordionContent>
+                              </AccordionItem>
+                              <AccordionItem value="item-2">
+                                <AccordionTrigger className="cursor-pointer">
+                                  Frame Specs
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <SpecsGrid
+                                    sectionClassName="frame-specs"
+                                    items={FRAME_SPECS}
+                                  />
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
                           </Card>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 self-start content-start">
-                  <div className="pt-[10px]">
-                    {windowWidth && windowWidth >= 1024 && !isVideo && (
-                      <>
-                        <hr />
-                        <div className="manufacturing-info-container grid grid-cols-3 h-[100px] py-3">
-                          <div className="grid grid-cols-1">
-                            <div className="flex justify-center items-center">
-                              <img
-                                src={
-                                  'https://downloads.adamunderwater.com/store-1-au/public/usaflag3.png'
-                                }
-                                alt=""
-                                style={{height: '2.2rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center mt-3">
-                              <p>Made in USA</p>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1">
-                            <div className="flex justify-center items-center">
-                              <img
-                                src={
-                                  'https://downloads.adamunderwater.com/store-1-au/public/diamond.png'
-                                }
-                                alt=""
-                                style={{height: '2.4rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center mt-2">
-                              <p>Premium Quality</p>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1">
-                            <div className="flex justify-center items-center">
-                              <img
-                                src={
-                                  'https://downloads.adamunderwater.com/store-1-au/public/returnarrow2.png'
-                                }
-                                alt=""
-                                style={{height: '2.7rem'}}
-                              />
-                            </div>
-                            <div className="flex justify-center">
-                              <p>14-day returns</p>
-                            </div>
-                          </div>
-                        </div>
-                      </>
                     )}
                   </div>
-                  {windowWidth && windowWidth >= 1024 && !isVideo && (
-                    <div className="items-top ">
-                      <div className="flex justify-end card-accordion-container me-3">
-                        <Card className="py-2 px-4 w-full">
-                          <Accordion
-                            type="single"
-                            collapsible
-                            className="w-full"
-                          >
-                            <AccordionItem value="item-1">
-                              <AccordionTrigger className="cursor-pointer">
-                                Print Specs
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <SpecsGrid
-                                  sectionClassName="print-specs"
-                                  items={PRINT_SPECS}
-                                />
-                              </AccordionContent>
-                            </AccordionItem>
-                            <AccordionItem value="item-2">
-                              <AccordionTrigger className="cursor-pointer">
-                                Frame Specs
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <SpecsGrid
-                                  sectionClassName="frame-specs"
-                                  items={FRAME_SPECS}
-                                />
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
-                        </Card>
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </div>
-            </>
-          )}
-          {!isVideo && (
-            <section className="in-the-box-section mt-3">
-              {/* section title */}
-              <div className="section-title-container">
-                <div className="flex items-center justify-center w-full">
-                  <div className="flex-1 h-px bg-muted" />
-                  <span className="px-4">
-                    <p className="text-xl">In the Box</p>
-                  </span>
-                  <div className="flex-1 h-px bg-muted" />
+              </>
+            )}
+            {!isVideo && (
+              <section className="in-the-box-section mt-3">
+                {/* section title */}
+                <div className="section-title-container">
+                  <div className="flex items-center justify-center w-full">
+                    <div className="flex-1 h-px bg-muted" />
+                    <span className="px-4">
+                      <p className="text-xl">In the Box</p>
+                    </span>
+                    <div className="flex-1 h-px bg-muted" />
+                  </div>
                 </div>
-              </div>
 
-              <div className="gap-x-5 py-5">
-                <ThreeUpCarouselBox cards={cards} />
-              </div>
-            </section>
-          )}
-          {!isVideo && (
-            <section className="reviews mt-3">
-              {/* section title */}
-              <div className="section-title-container">
-                <div className="flex items-center justify-center w-full">
-                  <div className="flex-1 h-px bg-muted" />
-                  <span className="px-4">
-                    <p className="text-xl">Reviews for this Product</p>
-                  </span>
-                  <div className="flex-1 h-px bg-muted" />
+                <div className="gap-x-5 py-5">
+                  <ThreeUpCarouselBox cards={cards} />
                 </div>
-              </div>
-              <div className="flex justify-center pt-2">
-                <div className="average-product-rating">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="relative inline-flex h-5 items-center"
-                      aria-hidden="true"
-                    >
-                      <Rating
-                        readOnly
-                        value={5}
-                        className="text-muted-foreground"
-                        aria-label={`Maximum rating of 5 stars`}
-                      >
-                        {FIVE_STAR_KEYS.map((starKey) => (
-                          <RatingButton
-                            key={`reviews-max-${starKey}`}
-                            className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                          />
-                        ))}
-                      </Rating>
+              </section>
+            )}
+            {!isVideo && (
+              <section className="reviews mt-3">
+                {/* section title */}
+                <div className="section-title-container">
+                  <div className="flex items-center justify-center w-full">
+                    <div className="flex-1 h-px bg-muted" />
+                    <span className="px-4">
+                      <p className="text-xl">Reviews for this Product</p>
+                    </span>
+                    <div className="flex-1 h-px bg-muted" />
+                  </div>
+                </div>
+                <div className="flex justify-center pt-2">
+                  <div className="average-product-rating">
+                    <div className="flex items-center gap-2">
                       <div
-                        className="absolute inset-0 overflow-hidden text-[#d4af37]"
-                        style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                        className="relative inline-flex h-5 items-center"
+                        aria-hidden="true"
                       >
-                        <Rating readOnly value={5} className="stars">
+                        <Rating
+                          readOnly
+                          value={5}
+                          className="text-muted-foreground"
+                          aria-label={`Maximum rating of 5 stars`}
+                        >
                           {FIVE_STAR_KEYS.map((starKey) => (
                             <RatingButton
-                              key={`reviews-fill-${starKey}`}
+                              key={`reviews-max-${starKey}`}
                               className="h-5 w-5 p-0 flex items-center justify-center leading-none"
-                              aria-label={`Average rating ${formattedAverageRating} out of 5`}
                             />
                           ))}
                         </Rating>
+                        <div
+                          className="absolute inset-0 overflow-hidden text-[#d4af37]"
+                          style={{width: `${(averageRating / 5) * 100 + 2}%`}}
+                        >
+                          <Rating readOnly value={5} className="stars">
+                            {FIVE_STAR_KEYS.map((starKey) => (
+                              <RatingButton
+                                key={`reviews-fill-${starKey}`}
+                                className="h-5 w-5 p-0 flex items-center justify-center leading-none"
+                                aria-label={`Average rating ${formattedAverageRating} out of 5`}
+                              />
+                            ))}
+                          </Rating>
+                        </div>
                       </div>
+                      <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
+                        {formattedAverageRating} (
+                        {reviewsCount === 1
+                          ? '1 review'
+                          : `${reviewsCount} reviews`}
+                        )
+                      </span>
                     </div>
-                    <span className="relative inline-flex h-5 items-center text-sm leading-5 text-muted-foreground">
-                      {formattedAverageRating} (
-                      {reviewsCount === 1
-                        ? '1 review'
-                        : `${reviewsCount} reviews`}
-                      )
-                    </span>
                   </div>
                 </div>
-              </div>
-              <div className="my-5" id="reviews">
-                <ProductReviewsCarousel
-                  reviews={reviewsList}
-                  currentCustomerId={customerId}
-                  currentCustomerState={customerState}
-                  currentCustomerCountry={customerCountry}
-                  onRemove={handleRemoveReview}
-                  onEdit={handleEditReview}
-                  isAdmin={isAdmin}
-                />
-                <div className="mx-3">
-                  <ReviewForm
-                    productId={product.id}
-                    productName={product.title}
-                    customerId={customerId}
-                    customerName={customerName}
-                    customerState={customerState}
-                    customerCountry={customerCountry}
-                    updateExistingReviews={updateExistingReviews}
-                    userReviewExists={userReviewExists}
-                    isBlocked={isBlocked}
-                    reviewMediaDiscountReward={reviewMediaDiscountReward}
-                    showDiscountPromo
+                <div className="my-5" id="reviews">
+                  <ProductReviewsCarousel
+                    reviews={reviewsList}
+                    currentCustomerId={customerId}
+                    currentCustomerState={customerState}
+                    currentCustomerCountry={customerCountry}
+                    onRemove={handleRemoveReview}
+                    onEdit={handleEditReview}
+                    isAdmin={isAdmin}
                   />
+                  <div className="mx-3">
+                    <ReviewForm
+                      productId={product.id}
+                      productName={product.title}
+                      customerId={customerId}
+                      customerName={customerName}
+                      customerState={customerState}
+                      customerCountry={customerCountry}
+                      updateExistingReviews={updateExistingReviews}
+                      userReviewExists={userReviewExists}
+                      isBlocked={isBlocked}
+                      reviewMediaDiscountReward={reviewMediaDiscountReward}
+                      showDiscountPromo
+                    />
+                  </div>
+                </div>
+              </section>
+            )}
+            {isVideo && (activeVideoSwipeComparison || formattedLocation) && (
+              <div className="video-comparison-stack flex flex-col">
+                {formattedLocation && (
+                  <div className="order-1">
+                    <LocationGlobe formattedLocation={formattedLocation} />
+                  </div>
+                )}
+                {activeVideoSwipeComparison && (
+                  <div className="order-2">
+                    <VideoResolutionSwipeSection
+                      vidKey={activeVideoSwipeComparison.vidKey}
+                      higherResolutionLabel={
+                        activeVideoSwipeComparison.higherResolutionLabel
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+            <section className="you-may-also-like mt-3">
+              {/* section title */}
+              <div className="section-title-container">
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex-1 h-px bg-muted" />
+                  <span className="px-4">
+                    <p className="text-xl">You may also like</p>
+                  </span>
+                  <div className="flex-1 h-px bg-muted" />
                 </div>
               </div>
-            </section>
-          )}
-          {isVideo && (activeVideoSwipeComparison || formattedLocation) && (
-            <div className="video-comparison-stack flex flex-col">
-              {formattedLocation && (
-                <div className="order-1">
-                  <LocationGlobe formattedLocation={formattedLocation} />
-                </div>
-              )}
-              {activeVideoSwipeComparison && (
-                <div className="order-2">
-                  <VideoResolutionSwipeSection
-                    vidKey={activeVideoSwipeComparison.vidKey}
-                    higherResolutionLabel={
-                      activeVideoSwipeComparison.higherResolutionLabel
-                    }
-                  />
-                </div>
-              )}
-            </div>
-          )}
-          <section className="you-may-also-like mt-3">
-            {/* section title */}
-            <div className="section-title-container">
-              <div className="flex items-center justify-center w-full">
-                <div className="flex-1 h-px bg-muted" />
-                <span className="px-4">
-                  <p className="text-xl">You may also like</p>
-                </span>
-                <div className="flex-1 h-px bg-muted" />
-              </div>
-            </div>
-            <div className="you-may-also-like-container flex justify-center mt-3">
-              {/* {!isVideo && (
+              <div className="you-may-also-like-container flex justify-center mt-3">
+                {/* {!isVideo && (
               <SimpleRecommendedProducts
                 products={recommendedProducts}
                 isVideo={!isVideo}
               />
             )} */}
 
-              <SimpleRecommendedProducts
-                products={isVideo ? recommendedProducts : (recommendedPrints as any)}
-                isVideo={isVideo}
-                currentProductID={product.id}
-                currentProductTitle={product.title}
-                currentProductDescription={product.description}
-                cart={cart}
-                isLoggedIn={isLoggedIn}
-                wishlistProducts={wishlistProducts}
-              />
-            </div>
-          </section>
-
-          <Analytics.ProductView
-            data={{
-              products: [
-                {
-                  id: product.id,
-                  title: product.title,
-                  price: selectedVariant?.price.amount || '0',
-                  vendor: product.vendor,
-                  variantId: selectedVariant?.id || '',
-                  variantTitle: selectedVariant?.title || '',
-                  quantity: 1,
-                },
-              ],
-            }}
-          />
-          <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Share this product</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-2 pt-1">
-                {shareOptions.map((option) => (
-                  <Button
-                    key={option.label}
-                    type="button"
-                    variant="outline"
-                    onClick={option.onClick}
-                    className="justify-start"
-                  >
-                    {option.label}
-                  </Button>
-                ))}
+                <SimpleRecommendedProducts
+                  products={
+                    isVideo ? recommendedProducts : (recommendedPrints as any)
+                  }
+                  isVideo={isVideo}
+                  currentProductID={product.id}
+                  currentProductTitle={product.title}
+                  currentProductDescription={product.description}
+                  cart={cart}
+                  isLoggedIn={isLoggedIn}
+                  wishlistProducts={wishlistProducts}
+                />
               </div>
-            </DialogContent>
-          </Dialog>
-        </section>
-      </>
-    </SkeletonGate>
+            </section>
+
+            <Analytics.ProductView
+              data={{
+                products: [
+                  {
+                    id: product.id,
+                    title: product.title,
+                    price: selectedVariant?.price.amount || '0',
+                    vendor: product.vendor,
+                    variantId: selectedVariant?.id || '',
+                    variantTitle: selectedVariant?.title || '',
+                    quantity: 1,
+                  },
+                ],
+              }}
+            />
+            <Dialog
+              open={isShareDialogOpen}
+              onOpenChange={setIsShareDialogOpen}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Share this product</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-2 pt-1">
+                  {shareOptions.map((option) => (
+                    <Button
+                      key={option.label}
+                      type="button"
+                      variant="outline"
+                      onClick={option.onClick}
+                      className="justify-start"
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </section>
+        </>
+      </SkeletonGate>
     </>
   );
 }

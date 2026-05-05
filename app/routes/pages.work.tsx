@@ -11,6 +11,7 @@ import {
 import RecommendedProducts from '~/components/products/recommendedProducts';
 import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 import {VimeoFacade} from '~/components/video/VimeoFacade';
+import {YouTubeFacade} from '~/components/video/YouTubeFacade';
 
 const R2 = 'https://downloads.adamunderwater.com/store-1-au/public';
 export function links() {
@@ -18,7 +19,8 @@ export function links() {
 }
 
 export const meta: MetaFunction = () => {
-  const title = 'Underwater Video Portfolio | Adam Underwater — Stock Footage & Cinematography';
+  const title =
+    'Underwater Video Portfolio | Adam Underwater — Stock Footage & Cinematography';
   const description =
     'Watch underwater video reels and cinematography by Adam Underwater. Professional 4K underwater stock footage of marine life, kelp forests, sharks, and ocean wildlife in San Diego, CA.';
 
@@ -133,10 +135,7 @@ function WorkPage() {
   }, [handleFeaturedImgLoad]);
 
   return (
-    <SkeletonGate
-      isReady={isPageReady}
-      skeleton={<WorkPageSkeleton />}
-    >
+    <SkeletonGate isReady={isPageReady} skeleton={<WorkPageSkeleton />}>
       <div className="flex justify-center items-center gap-4 mt-3">
         <img
           src={
@@ -158,20 +157,21 @@ function WorkPage() {
         <Sectiontitle text="Seaforestation (Trailer)" />
       </div>
       <div className="clip-wrapper flex justify-center position-relative px-[40px] pt-[20px] pb-[10px]">
-        <VimeoFacade
-          videoId="814128392"
+        {/* TODO: replace YOUTUBE_VIDEO_ID with your actual YouTube video ID */}
+        <YouTubeFacade
+          videoId="VCyUJvI69FA"
           title="Seaforestation Trailer"
           className="clip"
         />
       </div>
 
       <div>
-        <Sectiontitle text="Urchinomics/Sumiré Uni Co" />
+        <Sectiontitle text="Tasmania Giant Kelp Forest Restoration" />
       </div>
       <div className="clip-wrapper flex justify-center position-relative px-[40px] pt-[20px] pb-[15px]">
-        <VimeoFacade
-          videoId="795362432"
-          title="Urchinomics"
+        <YouTubeFacade
+          videoId="u1s9f3bpQEs"
+          title="Tasmania Giant Kelp Forest Restoration"
           className="clip"
         />
       </div>

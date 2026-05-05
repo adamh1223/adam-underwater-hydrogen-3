@@ -89,7 +89,7 @@ export default function ProductReviewsCarousel({
   const maxHeight =
     contentHeight > visibleHeight ? `${visibleHeight}px` : undefined;
 
-    const reviewColumns = useMemo(() => {
+  const reviewColumns = useMemo(() => {
     const columns = Array.from({length: columnCount}, () => [] as Review[]);
     sortedReviews.forEach((review, index) => {
       columns[index % columnCount].push(review);
@@ -108,13 +108,18 @@ export default function ProductReviewsCarousel({
         >
           <div
             ref={contentRef}
-            className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4"
+            className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
             style={{columnFill: 'auto'}}
           >
             {reviewColumns.map((columnReviews, columnIndex) => (
-              <div key={`review-column-${columnIndex}`} className="flex flex-col gap-3">
+              <div
+                key={`review-column-${columnIndex}`}
+                className="flex flex-col gap-3"
+              >
                 {columnReviews.map((review, reviewIndex) => (
-                  <div key={review?.createdAt ?? `${columnIndex}-${reviewIndex}`}>
+                  <div
+                    key={review?.createdAt ?? `${columnIndex}-${reviewIndex}`}
+                  >
                     <ProductReviewsDisplay
                       review={review}
                       currentCustomerId={currentCustomerId}

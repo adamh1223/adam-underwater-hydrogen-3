@@ -10,6 +10,10 @@ function IndividualVideoProduct({
   featuredImage: string | undefined;
   WMLink: string | undefined;
 }) {
+  // iframeVisible starts false — the iframe loads in the background at opacity 0.
+  // posterVisible starts true  — the poster is always in the DOM from first paint.
+  // This prevents any flash of the Vimeo toolbar before the poster covers it.
+  const [iframeVisible, setIframeVisible] = useState(false);
   const [posterVisible, setPosterVisible] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -20,7 +24,8 @@ function IndividualVideoProduct({
     function dismiss() {
       if (dismissed) return;
       dismissed = true;
-      setPosterVisible(false);
+      setIframeVisible(true);           // reveal iframe first (instant)
+      setTimeout(() => setPosterVisible(false), 50); // then fade poster out
     }
 
     function post(method: string, value: string) {
@@ -40,8 +45,6 @@ function IndividualVideoProduct({
         ) as {event?: string};
 
         if (data.event === 'ready') {
-          // Player is initialised — register for play event and request 4K
-          // immediately, with no arbitrary delay.
           post('addEventListener', 'play');
           post('addEventListener', 'timeupdate');
           post('setQuality', '2160p');
@@ -52,7 +55,6 @@ function IndividualVideoProduct({
     }
 
     window.addEventListener('message', onMessage);
-    // Safety fallback so the poster can never get permanently stuck
     const fallback = setTimeout(dismiss, 6000);
 
     return () => {
@@ -73,6 +75,8 @@ function IndividualVideoProduct({
               className="bundle-detail-main-media flex items-center justify-center"
               style={{position: 'relative', overflow: 'hidden'}}
             >
+              {/* iframe loads in background at opacity 0; revealed only once
+                  the Vimeo player signals that video frames are rendering */}
               <iframe
                 ref={iframeRef}
                 className="bundle-detail-iframe"
@@ -80,26 +84,31 @@ function IndividualVideoProduct({
                 allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
                 title={productName}
                 loading="eager"
+                style={{
+                  opacity: iframeVisible ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}
               />
 
-              {posterVisible && featuredImage && (
-                <div
-                  aria-hidden
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundImage: `url(${featuredImage})`,
-                    backgroundSize: 'contain',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundColor: 'transparent',
-                    pointerEvents: 'none',
-                    transition: 'opacity 0.4s ease',
-                    opacity: 1,
-                    zIndex: 2,
-                  }}
-                />
-              )}
+              {/* Poster is ALWAYS in the DOM from first render (not conditional)
+                  so the toolbar can never appear before it */}
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: featuredImage ? `url(${featuredImage})` : 'none',
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  // dark navy fallback matches page background when no image
+                  backgroundColor: '#0a1628',
+                  pointerEvents: 'none',
+                  transition: 'opacity 0.4s ease',
+                  opacity: posterVisible ? 1 : 0,
+                  zIndex: 2,
+                }}
+              />
             </div>
           </div>
         </div>
