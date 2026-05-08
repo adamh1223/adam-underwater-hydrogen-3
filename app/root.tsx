@@ -263,6 +263,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
   return {
     wishlistProducts,
     customerFirstName,
+    customerId,
     header,
     isAdmin,
   };

@@ -18,10 +18,14 @@ function StockForm({
   updateCheck,
   clipNames,
   isSubmitted,
+  clipIds,
+  customerGid,
 }: {
   updateCheck: (value: boolean) => void;
   clipNames: string[];
   isSubmitted: boolean;
+  clipIds?: string[];
+  customerGid?: string;
 }) {
   const [formData, setFormData] = useState({
     clips: clipNames.join(', '),
@@ -76,7 +80,11 @@ function StockForm({
       const response = await fetch('/api/stock-licensing', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          ...(clipIds && clipIds.length > 0 ? {productIds: clipIds} : {}),
+          ...(customerGid ? {customerGid} : {}),
+        }),
       });
       
 

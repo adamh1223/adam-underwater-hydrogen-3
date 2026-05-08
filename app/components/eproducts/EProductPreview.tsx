@@ -1,15 +1,13 @@
-import {useState, useRef, useEffect} from 'react';
+import {useState, useRef, useEffect, useCallback} from 'react';
 import '../../styles/components/EProductPreview.css';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {useLocation} from '@remix-run/react';
 import {getOptimizedImageUrl} from '~/lib/imageWarmup';
 import {isStockCollectionPath} from '~/lib/collectionPaths';
 
+const HLS_BASE = 'https://downloads.adamunderwater.com/shared/stock/streaming/hls';
+
 type ShopifyImage = {url: string; altText: string};
-const PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP = 1400;
-const PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH = 2200;
-const PROGRESS_REVEAL_DELAY_MS_DESKTOP = 70;
-const PROGRESS_REVEAL_DELAY_MS_TOUCH = 130;
 
 function EProductPreview({
   EProduct,
@@ -28,72 +26,24 @@ function EProductPreview({
   const containerRef = useRef<HTMLDivElement>(null);
   const autoplayTimeoutRef = useRef<number | null>(null);
   const videoRevealTimeoutRef = useRef<number | null>(null);
-  const videoLoadFallbackTimeoutRef = useRef<number | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const vimeoPlayReceivedRef = useRef(false);
-  const vimeoProgressReceivedRef = useRef(false);
-  const vimeoProgressEventCountRef = useRef(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsInstanceRef = useRef<any>(null);
   const location = useLocation();
-  const [viewportWidth, setViewportWidth] = useState<number | undefined>(
-    undefined,
-  );
+  const [viewportWidth, setViewportWidth] = useState<number | undefined>(undefined);
 
   const {featuredImage} = EProduct;
-  const WMLink = EProduct.tags.filter((tag) => tag.includes('wmlink'))?.[0];
-  const parsedWMLink = WMLink?.split('_')[1];
+
+  // HLS folder number (e.g. tag "v35" → "35")
+  const hlsIdTag = EProduct.tags.find((tag) => /^v\d+$/i.test(tag.trim()));
+  const hlsId = hlsIdTag?.match(/^v(\d+)$/i)?.[1] ?? null;
+
   const previewAspectRatio =
     featuredImage?.width && featuredImage?.height
       ? `${featuredImage.width} / ${featuredImage.height}`
       : undefined;
 
-  const clearVideoRevealTimeout = () => {
-    if (videoRevealTimeoutRef.current === null) return;
-    window.clearTimeout(videoRevealTimeoutRef.current);
-    videoRevealTimeoutRef.current = null;
-  };
-
-  const clearVideoLoadFallbackTimeout = () => {
-    if (videoLoadFallbackTimeoutRef.current === null) return;
-    window.clearTimeout(videoLoadFallbackTimeoutRef.current);
-    videoLoadFallbackTimeoutRef.current = null;
-  };
-
-  const scheduleVideoReveal = (delayMs: number) => {
-    clearVideoRevealTimeout();
-    videoRevealTimeoutRef.current = window.setTimeout(() => {
-      videoRevealTimeoutRef.current = null;
-      // Defer to the next paint(s) to reduce iOS WebKit's occasional
-      // first-frame sizing jitter for cross-origin iframes.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setIsVideoReady(true));
-      });
-    }, delayMs);
-  };
-
-  const handleVideoLoad = () => {
-    // If the Vimeo play event already triggered the reveal, nothing more to do.
-    if (vimeoPlayReceivedRef.current) return;
-
-    // Clear the last-resort fallback since the iframe at least loaded.
-    clearVideoLoadFallbackTimeout();
-
-    // Use onLoad as a delayed fallback in case the Vimeo postMessage play event
-    // never arrives (e.g. ad-blocker strips the player JS). The primary reveal
-    // path is the postMessage listener that waits for the actual "play" event.
-    const isCoarsePointer =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    if (!shouldEnableViewportAutoplay) {
-      scheduleVideoReveal(isCoarsePointer ? 2200 : 1200);
-    } else {
-      scheduleVideoReveal(isCoarsePointer ? 3200 : 1600);
-    }
-  };
-
   const isStockFootagePage = isStockCollectionPath(location.pathname);
-  const isAccountFavoritesPage =
-    location.pathname.startsWith('/account/favorites');
+  const isAccountFavoritesPage = location.pathname.startsWith('/account/favorites');
   const isStockListLargeViewport =
     isStockFootagePage &&
     layout === 'list' &&
@@ -102,148 +52,106 @@ function EProductPreview({
   const shouldEnableViewportAutoplay =
     forceViewportAutoplay ||
     ((isStockFootagePage || isAccountFavoritesPage) && !isStockListLargeViewport);
-  const isVideoActive = shouldEnableViewportAutoplay
-    ? isAutoplayActive
-    : isHovered;
+  const isVideoActive = shouldEnableViewportAutoplay ? isAutoplayActive : isHovered;
   const preferredPreviewImageWidth =
     viewportWidth != undefined && viewportWidth < 700 ? 960 : 1440;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    const updateViewportWidth = () => setViewportWidth(window.innerWidth);
-    updateViewportWidth();
-    window.addEventListener('resize', updateViewportWidth);
-    return () => window.removeEventListener('resize', updateViewportWidth);
+    const update = () => setViewportWidth(window.innerWidth);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Listen for Vimeo Player postMessage events to detect actual playback start.
-  // This is the primary reveal path — the video only becomes visible once Vimeo
-  // confirms it is playing, which avoids the "shrink/grow" glitch caused by
-  // revealing the iframe before the player has rendered its first video frame.
+  const clearVideoRevealTimeout = useCallback(() => {
+    if (videoRevealTimeoutRef.current === null) return;
+    window.clearTimeout(videoRevealTimeoutRef.current);
+    videoRevealTimeoutRef.current = null;
+  }, []);
+
+  const scheduleVideoReveal = useCallback(
+    (delayMs: number) => {
+      clearVideoRevealTimeout();
+      videoRevealTimeoutRef.current = window.setTimeout(() => {
+        videoRevealTimeoutRef.current = null;
+        requestAnimationFrame(() => requestAnimationFrame(() => setIsVideoReady(true)));
+      }, delayMs);
+    },
+    [clearVideoRevealTimeout],
+  );
+
+  // Start/stop HLS based on isVideoActive
   useEffect(() => {
-    if (!isVideoActive || !parsedWMLink) return;
-    vimeoPlayReceivedRef.current = false;
-    vimeoProgressReceivedRef.current = false;
-    vimeoProgressEventCountRef.current = 0;
+    if (!isVideoActive || !hlsId) return;
 
-    const handleMessage = (event: MessageEvent) => {
-      if (
-        typeof event.origin !== 'string' ||
-        !event.origin.includes('vimeo.com')
-      )
-        return;
-      if (
-        !iframeRef.current ||
-        event.source !== iframeRef.current.contentWindow
-      )
-        return;
+    const video = videoRef.current;
+    if (!video) return;
+    let cancelled = false;
 
-      let data: any;
-      try {
-        data =
-          typeof event.data === 'string'
-            ? JSON.parse(event.data)
-            : event.data;
-      } catch {
-        return;
+    import('hls.js').then(({default: Hls}) => {
+      if (cancelled || !videoRef.current) return;
+      const v = videoRef.current;
+      const src = `${HLS_BASE}/${hlsId}/master.m3u8`;
+
+      if (Hls.isSupported()) {
+        const hls = new Hls({startLevel: -1, capLevelToPlayerSize: true});
+        hlsInstanceRef.current = hls;
+        hls.loadSource(src);
+        hls.attachMedia(v);
+        hls.on(Hls.Events.MANIFEST_PARSED, (_: any, data: any) => {
+          if (cancelled) return;
+          // Prefer 1080p as starting level for grid card previews
+          if (data.levels.length > 0) {
+            const idx = data.levels.reduce(
+              (best: number, lvl: any, i: number) => {
+                const diff = Math.abs(lvl.height - 1080);
+                const bestDiff = Math.abs(data.levels[best].height - 1080);
+                return diff < bestDiff ? i : best;
+              },
+              0,
+            );
+            hls.startLevel = idx;
+          }
+          v.play().catch(() => {});
+        });
+      } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+        v.src = src;
+        v.play().catch(() => {});
       }
+    });
 
-      if (data.event === 'ready') {
-        // Player initialised — ask it to notify us when playback starts.
-        iframeRef.current?.contentWindow?.postMessage(
-          JSON.stringify({method: 'addEventListener', value: 'play'}),
-          'https://player.vimeo.com',
-        );
-        iframeRef.current?.contentWindow?.postMessage(
-          JSON.stringify({method: 'addEventListener', value: 'timeupdate'}),
-          'https://player.vimeo.com',
-        );
-        iframeRef.current?.contentWindow?.postMessage(
-          JSON.stringify({method: 'addEventListener', value: 'playProgress'}),
-          'https://player.vimeo.com',
-        );
-      } else if (data.event === 'play') {
-        if (vimeoPlayReceivedRef.current) return;
-        vimeoPlayReceivedRef.current = true;
-        clearVideoRevealTimeout();
-        clearVideoLoadFallbackTimeout();
-        const isCoarsePointer =
-          typeof window !== 'undefined' &&
-          typeof window.matchMedia === 'function' &&
-          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-        scheduleVideoReveal(
-          isCoarsePointer
-            ? PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH
-            : PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP,
-        );
-      } else if (
-        (data.event === 'timeupdate' || data.event === 'playProgress') &&
-        !vimeoProgressReceivedRef.current
-      ) {
-        vimeoProgressEventCountRef.current += 1;
-        if (vimeoProgressEventCountRef.current < 2) return;
-        vimeoProgressReceivedRef.current = true;
-        clearVideoRevealTimeout();
-        clearVideoLoadFallbackTimeout();
-        const isCoarsePointer =
-          typeof window !== 'undefined' &&
-          typeof window.matchMedia === 'function' &&
-          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-        scheduleVideoReveal(
-          isCoarsePointer
-            ? PROGRESS_REVEAL_DELAY_MS_TOUCH
-            : PROGRESS_REVEAL_DELAY_MS_DESKTOP,
-        );
+    return () => {
+      cancelled = true;
+      if (hlsInstanceRef.current) {
+        hlsInstanceRef.current.destroy();
+        hlsInstanceRef.current = null;
+      }
+      if (video) {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
       }
     };
+  }, [isVideoActive, hlsId]);
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isVideoActive, parsedWMLink]);
-
-  useEffect(() => {
-    if (!shouldEnableViewportAutoplay || !isVideoActive) return;
-
-    // Last-resort fallback: if neither onLoad nor the Vimeo play event arrive
-    // (e.g. iOS Safari drops onLoad for cross-origin iframes), reveal after a
-    // generous timeout so the card doesn't stay as a static image forever.
-    clearVideoLoadFallbackTimeout();
-    videoLoadFallbackTimeoutRef.current = window.setTimeout(() => {
-      videoLoadFallbackTimeoutRef.current = null;
-      if (!vimeoPlayReceivedRef.current) {
-        setIsVideoReady(true);
-      }
-    }, 8000);
-
-    return () => clearVideoLoadFallbackTimeout();
-  }, [shouldEnableViewportAutoplay, isVideoActive]);
-
+  // Reset reveal state when video deactivates
   useEffect(() => {
     if (isVideoActive) return;
     clearVideoRevealTimeout();
-    clearVideoLoadFallbackTimeout();
-    vimeoPlayReceivedRef.current = false;
-    vimeoProgressReceivedRef.current = false;
-    vimeoProgressEventCountRef.current = 0;
     setIsVideoReady(false);
-  }, [isVideoActive]);
+  }, [isVideoActive, clearVideoRevealTimeout]);
 
   useEffect(() => {
-    return () => {
-      clearVideoRevealTimeout();
-      clearVideoLoadFallbackTimeout();
-    };
-  }, []);
+    return () => clearVideoRevealTimeout();
+  }, [clearVideoRevealTimeout]);
 
   useEffect(() => {
-    if (shouldEnableViewportAutoplay) {
-      setIsHovered(false);
-    } else {
-      setIsAutoplayActive(false);
-    }
+    if (shouldEnableViewportAutoplay) setIsHovered(false);
+    else setIsAutoplayActive(false);
   }, [shouldEnableViewportAutoplay]);
 
+  // IntersectionObserver for viewport autoplay — no concurrency limit needed
   useEffect(() => {
     if (!shouldEnableViewportAutoplay) return;
     if (typeof IntersectionObserver === 'undefined') return;
@@ -258,25 +166,26 @@ function EProductPreview({
       autoplayTimeoutRef.current = null;
     };
 
-    const stopAndReset = () => {
-      clearAutoplayTimeout();
-      setIsAutoplayActive(false);
-    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const isInView =
+          entry.isIntersecting &&
+          entry.intersectionRatio >= MIN_INTERSECTION_RATIO;
 
-    const observer = new IntersectionObserver(([entry]) => {
-      const isInView =
-        entry.isIntersecting && entry.intersectionRatio >= MIN_INTERSECTION_RATIO;
-      if (isInView) {
-	        if (autoplayTimeoutRef.current !== null) return;
-	        autoplayTimeoutRef.current = window.setTimeout(() => {
-	          autoplayTimeoutRef.current = null;
-	          setIsAutoplayActive(true);
-	        }, 1);
-	        return;
-	      }
+        if (isInView) {
+          if (autoplayTimeoutRef.current !== null) return;
+          autoplayTimeoutRef.current = window.setTimeout(() => {
+            autoplayTimeoutRef.current = null;
+            setIsAutoplayActive(true);
+          }, 1);
+          return;
+        }
 
-      stopAndReset();
-    }, {threshold: [MIN_INTERSECTION_RATIO]});
+        clearAutoplayTimeout();
+        setIsAutoplayActive(false);
+      },
+      {threshold: [MIN_INTERSECTION_RATIO]},
+    );
 
     observer.observe(element);
 
@@ -286,30 +195,30 @@ function EProductPreview({
     };
   }, [shouldEnableViewportAutoplay]);
 
+  const isTouch =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  const handleVideoTimeUpdate = useCallback(() => {
+    if (isVideoReady) return;
+    scheduleVideoReveal(isTouch ? 130 : 70);
+  }, [isVideoReady, isTouch, scheduleVideoReveal]);
+
   return (
     <div
       ref={containerRef}
       className={`EProductPreviewContainer ${shouldEnableViewportAutoplay ? 'EProductPreviewContainer-autoplay' : ''} ${extraClassName || ''}`}
       style={previewAspectRatio ? {aspectRatio: previewAspectRatio} : undefined}
-      onMouseEnter={
-        shouldEnableViewportAutoplay ? undefined : () => setIsHovered(true)
-      }
-      onMouseLeave={
-        shouldEnableViewportAutoplay ? undefined : () => setIsHovered(false)
-      }
+      onMouseEnter={shouldEnableViewportAutoplay ? undefined : () => setIsHovered(true)}
+      onMouseLeave={shouldEnableViewportAutoplay ? undefined : () => setIsHovered(false)}
     >
-      {/* Base Image */}
+      {/* Base image */}
       {featuredImage && (
         <img
-          src={getOptimizedImageUrl(
-            featuredImage.url,
-            preferredPreviewImageWidth,
-          )}
+          src={getOptimizedImageUrl(featuredImage.url, preferredPreviewImageWidth)}
           srcSet={[480, 720, 960, 1280, 1600]
-            .map(
-              (width) =>
-                `${getOptimizedImageUrl(featuredImage.url, width)} ${width}w`,
-            )
+            .map((w) => `${getOptimizedImageUrl(featuredImage.url, w)} ${w}w`)
             .join(', ')}
           sizes={
             layout === 'grid'
@@ -324,17 +233,17 @@ function EProductPreview({
       )}
 
       {/* Video overlay */}
-      {isVideoActive && parsedWMLink && (
+      {isVideoActive && hlsId && (
         <div className="EProductVideoWrapper">
-	          <iframe
-	            ref={iframeRef}
-	            src={`https://player.vimeo.com/video/${parsedWMLink}?autoplay=1&muted=1&background=1&badge=0&autopause=0&playsinline=1`}
-	            allow="autoplay; fullscreen; picture-in-picture"
-	            className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
-	            title="Product video"
-	            onLoad={handleVideoLoad}
-	          ></iframe>
-	        </div>
+          <video
+            ref={videoRef}
+            className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
+            playsInline
+            muted
+            loop
+            onTimeUpdate={handleVideoTimeUpdate}
+          />
+        </div>
       )}
     </div>
   );

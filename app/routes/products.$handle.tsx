@@ -1165,6 +1165,9 @@ export default function Product() {
   const WMLink = tags.filter((tag: string) => tag.includes('wmlink'))?.[0];
   const parsedWMLink = WMLink?.split('_')[1];
 
+  const hlsIdTag = tags.find((tag: string) => /^v\d+$/i.test(tag.trim()));
+  const hlsId = hlsIdTag?.match(/^v(\d+)$/i)?.[1] ?? null;
+
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
 
   const {references} = productSizeMetafields || {};
@@ -2529,6 +2532,7 @@ export default function Product() {
                   productName={title}
                   featuredImage={featuredImage?.url}
                   WMLink={parsedWMLink}
+                  hlsId={hlsId}
                 ></IndividualVideoProduct>
               )}
               {isVideo && isBundle && (

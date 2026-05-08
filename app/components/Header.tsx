@@ -23,6 +23,7 @@ import AboutDropdown from './navbar/AboutDropdown';
 import {Button} from './ui/button';
 import ServicesDropdown from './navbar/ServicesDropdown';
 import NotificationsDropdown from './navbar/NotificationsDropdown';
+import AdminDropdown from './navbar/AdminDropdown';
 
 import {LuAlignLeft, LuSearch, LuShoppingCart, LuUser} from 'react-icons/lu';
 import '../components/navbar/styles/Navbar.css';
@@ -925,6 +926,7 @@ function HeaderCtas({
         <img src={cloudflarePublicAssetUrl('signout-icon.png')} alt="" />
         <img src={cloudflarePublicAssetUrl('signup-icon.png')} alt="" />
       </div>
+      <AdminDropdown />
       <NotificationsDropdown />
       {/* <HeaderMenuMobileToggle /> */}
       <RadixHoverCard.Root

@@ -1,22 +1,56 @@
 import {useEffect, useRef, useState} from 'react';
 import '../../styles/routeStyles/product.css';
+import {HlsPlayer} from '~/components/video/HlsPlayer';
 
 function IndividualVideoProduct({
   productName,
   featuredImage,
   WMLink,
+  hlsId,
 }: {
   productName: string;
   featuredImage: string | undefined;
   WMLink: string | undefined;
+  hlsId?: string | null;
 }) {
-  // Always load the iframe immediately so autoplay is never blocked by
-  // a custom tap-to-play overlay.
+  // ── HLS path ─────────────────────────────────────────────────────────────────
+  if (hlsId) {
+    return (
+      <div className="grid grid-cols-1">
+        <div className="grid grid-cols-1 product-carousel-container relative">
+          <div className="bundle-detail-carousel individual-video-product-detail-media">
+            <div className="bundle-detail-media-frame">
+              <HlsPlayer
+                hlsId={hlsId}
+                poster={featuredImage}
+                title={productName}
+                loop
+                preferredStartHeight={2160}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Vimeo fallback (products without an HLS folder) ───────────────────────
+  return <VimeoPlayer WMLink={WMLink} productName={productName} featuredImage={featuredImage} />;
+}
+
+function VimeoPlayer({
+  WMLink,
+  productName,
+  featuredImage,
+}: {
+  WMLink: string | undefined;
+  productName: string;
+  featuredImage: string | undefined;
+}) {
   const [iframeLoaded] = useState(true);
   const [posterVisible, setPosterVisible] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Dismiss poster once Vimeo signals the video is actually playing
   useEffect(() => {
     if (!WMLink || !iframeLoaded) return;
     let dismissed = false;
@@ -69,8 +103,6 @@ function IndividualVideoProduct({
       <div className="grid grid-cols-1 product-carousel-container relative">
         <div className="bundle-detail-carousel individual-video-product-detail-media">
           <div className="bundle-detail-media-frame">
-            {/* aspect-ratio keeps the container from collapsing on mobile
-                before the iframe is loaded */}
             <div
               className="bundle-detail-main-media flex items-center justify-center"
               style={{position: 'relative', overflow: 'hidden', aspectRatio: '16/9'}}
@@ -86,8 +118,6 @@ function IndividualVideoProduct({
                   style={{opacity: posterVisible ? 0 : 1, transition: 'opacity 0.3s ease'}}
                 />
               )}
-
-              {/* Poster — always present so the container always has content. */}
               <div
                 style={{
                   position: 'absolute',

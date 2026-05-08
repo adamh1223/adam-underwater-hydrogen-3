@@ -213,6 +213,8 @@ export function CartSummary({
   const clipNames = clipProducts.map(
     (product) => product.merchandise.product.title,
   );
+  const clipIds = clipProducts.map((p) => p.merchandise.product.id);
+  const customerGid = rootData?.customerId ?? undefined;
   const subtotalCurrencyCode = (cart.cost?.subtotalAmount?.currencyCode ||
     'USD') as CartSummaryMoney['currencyCode'];
   const subtotalAfterServerDiscount = effectiveSummaryLines.reduce(
@@ -700,6 +702,8 @@ export function CartSummary({
               updateCheck={handleFormSubmitted}
               clipNames={clipNames}
               isSubmitted={isOrderReady}
+              clipIds={clipIds}
+              customerGid={customerGid}
             />
           </div>
           <p className="flex justify-center pt-7 px-8">
