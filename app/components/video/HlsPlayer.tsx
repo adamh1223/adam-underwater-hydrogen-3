@@ -110,7 +110,9 @@ export function HlsPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [posterVisible, setPosterVisible] = useState(true);
-  const [controlsVisible, setControlsVisible] = useState(true);
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const [videoAspectRatio, setVideoAspectRatio] = useState<string | undefined>(undefined);
+  const posterHiddenRef = useRef(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
@@ -127,6 +129,11 @@ export function HlsPlayer({
     const video = videoRef.current;
     if (!video) return;
     let cancelled = false;
+    // Reset all transient state for this video
+    posterHiddenRef.current = false;
+    setPosterVisible(true);
+    setControlsVisible(false);
+    setVideoAspectRatio(undefined);
 
     import('hls.js').then(({default: Hls}) => {
       if (cancelled || !videoRef.current) return;
@@ -147,24 +154,27 @@ export function HlsPlayer({
             }),
           );
           setQualityLevels(levels);
+          setSelectedLevel(-1);
 
+          // Determine starting level index
+          let startIdx = 0;
           if (preferredStartHeight != null && data.levels.length > 0) {
-            // Find the level whose height is closest to the preferred height.
-            // hls.js will still adapt from this starting point.
-            const startIdx = data.levels.reduce(
+            startIdx = data.levels.reduce(
               (best: number, lvl: any, i: number) => {
                 const diff = Math.abs(lvl.height - preferredStartHeight);
-                const bestDiff = Math.abs(
-                  data.levels[best].height - preferredStartHeight,
-                );
+                const bestDiff = Math.abs(data.levels[best].height - preferredStartHeight);
                 return diff < bestDiff ? i : best;
               },
               0,
             );
             hls.startLevel = startIdx;
-            setSelectedLevel(-1); // still "Auto" in the UI — user can override
-          } else {
-            setSelectedLevel(-1);
+          }
+
+          // Set container aspect ratio NOW from manifest data — before any
+          // frame is rendered — so there is never a mismatch.
+          const startLevel = data.levels[startIdx];
+          if (startLevel?.width && startLevel?.height) {
+            setVideoAspectRatio(`${startLevel.width} / ${startLevel.height}`);
           }
 
           v.play().catch(() => {});
@@ -172,6 +182,11 @@ export function HlsPlayer({
 
         hls.on(Hls.Events.LEVEL_SWITCHED, (_: any, data: any) => {
           setCurrentLevel(data.level);
+          // Keep container in sync when hls.js switches quality mid-playback.
+          const lvl = hls.levels[data.level];
+          if (lvl?.width && lvl?.height) {
+            setVideoAspectRatio(`${lvl.width} / ${lvl.height}`);
+          }
         });
       } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari native HLS — no programmatic quality switching
@@ -309,6 +324,7 @@ export function HlsPlayer({
     <div
       ref={containerRef}
       className="hls-player"
+      style={videoAspectRatio ? {aspectRatio: videoAspectRatio} : undefined}
       onMouseMove={revealControls}
       onMouseEnter={revealControls}
     >
@@ -329,12 +345,30 @@ export function HlsPlayer({
               setBuffered(v.buffered.end(v.buffered.length - 1) / v.duration);
             }
           }
+          // Hide poster only once a real frame has rendered (currentTime > 0).
+          // We also sync the aspect ratio here — same render batch — so the
+          // container is the correct size the instant the poster fades out.
+          if (!posterHiddenRef.current && v.currentTime > 0) {
+            posterHiddenRef.current = true;
+            if (v.videoWidth && v.videoHeight) {
+              setVideoAspectRatio(`${v.videoWidth} / ${v.videoHeight}`);
+            }
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => setPosterVisible(false)),
+            );
+          }
+        }}
+        onLoadedMetadata={() => {
+          const v = videoRef.current;
+          if (v && v.videoWidth && v.videoHeight) {
+            setVideoAspectRatio(`${v.videoWidth} / ${v.videoHeight}`);
+          }
         }}
         onDurationChange={() => {
           const v = videoRef.current;
           if (v) setDuration(v.duration);
         }}
-        onPlay={() => { setPlaying(true); setPosterVisible(false); }}
+        onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onVolumeChange={() => {
           const v = videoRef.current;
@@ -351,8 +385,8 @@ export function HlsPlayer({
 
       <div className="hls-click-area" onClick={togglePlay} />
 
-      {/* Controls */}
-      <div className={`hls-controls${controlsVisible ? ' visible' : ''}`}>
+      {/* Controls — never shown while the poster is covering the player */}
+      <div className={`hls-controls${controlsVisible && !posterVisible ? ' visible' : ''}`}>
         {/* Progress bar */}
         <div className="hls-progress-track">
           <div className="hls-track-bg" />

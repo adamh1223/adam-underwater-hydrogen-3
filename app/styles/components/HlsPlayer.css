@@ -1,8 +1,8 @@
 .hls-player {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
+  aspect-ratio: 16 / 9; /* overridden via direct DOM mutation once metadata arrives */
+  background: transparent;
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
