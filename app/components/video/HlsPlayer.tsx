@@ -18,6 +18,57 @@ function labelForHeight(h: number): string {
   return '360p';
 }
 
+function aspectRatioString(width?: number, height?: number): string | undefined {
+  if (!width || !height || !isFinite(width) || !isFinite(height) || height <= 0) {
+    return undefined;
+  }
+  return `${width} / ${height}`;
+}
+
+function pickDominantAspectRatio(levels: Array<{width?: number; height?: number}>): string | undefined {
+  const buckets = new Map<
+    string,
+    {count: number; width: number; height: number; pixelArea: number}
+  >();
+
+  for (const level of levels) {
+    const width = Number(level.width ?? 0);
+    const height = Number(level.height ?? 0);
+    if (!width || !height) continue;
+    const normalized = (width / height).toFixed(3);
+    const existing = buckets.get(normalized);
+    const pixelArea = width * height;
+    if (existing) {
+      existing.count += 1;
+      if (pixelArea > existing.pixelArea) {
+        existing.width = width;
+        existing.height = height;
+        existing.pixelArea = pixelArea;
+      }
+      continue;
+    }
+    buckets.set(normalized, {count: 1, width, height, pixelArea});
+  }
+
+  let selected: {count: number; width: number; height: number; pixelArea: number} | null = null;
+  for (const bucket of buckets.values()) {
+    if (!selected) {
+      selected = bucket;
+      continue;
+    }
+    if (bucket.count > selected.count) {
+      selected = bucket;
+      continue;
+    }
+    if (bucket.count === selected.count && bucket.pixelArea > selected.pixelArea) {
+      selected = bucket;
+    }
+  }
+
+  if (!selected) return undefined;
+  return aspectRatioString(selected.width, selected.height);
+}
+
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
 function PlayIcon() {
@@ -97,10 +148,17 @@ export function HlsPlayer({
    *  hls.js still adapts up/down from this point based on bandwidth. */
   preferredStartHeight?: number;
 }) {
+  const defaultAspectRatio = '16 / 9';
+  const INITIAL_LEVEL_LOCK_SECONDS = 3.5;
+  const ACTIVE_CONTROLS_HIDE_DELAY_MS = 1700;
+  const MOUSE_LEAVE_HIDE_DELAY_MS = 220;
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<any>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // -1 = auto (ABR), ≥0 = user-selected level to soft-lock
+  const manualLevelRef = useRef<number>(-1);
+  const isDraggingVolumeRef = useRef(false);
 
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -109,9 +167,9 @@ export function HlsPlayer({
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [buffered, setBuffered] = useState(0);
+  const [playerAspectRatio, setPlayerAspectRatio] = useState(defaultAspectRatio);
   const [posterVisible, setPosterVisible] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(false);
-  const [videoAspectRatio, setVideoAspectRatio] = useState<string | undefined>(undefined);
   const posterHiddenRef = useRef(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
@@ -131,16 +189,23 @@ export function HlsPlayer({
     let cancelled = false;
     // Reset all transient state for this video
     posterHiddenRef.current = false;
+    manualLevelRef.current = -1;
     setPosterVisible(true);
     setControlsVisible(false);
-    setVideoAspectRatio(undefined);
+    setPlayerAspectRatio(defaultAspectRatio);
 
     import('hls.js').then(({default: Hls}) => {
       if (cancelled || !videoRef.current) return;
       const v = videoRef.current;
 
       if (Hls.isSupported()) {
-        const hls = new Hls({startLevel: -1});
+        const hls = new Hls({
+          startLevel: -1, // overridden in MANIFEST_PARSED once levels are known
+          capLevelToPlayerSize: false,
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
+          backBufferLength: 10,
+        });
         hlsRef.current = hls;
         hls.loadSource(src);
         hls.attachMedia(v);
@@ -156,42 +221,44 @@ export function HlsPlayer({
           setQualityLevels(levels);
           setSelectedLevel(-1);
 
-          // Determine starting level index
-          let startIdx = 0;
-          if (preferredStartHeight != null && data.levels.length > 0) {
-            startIdx = data.levels.reduce(
-              (best: number, lvl: any, i: number) => {
-                const diff = Math.abs(lvl.height - preferredStartHeight);
-                const bestDiff = Math.abs(data.levels[best].height - preferredStartHeight);
-                return diff < bestDiff ? i : best;
-              },
-              0,
-            );
-            hls.startLevel = startIdx;
-          }
+          const dominantAspect = pickDominantAspectRatio(data.levels);
+          if (dominantAspect) setPlayerAspectRatio(dominantAspect);
 
-          // Set container aspect ratio NOW from manifest data — before any
-          // frame is rendered — so there is never a mismatch.
-          const startLevel = data.levels[startIdx];
-          if (startLevel?.width && startLevel?.height) {
-            setVideoAspectRatio(`${startLevel.width} / ${startLevel.height}`);
-          }
+          // Pin the first segment to 720p. Starting at auto (-1) causes hls.js
+          // to pick the lowest quality first, then ABR immediately ramps to a
+          // much higher quality whose large segment depletes the tiny buffer →
+          // plays 1 s → freezes 5 s → skips. A fixed 720p start avoids the
+          // violent first-switch. ABR adapts freely from segment 2 onwards.
+          const idx720 = data.levels.reduce(
+            (best: number, lvl: any, i: number) =>
+              Math.abs(lvl.height - 720) < Math.abs(data.levels[best].height - 720)
+                ? i
+                : best,
+            0,
+          );
+          hls.startLevel = idx720;
+        });
 
+        // Trigger play only after the first full main segment is in the buffer.
+        let playTriggered = false;
+        hls.on(Hls.Events.FRAG_BUFFERED, (_: any, data: any) => {
+          if (playTriggered || cancelled) return;
+          if (typeof data.frag.sn !== 'number') return;
+          playTriggered = true;
           v.play().catch(() => {});
         });
 
         hls.on(Hls.Events.LEVEL_SWITCHED, (_: any, data: any) => {
           setCurrentLevel(data.level);
-          // Keep container in sync when hls.js switches quality mid-playback.
-          const lvl = hls.levels[data.level];
-          if (lvl?.width && lvl?.height) {
-            setVideoAspectRatio(`${lvl.width} / ${lvl.height}`);
+          const locked = manualLevelRef.current;
+          if (locked >= 0 && data.level !== locked) {
+            hls.nextLevel = locked;
           }
         });
       } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-        // Safari native HLS — no programmatic quality switching
+        // Safari native HLS
         v.src = src;
-        v.play().catch(() => {});
+        v.addEventListener('canplay', () => { if (!cancelled) v.play().catch(() => {}); }, {once: true});
       }
     });
 
@@ -202,7 +269,7 @@ export function HlsPlayer({
         hlsRef.current = null;
       }
     };
-  }, [src]);
+  }, [defaultAspectRatio, src]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -222,8 +289,19 @@ export function HlsPlayer({
   // Auto-hide controls after 3 s of inactivity while playing
   const scheduleHide = useCallback(() => {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    hideTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
-  }, []);
+    hideTimerRef.current = setTimeout(
+      () => setControlsVisible(false),
+      ACTIVE_CONTROLS_HIDE_DELAY_MS,
+    );
+  }, [ACTIVE_CONTROLS_HIDE_DELAY_MS]);
+
+  const hideControlsSoon = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(
+      () => setControlsVisible(false),
+      MOUSE_LEAVE_HIDE_DELAY_MS,
+    );
+  }, [MOUSE_LEAVE_HIDE_DELAY_MS]);
 
   const revealControls = useCallback(() => {
     setControlsVisible(true);
@@ -288,7 +366,10 @@ export function HlsPlayer({
   const selectQuality = useCallback((level: number) => {
     const hls = hlsRef.current;
     if (!hls) return;
-    hls.currentLevel = level; // -1 = auto
+    manualLevelRef.current = level;
+    // nextLevel switches at the next segment boundary — no buffer flush,
+    // no freeze. The LEVEL_SWITCHED handler re-queues it each segment to
+    // keep the selection sticky without ever calling currentLevel.
     hls.nextLevel = level;
     setSelectedLevel(level);
     setShowQualityMenu(false);
@@ -320,13 +401,24 @@ export function HlsPlayer({
       ? `Auto${currentLevel >= 0 && qualityLevels[currentLevel] ? ` (${qualityLevels[currentLevel].label})` : ''}`
       : (qualityLevels[selectedLevel]?.label ?? 'Auto');
 
+  const effectiveVolume = muted ? 0 : volume;
+  const volumeFillPercent = Math.max(0, Math.min(100, effectiveVolume * 100));
+  const volumeTrackStyle = {
+    background: `linear-gradient(to right, #22b8ff 0%, #22b8ff ${volumeFillPercent}%, rgba(255, 255, 255, 0.30) ${volumeFillPercent}%, rgba(255, 255, 255, 0.30) 100%)`,
+  } as const;
+
   return (
     <div
       ref={containerRef}
       className="hls-player"
-      style={videoAspectRatio ? {aspectRatio: videoAspectRatio} : undefined}
+      style={{aspectRatio: playerAspectRatio}}
       onMouseMove={revealControls}
       onMouseEnter={revealControls}
+      onMouseLeave={() => {
+        setShowVolumeSlider(false);
+        setShowQualityMenu(false);
+        if (playing) hideControlsSoon();
+      }}
     >
       <video
         ref={videoRef}
@@ -334,9 +426,11 @@ export function HlsPlayer({
         playsInline
         loop={loop}
         muted
+        preload="auto"
         title={title}
         onTimeUpdate={() => {
           const v = videoRef.current;
+          const hls = hlsRef.current;
           if (!v) return;
           setCurrentTime(v.currentTime);
           if (v.duration) {
@@ -346,23 +440,13 @@ export function HlsPlayer({
             }
           }
           // Hide poster only once a real frame has rendered (currentTime > 0).
-          // We also sync the aspect ratio here — same render batch — so the
-          // container is the correct size the instant the poster fades out.
           if (!posterHiddenRef.current && v.currentTime > 0) {
             posterHiddenRef.current = true;
-            if (v.videoWidth && v.videoHeight) {
-              setVideoAspectRatio(`${v.videoWidth} / ${v.videoHeight}`);
-            }
             requestAnimationFrame(() =>
               requestAnimationFrame(() => setPosterVisible(false)),
             );
           }
-        }}
-        onLoadedMetadata={() => {
-          const v = videoRef.current;
-          if (v && v.videoWidth && v.videoHeight) {
-            setVideoAspectRatio(`${v.videoWidth} / ${v.videoHeight}`);
-          }
+
         }}
         onDurationChange={() => {
           const v = videoRef.current;
@@ -459,7 +543,9 @@ export function HlsPlayer({
           <div
             className="hls-volume-group"
             onMouseEnter={() => setShowVolumeSlider(true)}
-            onMouseLeave={() => setShowVolumeSlider(false)}
+            onMouseLeave={() => {
+              if (!isDraggingVolumeRef.current) setShowVolumeSlider(false);
+            }}
           >
             <button className="hls-btn" onClick={toggleMute} aria-label={muted ? 'Unmute' : 'Mute'}>
               {muted || volume === 0 ? <MuteIcon /> : <VolumeIcon />}
@@ -471,9 +557,21 @@ export function HlsPlayer({
                 min={0}
                 max={1}
                 step={0.01}
-                value={muted ? 0 : volume}
+                value={effectiveVolume}
                 onChange={handleVolumeChange}
                 aria-label="Volume"
+                style={volumeTrackStyle}
+                onPointerDown={(e) => {
+                  isDraggingVolumeRef.current = true;
+                  // Capture the pointer so drag continues outside the element
+                  (e.currentTarget as HTMLInputElement).setPointerCapture(e.pointerId);
+                }}
+                onPointerUp={() => {
+                  isDraggingVolumeRef.current = false;
+                }}
+                onPointerCancel={() => {
+                  isDraggingVolumeRef.current = false;
+                }}
               />
             </div>
           </div>
