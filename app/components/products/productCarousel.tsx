@@ -796,12 +796,12 @@ export const ProductCarousel = ({
                 className={`${layout === 'grid' ? 'print-bottom-part-card-inside-grid' : 'print-bottom-part-card-inside-list'}`}
               >
                 <div
-                  className={layout === 'grid' ? 'text-center' : 'text-start'}
+                  className={`${layout === 'grid' ? 'text-center' : 'text-start'} ${layout === 'list' ? 'pr-10' : ''}`}
                 >
                   <h5
                     className={`font-bold ${
                       layout === 'list'
-                        ? 'max-w-[85%] product-title-font-list'
+                        ? 'product-title-font-list'
                         : 'text-lg'
                     }`}
                   >
