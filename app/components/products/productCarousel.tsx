@@ -489,7 +489,9 @@ export const ProductCarousel = ({
         : isHorizontal
           ? 'aside-search-arrow-shell-horizontal'
           : ''
-      : '';
+      : isYouMayAlsoLike && layout === 'list' && isVertical
+        ? 'you-may-also-like-arrow-shell-vertical'
+        : '';
 
   return (
     <article className={articleClassName}>

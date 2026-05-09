@@ -762,6 +762,12 @@
   }
 }
 
+/* You May Also Like — vertical prints: push arrows further out so they
+ * don't overlap the narrower image area inside the recommendation cards. */
+.you-may-also-like-arrow-shell-vertical {
+  --list-arrow-outset: clamp(20px, 3vw, 32px);
+}
+
 .product-title-font-grid {
   font-size: 18px;
   padding: 14px 0 0 0;
