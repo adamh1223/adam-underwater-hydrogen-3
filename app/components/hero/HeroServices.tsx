@@ -3,16 +3,14 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import '../../styles/components/Hero.css';
 import Sectiontitle from '../global/Sectiontitle';
 import {Card} from '../ui/card';
+import {BgHlsVideo} from '~/components/video/BgHlsVideo';
 
 const HERO_SERVICES_POSTER_SRC =
   'https://downloads.adamunderwater.com/store-1-au/public/print3.jpg';
 
-const VIMEO_SRC =
-  'https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1&dnt=1';
-
 function HeroServices({onPosterLoad}: {onPosterLoad?: () => void}) {
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const [vimeoSrc, setVimeoSrc] = useState('');
+  const [videoActive, setVideoActive] = useState(false);
   const posterImgRef = useRef<HTMLImageElement>(null);
   const mediaContainerRef = useRef<HTMLDivElement>(null);
   const hasCalledPosterLoad = useRef(false);
@@ -21,17 +19,10 @@ function HeroServices({onPosterLoad}: {onPosterLoad?: () => void}) {
     if (hasCalledPosterLoad.current) return;
     hasCalledPosterLoad.current = true;
     onPosterLoad?.();
-    // Start Vimeo only after poster image is ready
-    setVimeoSrc(VIMEO_SRC);
+    setVideoActive(true);
   }, [onPosterLoad]);
 
-  const handleVideoLoad = () => {
-    setTimeout(() => {
-      setIsVideoReady(true);
-    }, 250);
-  };
-
-  // Only connect to Vimeo once the media container enters the viewport
+  // Start video once the media container enters the viewport
   useEffect(() => {
     const el = mediaContainerRef.current;
     if (!el) return;
@@ -54,7 +45,7 @@ function HeroServices({onPosterLoad}: {onPosterLoad?: () => void}) {
 
   return (
     <section
-      className="flex flex-col items-center justify-center main mb-3 "
+      className="flex flex-col items-center justify-center main mb-3"
       id="video"
     >
       <div className="title-wrapper-services">
@@ -66,32 +57,11 @@ function HeroServices({onPosterLoad}: {onPosterLoad?: () => void}) {
         </p>
         <div className="flex justify-center returns">
           <Card className="mb-3 p-5">
-            <div>
-              <p className="statement">
-                Canon EOS R5C and Nauticam Underwater Housing
-              </p>
-            </div>
-
-            <div>
-              <p className="statement">8K Canon Raw up to 60fps</p>
-            </div>
-
-            <div>
-              <p className="statement">
-                PADI Scuba Diving Instructor level certification
-              </p>
-            </div>
-
-            <div>
-              <p className="statement">
-                Wide angle and macro underwater lenses
-              </p>
-            </div>
-            <div>
-              <p className="statement">
-                Available for hire - based in San Diego, CA
-              </p>
-            </div>
+            <div><p className="statement">Canon EOS R5C and Nauticam Underwater Housing</p></div>
+            <div><p className="statement">8K Canon Raw up to 60fps</p></div>
+            <div><p className="statement">PADI Scuba Diving Instructor level certification</p></div>
+            <div><p className="statement">Wide angle and macro underwater lenses</p></div>
+            <div><p className="statement">Available for hire - based in San Diego, CA</p></div>
           </Card>
         </div>
       </div>
@@ -113,15 +83,10 @@ function HeroServices({onPosterLoad}: {onPosterLoad?: () => void}) {
           loading="eager"
           fetchpriority="high"
         />
-        {vimeoSrc && (
-          <iframe
-            src={vimeoSrc}
-            frameBorder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
+        {videoActive && (
+          <BgHlsVideo
             className={`video ${isVideoReady ? 'visible' : ''}`}
-            title="Background Video"
-            loading="lazy"
-            onLoad={handleVideoLoad}
+            onReady={() => setIsVideoReady(true)}
           />
         )}
       </div>

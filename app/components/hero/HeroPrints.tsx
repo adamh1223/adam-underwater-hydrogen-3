@@ -3,23 +3,21 @@ import React, {useEffect, useRef, useState} from 'react';
 import '../../styles/components/Hero.css';
 import Sectiontitle from '../global/Sectiontitle';
 import {Card} from '../ui/card';
-
-const VIMEO_SRC =
-  'https://player.vimeo.com/video/1018553050?autoplay=1&loop=1&muted=1&background=1&dnt=1';
+import {BgHlsVideo} from '~/components/video/BgHlsVideo';
 
 function HeroPrints() {
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const [vimeoSrc, setVimeoSrc] = useState('');
+  const [videoActive, setVideoActive] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Only connect to Vimeo when the media container is visible in the viewport
+  // Only start the video when the media container is visible in the viewport
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVimeoSrc(VIMEO_SRC);
+          setVideoActive(true);
           observer.disconnect();
         }
       },
@@ -28,10 +26,6 @@ function HeroPrints() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-
-  const handleVideoLoad = () => {
-    setTimeout(() => setIsVideoReady(true), 250);
-  };
 
   return (
     <section className="flex flex-col items-center justify-center text-center main">
@@ -72,15 +66,10 @@ function HeroPrints() {
           fetchpriority="high"
           decoding="sync"
         />
-        {vimeoSrc && (
-          <iframe
-            src={vimeoSrc}
-            frameBorder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
+        {videoActive && (
+          <BgHlsVideo
             className={`video ${isVideoReady ? 'visible' : ''}`}
-            title="Background Video"
-            loading="lazy"
-            onLoad={handleVideoLoad}
+            onReady={() => setIsVideoReady(true)}
           />
         )}
       </div>
