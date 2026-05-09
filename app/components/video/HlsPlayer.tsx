@@ -273,9 +273,16 @@ export function HlsPlayer({
 
   // Fullscreen change listener
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onFsChange = () =>
+      setIsFullscreen(
+        !!(document.fullscreenElement || (document as any).webkitFullscreenElement),
+      );
     document.addEventListener('fullscreenchange', onFsChange);
-    return () => document.removeEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
   }, []);
 
   // Close quality menu on outside click
@@ -358,9 +365,27 @@ export function HlsPlayer({
 
   const toggleFullscreen = useCallback(() => {
     const c = containerRef.current;
-    if (!c) return;
-    if (!document.fullscreenElement) c.requestFullscreen().catch(() => {});
-    else document.exitFullscreen();
+    const v = videoRef.current;
+    if (!c || !v) return;
+
+    const isFs = !!(
+      document.fullscreenElement || (document as any).webkitFullscreenElement
+    );
+
+    if (isFs) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+      return;
+    }
+
+    // iOS Safari only supports fullscreen on the video element itself
+    if ((v as any).webkitEnterFullscreen) {
+      (v as any).webkitEnterFullscreen();
+    } else if (c.requestFullscreen) {
+      c.requestFullscreen().catch(() => {});
+    } else if ((c as any).webkitRequestFullscreen) {
+      (c as any).webkitRequestFullscreen();
+    }
   }, []);
 
   const selectQuality = useCallback((level: number) => {
