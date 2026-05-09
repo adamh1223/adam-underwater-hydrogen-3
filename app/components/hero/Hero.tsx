@@ -45,7 +45,7 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
   return (
     <section className="flex flex-col items-center justify-center text-center main">
       <div>
-        <div className="pb-[40px]" id="prints">
+        <div id="prints">
           <img
             ref={heroImgRef}
             src="https://downloads.adamunderwater.com/store-1-au/public/vp3.png"

@@ -13,6 +13,7 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import Hero from '~/components/hero/Hero';
+import MarqueeBanner from '~/components/global/MarqueeBanner';
 import ProductCarousel from '~/components/products/productCarousel';
 import {
   FEATURED_COLLECTION_QUERY,
@@ -234,6 +235,11 @@ export default function Homepage() {
 
       {/* Real content — invisible until hero-img loads, then revealed */}
       <div className={isContentReady ? '' : 'invisible'}>
+        <MarqueeBanner items={[
+          'Get 15% off when you purchase 3 prints',
+          'Free Shipping on orders over $300',
+          'Sign up for email + SMS for a one time discount code',
+        ]} />
         <Hero onHeroImgLoad={() => setIsPageReady(true)} />
         <section>
           <div className="flex justify-center pt-5 me-4">
