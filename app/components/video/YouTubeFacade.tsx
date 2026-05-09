@@ -45,7 +45,7 @@ export function YouTubeFacade({
 
   if (activated) {
     return (
-      <div style={{display: 'flex', flexDirection: 'column'}}>
+      <div style={{display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center'}}>
         {titleEl}
         <iframe
           src={src}
@@ -60,7 +60,7 @@ export function YouTubeFacade({
   }
 
   return (
-    <div style={{display: 'flex', flexDirection: 'column'}}>
+    <div style={{display: 'flex', flexDirection: 'column', width: '100%', alignItems: 'center'}}>
       {titleEl}
       <button
         aria-label={`Play ${title}`}

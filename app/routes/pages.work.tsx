@@ -136,7 +136,7 @@ function WorkPage() {
 
   return (
     <SkeletonGate isReady={isPageReady} skeleton={<WorkPageSkeleton />}>
-      <div className="flex justify-center items-center gap-4 mt-3">
+      <div className="flex justify-center items-center gap-4 mt-3 mb-2">
         <img
           src={
             'https://downloads.adamunderwater.com/store-1-au/public/icon.png'

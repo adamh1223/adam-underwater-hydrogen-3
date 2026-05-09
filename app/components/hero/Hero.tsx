@@ -5,6 +5,28 @@ import {Link} from '@remix-run/react';
 import {Button} from '../ui/button';
 import {BgHlsVideo} from '~/components/video/BgHlsVideo';
 
+function NavButton({to, className, children}: {to: string; className?: string; children: React.ReactNode}) {
+  const [splashing, setSplashing] = useState(false);
+
+  const handlePointerDown = () => {
+    setSplashing(false);
+    // Force a reflow so removing then re-adding the class replays the animation
+    requestAnimationFrame(() => setSplashing(true));
+  };
+
+  return (
+    <Link to={to}>
+      <Button
+        size="lg"
+        className={`w-48 cursor-pointer${splashing ? ' variant-option-selected-splash' : ''}${className ? ` ${className}` : ''}`}
+        onPointerDown={handlePointerDown}
+      >
+        {children}
+      </Button>
+    </Link>
+  );
+}
+
 function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [videoActive, setVideoActive] = useState(false);
@@ -57,19 +79,13 @@ function Hero({onHeroImgLoad}: {onHeroImgLoad?: () => void}) {
           />
           <div className="flex flex-col justify-center pt-5">
             <div className="flex justify-center">
-              <Link to="/prints">
-                <Button size="lg" className="w-48 cursor-pointer">Prints</Button>
-              </Link>
+              <NavButton to="/prints">Prints</NavButton>
             </div>
             <div className="flex justify-center">
-              <Link to="/stock">
-                <Button size="lg" className="mt-5 w-48 cursor-pointer">Stock Footage</Button>
-              </Link>
+              <NavButton to="/stock" className="mt-5">Stock Footage</NavButton>
             </div>
             <div className="flex justify-center">
-              <Link to="/work">
-                <Button size="lg" className="mt-5 w-48 cursor-pointer">My Projects</Button>
-              </Link>
+              <NavButton to="/work" className="mt-5">My Projects</NavButton>
             </div>
           </div>
         </div>

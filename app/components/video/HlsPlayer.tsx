@@ -171,6 +171,7 @@ export function HlsPlayer({
   const [posterVisible, setPosterVisible] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(false);
   const posterHiddenRef = useRef(false);
+  const playTriggeredRef = useRef(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
@@ -189,6 +190,7 @@ export function HlsPlayer({
     let cancelled = false;
     // Reset all transient state for this video
     posterHiddenRef.current = false;
+    playTriggeredRef.current = false;
     manualLevelRef.current = -1;
     setPosterVisible(true);
     setControlsVisible(false);
@@ -240,11 +242,10 @@ export function HlsPlayer({
         });
 
         // Trigger play only after the first full main segment is in the buffer.
-        let playTriggered = false;
         hls.on(Hls.Events.FRAG_BUFFERED, (_: any, data: any) => {
-          if (playTriggered || cancelled) return;
+          if (playTriggeredRef.current || cancelled) return;
           if (typeof data.frag.sn !== 'number') return;
-          playTriggered = true;
+          playTriggeredRef.current = true;
           v.play().catch(() => {});
         });
 
@@ -479,6 +480,15 @@ export function HlsPlayer({
         }}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
+        onEmptied={() => {
+          // iOS Safari discards the video buffer under memory pressure or when
+          // the element scrolls far offscreen. Show the poster again and allow
+          // FRAG_BUFFERED to re-trigger play() once the buffer refills.
+          posterHiddenRef.current = false;
+          playTriggeredRef.current = false;
+          setPosterVisible(true);
+          setPlaying(false);
+        }}
         onVolumeChange={() => {
           const v = videoRef.current;
           if (v) setMuted(v.muted);
