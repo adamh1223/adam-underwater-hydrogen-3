@@ -77,6 +77,15 @@ export function BgHlsVideo({
       muted
       loop
       onTimeUpdate={handleTimeUpdate}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        // opacity and transition come from the className (.video / .video.visible)
+      }}
     />
   );
 }

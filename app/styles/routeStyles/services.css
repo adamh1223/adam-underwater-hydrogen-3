@@ -273,20 +273,14 @@ body {
   visibility: hidden;
 }
 
-/* Iframe styling for full coverage */
+/* .video positioning is handled via inline styles on the <video> element
+ * in BgHlsVideo so it can't be overridden by route-level CSS. Only opacity
+ * is controlled here via the visible class. */
 .video {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 177.78vw; /* 16:9 aspect ratio */
-  height: 100vh;
-  min-width: 100vw;
-  min-height: 56.25vw;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
 }
 
-/* Make the video visible smoothly */
 .video.visible {
   opacity: 1;
 }
