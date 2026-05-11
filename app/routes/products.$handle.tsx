@@ -568,8 +568,17 @@ function getVideoSwipeComparisonConfig(product: any): {
 
 type BundleClipImage = {url: string; altText?: string | null};
 
-const bundleWmlinkRegex = /^wmlink(\d+)_/i;
+export type ClipProductData = {
+  title: string;
+  descriptionHtml: string;
+  tags: string[];
+  options: Array<{name: string; optionValues: Array<{name: string}>}>;
+};
+export type ClipProductMap = Record<string, ClipProductData>; // keyed by v-number e.g. "1", "28"
+
+const bundleWmlinkRegex = /^clip(\d+)[-_]/i;
 const bundleClipNameRegex = /^cn(\d+)_+(.+)$/i;
+const bundleClipNameAllRegex = /^cnall__(.+)$/i;
 const bundleAltRegex = /bundle(\d+)(?:[-_](\d+))?/i;
 const bundleVidTokenRegex =
   /(?:^|[^a-z0-9])(?:v|vid|bundle)[-_]?(\d+)(?=[^a-z0-9]|$)/i;
@@ -688,10 +697,12 @@ function buildBundleDetailClips({
   images,
   tags,
   descriptionHtml,
+  clipProductMap = {},
 }: {
   images: BundleClipImage[];
   tags: string[];
   descriptionHtml?: string;
+  clipProductMap?: ClipProductMap;
 }): BundleDetailClip[] {
   const wmlinkByClip = new Map<number, string>();
   const clipNameByClip = new Map<number, string>();
@@ -707,7 +718,7 @@ function buildBundleDetailClips({
     const wmlinkMatch = tag.match(bundleWmlinkRegex);
     if (wmlinkMatch) {
       const clipIndex = Number(wmlinkMatch[1]);
-      const wmlinkId = tag.split('_')[1];
+      const wmlinkId = tag.split(/[-_]/)[1];
       if (clipIndex > 0 && wmlinkId) {
         wmlinkByClip.set(clipIndex, wmlinkId);
       }
@@ -721,6 +732,18 @@ function buildBundleDetailClips({
       if (clipIndex > 0 && clipName) {
         clipNameByClip.set(clipIndex, normalizeClipName(clipName));
       }
+      return;
+    }
+
+    // cnall__Name1|Name2|Name3 — all clip names in one tag, pipe-separated
+    const clipNameAllMatch = tag.match(bundleClipNameAllRegex);
+    if (clipNameAllMatch) {
+      clipNameAllMatch[1]
+        .split('|')
+        .forEach((name, i) => {
+          const trimmed = name.trim();
+          if (trimmed) clipNameByClip.set(i + 1, normalizeClipName(trimmed));
+        });
       return;
     }
 
@@ -823,25 +846,47 @@ function buildBundleDetailClips({
       ? extractClipLocationFromDescription(descriptionForClip)
       : undefined;
     const wmlinkId = wmlinkByClip.get(clipIndex);
+    // Look up the individual clip product by its v-number
+    const clipProduct = wmlinkId ? clipProductMap[wmlinkId] : undefined;
     const image = imageByClip.get(clipIndex) ?? images[clipIndex - 1];
 
     if (
       !image &&
       !wmlinkId &&
       !descriptionForClip &&
-      !clipNameByClip.has(clipIndex)
+      !clipNameByClip.has(clipIndex) &&
+      !clipProduct
     ) {
       continue;
     }
 
+    // Derive vidKey from the clip position tag (clip1_1 → vid1) so
+    // bundle-N tags are no longer required.
+    const vidKey =
+      vidByClip.get(clipIndex) ??
+      (wmlinkId ? toVidKey(wmlinkId) : undefined);
+
+    // Use tag-based name first, then fall back to the individual product title
+    const resolvedClipName =
+      clipNameByClip.get(clipIndex) ??
+      (clipProduct?.title) ??
+      (descriptionForClip ? extractClipTitleFromDescription(descriptionForClip) : undefined) ??
+      `Clip ${clipIndex}`;
+
+    // Use the bundle's per-clip description HTML first, then the individual product's
+    const resolvedDescriptionHtml =
+      descriptionForClip ?? clipProduct?.descriptionHtml;
+
     clips.push({
       index: clipIndex,
       wmlinkId,
-      vidKey: vidByClip.get(clipIndex),
+      vidKey,
       image,
-      clipName,
-      clipLocation,
-      descriptionHtml: descriptionForClip,
+      clipName: resolvedClipName,
+      clipLocation: clipLocation ?? (clipProduct ? extractClipLocationFromDescription(clipProduct.descriptionHtml) : undefined),
+      descriptionHtml: resolvedDescriptionHtml,
+      clipProductTags: clipProduct?.tags,
+      clipProductOptions: clipProduct?.options,
     });
   }
 
@@ -1044,6 +1089,40 @@ async function loadCriticalData({
       }
     }
   }
+  // For bundle products, fetch the individual clip products so their titles,
+  // descriptions, durations, resolution and frame rate can be displayed
+  // without requiring per-clip tags on the bundle product itself.
+  let clipProductMap: ClipProductMap = {};
+  const productTags: string[] = Array.isArray(product?.tags) ? product.tags : [];
+  if (productTags.includes('Bundle')) {
+    const vNumbers = productTags.flatMap((tag: string) => {
+      const m = tag.match(/^clip\d+[-_](\d+)$/i);
+      return m ? [m[1]] : [];
+    });
+    if (vNumbers.length > 0) {
+      const tagQuery = [...new Set(vNumbers)].map((n) => `tag:v${n}`).join(' OR ');
+      try {
+        const clipResult = await storefront.query(BUNDLE_CLIP_PRODUCTS_QUERY, {
+          variables: {query: tagQuery, first: 50},
+        });
+        for (const cp of (clipResult as any)?.products?.nodes ?? []) {
+          const vTag = (cp.tags as string[]).find((t: string) => /^v\d+$/i.test(t.trim()));
+          if (vTag) {
+            const key = vTag.replace(/^v/i, '');
+            clipProductMap[key] = {
+              title: cp.title,
+              descriptionHtml: cp.descriptionHtml,
+              tags: cp.tags,
+              options: cp.options ?? [],
+            };
+          }
+        }
+      } catch {
+        // Non-critical — bundle still renders without per-clip metadata
+      }
+    }
+  }
+
   return {
     product,
     customer,
@@ -1054,6 +1133,7 @@ async function loadCriticalData({
     siteUrl: resolvedSiteUrl,
     selectedOptions,
     currentShareUrl: `${resolvedSiteUrl}${requestUrl.pathname}${requestUrl.search}`,
+    clipProductMap,
   };
 }
 
@@ -1097,6 +1177,7 @@ export default function Product() {
     isLoggedIn,
     wishlistProducts,
     siteUrl,
+    clipProductMap,
   } = useLoaderData<typeof loader>();
 
   const [isPageReady, setIsPageReady] = useState(false);
@@ -1536,6 +1617,7 @@ export default function Product() {
             images: (images?.nodes as BundleClipImage[]) ?? [],
             tags: tags ?? [],
             descriptionHtml,
+            clipProductMap: clipProductMap ?? {},
           })
         : [],
     [descriptionHtml, images?.nodes, isBundle, tags],
@@ -3383,4 +3465,25 @@ export const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
-` as const;
+`;
+
+// Fetches individual clip products for a bundle so their title, description,
+// tags (duration, frame rate) and options (resolution) can be displayed
+// without requiring per-clip tags on the bundle product itself.
+const BUNDLE_CLIP_PRODUCTS_QUERY = `#graphql
+  query BundleClipProducts($query: String!, $first: Int!) {
+    products(first: $first, query: $query) {
+      nodes {
+        title
+        descriptionHtml
+        tags
+        options {
+          name
+          optionValues {
+            name
+          }
+        }
+      }
+    }
+  }
+`;

@@ -1317,16 +1317,16 @@
   overflow: hidden;
 }
 
-/* Bundle detail carousel: hard-clip the viewport so adjacent slides never
- * bleed into the active frame. Keep clipping at viewport level to avoid
- * cropping the iframe content itself.
+/* Bundle detail carousel: hard-clip the Embla viewport so adjacent slides
+ * never bleed into the active frame. data-orientation lives on the carousel
+ * root, not on carousel-content, so the selector must not require it there.
  */
 .individual-video-bundle-detail-media
-  [data-slot='carousel-content'][data-orientation='horizontal'] {
+  [data-slot='carousel-content'] {
   overflow: clip !important;
   position: relative;
   isolation: isolate;
-  contain: paint;
+  contain: paint layout;
   clip-path: inset(0) !important;
   -webkit-clip-path: inset(0) !important;
   background: hsl(var(--background));

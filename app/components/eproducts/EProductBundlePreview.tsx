@@ -5,6 +5,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
+  useCallback,
 } from 'react';
 import {ProductItemFragment} from 'storefrontapi.generated';
 import {useNavigate} from '@remix-run/react';
@@ -27,19 +28,16 @@ type BundleClip = {
   wmlinkId?: string;
 };
 
-const wmlinkRegex = /^wmlink(\d+)_/i;
+const clipTagRegex = /^clip(\d+)[-_](\d+)$/i;
 const bundleAltRegex = /bundle(\d+)-/i;
-const PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP = 1400;
-const PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH = 2200;
-const PROGRESS_REVEAL_DELAY_MS_DESKTOP = 70;
-const PROGRESS_REVEAL_DELAY_MS_TOUCH = 130;
+const HLS_BASE = 'https://downloads.adamunderwater.com/shared/stock/streaming/hls';
 
-const parseBundleWmlinks = (tags: string[]) =>
+const parseBundleClipTags = (tags: string[]) =>
   tags
     .map((tag) => {
-      const match = tag.match(wmlinkRegex);
+      const match = tag.match(clipTagRegex);
       if (!match) return null;
-      return {index: Number(match[1]), id: tag.split('_')[1]};
+      return {index: Number(match[1]), id: match[2]};
     })
     .filter(
       (item): item is {index: number; id: string} =>
@@ -51,7 +49,7 @@ const buildBundleClips = (
   images: ShopifyImage[],
   tags: string[],
 ): BundleClip[] => {
-  const wmlinks = parseBundleWmlinks(tags);
+  const wmlinks = parseBundleClipTags(tags);
   const imagesByIndex = new Map<number, ShopifyImage>();
 
   images.forEach((image, index) => {
@@ -87,133 +85,91 @@ function BundleClipPreview({
   isVideoActive: boolean;
 }) {
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const vimeoPlayReceivedRef = useRef(false);
-  const vimeoProgressReceivedRef = useRef(false);
-  const vimeoProgressEventCountRef = useRef(0);
-  const videoRevealTimeoutRef = useRef<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsInstanceRef = useRef<any>(null);
+  const readyFiredRef = useRef(false);
 
-  const clearRevealTimeout = () => {
-    if (videoRevealTimeoutRef.current !== null) {
-      window.clearTimeout(videoRevealTimeoutRef.current);
-      videoRevealTimeoutRef.current = null;
-    }
-  };
-
-  const scheduleVideoReveal = (delayMs: number) => {
-    clearRevealTimeout();
-    videoRevealTimeoutRef.current = window.setTimeout(() => {
-      videoRevealTimeoutRef.current = null;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setIsVideoReady(true));
-      });
-    }, delayMs);
-  };
-
-  useEffect(() => {
-    if (!isVideoActive) {
-      clearRevealTimeout();
-      vimeoPlayReceivedRef.current = false;
-      vimeoProgressReceivedRef.current = false;
-      vimeoProgressEventCountRef.current = 0;
-      setIsVideoReady(false);
-    }
-  }, [isVideoActive]);
-
-  // Listen for Vimeo postMessage to detect actual playback start.
+  // Start/stop HLS based on isVideoActive
   useEffect(() => {
     if (!isVideoActive || !clip.wmlinkId) return;
-    vimeoPlayReceivedRef.current = false;
-    vimeoProgressReceivedRef.current = false;
-    vimeoProgressEventCountRef.current = 0;
 
-    const handleMessage = (event: MessageEvent) => {
-      if (
-        typeof event.origin !== 'string' ||
-        !event.origin.includes('vimeo.com')
-      )
-        return;
-      if (
-        !iframeRef.current ||
-        event.source !== iframeRef.current.contentWindow
-      )
-        return;
+    const video = videoRef.current;
+    if (!video) return;
+    let cancelled = false;
 
-      let data: any;
-      try {
-        data =
-          typeof event.data === 'string'
-            ? JSON.parse(event.data)
-            : event.data;
-      } catch {
-        return;
+    import('hls.js').then(({default: Hls}) => {
+      if (cancelled || !videoRef.current) return;
+      const v = videoRef.current;
+      const src = `${HLS_BASE}/${clip.wmlinkId}/master.m3u8`;
+
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          startLevel: -1,          // overridden in MANIFEST_PARSED
+          capLevelToPlayerSize: true, // card is small — no need for 4K
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
+          backBufferLength: 10,
+        });
+        hlsInstanceRef.current = hls;
+        hls.loadSource(src);
+        hls.attachMedia(v);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (_: any, data: any) => {
+          if (cancelled) return;
+          // Pin first segment to 480p — small enough to buffer instantly,
+          // avoids the ABR start-low-then-jump-high freeze pattern.
+          // capLevelToPlayerSize keeps quality sensible after the first segment.
+          if (data.levels.length > 0) {
+            const idx = data.levels.reduce(
+              (best: number, lvl: any, i: number) =>
+                Math.abs(lvl.height - 480) < Math.abs(data.levels[best].height - 480)
+                  ? i : best,
+              0,
+            );
+            hls.startLevel = idx;
+          }
+        });
+
+        // Only play once a full segment is in the buffer — prevents the
+        // play-then-freeze pattern caused by calling play() on an empty buffer.
+        let playTriggered = false;
+        hls.on(Hls.Events.FRAG_BUFFERED, (_: any, data: any) => {
+          if (playTriggered || cancelled || typeof data.frag.sn !== 'number') return;
+          playTriggered = true;
+          v.play().catch(() => {});
+        });
+      } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+        v.src = src;
+        v.addEventListener('canplay', () => { if (!cancelled) v.play().catch(() => {}); }, {once: true});
       }
+    });
 
-      if (data.event === 'ready') {
-        iframeRef.current?.contentWindow?.postMessage(
-          JSON.stringify({method: 'addEventListener', value: 'play'}),
-          'https://player.vimeo.com',
-        );
-        iframeRef.current?.contentWindow?.postMessage(
-          JSON.stringify({method: 'addEventListener', value: 'timeupdate'}),
-          'https://player.vimeo.com',
-        );
-        iframeRef.current?.contentWindow?.postMessage(
-          JSON.stringify({method: 'addEventListener', value: 'playProgress'}),
-          'https://player.vimeo.com',
-        );
-      } else if (data.event === 'play') {
-        if (vimeoPlayReceivedRef.current) return;
-        vimeoPlayReceivedRef.current = true;
-        clearRevealTimeout();
-        const isCoarsePointer =
-          typeof window !== 'undefined' &&
-          typeof window.matchMedia === 'function' &&
-          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-        scheduleVideoReveal(
-          isCoarsePointer
-            ? PLAY_FALLBACK_REVEAL_DELAY_MS_TOUCH
-            : PLAY_FALLBACK_REVEAL_DELAY_MS_DESKTOP,
-        );
-      } else if (
-        (data.event === 'timeupdate' || data.event === 'playProgress') &&
-        !vimeoProgressReceivedRef.current
-      ) {
-        vimeoProgressEventCountRef.current += 1;
-        if (vimeoProgressEventCountRef.current < 2) return;
-        vimeoProgressReceivedRef.current = true;
-        clearRevealTimeout();
-        const isCoarsePointer =
-          typeof window !== 'undefined' &&
-          typeof window.matchMedia === 'function' &&
-          window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-        scheduleVideoReveal(
-          isCoarsePointer
-            ? PROGRESS_REVEAL_DELAY_MS_TOUCH
-            : PROGRESS_REVEAL_DELAY_MS_DESKTOP,
-        );
+    return () => {
+      cancelled = true;
+      if (hlsInstanceRef.current) {
+        hlsInstanceRef.current.destroy();
+        hlsInstanceRef.current = null;
+      }
+      if (video) {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
       }
     };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
   }, [isVideoActive, clip.wmlinkId]);
 
+  // Reset when deactivated
   useEffect(() => {
-    return () => {
-      clearRevealTimeout();
-    };
-  }, []);
+    if (isVideoActive) return;
+    readyFiredRef.current = false;
+    setIsVideoReady(false);
+  }, [isVideoActive]);
 
-  const handleVideoLoad = () => {
-    if (vimeoPlayReceivedRef.current) return;
-    // Fallback reveal in case Vimeo postMessage play event never arrives.
-    const isCoarsePointer =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    const delay = isCoarsePointer ? 2600 : 1600;
-    scheduleVideoReveal(delay);
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || readyFiredRef.current || v.currentTime === 0) return;
+    readyFiredRef.current = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => setIsVideoReady(true)));
   };
 
   const previewImage = clip.image;
@@ -224,10 +180,7 @@ function BundleClipPreview({
         <img
           src={getOptimizedImageUrl(previewImage.url, 1280)}
           srcSet={[480, 720, 960, 1280, 1600]
-            .map(
-              (width) =>
-                `${getOptimizedImageUrl(previewImage.url, width)} ${width}w`,
-            )
+            .map((width) => `${getOptimizedImageUrl(previewImage.url, width)} ${width}w`)
             .join(', ')}
           sizes="(max-width: 700px) 82vw, (max-width: 1200px) 42vw, 30vw"
           alt={previewImage.altText || 'Bundle preview'}
@@ -236,15 +189,15 @@ function BundleClipPreview({
         />
       )}
       {isVideoActive && clip.wmlinkId && (
-        <div className="EProductVideoWrapper pointer-events-none">
-          <iframe
-            ref={iframeRef}
-            src={`https://player.vimeo.com/video/${clip.wmlinkId}?autoplay=1&muted=1&background=1&badge=0&autopause=0&playsinline=1`}
-            allow="autoplay; fullscreen; picture-in-picture"
+        <div className="EProductVideoWrapper">
+          <video
+            ref={videoRef}
             className={`EProductVideo ${isVideoReady ? 'visible' : ''}`}
-            title="Bundle clip preview"
-            onLoad={handleVideoLoad}
-          ></iframe>
+            playsInline
+            muted
+            loop
+            onTimeUpdate={handleTimeUpdate}
+          />
         </div>
       )}
     </div>

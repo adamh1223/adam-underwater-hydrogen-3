@@ -8,6 +8,7 @@ import {
   CarouselPrevious,
 } from '../ui/carousel';
 import {getOptimizedImageUrl} from '~/lib/imageWarmup';
+import {HlsPlayer} from '~/components/video/HlsPlayer';
 import '../../styles/routeStyles/product.css';
 
 type BundleClipImage = {url: string; altText?: string | null};
@@ -20,6 +21,8 @@ export type BundleDetailClip = {
   clipName: string;
   clipLocation?: string;
   descriptionHtml?: string;
+  clipProductTags?: string[];
+  clipProductOptions?: Array<{name: string; optionValues: Array<{name: string}>}>;
 };
 
 function IndividualVideoBundle({
@@ -86,20 +89,20 @@ function IndividualVideoBundle({
         >
           <div className="bundle-detail-media-frame">
             <CarouselContent className="flex">
-              {clips.map((clip) => (
+              {clips.map((clip, idx) => (
                 <CarouselItem
                   className="flex items-center justify-center"
                   key={`bundle-individual-clip-${clip.index}`}
                 >
                   <div className="bundle-detail-main-media flex items-center justify-center">
-                    {clip.wmlinkId ? (
-                      <iframe
-                        className="bundle-detail-iframe"
-                        src={`https://player.vimeo.com/video/${clip.wmlinkId}?badge=0&autopause=0&player_id=0&app_id=58479`}
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        title={`${productName} - Clip ${clip.index}`}
-                        loading="eager"
-                      ></iframe>
+                    {clip.wmlinkId && idx === currentIndex ? (
+                      <HlsPlayer
+                        hlsId={clip.wmlinkId}
+                        poster={clip.image?.url}
+                        title={`${productName} - ${clip.clipName}`}
+                        loop
+                        preferredStartHeight={2160}
+                      />
                     ) : clip.image?.url ? (
                       <img
                         src={getOptimizedImageUrl(clip.image.url, 1600)}

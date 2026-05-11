@@ -49,7 +49,12 @@ type BundleClipMetadata = {
 const bundleDurationRegex = /^d(\d+)-(.+)$/i;
 const bundleResolutionRegex = /^res(\d+)-(.+)$/i;
 const bundleFrameRegex = /^frame(\d+)-(.+)$/i;
+// "all" shorthands — applies to every clip when per-clip tags are absent
+const bundleResAllRegex = /^resall-(.+)$/i;
+const bundleFrameAllRegex = /^frameall-(.+)$/i;
+const bundleDurAllRegex = /^dall-(.+)$/i;
 const bundleClipNameRegex = /^cn(\d+)__+(.+)$/i;
+const bundleClipNameAllRegex = /^cnall__(.+)$/i;
 const FAVORITE_BORDER_TRACE_MS = 820;
 
 function normalizeResolutionLabel(value: string): string {
@@ -116,6 +121,14 @@ function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
       return;
     }
 
+    // resall-8k applies to every clip; stored at key 0 as a fallback
+    const resAllMatch = tag.match(bundleResAllRegex);
+    if (resAllMatch) {
+      const v = resAllMatch[1]?.trim();
+      if (v) resolutionByClip.set(0, normalizeResolutionLabel(v));
+      return;
+    }
+
     const frameMatch = tag.match(bundleFrameRegex);
     if (frameMatch) {
       const clipIndex = Number(frameMatch[1]);
@@ -129,6 +142,20 @@ function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
       return;
     }
 
+    const frameAllMatch = tag.match(bundleFrameAllRegex);
+    if (frameAllMatch) {
+      const normalized = normalizeFrameLabel(frameAllMatch[1]?.trim() ?? '');
+      if (normalized) frameByClip.set(0, normalized);
+      return;
+    }
+
+    const durAllMatch = tag.match(bundleDurAllRegex);
+    if (durAllMatch) {
+      const v = durAllMatch[1]?.trim();
+      if (v) durationByClip.set(0, v);
+      return;
+    }
+
     const clipNameMatch = tag.match(bundleClipNameRegex);
     if (clipNameMatch) {
       const clipIndex = Number(clipNameMatch[1]);
@@ -136,6 +163,18 @@ function parseBundleClipMetadata(tags: string[]): BundleClipMetadata {
       if (clipIndex > 0 && clipNameValue) {
         clipNameByClip.set(clipIndex, normalizeClipName(clipNameValue));
       }
+      return;
+    }
+
+    // cnall__Name1|Name2|Name3 — all clip names in one tag, pipe-separated
+    const clipNameAllMatch = tag.match(bundleClipNameAllRegex);
+    if (clipNameAllMatch) {
+      clipNameAllMatch[1]
+        .split('|')
+        .forEach((name, i) => {
+          const trimmed = name.trim();
+          if (trimmed) clipNameByClip.set(i + 1, normalizeClipName(trimmed));
+        });
     }
   });
 
@@ -429,12 +468,14 @@ function EProductsContainer({
 
   const displayDurationTag = isBundle
     ? (bundleClipMetadata.durationByClip.get(activeBundleClipIndex) ??
+      bundleClipMetadata.durationByClip.get(0) ??
       durationTag)
     : durationTag;
   const hasDisplayDurationTag = Boolean(displayDurationTag);
 
   const displayResolutionBadgeLabel = isBundle
     ? (bundleClipMetadata.resolutionByClip.get(activeBundleClipIndex) ??
+      bundleClipMetadata.resolutionByClip.get(0) ??
       fallbackResolutionBadgeLabel)
     : fallbackResolutionBadgeLabel;
   const displayResolutionBadgeStyle = getResolutionBadgeStyle(
@@ -445,6 +486,7 @@ function EProductsContainer({
   const fallbackFrameBadgeLabel = frameBadgeLabelFromTags;
   const displayFrameBadgeLabel = isBundle
     ? (bundleClipMetadata.frameByClip.get(activeBundleClipIndex) ??
+      bundleClipMetadata.frameByClip.get(0) ??
       fallbackFrameBadgeLabel)
     : fallbackFrameBadgeLabel;
   const bundleDiscountBadgeClassName =
