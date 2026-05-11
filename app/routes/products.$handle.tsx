@@ -1622,6 +1622,13 @@ export default function Product() {
         : [],
     [descriptionHtml, images?.nodes, isBundle, tags],
   );
+  // Stable array — memoized so the LocationGlobe geocoding effect never re-fires
+  // due to a new array reference on every render.
+  const bundleClipLocations = useMemo(
+    () => isBundle ? bundleDetailClips.map((c) => c.clipLocation ?? '') : undefined,
+    [isBundle, bundleDetailClips],
+  );
+
   const [activeBundleClipIndex, setActiveBundleClipIndex] = useState(1);
 
   useEffect(() => {
@@ -3241,11 +3248,19 @@ export default function Product() {
                 </div>
               </section>
             )}
-            {isVideo && (activeVideoSwipeComparison || formattedLocation) && (
+            {isVideo && (activeVideoSwipeComparison || formattedLocation || isBundle) && (
               <div className="video-comparison-stack flex flex-col">
-                {formattedLocation && (
+                {(formattedLocation || isBundle) && (
                   <div className="order-1">
-                    <LocationGlobe formattedLocation={formattedLocation} />
+                    <LocationGlobe
+                      formattedLocation={
+                        isBundle
+                          ? (bundleDetailClips[activeBundleClipIndex - 1]?.clipLocation ?? '')
+                          : formattedLocation
+                      }
+                      bundleLocations={bundleClipLocations}
+                      activeBundleIndex={isBundle ? activeBundleClipIndex - 1 : undefined}
+                    />
                   </div>
                 )}
                 {activeVideoSwipeComparison && (

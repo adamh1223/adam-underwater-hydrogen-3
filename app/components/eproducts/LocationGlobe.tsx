@@ -178,6 +178,7 @@ let cachedAdmin1: any | null = null;
 let cachedLakes:  any | null = null;
 let cachedRivers: any | null = null;
 let cachedStars: StarParticle[] | null = null;
+const geocodeCache = new Map<string, [number, number] | null | Promise<[number, number] | null>>();
 let load110mPromise:     Promise<any | null>  | null = null;
 let load50mPromise:      Promise<any | null>  | null = null;
 let loadCountriesPromise: Promise<{borders: any; countryFeatures: any[]} | null> | null = null;
@@ -275,14 +276,34 @@ async function loadAdmin1Data(): Promise<any | null> {
 }
 
 async function geocode(location: string): Promise<[number, number] | null> {
+  const normalized = location.trim().toLowerCase();
+  if (!normalized) return null;
+  const cached = geocodeCache.get(normalized);
+  if (cached) {
+    return cached instanceof Promise ? await cached : cached;
+  }
+
+  const request = (async () => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
+      const r = await fetch(url, {headers: {'Accept-Language': 'en'}});
+      const data = (await r.json()) as any[];
+      if (!data?.[0]) return null;
+      return [parseFloat(data[0].lat as string), parseFloat(data[0].lon as string)] as [number, number];
+    } catch (err) {
+      console.error('[LocationGlobe] geocode failed:', err);
+      return null;
+    }
+  })();
+  geocodeCache.set(normalized, request);
+
   try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`;
-    const r = await fetch(url, {headers: {'Accept-Language': 'en'}});
-    const data = (await r.json()) as any[];
-    if (!data?.[0]) return null;
-    return [parseFloat(data[0].lat as string), parseFloat(data[0].lon as string)];
+    const result = await request;
+    geocodeCache.set(normalized, result);
+    return result;
   } catch (err) {
     console.error('[LocationGlobe] geocode failed:', err);
+    geocodeCache.delete(normalized);
     return null;
   }
 }
@@ -504,10 +525,14 @@ function drawGlobe(
   dotAlpha:         number,
   nowMs:            number,
   fastMode:         boolean,
+  // Bundle mode: all clip locations + which one is active
+  allBundleDots?:   ([number, number] | null)[] | null,
+  activeBundleDot?: number | null,
 ) {
   const cx = vw / 2;
   const cy = vh / 2;
   const zp = Math.max(0, Math.min((currentScale - baseScale) / (maxScale - baseScale), 1));
+  const hasBundleDots = Boolean(allBundleDots && allBundleDots.length > 0);
 
   // During active interaction use coarser paths — far fewer segments to compute,
   // making each frame cheaper so the target FPS is actually achieved.
@@ -751,6 +776,7 @@ function drawGlobe(
 
   // Location dot
   if (
+    !hasBundleDots &&
     dotCoords &&
     dotAlpha > 0 &&
     isPointVisibleOnFrontHemisphere(lambdaC, phiC, dotCoords[1], dotCoords[0])
@@ -774,15 +800,91 @@ function drawGlobe(
     }
     ctx.restore();
   }
+
+  // Bundle mode: dim dots for every clip location, bright dot for the active one
+  if (allBundleDots && allBundleDots.length > 0) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, currentScale, 0, 2 * Math.PI);
+    ctx.clip();
+
+    allBundleDots.forEach((coords, idx) => {
+      if (!coords) return;
+      if (!isPointVisibleOnFrontHemisphere(lambdaC, phiC, coords[1], coords[0])) return;
+      const pt = projection([coords[1], coords[0]]);
+      if (!pt) return;
+
+      const isActive = idx === activeBundleDot;
+      if (isActive) {
+        // Same style as the main single dot
+        const a = Math.max(0, Math.min(1, dotAlpha));
+        if (a <= 0.001) return;
+        const glow = ctx.createRadialGradient(pt[0], pt[1], 0, pt[0], pt[1], 18);
+        glow.addColorStop(0, `hsla(198.6,88.7%,48.4%,${(0.55 * a).toFixed(3)})`);
+        glow.addColorStop(1, 'hsla(198.6,88.7%,48.4%,0)');
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], 18, 0, 2 * Math.PI);
+        ctx.fillStyle = glow; ctx.fill();
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], 5, 0, 2 * Math.PI);
+        ctx.fillStyle = `hsla(198.6,88.7%,48.4%,${a.toFixed(3)})`; ctx.fill();
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], 2.5, 0, 2 * Math.PI);
+        ctx.fillStyle = `hsla(198.6,88.7%,75%,${a.toFixed(3)})`; ctx.fill();
+      } else {
+        // Dim marker for inactive locations
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], 3.5, 0, 2 * Math.PI);
+        ctx.fillStyle = 'hsla(198.6,88.7%,48.4%,0.45)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], 1.5, 0, 2 * Math.PI);
+        ctx.fillStyle = 'hsla(198.6,88.7%,72%,0.55)'; ctx.fill();
+      }
+    });
+
+    ctx.restore();
+  }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-interface LocationGlobeProps { formattedLocation: string; }
+interface LocationGlobeProps {
+  formattedLocation: string;
+  /** Bundle mode: all clip locations for drawing the full set of dots */
+  bundleLocations?: string[];
+  /** Bundle mode: 0-based index of the currently active clip */
+  activeBundleIndex?: number;
+}
 
-export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
+function getLocationStateToken(location: string): string | null {
+  const parts = location
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+  if (parts.length < 3) return null;
+  return parts[parts.length - 2]?.toUpperCase() ?? null;
+}
+
+export function LocationGlobe({
+  formattedLocation,
+  bundleLocations,
+  activeBundleIndex,
+}: LocationGlobeProps) {
+  const isBundleMode = (bundleLocations?.length ?? 0) > 0;
+  const geocodeAnchorLocation = isBundleMode
+    ? (bundleLocations?.find((loc) => loc.trim().length > 0) ?? formattedLocation)
+    : formattedLocation;
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const viewportRef  = useRef<HTMLDivElement>(null);
+
+  // Bundle mode: geocoded coordinates for every clip location
+  const bundleAllCoordsRef = useRef<([number, number] | null)[]>([]);
+  // Signal from the activeBundleIndex-change effect → frame loop
+  const bundleTransitionSignalRef = useRef<{
+    lambda: number;
+    phi: number;
+    mode: 'zoom-pan-zoom' | 'pan-only';
+  } | null>(null);
+  // Keep a stable ref to the current activeBundleIndex readable inside the RAF loop
+  const activeBundleIndexRef = useRef<number | undefined>(activeBundleIndex);
+  activeBundleIndexRef.current = activeBundleIndex;
+  const previousBundleLocationRef = useRef<string | null>(null);
+
   // Exposed to button onClick handlers without re-renders
   const actionsRef = useRef<{
     zoomIn: () => void;
@@ -798,7 +900,82 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
   const [isSettled, setIsSettled] = useState(false);
 
   useEffect(() => {
-    if (!formattedLocation) return;
+    if (isBundleMode) return;
+    bundleAllCoordsRef.current = [];
+    bundleTransitionSignalRef.current = null;
+  }, [isBundleMode]);
+
+  // Geocode every bundle location so we can draw all the dots at once.
+  // Requests are sequenced 600 ms apart to respect Nominatim's 1 req/s policy.
+  useEffect(() => {
+    if (!bundleLocations || bundleLocations.length === 0) return;
+    const coords: ([number, number] | null)[] = new Array(bundleLocations.length).fill(null);
+    bundleAllCoordsRef.current = coords;
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    bundleLocations.forEach((loc, i) => {
+      if (!loc) return;
+      const t = setTimeout(() => {
+        if (cancelled) return;
+        geocode(loc).then((result) => {
+          if (!cancelled) coords[i] = result;
+        });
+      }, i * 650); // 650 ms between each request
+      timers.push(t);
+    });
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [bundleLocations]);
+
+  // When the active slide changes, signal the frame loop to pan to that location
+  useEffect(() => {
+    if (!isBundleMode) return;
+    if (activeBundleIndex === undefined || activeBundleIndex < 0) return;
+    const activeLocation = bundleLocations?.[activeBundleIndex]?.trim();
+    if (!activeLocation) return;
+    const previousLocation = previousBundleLocationRef.current;
+    const previousState = previousLocation
+      ? getLocationStateToken(previousLocation)
+      : null;
+    const nextState = getLocationStateToken(activeLocation);
+    const shouldPanOnly =
+      previousLocation === null ||
+      (previousState !== null && nextState !== null && previousState === nextState);
+    const nextTransitionMode: 'zoom-pan-zoom' | 'pan-only' = shouldPanOnly
+      ? 'pan-only'
+      : 'zoom-pan-zoom';
+
+    const existingCoords = bundleAllCoordsRef.current[activeBundleIndex];
+    if (existingCoords) {
+      bundleTransitionSignalRef.current = {
+        lambda: existingCoords[1] * DEG,
+        phi: existingCoords[0] * DEG,
+        mode: nextTransitionMode,
+      };
+      previousBundleLocationRef.current = activeLocation;
+      return;
+    }
+
+    let cancelled = false;
+    geocode(activeLocation).then((result) => {
+      if (cancelled || !result) return;
+      bundleAllCoordsRef.current[activeBundleIndex] = result;
+      bundleTransitionSignalRef.current = {
+        lambda: result[1] * DEG,
+        phi: result[0] * DEG,
+        mode: nextTransitionMode,
+      };
+      previousBundleLocationRef.current = activeLocation;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBundleIndex, bundleLocations, isBundleMode]);
+
+  useEffect(() => {
+    if (!geocodeAnchorLocation && !isBundleMode) return;
     if (!canvasRef.current || !viewportRef.current) return;
     const canvas:   HTMLCanvasElement = canvasRef.current;
     const viewport: HTMLDivElement    = viewportRef.current;
@@ -913,6 +1090,20 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     let spinStartLambda = 0;
     const spinOmega = SPIN_SPEED_DEG_PER_MS * DEG;
 
+    // ── Bundle pan transition ──────────────────────────────────────────────────
+    type BundlePanState = {
+      subPhase: 'zoom-out' | 'landing' | 'zoom-in' | 'pan-only';
+      startTime: number;
+      fromScale: number;
+      midScale: number;
+      toScale: number;
+      targetLambda: number;
+      targetPhi: number;
+      landFromLambda: number;
+      landFromPhi: number;
+    };
+    let bundlePan: BundlePanState | null = null;
+
     // ── Interactive zoom (button presses) ──────────────────────────────────────
     let btnZoomFrom = baseRadius, btnZoomTo = baseRadius, btnZoomStart = 0;
     let btnZoomDurationMs = BTN_ZOOM_MS;
@@ -1026,6 +1217,46 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
     function frame(now: number) {
       if (!alive) return;
 
+      // ── Bundle pan: consume signal when settled ───────────────────────────
+      const bSig = bundleTransitionSignalRef.current;
+      if (bSig && phase === 'settled' && !bundlePan) {
+        bundleTransitionSignalRef.current = null;
+        // Wrap target lambda to the nearest geodesic rotation
+        const diff = ((bSig.lambda - lambdaC) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+        const isAlreadyAtTarget =
+          Math.abs(diff) < 0.002 &&
+          Math.abs(bSig.phi - phiC) < 0.002;
+        if (isAlreadyAtTarget) {
+          targetLambdaC = lambdaC;
+          targetPhiC = phiC;
+        } else if (bSig.mode === 'pan-only') {
+          bundlePan = {
+            subPhase: 'pan-only',
+            startTime: now,
+            fromScale: currentScale,
+            midScale: currentScale,
+            toScale: currentScale,
+            targetLambda: lambdaC + diff,
+            targetPhi: bSig.phi,
+            landFromLambda: lambdaC,
+            landFromPhi: phiC,
+          };
+        } else {
+          const midScale = baseRadius * Math.pow(TARGET_ZOOM_FACTOR, 0.3);
+          bundlePan = {
+            subPhase: 'zoom-out',
+            startTime: now,
+            fromScale: currentScale,
+            midScale,
+            toScale: currentScale,
+            targetLambda: lambdaC + diff,
+            targetPhi: bSig.phi,
+            landFromLambda: lambdaC,
+            landFromPhi: phiC,
+          };
+        }
+      }
+
       // If geocode hasn't resolved yet, draw the idle globe and wait.
       if (!animationStarted) {
         drawGlobe(
@@ -1059,11 +1290,17 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       const isInteracting = dragging || pinching;
       const isZoomAnimating = phase === 'settled' && btnZoomFrom !== btnZoomTo;
       const isResizeActive = now < resizingUntil;
+      const isBundlePanning = bundlePan !== null;
+      const bundleDots =
+        isBundleMode && bundleAllCoordsRef.current.length > 0
+          ? bundleAllCoordsRef.current
+          : null;
+      const activeDotIdx = activeBundleIndexRef.current ?? null;
 
       // During active interaction run uncapped at the display's native refresh
       // rate (60 / 90 / 120 Hz). Every layer except ocean+land+lakes is skipped
       // in fastMode so frames are cheap enough to sustain this.
-      if (!isInteracting && !isZoomAnimating && !isResizeActive) {
+      if (!isInteracting && !isZoomAnimating && !isResizeActive && !isBundlePanning) {
         const targetFps =
           phase !== 'settled' ? 24 :
           dotCoords !== null  ? 30 :
@@ -1118,11 +1355,70 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         }
       }
 
+      // ── Bundle pan transition (overrides settled scale/rotation) ──────────
+      if (bundlePan) {
+        const bp = bundlePan;
+        const te = now - bp.startTime;
+        if (bp.subPhase === 'pan-only') {
+          const PAN_MS = 700;
+          const t = Math.min(te / PAN_MS, 1);
+          const e = easeOut(t);
+          lambdaC = bp.landFromLambda + (bp.targetLambda - bp.landFromLambda) * e;
+          phiC = bp.landFromPhi + (bp.targetPhi - bp.landFromPhi) * e;
+          currentScale = bp.fromScale;
+          if (t >= 1) {
+            lambdaC = bp.targetLambda;
+            phiC = bp.targetPhi;
+            targetLambdaC = lambdaC;
+            targetPhiC = phiC;
+            bundlePan = null;
+          }
+        } else if (bp.subPhase === 'zoom-out') {
+          const ZOOM_OUT_MS = 380;
+          const t = Math.min(te / ZOOM_OUT_MS, 1);
+          currentScale = bp.fromScale + (bp.midScale - bp.fromScale) * easeInOut(t);
+          if (t >= 1) {
+            currentScale = bp.midScale;
+            bp.subPhase = 'landing';
+            bp.startTime = now;
+            bp.landFromLambda = lambdaC;
+            bp.landFromPhi    = phiC;
+          }
+        } else if (bp.subPhase === 'landing') {
+          const LAND_MS = 650;
+          const t = Math.min(te / LAND_MS, 1);
+          const e = easeOut(t);
+          lambdaC = bp.landFromLambda + (bp.targetLambda - bp.landFromLambda) * e;
+          phiC    = bp.landFromPhi    + (bp.targetPhi    - bp.landFromPhi)    * e;
+          currentScale = bp.midScale;
+          if (t >= 1) {
+            lambdaC = bp.targetLambda;
+            phiC    = bp.targetPhi;
+            bp.subPhase = 'zoom-in';
+            bp.startTime = now;
+          }
+        } else {
+          const ZOOM_IN_MS = 550;
+          const t = Math.min(te / ZOOM_IN_MS, 1);
+          currentScale = bp.midScale + (bp.toScale - bp.midScale) * easeInOut(t);
+          if (t >= 1) {
+            currentScale = bp.toScale;
+            targetLambdaC = lambdaC;
+            targetPhiC    = phiC;
+            bundlePan = null;
+          }
+        }
+      }
+
       let dotAlpha = 0;
       if (phase === 'zooming' && dotCoords) {
         const t = Math.min((now - zoomStartTime) / ZOOM_DURATION_MS, 1);
         dotAlpha = Math.max(0, (t - 0.4) / 0.6);
-      } else if (phase === 'settled' && dotCoords) {
+      } else if (
+        phase === 'settled' &&
+        (dotCoords ||
+          (bundleDots && activeDotIdx !== null && bundleDots[activeDotIdx]))
+      ) {
         const pulseT = ((now - settledTime) % PULSE_PERIOD_MS) / PULSE_PERIOD_MS;
         dotAlpha = 0.5 - 0.5 * Math.cos(pulseT * 2 * Math.PI);
       }
@@ -1132,12 +1428,13 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
 
       // Offscreen cache: during settled idle the view is static — only the dot
       // alpha changes. Blit the cached static frame and redraw just the dot.
-      const thisKey = `${lambdaC.toFixed(4)},${phiC.toFixed(4)},${Math.round(currentScale)},${vw},${vh},${dataVersion}`;
+      const thisKey = `${lambdaC.toFixed(4)},${phiC.toFixed(4)},${Math.round(currentScale)},${vw},${vh},${dataVersion},b${bundleDots?.length ?? 0},a${activeDotIdx ?? -1}`;
       const useCache =
         phase === 'settled' &&
         !dragging &&
         !pinching &&
         !isResizeActive &&
+        !isBundlePanning &&
         thisKey === cacheKey &&
         offCtx;
 
@@ -1151,10 +1448,23 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         ctx.drawImage(offscreen, 0, 0);  // 1:1 raw-pixel blit
         ctx.restore();                    // back to DPR transform for the dot
 
-        if (dotCoords && dotAlpha > 0 && isPointVisibleOnFrontHemisphere(lambdaC, phiC, dotCoords[1], dotCoords[0])) {
+        const activeCoords: [number, number] | null =
+          bundleDots && activeDotIdx !== null
+            ? (bundleDots[activeDotIdx] ?? null)
+            : dotCoords;
+        if (
+          activeCoords &&
+          dotAlpha > 0 &&
+          isPointVisibleOnFrontHemisphere(
+            lambdaC,
+            phiC,
+            activeCoords[1],
+            activeCoords[0],
+          )
+        ) {
           const cx = vw / 2, cy = vh / 2;
           sharedProjection.translate([cx, cy]).scale(currentScale).rotate([-(lambdaC / DEG), -(phiC / DEG)]);
-          const pt = sharedProjection([dotCoords[1], dotCoords[0]]);
+          const pt = sharedProjection([activeCoords[1], activeCoords[0]]);
           if (pt) {
             ctx.save();
             ctx.beginPath(); ctx.arc(cx, cy, currentScale, 0, 2 * Math.PI); ctx.clip();
@@ -1176,11 +1486,14 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
         // (cheaper) paths so the target FPS is actually achieved each frame.
         const fast = isInteracting || isZoomAnimating || isResizeActive;
         drawGlobe(ctx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
-                  baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now, fast);
+                  baseRadius, zoomRadius, vw, vh, dotCoords, dotAlpha, now, fast,
+                  bundleDots, activeDotIdx);
         // Save static frame to offscreen only when idle (not interacting/animating)
-        if (phase === 'settled' && !fast && offCtx) {
+        if (phase === 'settled' && !fast && !isBundlePanning && offCtx) {
+          const cacheActiveDotIdx = bundleDots ? null : activeDotIdx;
           drawGlobe(offCtx, activeLand, lakes, rivers, admin1, countries, lambdaC, phiC, currentScale,
-                    baseRadius, zoomRadius, vw, vh, null, 0, now, false);
+                    baseRadius, zoomRadius, vw, vh, null, 0, now, false,
+                    bundleDots, cacheActiveDotIdx);
           cacheKey = thisKey;
         }
       }
@@ -1217,7 +1530,7 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       dataVersion++;
     });
 
-    geocode(formattedLocation).then((geoResult) => {
+    geocode(geocodeAnchorLocation).then((geoResult) => {
       if (!alive) return;
       if (geoResult) {
         dotCoords     = geoResult;
@@ -1284,9 +1597,9 @@ export function LocationGlobe({formattedLocation}: LocationGlobeProps) {
       canvas.removeEventListener('touchmove',  onTouchMove);
       canvas.removeEventListener('touchend',   onTouchEnd);
     };
-  }, [formattedLocation]);
+  }, [geocodeAnchorLocation, isBundleMode]);
 
-  if (!formattedLocation) return null;
+  if (!formattedLocation && !isBundleMode) return null;
 
   const btnBase: React.CSSProperties = {
     width: 36, height: 36,
