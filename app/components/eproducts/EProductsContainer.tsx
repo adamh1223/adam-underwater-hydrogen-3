@@ -1186,25 +1186,22 @@ function EProductsContainer({
           {/* Title/Location + Artist Pick + Duration tag + Favorite button for LIST <=600px > */}
           {shouldRenderListCompactRange && (
             <>
-              {!isArtistPick && isBundle && (
-                <div
-                  className="absolute left-2 top-2 z-[70]"
-                  data-bundle-no-nav
-                >
-                  <button disabled className={bundleDiscountBadgeClassName}>
-                    <LuTag className="h-3 w-3 shrink-0" />
-                    <span className="min-w-0 text-left">20% off per clip</span>
-                  </button>
-                </div>
-              )}
               <div
                 ref={listTitleContainerRef}
                 className={`product-title-container border-b py-1 min-h-[50px] ${
-                  isArtistPick
+                  isArtistPick || isBundle
                     ? 'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-1 px-1'
                     : 'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-1 px-1'
                 }`}
               >
+                {!isArtistPick && isBundle && (
+                  <div className="z-[70] flex flex-col gap-1 justify-self-start" data-bundle-no-nav>
+                    <button disabled className={bundleDiscountBadgeClassName}>
+                      <LuTag className="h-3 w-3 shrink-0" />
+                      <span className="min-w-0 text-left">20% off per clip</span>
+                    </button>
+                  </div>
+                )}
                 {isArtistPick && (
                   <div
                     ref={artistPickBadgeRef}
@@ -1393,7 +1390,7 @@ function EProductsContainer({
                         to={variantUrl}
                       >
                         <span
-                          className={` product-price-font-list flex flex-row gap-2`}
+                          className={` product-price-font-list flex flex-row gap-2 min-w-0 max-w-full flex-wrap`}
                         >
                           <ProductPrice
                             price={displayCardPrice}

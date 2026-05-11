@@ -774,6 +774,8 @@
 }
 .product-title-font-grid-bundle {
   font-size: 18px;
+  padding: 14px 0 0 76px;
+  text-align: left;
 }
 .product-location-font-grid {
   font-size: 16px;
@@ -862,7 +864,10 @@
   font-size: 12px;
 }
 .eproduct-list-range-compact .product-price-font-list {
-  font-size: 15px;
+  font-size: 13px;
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: wrap;
 }
 
 .eproduct-list-range-expanded .eproduct-top-part-card-list {
