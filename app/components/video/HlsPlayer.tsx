@@ -204,9 +204,9 @@ export function HlsPlayer({
         const hls = new Hls({
           startLevel: -1, // overridden in MANIFEST_PARSED once levels are known
           capLevelToPlayerSize: false,
-          maxBufferLength: 30,
-          maxMaxBufferLength: 60,
-          backBufferLength: 10,
+          maxBufferLength: 60,
+          maxMaxBufferLength: 600,
+          backBufferLength: Infinity,
         });
         hlsRef.current = hls;
         hls.loadSource(src);
