@@ -3043,7 +3043,7 @@ export default function Product() {
                 </div>
               </div>
             )}
-            {!isVideo && formattedLocation && (
+            {!isVideo && formattedLocation && isPageReady && (
               <LocationGlobe formattedLocation={formattedLocation} />
             )}
             {!isVideo && (
@@ -3292,7 +3292,7 @@ export default function Product() {
             )}
             {isVideo && (activeVideoSwipeComparison || formattedLocation || isBundle) && (
               <div className="video-comparison-stack flex flex-col">
-                {(formattedLocation || isBundle) && (
+                {(formattedLocation || isBundle) && isPageReady && (
                   <div className="order-1">
                     <LocationGlobe
                       formattedLocation={

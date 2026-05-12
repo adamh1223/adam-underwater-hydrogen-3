@@ -37,30 +37,29 @@ export const meta: MetaFunction = () => {
     'https://downloads.adamunderwater.com/store-1-au/public/imessage-icon.png';
 
   return [
-    { title },
-    { name: 'description', content: description },
+    {title},
+    {name: 'description', content: description},
 
     // Open Graph (Google + social)
-    { property: 'og:title', content: title },
-    { property: 'og:description', content: description },
-    { property: 'og:type', content: 'website' },
-    { property: 'og:url', content: 'https://adamunderwater.com' },
-    { property: 'og:image', content: shareImage },
-    { property: 'og:image:secure_url', content: shareImage },
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:type', content: 'website'},
+    {property: 'og:url', content: 'https://adamunderwater.com'},
+    {property: 'og:image', content: shareImage},
+    {property: 'og:image:secure_url', content: shareImage},
     {
       property: 'og:image:alt',
       content: 'Adam Underwater icon preview',
     },
 
     // Twitter
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: title },
-    { name: 'twitter:description', content: description },
-    { name: 'twitter:image', content: shareImage },
-    { name: 'twitter:image:alt', content: 'Adam Underwater icon preview' },
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+    {name: 'twitter:image', content: shareImage},
+    {name: 'twitter:image:alt', content: 'Adam Underwater icon preview'},
   ];
 };
-
 
 const R2 = 'https://downloads.adamunderwater.com/store-1-au/public';
 export function links() {
@@ -171,9 +170,8 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
   const featuredReviews = context.storefront
     .query(FEATURED_REVIEWS_QUERY)
     .then(async (response) => {
-      const {hydrateReviewLocationsInMetafieldValue} = await import(
-        '~/lib/reviews.server'
-      );
+      const {hydrateReviewLocationsInMetafieldValue} =
+        await import('~/lib/reviews.server');
       await Promise.all(
         (response?.products?.nodes ?? []).map(async (node) => {
           if (!node?.metafield?.value) return;
@@ -235,11 +233,14 @@ export default function Homepage() {
 
       {/* Real content — invisible until hero-img loads, then revealed */}
       <div className={isContentReady ? '' : 'invisible'}>
-        <MarqueeBanner items={[
-          'Get 15% off when you purchase 3 prints',
-          'Free Shipping on orders over $300',
-          'Sign up for email + SMS for a one time discount code',
-        ]} />
+        <MarqueeBanner
+          items={[
+            'Get 15% off when you purchase 3 prints',
+            'Free Shipping on orders over $300',
+            'Sign up for email + SMS for a one time discount code',
+            'Shipping to continental US and Canada',
+          ]}
+        />
         <Hero onHeroImgLoad={() => setIsPageReady(true)} />
         <section>
           <div className="flex justify-center pt-5 me-4">

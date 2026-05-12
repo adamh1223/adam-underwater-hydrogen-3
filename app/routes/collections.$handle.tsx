@@ -2219,6 +2219,7 @@ export default function Collection() {
           'Get 15% off when you purchase 3 prints',
           'Free Shipping on orders over $300',
           'Sign up for email + SMS for a one time discount code',
+          'Shipping to continental US and Canada'
         ]
       : collection?.handle === 'stock'
         ? [
