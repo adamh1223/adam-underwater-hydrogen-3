@@ -848,7 +848,13 @@ function buildBundleDetailClips({
     const wmlinkId = wmlinkByClip.get(clipIndex);
     // Look up the individual clip product by its v-number
     const clipProduct = wmlinkId ? clipProductMap[wmlinkId] : undefined;
-    const image = imageByClip.get(clipIndex) ?? images[clipIndex - 1];
+    // Prefer Cloudflare thumbnail from shared stock-swipe folder
+    const image = wmlinkId
+      ? {
+          url: `https://downloads.adamunderwater.com/shared/stock-swipe/img-UM-8-4K-${wmlinkId}.jpg`,
+          altText: null,
+        }
+      : (imageByClip.get(clipIndex) ?? images[clipIndex - 1]);
 
     if (
       !image &&

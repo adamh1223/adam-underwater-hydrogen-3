@@ -566,13 +566,14 @@ export async function action({request, context}: ActionFunctionArgs) {
           });
           downloadUrl = `${siteUrl}/download/${encodeURIComponent(token)}`;
         } catch (tokenError) {
-          console.error('Unable to sign email download token; using public fallback URL', {
+          // No public fallback — stock files are in a private bucket.
+          // Log the error and skip this item rather than exposing a broken URL.
+          console.error('Unable to sign email download token', {
             orderId: order.id,
             lineItemId,
             objectKey,
             tokenError,
           });
-          downloadUrl = createPublicR2DownloadUrl(context.env, objectKey);
         }
 
         return {

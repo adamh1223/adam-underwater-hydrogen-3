@@ -64,13 +64,19 @@ const buildBundleClips = (
   const clips: BundleClip[] = [];
   for (let i = 1; i <= clipCount; i += 1) {
     const wmlinkMatch = wmlinks.find((link) => link.index === i);
-    const fallbackImage = images[i - 1];
-    const image = imagesByIndex.get(i) ?? fallbackImage;
-    if (!image && !wmlinkMatch?.id) continue;
+    const id = wmlinkMatch?.id;
+    // Prefer Cloudflare thumbnail from shared stock-swipe folder
+    const image = id
+      ? {
+          url: `https://downloads.adamunderwater.com/shared/stock-swipe/img-UM-8-4K-${id}.jpg`,
+          altText: null,
+        }
+      : (imagesByIndex.get(i) ?? images[i - 1] ?? undefined);
+    if (!image && !id) continue;
     clips.push({
       index: i,
       image,
-      wmlinkId: wmlinkMatch?.id,
+      wmlinkId: id,
     });
   }
 

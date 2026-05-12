@@ -7,6 +7,8 @@ type CreateR2SignedDownloadUrlInput = {
   objectKey: string;
   downloadFilename?: string;
   expiresInSeconds?: number;
+  /** Override the bucket — defaults to R2_PRIVATE_STOCK_BUCKET for stock files */
+  bucketOverride?: string;
 };
 
 export class R2ObjectNotFoundError extends Error {
@@ -47,8 +49,8 @@ function getEndpointBase(env: Env) {
   );
 }
 
-function buildObjectUrl(env: Env, objectKey: string): URL {
-  const bucket = requireEnvValue(env.R2_BUCKET, 'R2_BUCKET');
+function buildObjectUrl(env: Env, objectKey: string, bucketOverride?: string): URL {
+  const bucket = bucketOverride ?? requireEnvValue(env.R2_BUCKET, 'R2_BUCKET');
   const endpoint = new URL(getEndpointBase(env));
   const encodedKey = encodeObjectKey(objectKey.trim());
   const normalizedPath = endpoint.pathname.replace(/\/+$/, '');
@@ -95,8 +97,9 @@ async function objectExistsInR2(
   env: Env,
   awsClient: AwsClient,
   objectKey: string,
+  bucketOverride?: string,
 ): Promise<boolean> {
-  const url = buildObjectUrl(env, objectKey);
+  const url = buildObjectUrl(env, objectKey, bucketOverride);
   const signedRequest = await awsClient.sign(url.toString(), {
     method: 'HEAD',
     aws: {signQuery: true},
@@ -107,8 +110,14 @@ async function objectExistsInR2(
 
 export async function createR2SignedDownloadUrl(
   env: Env,
-  {objectKey, downloadFilename, expiresInSeconds = 60 * 60}: CreateR2SignedDownloadUrlInput,
+  {objectKey, downloadFilename, expiresInSeconds = 60 * 60, bucketOverride}: CreateR2SignedDownloadUrlInput,
 ) {
+  // Stock download files live in the private bucket — use it automatically
+  const isStockDownload = objectKey.trim().startsWith('shared/stock/') &&
+    !objectKey.trim().startsWith('shared/stock/streaming/') &&
+    !objectKey.trim().startsWith('shared/stock-swipe/');
+  const resolvedBucket = bucketOverride ??
+    (isStockDownload ? (env.R2_PRIVATE_STOCK_BUCKET ?? 'au-stock-private') : undefined);
   if (!objectKey.trim()) {
     throw new Error('Object key is required for download signing.');
   }
@@ -129,7 +138,7 @@ export async function createR2SignedDownloadUrl(
   const objectKeyCandidates = buildObjectKeyCandidates(objectKey);
   let resolvedObjectKey: string | null = null;
   for (const candidate of objectKeyCandidates) {
-    if (await objectExistsInR2(env, awsClient, candidate)) {
+    if (await objectExistsInR2(env, awsClient, candidate, resolvedBucket)) {
       resolvedObjectKey = candidate;
       break;
     }
@@ -139,7 +148,7 @@ export async function createR2SignedDownloadUrl(
     throw new R2ObjectNotFoundError(objectKeyCandidates);
   }
 
-  const url = buildObjectUrl(env, resolvedObjectKey);
+  const url = buildObjectUrl(env, resolvedObjectKey, resolvedBucket);
   url.searchParams.set(
     'response-content-disposition',
     `attachment; filename="${sanitizeDownloadFilename(downloadFilename ?? 'download')}"`,
