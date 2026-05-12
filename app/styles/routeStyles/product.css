@@ -1633,6 +1633,19 @@
   white-space: nowrap;
   line-height: 1;
   z-index: 100 !important;
+  transition: box-shadow 0.3s ease;
+  --badge-glow: #d4af37;
+}
+
+.group:hover .most-popular-list,
+.group:active .most-popular-list,
+.group:focus-within .most-popular-list,
+.group:hover .most-popular-grid,
+.group:active .most-popular-grid,
+.group:focus-within .most-popular-grid {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--badge-glow) 45%, transparent),
+    0 0 14px color-mix(in srgb, var(--badge-glow) 28%, transparent);
 }
 
 .most-popular-list {

@@ -1638,6 +1638,25 @@ export default function Product() {
   const activeBundleClip =
     bundleDetailClips.find((clip) => clip.index === activeBundleClipIndex) ??
     bundleDetailClips[0];
+  // Derive the higher-resolution label (> 4K) from a clip's product options.
+  const getClipHigherResLabel = (
+    options?: Array<{name: string; optionValues: Array<{name: string}>}>,
+  ): string | undefined => {
+    const resOpt = options?.find(
+      (o) => o.name.trim().toLowerCase() === 'resolution',
+    );
+    if (!resOpt) return undefined;
+    let highest = 0;
+    for (const ov of resOpt.optionValues) {
+      const m = ov.name.trim().toUpperCase().match(/^(\d+)\s*K$/);
+      if (m) {
+        const v = Number.parseInt(m[1] ?? '', 10);
+        if (v > highest) highest = v;
+      }
+    }
+    return highest > 4 ? `${highest}K` : undefined;
+  };
+
   const activeVideoSwipeComparison: {
     vidKey: string;
     higherResolutionLabel?: string;
@@ -1645,11 +1664,34 @@ export default function Product() {
     () =>
       isBundle
         ? activeBundleClip?.vidKey
-          ? {vidKey: activeBundleClip.vidKey}
+          ? {
+              vidKey: activeBundleClip.vidKey,
+              higherResolutionLabel: getClipHigherResLabel(
+                activeBundleClip.clipProductOptions,
+              ),
+            }
           : null
         : standaloneVideoSwipeComparison,
-    [activeBundleClip?.vidKey, isBundle, standaloneVideoSwipeComparison],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeBundleClip, isBundle, standaloneVideoSwipeComparison],
   );
+
+  // Bundle swipe navigation data — one entry per clip, drives the
+  // thumbnail shortcuts and arrows in the swipe section.
+  const bundleSwipeNav = useMemo(() => {
+    if (!isBundle || bundleDetailClips.length === 0) return undefined;
+    return {
+      clips: bundleDetailClips.map((clip) => ({
+        vidKey: clip.vidKey ?? '',
+        higherResolutionLabel: getClipHigherResLabel(clip.clipProductOptions),
+        image: clip.image,
+        clipName: clip.clipName,
+      })),
+      activeIndex: activeBundleClipIndex - 1,
+      onNavigate: (idx: number) => setActiveBundleClipIndex(idx + 1),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isBundle, bundleDetailClips, activeBundleClipIndex]);
 
   let isHorOnly = product.tags
     .map((tag: any) => {
@@ -3263,13 +3305,14 @@ export default function Product() {
                     />
                   </div>
                 )}
-                {activeVideoSwipeComparison && (
+                {(activeVideoSwipeComparison || bundleSwipeNav) && (
                   <div className="order-2">
                     <VideoResolutionSwipeSection
-                      vidKey={activeVideoSwipeComparison.vidKey}
+                      vidKey={activeVideoSwipeComparison?.vidKey ?? ''}
                       higherResolutionLabel={
-                        activeVideoSwipeComparison.higherResolutionLabel
+                        activeVideoSwipeComparison?.higherResolutionLabel
                       }
+                      bundleNavigation={bundleSwipeNav}
                     />
                   </div>
                 )}

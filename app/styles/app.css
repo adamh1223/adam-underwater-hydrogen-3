@@ -3506,6 +3506,28 @@ span {
   padding-bottom: 4px;
   z-index: 100 !important;
   font-weight: 700;
+  transition: box-shadow 0.3s ease;
+  --badge-glow: #d4af37;
+}
+
+.artist-pick-grid,
+.artist-pick-list {
+  transition: box-shadow 0.3s ease;
+  --badge-glow: #d4af37;
+}
+
+.group:hover .artist-pick,
+.group:active .artist-pick,
+.group:focus-within .artist-pick,
+.group:hover .artist-pick-grid,
+.group:active .artist-pick-grid,
+.group:focus-within .artist-pick-grid,
+.group:hover .artist-pick-list,
+.group:active .artist-pick-list,
+.group:focus-within .artist-pick-list {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--badge-glow) 45%, transparent),
+    0 0 14px color-mix(in srgb, var(--badge-glow) 28%, transparent);
 }
 /* Duration label */
 .clip-icon {
@@ -3995,13 +4017,26 @@ span {
     font-size: 18px;
   }
 }
-@media (min-width: 1250.02px) {
+@media (min-width: 1350.02px) {
   .four-k-list-container {
-    font-size: 20px;
+    font-size: 18px;
   }
   .nk-list-container {
-    font-size: 20px;
+    font-size: 18px;
   }
+}
+
+.four-k-list-container,
+.nk-list-container {
+  padding-left: 1.4em;   /* space for outside bullets */
+  width: fit-content;
+  max-width: 100%;
+}
+
+.four-k-list-container li,
+.nk-list-container li {
+  list-style-position: outside;
+  list-style-type: disc;
 }
 
 .k-title {
