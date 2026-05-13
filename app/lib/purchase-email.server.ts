@@ -103,16 +103,22 @@ function createPurchaseEmailHtml({
           <p style="margin:14px 0 0 0; color:#ffffff;">Quantity: ${item.quantity}</p>
           ${
             item.clipDownloads && item.clipDownloads.length > 0
-              ? `<div style="margin-top:18px; text-align:center;">
-                  <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:12px;">
-                    ${item.clipDownloads.map((clip) =>
-                      `<a href="${escapeHtml(clip.url)}" style="display:inline-block; padding:8px 14px; border:1px solid #2a446b; border-radius:8px; color:#ffffff; text-decoration:none; font-size:13px; font-weight:600;">${escapeHtml(clip.name)} (${escapeHtml(item.resolution ?? '8K')}) ↓</a>`
-                    ).join('\n')}
-                  </div>
-                  <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 24px; background:#22b8ff; border-radius:10px; color:#000000; text-decoration:none; font-weight:700; font-size:15px;">
-                    Download All ↓
-                  </a>
-                </div>`
+              ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:18px; border-collapse:collapse;">
+                  <tr>
+                    <td valign="top" style="width:80%; padding-right:10px;">
+                      ${item.clipDownloads.map((clip) =>
+                        `<div style="margin-bottom:6px;">
+                          <a href="${escapeHtml(clip.url)}" style="display:block; white-space:nowrap; padding:9px 14px; border:1px solid #2a446b; border-radius:8px; color:#ffffff; text-decoration:none; font-size:13px; font-weight:600;">${escapeHtml(clip.name)} (${escapeHtml(item.resolution ?? '8K')}) ↓</a>
+                        </div>`
+                      ).join('\n')}
+                    </td>
+                    <td valign="middle" align="center" style="width:20%;">
+                      <a href="${escapeHtml(item.downloadUrl)}" style="display:block; padding:12px 10px; background:#22b8ff; border-radius:10px; color:#000000; text-decoration:none; font-weight:700; font-size:14px; text-align:center; white-space:nowrap;">
+                        Download All ↓
+                      </a>
+                    </td>
+                  </tr>
+                </table>`
               : `<div style="text-align:center; margin-top:18px;">
                   <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
                     Download ↓
