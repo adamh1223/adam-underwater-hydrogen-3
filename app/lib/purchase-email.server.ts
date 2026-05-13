@@ -110,7 +110,7 @@ function createPurchaseEmailHtml({
                     ).join('\n')}
                   </div>
                   <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 24px; background:#22b8ff; border-radius:10px; color:#000000; text-decoration:none; font-weight:700; font-size:15px;">
-                    View All Downloads in Account
+                    Download All ↓
                   </a>
                 </div>`
               : `<div style="text-align:center; margin-top:18px;">

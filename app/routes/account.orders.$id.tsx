@@ -522,9 +522,46 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     {},
   );
 
+  // Collect all v-numbers from bundle line items to batch-fetch their product titles
+  const allBundleVNumbers: string[] = [];
+  for (const lineItem of lineItems as any[]) {
+    const variantId = typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
+    const meta = variantId ? downloadMetadataByVariantId.get(variantId) : null;
+    if (!meta?.tags.includes('Bundle')) continue;
+    const clipTagRegex = /^clip(\d+)[-_](\d+)$/i;
+    for (const t of meta.tags) {
+      const m = t.match(clipTagRegex);
+      if (m?.[2]) allBundleVNumbers.push(m[2]);
+    }
+  }
+
+  // Fetch real product titles for each clip v-number in one admin query
+  const bundleClipTitleMap = new Map<string, string>();
+  if (allBundleVNumbers.length) {
+    try {
+      const tagQuery = [...new Set(allBundleVNumbers)].map((v) => `tag:v${v}`).join(' OR ');
+      const clipTitlesResult = await adminGraphql<{
+        data?: {
+          products?: {nodes?: Array<{title?: string | null; tags?: string[] | null}>} | null;
+        };
+      }>({
+        env: context.env,
+        query: `query ClipTitles($q: String!) { products(first: 50, query: $q) { nodes { title tags } } }`,
+        variables: {q: tagQuery},
+      });
+      for (const product of clipTitlesResult?.data?.products?.nodes ?? []) {
+        if (!product.title) continue;
+        for (const tag of product.tags ?? []) {
+          const m = tag.match(/^v(\d+)$/i);
+          if (m) { bundleClipTitleMap.set(m[1], product.title); break; }
+        }
+      }
+    } catch { /* fall back to Clip N */ }
+  }
+
   // Bundle download links: map lineItemId → array of per-clip download URLs
   const bundleDownloadsByLineItemId = lineItems.reduce<
-    Record<string, {vNumber: string; resolution: string; url: string; clipIndex: number}[]>
+    Record<string, {vNumber: string; resolution: string; url: string; clipIndex: number; clipName: string}[]>
   >((acc, lineItem: any) => {
     const lineItemId = typeof lineItem?.id === 'string' ? lineItem.id : '';
     const variantId = typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
@@ -562,7 +599,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       resolution,
       url: `/api/stock-download?v=${vNumber}&res=${encodeURIComponent(resolution)}`,
       clipIndex: position,
-      clipName: nameByPosition.get(position) ?? `Clip ${position}`,
+      clipName: bundleClipTitleMap.get(vNumber) ?? nameByPosition.get(position) ?? `Clip ${position}`,
     }));
     return acc;
   }, {});

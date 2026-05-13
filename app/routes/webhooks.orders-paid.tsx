@@ -140,6 +140,45 @@ const ORDER_DOWNLOADS_QUERY = `
   }
 ` as const;
 
+const CLIP_TITLES_QUERY = `
+  query ClipProductTitles($query: String!) {
+    products(first: 50, query: $query) {
+      nodes {
+        title
+        tags
+      }
+    }
+  }
+` as const;
+
+async function fetchClipProductTitles(
+  env: Env,
+  vNumbers: string[],
+): Promise<Map<string, string>> {
+  if (!vNumbers.length) return new Map();
+  const tagQuery = vNumbers.map((v) => `tag:v${v}`).join(' OR ');
+  const result = await adminGraphql<{
+    data?: {
+      products?: {
+        nodes?: Array<{title?: string | null; tags?: string[] | null}>;
+      } | null;
+    };
+  }>({env, query: CLIP_TITLES_QUERY, variables: {query: tagQuery}}).catch(() => null);
+
+  const map = new Map<string, string>();
+  for (const product of result?.data?.products?.nodes ?? []) {
+    if (!product.title) continue;
+    for (const tag of product.tags ?? []) {
+      const m = tag.match(/^v(\d+)$/i);
+      if (m && vNumbers.includes(m[1])) {
+        map.set(m[1], product.title);
+        break;
+      }
+    }
+  }
+  return map;
+}
+
 const SET_ORDER_EMAIL_SENT_METAFIELD_MUTATION = `
   mutation SetOrderDownloadEmailSent($metafields: [MetafieldsSetInput!]!) {
     metafieldsSet(metafields: $metafields) {
@@ -608,6 +647,11 @@ export async function action({request, context}: ActionFunctionArgs) {
             .filter((c) => c.vNumber)
             .sort((a, b) => a.position - b.position);
 
+          const clipTitleMap = await fetchClipProductTitles(
+            context.env,
+            clips.map((c) => c.vNumber),
+          );
+
           const clipTokenUrls: {name: string; url: string}[] = [];
           for (const {position, vNumber} of clips) {
             try {
@@ -618,7 +662,7 @@ export async function action({request, context}: ActionFunctionArgs) {
                 vNumber,
               });
               clipTokenUrls.push({
-                name: nameByPos.get(position) ?? `Clip ${position}`,
+                name: clipTitleMap.get(vNumber) ?? nameByPos.get(position) ?? `Clip ${position}`,
                 url: `${siteUrl}/download/${encodeURIComponent(token)}`,
               });
             } catch { /* skip on error */ }
