@@ -1,6 +1,7 @@
 import {json, type ActionFunctionArgs, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 import {createR2SignedDownloadUrl, R2ObjectNotFoundError} from '~/lib/r2.server';
+import {sanitizeDownloadFilename} from '~/lib/downloads';
 
 // Pre-signed URL expires after 15 minutes — enough for one download
 const EXPIRY_SECONDS = 900;
@@ -141,7 +142,23 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     throw err;
   }
 
-  return json({url: signedUrl});
+  // Stream the file through this same-origin endpoint so the browser's
+  // `<a download>` attribute works and no "Save As" dialog appears.
+  const upstream = await fetch(signedUrl);
+  if (!upstream.ok || !upstream.body) {
+    return json({error: 'File unavailable'}, {status: 502});
+  }
+  const filename = sanitizeDownloadFilename(
+    keyCandidates[0]?.split('/').pop() ?? 'download.mov',
+  );
+  const headers: Record<string, string> = {
+    'Content-Type': upstream.headers.get('Content-Type') ?? 'video/quicktime',
+    'Content-Disposition': `attachment; filename="${filename}"`,
+    'Cache-Control': 'no-store, private',
+  };
+  const cl = upstream.headers.get('Content-Length');
+  if (cl) headers['Content-Length'] = cl;
+  return new Response(upstream.body, {status: 200, headers});
 }
 
 // Block direct POST/etc.

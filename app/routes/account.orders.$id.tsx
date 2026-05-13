@@ -1669,19 +1669,14 @@ function ReturnRequestSection({
   );
 }
 
-async function triggerPresignedDownload(apiUrl: string): Promise<void> {
-  try {
-    const res = await fetch(apiUrl);
-    if (!res.ok) return;
-    const data = (await res.json()) as {url?: string};
-    if (!data.url) return;
-    const a = document.createElement('a');
-    a.href = data.url;
-    a.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 2000);
-  } catch { /* ignore */ }
+function triggerDownload(apiUrl: string, filename: string): void {
+  const a = document.createElement('a');
+  a.href = apiUrl;
+  a.download = filename;
+  a.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 2000);
 }
 
 function BundleDownloadButtons({
@@ -1692,19 +1687,19 @@ function BundleDownloadButtons({
   const handleDownloadAll = async () => {
     for (let i = 0; i < clips.length; i++) {
       if (i > 0) await new Promise<void>((r) => setTimeout(r, 1500));
-      await triggerPresignedDownload(clips[i].url);
+      triggerDownload(clips[i].url, `${clips[i].clipName}.mov`);
     }
   };
 
   return (
     <div className="mt-3 mb-5">
-      <div className="flex flex-wrap gap-2 justify-center mb-3">
+      <div className="flex flex-col gap-2 mb-3">
         {clips.map((clip) => (
           <Button
             key={clip.vNumber}
             variant="outline"
-            size="sm"
-            onClick={() => triggerPresignedDownload(clip.url)}
+            className="w-full justify-start"
+            onClick={() => triggerDownload(clip.url, `${clip.clipName}.mov`)}
           >
             {clip.clipName} ({clip.resolution}) ↓
           </Button>

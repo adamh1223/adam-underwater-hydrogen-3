@@ -60,6 +60,7 @@ function createPurchaseEmailHtml({
   tax,
   total,
   downloadItems,
+  orderAccountUrl,
 }: {
   orderName: string;
   processedAt?: string | null;
@@ -69,6 +70,7 @@ function createPurchaseEmailHtml({
   tax?: string | number | null;
   total?: string | number | null;
   downloadItems: PurchaseEmailDownloadItem[];
+  orderAccountUrl?: string | null;
 }) {
   const formattedDate = formatDisplayDate(processedAt);
 
@@ -108,22 +110,13 @@ function createPurchaseEmailHtml({
                     Download All ${item.clipDownloads.length} Clips ↓
                   </a>
                 </div>
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-                  <tr>
-                    <td valign="top" style="width:80%; padding-right:10px;">
-                      ${item.clipDownloads.map((clip) =>
-                        `<div style="margin-bottom:6px;">
-                          <a href="${escapeHtml(clip.url)}" style="display:block; white-space:nowrap; padding:9px 14px; border:1px solid #2a446b; border-radius:8px; color:#ffffff; text-decoration:none; font-size:13px; font-weight:600;">${escapeHtml(clip.name)} (${escapeHtml(item.resolution ?? '8K')}) ↓</a>
-                        </div>`
-                      ).join('\n')}
-                    </td>
-                    <td valign="middle" align="center" style="width:20%;">
-                      <a href="${escapeHtml(item.downloadUrl)}" style="display:block; padding:12px 10px; background:#1a3a5c; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600; font-size:13px; text-align:center; white-space:nowrap; border:1px solid #2a446b;">
-                        View in<br>Account
-                      </a>
-                    </td>
-                  </tr>
-                </table>`
+                <div>
+                  ${item.clipDownloads.map((clip) =>
+                    `<div style="margin-bottom:6px;">
+                      <a href="${escapeHtml(clip.url)}" style="display:block; padding:9px 14px; border:1px solid #2a446b; border-radius:8px; color:#ffffff; text-decoration:none; font-size:13px; font-weight:600;">${escapeHtml(clip.name)} (${escapeHtml(item.resolution ?? '8K')}) ↓</a>
+                    </div>`
+                  ).join('\n')}
+                </div>`
               : `<div style="text-align:center; margin-top:18px;">
                   <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
                     Download ↓
@@ -193,6 +186,12 @@ function createPurchaseEmailHtml({
                           Continue shopping →
                         </a>
                       </div>
+                      ${orderAccountUrl ? `
+                      <div style="text-align:center; margin-top:10px;">
+                        <a href="${escapeHtml(orderAccountUrl)}" style="display:inline-block; background:#1a3a5c; color:#ffffff; border-radius:14px; padding:14px 28px; font-size:16px; font-weight:600; text-decoration:none; border:1px solid #2a446b;">
+                          View Order in Account →
+                        </a>
+                      </div>` : ''}
                     </td>
                   </tr>
                 </table>
@@ -217,6 +216,7 @@ export async function sendPurchaseDownloadEmail({
   tax,
   total,
   downloadItems,
+  orderAccountUrl,
 }: {
   env: Env;
   toEmail: string;
@@ -228,6 +228,7 @@ export async function sendPurchaseDownloadEmail({
   tax?: string | number | null;
   total?: string | number | null;
   downloadItems: PurchaseEmailDownloadItem[];
+  orderAccountUrl?: string | null;
 }) {
   const sanitizedOrderName = orderName.trim() || 'Order';
   const subject = `Your downloads are ready! ${sanitizedOrderName}`;
@@ -240,6 +241,7 @@ export async function sendPurchaseDownloadEmail({
     tax,
     total,
     downloadItems,
+    orderAccountUrl,
   });
 
   const plainBody = [

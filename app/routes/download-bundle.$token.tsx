@@ -1,6 +1,5 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {verifyEmailDownloadToken} from '~/lib/email-download-token.server';
-import {createR2SignedDownloadUrl, R2ObjectNotFoundError} from '~/lib/r2.server';
 import {adminGraphql} from '~/lib/shopify-admin.server';
 
 const BUNDLE_ORDER_QUERY = `
@@ -20,28 +19,11 @@ const BUNDLE_ORDER_QUERY = `
   }
 ` as const;
 
-function buildStockKeyCandidates(vNumber: string, is4K: boolean): string[] {
-  const num = Number.parseInt(vNumber, 10);
-  if (!Number.isFinite(num) || num <= 0) return [];
-  if (num >= 1 && num <= 93) {
-    return is4K
-      ? [`shared/stock/UM-8-4K-${num}.mov`, `shared/stock/UM-4K-${num}.mov`]
-      : [`shared/stock/UM-8K-${num}.mov`, `shared/stock/UM-8-4K-${num}.mov`];
-  }
-  if (num >= 94 && num <= 157) {
-    return is4K
-      ? [`shared/stock/UM-5-4K-${num}.mov`, `shared/stock/UM-4K-${num}.mov`]
-      : [`shared/stock/UM-5K-${num}.mov`, `shared/stock/UM-5-4K-${num}.mov`];
-  }
-  return [`shared/stock/UM-4K-${num}.mov`];
-}
-
-export async function loader({context, params}: LoaderFunctionArgs) {
+export async function loader({context, params, request}: LoaderFunctionArgs) {
   const token = params.token;
   if (!token) return new Response('Not found', {status: 404});
 
   const verified = await verifyEmailDownloadToken({env: context.env, token});
-  // vn present = single-clip token; reject those here
   if (!verified || verified.vn) return new Response('Not found', {status: 404});
 
   const orderRes = await adminGraphql<{
@@ -70,11 +52,6 @@ export async function loader({context, params}: LoaderFunctionArgs) {
   const tags = lineItem.variant?.product?.tags ?? [];
   if (!tags.includes('Bundle')) return new Response('Not a bundle', {status: 400});
 
-  const resOption = lineItem.variant?.selectedOptions?.find(
-    (o) => typeof o.name === 'string' && o.name.toLowerCase() === 'resolution',
-  );
-  const is4K = (resOption?.value ?? '8K').toUpperCase() === '4K';
-
   const clipTagRegex = /^clip(\d+)[-_](\d+)$/i;
   const clips = tags
     .map((t) => t.match(clipTagRegex))
@@ -100,34 +77,26 @@ export async function loader({context, params}: LoaderFunctionArgs) {
     if (!product.title) continue;
     for (const tag of product.tags ?? []) {
       const m = tag.match(/^v(\d+)$/i);
-      if (m) {
-        titleMap.set(m[1], product.title);
-        break;
-      }
+      if (m) { titleMap.set(m[1], product.title); break; }
     }
   }
 
-  // Generate presigned URLs for every clip
-  const downloads: Array<{name: string; url: string}> = [];
-  for (const {vNumber, position} of clips) {
-    const candidates = buildStockKeyCandidates(vNumber, is4K);
-    if (!candidates.length) continue;
-    try {
-      const url = await createR2SignedDownloadUrl(context.env, {
-        objectKeyCandidates: candidates,
-        downloadFilename: candidates[0]?.split('/').pop(),
-        expiresInSeconds: 900,
-      });
-      downloads.push({name: titleMap.get(vNumber) ?? `Clip ${position}`, url});
-    } catch (err) {
-      if (!(err instanceof R2ObjectNotFoundError)) throw err;
-    }
-  }
+  const origin = new URL(request.url).origin;
+  const encodedToken = encodeURIComponent(token);
 
-  if (!downloads.length) return new Response('No downloadable files found', {status: 404});
+  // Build same-origin stream URLs — api.bundle-clip-stream handles auth + streaming
+  const downloads = clips.map(({vNumber, position}, i) => {
+    const name = titleMap.get(vNumber) ?? `Clip ${position}`;
+    const filename = encodeURIComponent(`${name}.mov`);
+    return {
+      name,
+      filename: `${name}.mov`,
+      url: `${origin}/api/bundle-clip-stream?token=${encodedToken}&i=${i}&fn=${filename}`,
+    };
+  });
 
-  const downloadsJson = JSON.stringify(downloads);
   const total = downloads.length;
+  const downloadsJson = JSON.stringify(downloads);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -161,14 +130,16 @@ export async function loader({context, params}: LoaderFunctionArgs) {
         document.getElementById('bar').style.width = '100%';
         return;
       }
-      document.getElementById('status').textContent = 'Downloading ' + (i + 1) + ' of ${total}: ' + items[i].name;
+      var item = items[i];
+      document.getElementById('status').textContent = 'Downloading ' + (i + 1) + ' of ${total}: ' + item.name;
       document.getElementById('bar').style.width = Math.round(((i + 1) / ${total}) * 100) + '%';
       var a = document.createElement('a');
-      a.href = items[i].url;
+      a.href = item.url;
+      a.download = item.filename;
       a.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;';
       document.body.appendChild(a);
       a.click();
-      setTimeout(function(){a.remove();},2000);
+      setTimeout(function(){a.remove();}, 2000);
       i++;
       setTimeout(next, 1500);
     }

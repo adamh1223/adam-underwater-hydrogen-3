@@ -799,6 +799,7 @@ export async function action({request, context}: ActionFunctionArgs) {
         tax: orderPayload.total_tax ?? null,
         total: orderPayload.total_price ?? null,
         downloadItems,
+        orderAccountUrl: `${siteUrl}/account/orders/${btoa(order.id)}`,
       });
     }
 
