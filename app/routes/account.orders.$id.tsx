@@ -522,8 +522,45 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     {},
   );
 
+  // Bundle download links: map lineItemId → array of per-clip download URLs
+  const bundleDownloadsByLineItemId = lineItems.reduce<
+    Record<string, {vNumber: string; resolution: string; url: string; clipIndex: number}[]>
+  >((acc, lineItem: any) => {
+    const lineItemId = typeof lineItem?.id === 'string' ? lineItem.id : '';
+    const variantId = typeof lineItem?.variantId === 'string' ? lineItem.variantId : '';
+    if (!lineItemId || !variantId) return acc;
+
+    const meta = downloadMetadataByVariantId.get(variantId);
+    if (!meta || !meta.tags.includes('Bundle')) return acc;
+
+    const resOption = meta.selectedOptions.find(
+      (o) => typeof o.name === 'string' && o.name.toLowerCase() === 'resolution',
+    );
+    const resolution = typeof resOption?.value === 'string' ? resOption.value : '8K';
+
+    const clipTagRegex = /^clip(\d+)[-_](\d+)$/i;
+    const clips = meta.tags
+      .map((t) => t.match(clipTagRegex))
+      .filter((m): m is RegExpMatchArray => m !== null)
+      .map((m) => ({position: Number(m[1]), vNumber: m[2] ?? ''}))
+      .filter((c) => c.vNumber)
+      .sort((a, b) => a.position - b.position);
+
+    if (!clips.length) return acc;
+
+    acc[lineItemId] = clips.map(({position, vNumber}) => ({
+      vNumber,
+      resolution,
+      url: `/api/stock-download?v=${vNumber}&res=${encodeURIComponent(resolution)}`,
+      clipIndex: position,
+    }));
+    return acc;
+  }, {});
+
   // Determine order composition and pickup status
-  const hasAnyEProducts = Object.keys(downloadLinksByLineItemId).length > 0;
+  const hasAnyEProducts =
+    Object.keys(downloadLinksByLineItemId).length > 0 ||
+    Object.keys(bundleDownloadsByLineItemId).length > 0;
   const hasAnyPrints = Array.from(downloadMetadataByVariantId.values()).some(
     ({tags}) => tags.includes('Prints') && !hasVideoTag(tags),
   );
@@ -785,6 +822,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     displayFulfillmentStatus,
     isPickupOrder,
     downloadLinksByLineItemId,
+    bundleDownloadsByLineItemId,
     lineItemTagsByLineItemId,
     lineItemProductsByLineItemId,
     lineItemSelectedOptionsByLineItemId,
@@ -806,6 +844,7 @@ export default function OrderRoute() {
     displayFulfillmentStatus,
     isPickupOrder,
     downloadLinksByLineItemId,
+    bundleDownloadsByLineItemId,
     lineItemTagsByLineItemId,
     customer,
     existingReviewsByProductId: initialReviewsByProductId,
@@ -892,6 +931,9 @@ export default function OrderRoute() {
                                 downloadLinksByLineItemId={
                                   downloadLinksByLineItemId
                                 }
+                                bundleDownloadsByLineItemId={
+                                  bundleDownloadsByLineItemId
+                                }
                                 lineItemTagsByLineItemId={
                                   lineItemTagsByLineItemId
                                 }
@@ -927,6 +969,9 @@ export default function OrderRoute() {
                                 }
                                 downloadLinksByLineItemId={
                                   downloadLinksByLineItemId
+                                }
+                                bundleDownloadsByLineItemId={
+                                  bundleDownloadsByLineItemId
                                 }
                                 lineItemTagsByLineItemId={
                                   lineItemTagsByLineItemId
@@ -1126,6 +1171,9 @@ export default function OrderRoute() {
                               }
                               downloadLinksByLineItemId={
                                 downloadLinksByLineItemId
+                              }
+                              bundleDownloadsByLineItemId={
+                                bundleDownloadsByLineItemId
                               }
                               lineItemTagsByLineItemId={
                                 lineItemTagsByLineItemId
@@ -1574,9 +1622,44 @@ function ReturnRequestSection({
   );
 }
 
+function BundleDownloadButtons({
+  clips,
+}: {
+  clips: {vNumber: string; resolution: string; url: string; clipIndex: number}[];
+}) {
+  const handleDownloadAll = () => {
+    // Open each clip in a new tab sequentially with a small delay
+    clips.forEach((clip, i) => {
+      setTimeout(() => {
+        window.open(clip.url, '_blank');
+      }, i * 800);
+    });
+  };
+
+  return (
+    <div className="mt-3 mb-5">
+      <div className="flex flex-wrap gap-2 justify-center mb-3">
+        {clips.map((clip) => (
+          <Button key={clip.vNumber} variant="outline" size="sm" asChild>
+            <a href={clip.url} target="_blank" rel="noreferrer">
+              Clip {clip.clipIndex} ({clip.resolution}) ↓
+            </a>
+          </Button>
+        ))}
+      </div>
+      <div className="flex justify-center">
+        <Button variant="default" onClick={handleDownloadAll}>
+          Download All {clips.length} Clips ↓
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function OrderLineRow({
   lineItem,
   downloadLinksByLineItemId = {},
+  bundleDownloadsByLineItemId = {},
   lineItemTagsByLineItemId = {},
   lineItemProductsByLineItemId = {},
   lineItemSelectedOptionsByLineItemId = {},
@@ -1588,6 +1671,7 @@ function OrderLineRow({
 }: {
   lineItem: OrderLineItemFullFragment;
   downloadLinksByLineItemId?: Record<string, string>;
+  bundleDownloadsByLineItemId?: Record<string, {vNumber: string; resolution: string; url: string; clipIndex: number}[]>;
   lineItemTagsByLineItemId?: Record<string, string[]>;
   lineItemProductsByLineItemId?: Record<string, any>;
   lineItemSelectedOptionsByLineItemId?: Record<
@@ -1615,6 +1699,7 @@ function OrderLineRow({
 }) {
   const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
   const downloadUrl = downloadLinksByLineItemId[lineItem.id];
+  const bundleClipDownloads = bundleDownloadsByLineItemId[lineItem.id] ?? [];
   const itemSubtotal =
     lineItem.quantity * Number(lineItem.price?.amount) -
     Number(lineItem.totalDiscount.amount);
@@ -1806,15 +1891,15 @@ function OrderLineRow({
           <>
             {downloadUrl && (
               <div className="td pt-3">
-                {/* <td> */}
                 <div className="flex justify-center align-center">
-                  {/* <Button variant="outline">Download ↓</Button> */}
-                  {/* <a href={downloadLink[0]?.url}>download</a> */}
                   <Button variant="outline" className="mb-5" asChild>
                     <a href={downloadUrl}>Download ↓</a>
                   </Button>
                 </div>
               </div>
+            )}
+            {bundleClipDownloads.length > 0 && (
+              <BundleDownloadButtons clips={bundleClipDownloads} />
             )}
           </>
         )}
@@ -1824,14 +1909,16 @@ function OrderLineRow({
         <>
           {downloadUrl && (
             <div className="td">
-              {/* <td> */}
               <div className="flex justify-center align-center">
-                {/* <Button variant="outline">Download ↓</Button> */}
-                {/* <a href={downloadLink[0]?.url}>download</a> */}
                 <Button variant="outline" className="mb-5" asChild>
                   <a href={downloadUrl}>Download ↓</a>
                 </Button>
               </div>
+            </div>
+          )}
+          {bundleClipDownloads.length > 0 && (
+            <div className="td">
+              <BundleDownloadButtons clips={bundleClipDownloads} />
             </div>
           )}
         </>

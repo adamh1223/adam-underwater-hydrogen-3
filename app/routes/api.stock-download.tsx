@@ -61,7 +61,10 @@ async function customerOwnsClip(
   customerId: string,
   vNumber: string,
 ): Promise<boolean> {
-  const tag = `v${vNumber}`;
+  const individualTag = `v${vNumber}`;
+  // Matches clip{pos}-{N} or clip{pos}_{N} bundle tags where N = vNumber
+  const bundleClipRegex = new RegExp(`^clip\\d+[-_]${vNumber}$`, 'i');
+
   const result = await adminGraphql<OrdersResponse>({
     env,
     query: CUSTOMER_ORDERS_QUERY,
@@ -72,7 +75,12 @@ async function customerOwnsClip(
   for (const order of orders) {
     for (const item of order.lineItems?.nodes ?? []) {
       const tags = item.product?.tags ?? [];
-      if (tags.some((t) => t.trim().toLowerCase() === tag.toLowerCase())) {
+      // Individual clip purchase
+      if (tags.some((t) => t.trim().toLowerCase() === individualTag.toLowerCase())) {
+        return true;
+      }
+      // Bundle purchase containing this clip
+      if (tags.some((t) => bundleClipRegex.test(t.trim()))) {
         return true;
       }
     }

@@ -549,31 +549,38 @@ export async function action({request, context}: ActionFunctionArgs) {
         if (!lineItemId) return null;
 
         const tags = lineItem.variant?.product?.tags ?? [];
-        const objectKey = getR2ObjectKeyFromTagsForVariant({
-          tags,
-          selectedOptions: lineItem.variant?.selectedOptions ?? [],
-          variantTitle: lineItem.variant?.title ?? lineItem.title,
-          productOptions: lineItem.variant?.product?.options ?? [],
-        });
-        if (!objectKey) return null;
+        const isBundle = tags.includes('Bundle');
 
         let downloadUrl = '';
-        try {
-          const token = await createEmailDownloadToken({
-            env: context.env,
-            orderId: order.id,
-            lineItemId,
+
+        if (isBundle) {
+          // Bundles: direct to the order page where all clip download buttons live
+          const encodedOrderId = btoa(order.id);
+          downloadUrl = `${siteUrl}/account/orders/${encodedOrderId}`;
+        } else {
+          const objectKey = getR2ObjectKeyFromTagsForVariant({
+            tags,
+            selectedOptions: lineItem.variant?.selectedOptions ?? [],
+            variantTitle: lineItem.variant?.title ?? lineItem.title,
+            productOptions: lineItem.variant?.product?.options ?? [],
           });
-          downloadUrl = `${siteUrl}/download/${encodeURIComponent(token)}`;
-        } catch (tokenError) {
-          // No public fallback — stock files are in a private bucket.
-          // Log the error and skip this item rather than exposing a broken URL.
-          console.error('Unable to sign email download token', {
-            orderId: order.id,
-            lineItemId,
-            objectKey,
-            tokenError,
-          });
+          if (!objectKey) return null;
+
+          try {
+            const token = await createEmailDownloadToken({
+              env: context.env,
+              orderId: order.id,
+              lineItemId,
+            });
+            downloadUrl = `${siteUrl}/download/${encodeURIComponent(token)}`;
+          } catch (tokenError) {
+            console.error('Unable to sign email download token', {
+              orderId: order.id,
+              lineItemId,
+              objectKey,
+              tokenError,
+            });
+          }
         }
 
         return {
