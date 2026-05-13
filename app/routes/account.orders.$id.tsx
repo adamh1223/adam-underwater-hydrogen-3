@@ -1950,8 +1950,15 @@ function OrderLineRow({
             {downloadUrl && (
               <div className="td pt-3">
                 <div className="flex justify-center align-center">
-                  <Button variant="outline" className="mb-5" asChild>
-                    <a href={downloadUrl}>Download ↓</a>
+                  <Button
+                    variant="outline"
+                    className="mb-5"
+                    onClick={() => {
+                      const title = lineItemProduct?.title ?? lineItem.title ?? 'download';
+                      triggerDownload(downloadUrl, `${title}.mov`);
+                    }}
+                  >
+                    Download ↓
                   </Button>
                 </div>
               </div>
@@ -1968,8 +1975,15 @@ function OrderLineRow({
           {downloadUrl && (
             <div className="td">
               <div className="flex justify-center align-center">
-                <Button variant="outline" className="mb-5" asChild>
-                  <a href={downloadUrl}>Download ↓</a>
+                <Button
+                  variant="outline"
+                  className="mb-5"
+                  onClick={() => {
+                    const title = lineItemProduct?.title ?? lineItem.title ?? 'download';
+                    triggerDownload(downloadUrl, `${title}.mov`);
+                  }}
+                >
+                  Download ↓
                 </Button>
               </div>
             </div>

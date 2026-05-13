@@ -1,5 +1,5 @@
 import {flattenConnection} from '@shopify/hydrogen';
-import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {CUSTOMER_ORDER_QUERY} from '~/graphql/customer-account/CustomerOrderQuery';
 import {variantQuery} from '~/lib/customerQueries';
 import {
@@ -113,9 +113,20 @@ export async function loader({context, params, request}: LoaderFunctionArgs) {
     throw error;
   }
 
-  return redirect(signedUrl, {
-    headers: {'Cache-Control': 'no-store, private'},
-  });
+  // Stream through this same-origin endpoint so <a download="name"> works in all browsers
+  const upstream = await fetch(signedUrl);
+  if (!upstream.ok || !upstream.body) {
+    return notFound('File unavailable from storage.');
+  }
+  const fallbackFilename = getDownloadFilenameFromObjectKey(objectKey) ?? 'download.mov';
+  const headers: Record<string, string> = {
+    'Content-Type': upstream.headers.get('Content-Type') ?? 'video/quicktime',
+    'Content-Disposition': `attachment; filename="${fallbackFilename}"`,
+    'Cache-Control': 'no-store, private',
+  };
+  const cl = upstream.headers.get('Content-Length');
+  if (cl) headers['Content-Length'] = cl;
+  return new Response(upstream.body, {status: 200, headers});
 }
 
 export async function action() {

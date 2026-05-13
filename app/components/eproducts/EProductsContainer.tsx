@@ -967,6 +967,7 @@ function EProductsContainer({
                               <ProductPrice
                                 price={displayCardPrice}
                                 compareAtPrice={displayCardCompareAtPrice}
+                                suppressDecimals={windowWidth !== undefined && windowWidth < 500}
                               />
 
                               {/* We need to get the compareat price in here */}
@@ -1106,6 +1107,7 @@ function EProductsContainer({
                               <ProductPrice
                                 price={displayCardPrice}
                                 compareAtPrice={displayCardCompareAtPrice}
+                                suppressDecimals={windowWidth !== undefined && windowWidth < 500}
                               />
 
                               {/* We need to get the compareat price in here */}
@@ -1395,6 +1397,7 @@ function EProductsContainer({
                           <ProductPrice
                             price={displayCardPrice}
                             compareAtPrice={displayCardCompareAtPrice}
+                            suppressDecimals={windowWidth !== undefined && windowWidth < 500}
                           />
 
                           {/* We need to get the compareat price in here */}
@@ -1678,6 +1681,7 @@ function EProductsContainer({
                             <ProductPrice
                               price={displayCardPrice}
                               compareAtPrice={displayCardCompareAtPrice}
+                              suppressDecimals={windowWidth !== undefined && windowWidth < 500}
                             />
 
                             {/* We need to get the compareat price in here */}
