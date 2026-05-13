@@ -1676,7 +1676,14 @@ function BundleDownloadButtons({
 }) {
   const handleDownloadAll = () => {
     clips.forEach((clip, i) => {
-      setTimeout(() => window.open(clip.url, '_blank'), i * 800);
+      setTimeout(() => {
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'display:none; width:0; height:0; position:absolute; left:-9999px;';
+        iframe.src = clip.url;
+        document.body.appendChild(iframe);
+        // Clean up after enough time for the download to initiate
+        setTimeout(() => document.body.removeChild(iframe), 120_000);
+      }, i * 1200);
     });
   };
 
@@ -1684,10 +1691,19 @@ function BundleDownloadButtons({
     <div className="mt-3 mb-5">
       <div className="flex flex-wrap gap-2 justify-center mb-3">
         {clips.map((clip) => (
-          <Button key={clip.vNumber} variant="outline" size="sm" asChild>
-            <a href={clip.url} target="_blank" rel="noreferrer">
-              {clip.clipName} ({clip.resolution}) ↓
-            </a>
+          <Button
+            key={clip.vNumber}
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const iframe = document.createElement('iframe');
+              iframe.style.cssText = 'display:none; width:0; height:0; position:absolute; left:-9999px;';
+              iframe.src = clip.url;
+              document.body.appendChild(iframe);
+              setTimeout(() => document.body.removeChild(iframe), 120_000);
+            }}
+          >
+            {clip.clipName} ({clip.resolution}) ↓
           </Button>
         ))}
       </div>
