@@ -674,11 +674,23 @@ export async function action({request, context}: ActionFunctionArgs) {
             ? await resolveClipThumbnailUrl(firstVNumber)
             : null;
 
+          // Generate a single bundle-all token for the "Download All" button
+          let bundleAllUrl = `${siteUrl}/account/orders/${btoa(order.id)}`;
+          try {
+            const bundleAllToken = await createEmailDownloadToken({
+              env: context.env,
+              orderId: order.id,
+              lineItemId,
+              // no vNumber = bundle-all token used by /download-bundle/:token
+            });
+            bundleAllUrl = `${siteUrl}/download-bundle/${encodeURIComponent(bundleAllToken)}`;
+          } catch { /* fall back to account page */ }
+
           return {
             title: lineItem.variant?.product?.title?.trim() || lineItem.title?.trim() || 'Bundle',
             quantity: typeof lineItem.quantity === 'number' ? lineItem.quantity : 1,
             imageUrl: bundleThumbnail,
-            downloadUrl: `${siteUrl}/account/orders/${btoa(order.id)}`,
+            downloadUrl: bundleAllUrl,
             isBundle: true,
             clipDownloads: clipTokenUrls,
             resolution,

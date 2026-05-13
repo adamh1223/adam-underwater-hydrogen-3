@@ -141,11 +141,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     throw err;
   }
 
-  // Redirect directly to the signed URL so the browser handles the download
-  return new Response(null, {
-    status: 302,
-    headers: {Location: signedUrl},
-  });
+  return json({url: signedUrl});
 }
 
 // Block direct POST/etc.

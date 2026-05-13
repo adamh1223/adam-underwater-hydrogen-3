@@ -1669,22 +1669,31 @@ function ReturnRequestSection({
   );
 }
 
+async function triggerPresignedDownload(apiUrl: string): Promise<void> {
+  try {
+    const res = await fetch(apiUrl);
+    if (!res.ok) return;
+    const data = (await res.json()) as {url?: string};
+    if (!data.url) return;
+    const a = document.createElement('a');
+    a.href = data.url;
+    a.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 2000);
+  } catch { /* ignore */ }
+}
+
 function BundleDownloadButtons({
   clips,
 }: {
   clips: {vNumber: string; resolution: string; url: string; clipIndex: number; clipName: string}[];
 }) {
-  const handleDownloadAll = () => {
-    clips.forEach((clip, i) => {
-      setTimeout(() => {
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'display:none; width:0; height:0; position:absolute; left:-9999px;';
-        iframe.src = clip.url;
-        document.body.appendChild(iframe);
-        // Clean up after enough time for the download to initiate
-        setTimeout(() => document.body.removeChild(iframe), 120_000);
-      }, i * 1200);
-    });
+  const handleDownloadAll = async () => {
+    for (let i = 0; i < clips.length; i++) {
+      if (i > 0) await new Promise<void>((r) => setTimeout(r, 1500));
+      await triggerPresignedDownload(clips[i].url);
+    }
   };
 
   return (
@@ -1695,13 +1704,7 @@ function BundleDownloadButtons({
             key={clip.vNumber}
             variant="outline"
             size="sm"
-            onClick={() => {
-              const iframe = document.createElement('iframe');
-              iframe.style.cssText = 'display:none; width:0; height:0; position:absolute; left:-9999px;';
-              iframe.src = clip.url;
-              document.body.appendChild(iframe);
-              setTimeout(() => document.body.removeChild(iframe), 120_000);
-            }}
+            onClick={() => triggerPresignedDownload(clip.url)}
           >
             {clip.clipName} ({clip.resolution}) ↓
           </Button>

@@ -103,7 +103,12 @@ function createPurchaseEmailHtml({
           <p style="margin:14px 0 0 0; color:#ffffff;">Quantity: ${item.quantity}</p>
           ${
             item.clipDownloads && item.clipDownloads.length > 0
-              ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:18px; border-collapse:collapse;">
+              ? `<div style="text-align:center; margin-top:18px; margin-bottom:14px;">
+                  <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:14px 28px; background:#22b8ff; border-radius:10px; color:#000000; text-decoration:none; font-weight:700; font-size:16px;">
+                    Download All ${item.clipDownloads.length} Clips ↓
+                  </a>
+                </div>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                   <tr>
                     <td valign="top" style="width:80%; padding-right:10px;">
                       ${item.clipDownloads.map((clip) =>
@@ -113,8 +118,8 @@ function createPurchaseEmailHtml({
                       ).join('\n')}
                     </td>
                     <td valign="middle" align="center" style="width:20%;">
-                      <a href="${escapeHtml(item.downloadUrl)}" style="display:block; padding:12px 10px; background:#22b8ff; border-radius:10px; color:#000000; text-decoration:none; font-weight:700; font-size:14px; text-align:center; white-space:nowrap;">
-                        Download All ↓
+                      <a href="${escapeHtml(item.downloadUrl)}" style="display:block; padding:12px 10px; background:#1a3a5c; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600; font-size:13px; text-align:center; white-space:nowrap; border:1px solid #2a446b;">
+                        View in<br>Account
                       </a>
                     </td>
                   </tr>
