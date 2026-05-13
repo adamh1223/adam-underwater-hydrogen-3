@@ -1,27 +1,29 @@
 import {json, type ActionFunctionArgs, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {S3Client, GetObjectCommand} from '@aws-sdk/client-s3';
-import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
 import {adminGraphql} from '~/lib/shopify-admin.server';
+import {createR2SignedDownloadUrl, R2ObjectNotFoundError} from '~/lib/r2.server';
 
 // Pre-signed URL expires after 15 minutes — enough for one download
 const EXPIRY_SECONDS = 900;
 
-// Stock file path patterns in R2
-function buildStockKey(vNumber: string, resolution: '8K' | '4K'): string {
+// Returns all plausible R2 keys for a clip in order of likelihood.
+// createR2SignedDownloadUrl will try each one until it finds an existing file.
+function buildStockKeyCandidates(vNumber: string, resolution: '8K' | '4K'): string[] {
   const num = Number.parseInt(vNumber, 10);
   if (!Number.isFinite(num) || num <= 0) throw new Error('Invalid clip number');
+  const is4K = resolution === '4K';
 
-  // Filenames match the UM folder naming convention on the source drive
   if (num >= 1 && num <= 93) {
-    // Source: UM/8K/UM-8-4K-{N}.mov  (8K source files)
-    return `shared/stock/UM-8-4K-${num}.mov`;
+    return is4K
+      ? [`shared/stock/UM-8-4K-${num}.mov`, `shared/stock/UM-4K-${num}.mov`]
+      : [`shared/stock/UM-8K-${num}.mov`, `shared/stock/UM-8-4K-${num}.mov`];
   }
   if (num >= 94 && num <= 157) {
-    // Source: UM/5K/UM-5-4K-{N}.mov  (5K source files)
-    return `shared/stock/UM-5-4K-${num}.mov`;
+    return is4K
+      ? [`shared/stock/UM-5-4K-${num}.mov`, `shared/stock/UM-4K-${num}.mov`]
+      : [`shared/stock/UM-5K-${num}.mov`, `shared/stock/UM-5-4K-${num}.mov`];
   }
-  // 158-174: Source: UM/4K/UM-4K-{N}.mov
-  return `shared/stock/UM-4K-${num}.mov`;
+  // 158-174: 4K only source
+  return [`shared/stock/UM-4K-${num}.mov`];
 }
 
 const CUSTOMER_ORDERS_QUERY = `
@@ -118,29 +120,26 @@ export async function loader({request, context}: LoaderFunctionArgs) {
   }
 
   // Generate pre-signed URL
-  let key: string;
+  let keyCandidates: string[];
   try {
-    key = buildStockKey(vNumber, resolution);
+    keyCandidates = buildStockKeyCandidates(vNumber, resolution);
   } catch {
     return json({error: 'Invalid clip'}, {status: 400});
   }
 
-  const s3 = new S3Client({
-    region: context.env.R2_REGION ?? 'auto',
-    endpoint: context.env.R2_ENDPOINT,
-    credentials: {
-      accessKeyId: context.env.R2_ACCESS_KEY_ID,
-      secretAccessKey: context.env.R2_SECRET_ACCESS_KEY,
-    },
-  });
-
-  const command = new GetObjectCommand({
-    Bucket: context.env.R2_PRIVATE_STOCK_BUCKET ?? 'au-stock-private',
-    Key: key,
-    ResponseContentDisposition: `attachment; filename="${key.split('/').pop()}"`,
-  });
-
-  const signedUrl = await getSignedUrl(s3, command, {expiresIn: EXPIRY_SECONDS});
+  let signedUrl: string;
+  try {
+    signedUrl = await createR2SignedDownloadUrl(context.env, {
+      objectKeyCandidates: keyCandidates,
+      downloadFilename: keyCandidates[0]?.split('/').pop(),
+      expiresInSeconds: EXPIRY_SECONDS,
+    });
+  } catch (err) {
+    if (err instanceof R2ObjectNotFoundError) {
+      return json({error: 'File not found'}, {status: 404});
+    }
+    throw err;
+  }
 
   // Redirect directly to the signed URL so the browser handles the download
   return new Response(null, {

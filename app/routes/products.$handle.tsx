@@ -577,6 +577,16 @@ export type ClipProductData = {
 export type ClipProductMap = Record<string, ClipProductData>; // keyed by v-number e.g. "1", "28"
 
 const bundleWmlinkRegex = /^clip(\d+)[-_]/i;
+
+const STOCK_SWIPE_THUMB_BASE = 'https://downloads.adamunderwater.com/shared/stock-swipe';
+/** Returns the most-likely thumbnail URL for a given clip v-number. The
+ *  EProductPreview / HLS player will fall back to the Shopify image if this 404s. */
+function getClipThumbnailUrl(vNumber: string): string {
+  const n = Number.parseInt(vNumber, 10);
+  if (n >= 1 && n <= 93) return `${STOCK_SWIPE_THUMB_BASE}/img-UM-8-4K-${n}.jpg`;
+  if (n >= 94 && n <= 157) return `${STOCK_SWIPE_THUMB_BASE}/img-UM-5-4K-${n}.jpg`;
+  return `${STOCK_SWIPE_THUMB_BASE}/img-UM-4K-${n}.jpg`;
+}
 const bundleClipNameRegex = /^cn(\d+)_+(.+)$/i;
 const bundleClipNameAllRegex = /^cnall__(.+)$/i;
 const bundleAltRegex = /bundle(\d+)(?:[-_](\d+))?/i;
@@ -848,10 +858,10 @@ function buildBundleDetailClips({
     const wmlinkId = wmlinkByClip.get(clipIndex);
     // Look up the individual clip product by its v-number
     const clipProduct = wmlinkId ? clipProductMap[wmlinkId] : undefined;
-    // Prefer Cloudflare thumbnail from shared stock-swipe folder
+    // Prefer Cloudflare thumbnail — try the most likely name for this clip range
     const image = wmlinkId
       ? {
-          url: `https://downloads.adamunderwater.com/shared/stock-swipe/img-UM-8-4K-${wmlinkId}.jpg`,
+          url: getClipThumbnailUrl(wmlinkId),
           altText: null,
         }
       : (imageByClip.get(clipIndex) ?? images[clipIndex - 1]);

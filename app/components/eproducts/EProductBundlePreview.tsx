@@ -29,6 +29,14 @@ type BundleClip = {
 };
 
 const clipTagRegex = /^clip(\d+)[-_](\d+)$/i;
+
+const THUMB_BASE = 'https://downloads.adamunderwater.com/shared/stock-swipe';
+function getClipThumbnailUrl(vNumber: string): string {
+  const n = Number.parseInt(vNumber, 10);
+  if (n >= 1 && n <= 93) return `${THUMB_BASE}/img-UM-8-4K-${n}.jpg`;
+  if (n >= 94 && n <= 157) return `${THUMB_BASE}/img-UM-5-4K-${n}.jpg`;
+  return `${THUMB_BASE}/img-UM-4K-${n}.jpg`;
+}
 const bundleAltRegex = /bundle(\d+)-/i;
 const HLS_BASE = 'https://downloads.adamunderwater.com/shared/stock/streaming/hls';
 
@@ -65,12 +73,9 @@ const buildBundleClips = (
   for (let i = 1; i <= clipCount; i += 1) {
     const wmlinkMatch = wmlinks.find((link) => link.index === i);
     const id = wmlinkMatch?.id;
-    // Prefer Cloudflare thumbnail from shared stock-swipe folder
+    // Prefer Cloudflare thumbnail — pick naming based on clip number range
     const image = id
-      ? {
-          url: `https://downloads.adamunderwater.com/shared/stock-swipe/img-UM-8-4K-${id}.jpg`,
-          altText: null,
-        }
+      ? {url: getClipThumbnailUrl(id), altText: null}
       : (imagesByIndex.get(i) ?? images[i - 1] ?? undefined);
     if (!image && !id) continue;
     clips.push({

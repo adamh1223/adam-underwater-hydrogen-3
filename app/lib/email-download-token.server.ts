@@ -3,6 +3,8 @@ type EmailDownloadTokenPayload = {
   orderId: string;
   lineItemId: string;
   iat: number;
+  /** For bundle clips: the specific v-number to download */
+  vn?: string;
 };
 
 const TOKEN_VERSION = 1 as const;
@@ -88,6 +90,7 @@ function parsePayloadString(encodedPayload: string): EmailDownloadTokenPayload |
       orderId: parsed.orderId,
       lineItemId: parsed.lineItemId,
       iat: parsed.iat,
+      ...(typeof (parsed as any).vn === 'string' ? {vn: (parsed as any).vn} : {}),
     };
   } catch {
     return null;
@@ -98,10 +101,13 @@ export async function createEmailDownloadToken({
   env,
   orderId,
   lineItemId,
+  vNumber,
 }: {
   env: Env;
   orderId: string;
   lineItemId: string;
+  /** For bundle clips: pin the token to a specific clip v-number */
+  vNumber?: string;
 }): Promise<string> {
   if (!orderId.trim() || !lineItemId.trim()) {
     throw new Error('orderId and lineItemId are required for email download token.');
@@ -112,6 +118,7 @@ export async function createEmailDownloadToken({
     orderId: orderId.trim(),
     lineItemId: lineItemId.trim(),
     iat: Date.now(),
+    ...(vNumber ? {vn: vNumber.trim()} : {}),
   };
 
   const encodedPayload = toPayloadString(payload);

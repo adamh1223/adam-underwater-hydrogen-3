@@ -539,6 +539,15 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     const resolution = typeof resOption?.value === 'string' ? resOption.value : '8K';
 
     const clipTagRegex = /^clip(\d+)[-_](\d+)$/i;
+    const cnTagRegex = /^cn(\d+)__+(.+)$/i;
+
+    // Build a map of position → clip name from cn{N}__ tags
+    const nameByPosition = new Map<number, string>();
+    for (const t of meta.tags) {
+      const m = t.match(cnTagRegex);
+      if (m) nameByPosition.set(Number(m[1]), m[2].replace(/[-_]+/g, ' ').trim());
+    }
+
     const clips = meta.tags
       .map((t) => t.match(clipTagRegex))
       .filter((m): m is RegExpMatchArray => m !== null)
@@ -553,6 +562,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
       resolution,
       url: `/api/stock-download?v=${vNumber}&res=${encodeURIComponent(resolution)}`,
       clipIndex: position,
+      clipName: nameByPosition.get(position) ?? `Clip ${position}`,
     }));
     return acc;
   }, {});
@@ -1625,14 +1635,11 @@ function ReturnRequestSection({
 function BundleDownloadButtons({
   clips,
 }: {
-  clips: {vNumber: string; resolution: string; url: string; clipIndex: number}[];
+  clips: {vNumber: string; resolution: string; url: string; clipIndex: number; clipName: string}[];
 }) {
   const handleDownloadAll = () => {
-    // Open each clip in a new tab sequentially with a small delay
     clips.forEach((clip, i) => {
-      setTimeout(() => {
-        window.open(clip.url, '_blank');
-      }, i * 800);
+      setTimeout(() => window.open(clip.url, '_blank'), i * 800);
     });
   };
 
@@ -1642,7 +1649,7 @@ function BundleDownloadButtons({
         {clips.map((clip) => (
           <Button key={clip.vNumber} variant="outline" size="sm" asChild>
             <a href={clip.url} target="_blank" rel="noreferrer">
-              Clip {clip.clipIndex} ({clip.resolution}) ↓
+              {clip.clipName} ({clip.resolution}) ↓
             </a>
           </Button>
         ))}
@@ -1671,7 +1678,7 @@ function OrderLineRow({
 }: {
   lineItem: OrderLineItemFullFragment;
   downloadLinksByLineItemId?: Record<string, string>;
-  bundleDownloadsByLineItemId?: Record<string, {vNumber: string; resolution: string; url: string; clipIndex: number}[]>;
+  bundleDownloadsByLineItemId?: Record<string, {vNumber: string; resolution: string; url: string; clipIndex: number; clipName: string}[]>;
   lineItemTagsByLineItemId?: Record<string, string[]>;
   lineItemProductsByLineItemId?: Record<string, any>;
   lineItemSelectedOptionsByLineItemId?: Record<

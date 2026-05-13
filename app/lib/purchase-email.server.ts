@@ -10,6 +10,8 @@ type PurchaseEmailDownloadItem = {
   imageUrl?: string | null;
   downloadUrl: string;
   isBundle?: boolean;
+  resolution?: string;
+  clipDownloads?: {name: string; url: string}[];
 };
 
 function escapeHtml(value: string): string {
@@ -99,11 +101,24 @@ function createPurchaseEmailHtml({
           }</p>
           ${imageMarkup}
           <p style="margin:14px 0 0 0; color:#ffffff;">Quantity: ${item.quantity}</p>
-          <div style="text-align:center; margin-top:18px;">
-            <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
-              Download ↓
-            </a>
-          </div>
+          ${
+            item.clipDownloads && item.clipDownloads.length > 0
+              ? `<div style="margin-top:18px; text-align:center;">
+                  <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:12px;">
+                    ${item.clipDownloads.map((clip) =>
+                      `<a href="${escapeHtml(clip.url)}" style="display:inline-block; padding:8px 14px; border:1px solid #2a446b; border-radius:8px; color:#ffffff; text-decoration:none; font-size:13px; font-weight:600;">${escapeHtml(clip.name)} (${escapeHtml(item.resolution ?? '8K')}) ↓</a>`
+                    ).join('\n')}
+                  </div>
+                  <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 24px; background:#22b8ff; border-radius:10px; color:#000000; text-decoration:none; font-weight:700; font-size:15px;">
+                    View All Downloads in Account
+                  </a>
+                </div>`
+              : `<div style="text-align:center; margin-top:18px;">
+                  <a href="${escapeHtml(item.downloadUrl)}" style="display:inline-block; padding:12px 20px; border:1px solid #2a446b; border-radius:10px; color:#ffffff; text-decoration:none; font-weight:600;">
+                    Download ↓
+                  </a>
+                </div>`
+          }
         </div>
       `;
     })

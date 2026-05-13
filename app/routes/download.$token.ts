@@ -94,13 +94,51 @@ export async function loader({context, params}: LoaderFunctionArgs) {
   );
   if (!lineItem) return notFound('Line item not found.');
 
-  const productTags = lineItem.variant?.product?.tags ?? [];
-  const objectKey = getR2ObjectKeyFromTagsForVariant({
-    tags: productTags,
-    selectedOptions: lineItem.variant?.selectedOptions ?? [],
-    variantTitle: lineItem.variant?.title ?? lineItem.title,
-    productOptions: lineItem.variant?.product?.options ?? [],
-  });
+  let objectKey: string | null = null;
+
+  if (verifiedToken.vn) {
+    // Bundle clip token — resolve the specific clip using candidate keys
+    const productTags = lineItem.variant?.product?.tags ?? [];
+    if (!productTags.includes('Bundle')) return notFound('Token v-number mismatch.');
+
+    const selectedOptions = lineItem.variant?.selectedOptions ?? [];
+    const resOption = selectedOptions.find(
+      (o: any) => typeof o.name === 'string' && o.name.toLowerCase() === 'resolution',
+    );
+    const is4K = (typeof resOption?.value === 'string' ? resOption.value : '8K').toUpperCase() === '4K';
+    const vn = verifiedToken.vn;
+    const num = Number.parseInt(vn, 10);
+    if (!Number.isFinite(num) || num <= 0) return notFound('Invalid clip number.');
+
+    let candidates: string[];
+    if (num >= 1 && num <= 93) {
+      candidates = is4K
+        ? [`shared/stock/UM-8-4K-${num}.mov`, `shared/stock/UM-4K-${num}.mov`]
+        : [`shared/stock/UM-8K-${num}.mov`, `shared/stock/UM-8-4K-${num}.mov`];
+    } else if (num >= 94 && num <= 157) {
+      candidates = is4K
+        ? [`shared/stock/UM-5-4K-${num}.mov`, `shared/stock/UM-4K-${num}.mov`]
+        : [`shared/stock/UM-5K-${num}.mov`, `shared/stock/UM-5-4K-${num}.mov`];
+    } else {
+      candidates = [`shared/stock/UM-4K-${num}.mov`];
+    }
+
+    const bundleUrl = await createR2SignedDownloadUrl(context.env, {
+      objectKeyCandidates: candidates,
+      downloadFilename: candidates[0]?.split('/').pop(),
+      expiresInSeconds: 60 * 60,
+    });
+    return redirect(bundleUrl, {headers: {'Cache-Control': 'no-store, private'}});
+  } else {
+    const productTags = lineItem.variant?.product?.tags ?? [];
+    objectKey = getR2ObjectKeyFromTagsForVariant({
+      tags: productTags,
+      selectedOptions: lineItem.variant?.selectedOptions ?? [],
+      variantTitle: lineItem.variant?.title ?? lineItem.title,
+      productOptions: lineItem.variant?.product?.options ?? [],
+    });
+  }
+
   if (!objectKey) return notFound('No downloadable asset configured.');
 
   let signedUrl = '';

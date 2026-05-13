@@ -4,10 +4,11 @@ import {sanitizeDownloadFilename} from '~/lib/downloads';
 const DEFAULT_R2_REGION = 'auto';
 
 type CreateR2SignedDownloadUrlInput = {
-  objectKey: string;
+  objectKey?: string;
+  /** Try multiple keys in order — first one found in R2 wins */
+  objectKeyCandidates?: string[];
   downloadFilename?: string;
   expiresInSeconds?: number;
-  /** Override the bucket — defaults to R2_PRIVATE_STOCK_BUCKET for stock files */
   bucketOverride?: string;
 };
 
@@ -110,17 +111,22 @@ async function objectExistsInR2(
 
 export async function createR2SignedDownloadUrl(
   env: Env,
-  {objectKey, downloadFilename, expiresInSeconds = 60 * 60, bucketOverride}: CreateR2SignedDownloadUrlInput,
+  {objectKey, objectKeyCandidates, downloadFilename, expiresInSeconds = 60 * 60, bucketOverride}: CreateR2SignedDownloadUrlInput,
 ) {
-  // Stock download files live in the private bucket — use it automatically
-  const isStockDownload = objectKey.trim().startsWith('shared/stock/') &&
-    !objectKey.trim().startsWith('shared/stock/streaming/') &&
-    !objectKey.trim().startsWith('shared/stock-swipe/');
+  // Merge objectKey + objectKeyCandidates into a single ordered list
+  const primaryKeys = objectKeyCandidates?.length
+    ? objectKeyCandidates
+    : objectKey
+      ? [objectKey]
+      : [];
+  if (!primaryKeys.length) throw new Error('objectKey or objectKeyCandidates is required.');
+
+  const firstKey = primaryKeys[0] ?? '';
+  const isStockDownload = firstKey.trim().startsWith('shared/stock/') &&
+    !firstKey.trim().startsWith('shared/stock/streaming/') &&
+    !firstKey.trim().startsWith('shared/stock-swipe/');
   const resolvedBucket = bucketOverride ??
     (isStockDownload ? (env.R2_PRIVATE_STOCK_BUCKET ?? 'au-stock-private') : undefined);
-  if (!objectKey.trim()) {
-    throw new Error('Object key is required for download signing.');
-  }
 
   const accessKeyId = requireEnvValue(env.R2_ACCESS_KEY_ID, 'R2_ACCESS_KEY_ID');
   const secretAccessKey = requireEnvValue(
@@ -135,9 +141,10 @@ export async function createR2SignedDownloadUrl(
     region,
   });
 
-  const objectKeyCandidates = buildObjectKeyCandidates(objectKey);
+  // Expand each primary key into case variants (e.g. .mov / .MOV)
+  const allCandidates = primaryKeys.flatMap(buildObjectKeyCandidates);
   let resolvedObjectKey: string | null = null;
-  for (const candidate of objectKeyCandidates) {
+  for (const candidate of allCandidates) {
     if (await objectExistsInR2(env, awsClient, candidate, resolvedBucket)) {
       resolvedObjectKey = candidate;
       break;
@@ -145,7 +152,7 @@ export async function createR2SignedDownloadUrl(
   }
 
   if (!resolvedObjectKey) {
-    throw new R2ObjectNotFoundError(objectKeyCandidates);
+    throw new R2ObjectNotFoundError(allCandidates);
   }
 
   const url = buildObjectUrl(env, resolvedObjectKey, resolvedBucket);

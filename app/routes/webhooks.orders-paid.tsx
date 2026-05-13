@@ -1,4 +1,37 @@
 import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
+
+const STOCK_SWIPE_BASE = 'https://downloads.adamunderwater.com/shared/stock-swipe';
+const THUMB_EXTENSIONS = ['jpg', 'JPG', 'png', 'PNG', 'jpeg', 'JPEG', 'webp', 'WEBP'];
+
+function buildClipThumbnailCandidates(vNumber: string): string[] {
+  const n = Number.parseInt(vNumber, 10);
+  if (!Number.isFinite(n) || n <= 0) return [];
+
+  // Try in order of most common naming convention first
+  let stems: string[];
+  if (n >= 1 && n <= 93) {
+    stems = [`img-UM-8-4K-${n}`, `img-UM-8K-${n}`, `img-UM-4K-${n}`];
+  } else if (n >= 94 && n <= 157) {
+    stems = [`img-UM-5-4K-${n}`, `img-UM-5K-${n}`, `img-UM-4K-${n}`];
+  } else {
+    stems = [`img-UM-4K-${n}`, `img-UM-8-4K-${n}`];
+  }
+
+  return stems.flatMap((stem) =>
+    THUMB_EXTENSIONS.map((ext) => `${STOCK_SWIPE_BASE}/${stem}.${ext}`),
+  );
+}
+
+async function resolveClipThumbnailUrl(vNumber: string): Promise<string | null> {
+  const candidates = buildClipThumbnailCandidates(vNumber);
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, {method: 'HEAD'});
+      if (res.ok) return url;
+    } catch { /* try next */ }
+  }
+  return null;
+}
 import {createEmailDownloadToken} from '~/lib/email-download-token.server';
 import {
   getAdminCustomerEmailDiscountUsage,
@@ -554,9 +587,58 @@ export async function action({request, context}: ActionFunctionArgs) {
         let downloadUrl = '';
 
         if (isBundle) {
-          // Bundles: direct to the order page where all clip download buttons live
-          const encodedOrderId = btoa(order.id);
-          downloadUrl = `${siteUrl}/account/orders/${encodedOrderId}`;
+          // Bundles: generate per-clip download tokens
+          const clipTagRegex = /^clip(\d+)[-_](\d+)$/i;
+          const cnTagRegex = /^cn(\d+)__+(.+)$/i;
+          const resOption = (lineItem.variant?.selectedOptions ?? []).find(
+            (o: any) => typeof o.name === 'string' && o.name.toLowerCase() === 'resolution',
+          );
+          const resolution = typeof resOption?.value === 'string' ? resOption.value : '8K';
+
+          const nameByPos = new Map<number, string>();
+          for (const t of tags) {
+            const m = t.match(cnTagRegex);
+            if (m) nameByPos.set(Number(m[1]), m[2].replace(/[-_]+/g, ' ').trim());
+          }
+
+          const clips = tags
+            .map((t) => t.match(clipTagRegex))
+            .filter((m): m is RegExpMatchArray => m !== null)
+            .map((m) => ({position: Number(m[1]), vNumber: m[2] ?? ''}))
+            .filter((c) => c.vNumber)
+            .sort((a, b) => a.position - b.position);
+
+          const clipTokenUrls: {name: string; url: string}[] = [];
+          for (const {position, vNumber} of clips) {
+            try {
+              const token = await createEmailDownloadToken({
+                env: context.env,
+                orderId: order.id,
+                lineItemId,
+                vNumber,
+              });
+              clipTokenUrls.push({
+                name: nameByPos.get(position) ?? `Clip ${position}`,
+                url: `${siteUrl}/download/${encodeURIComponent(token)}`,
+              });
+            } catch { /* skip on error */ }
+          }
+
+          // Resolve the first clip's thumbnail by trying all naming variants
+          const firstVNumber = clips[0]?.vNumber;
+          const bundleThumbnail = firstVNumber
+            ? await resolveClipThumbnailUrl(firstVNumber)
+            : null;
+
+          return {
+            title: lineItem.variant?.product?.title?.trim() || lineItem.title?.trim() || 'Bundle',
+            quantity: typeof lineItem.quantity === 'number' ? lineItem.quantity : 1,
+            imageUrl: bundleThumbnail,
+            downloadUrl: `${siteUrl}/account/orders/${btoa(order.id)}`,
+            isBundle: true,
+            clipDownloads: clipTokenUrls,
+            resolution,
+          };
         } else {
           const objectKey = getR2ObjectKeyFromTagsForVariant({
             tags,
