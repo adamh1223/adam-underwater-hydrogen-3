@@ -7,7 +7,8 @@ import {redirect} from '@shopify/remix-oxygen';
 import {getRedirectPathFromLegacyPagePath} from '~/lib/pagePaths';
 
 export const meta: MetaFunction = () => {
-  const title = 'Underwater Video & Photo Services | Adam Underwater — San Diego, CA';
+  const title =
+    'Underwater Video & Photo Services | Adam Underwater — San Diego, CA';
   const description =
     'Professional underwater photography and videography services in San Diego. 45MP underwater photo, 4K underwater video, and drone video and photo. Book Adam Underwater for your next shoot.';
 
@@ -81,9 +82,7 @@ import {warmImageUrls} from '~/lib/imageWarmup';
 // same issue as recommended products
 const R2 = 'https://downloads.adamunderwater.com/store-1-au/public';
 export function links() {
-  return [
-    {rel: 'preload', as: 'image', href: `${R2}/print3.jpg`},
-  ];
+  return [{rel: 'preload', as: 'image', href: `${R2}/print3.jpg`}];
 }
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -705,6 +704,9 @@ function ServicesPage() {
           >
             <Button size="lg">flywithadam.com</Button>
           </a>
+        </div>
+        <div className="subheader-services flex justify-center text-lg">
+          or navigate to the Contact page and leave a submission.
         </div>
       </section>
       <section>
