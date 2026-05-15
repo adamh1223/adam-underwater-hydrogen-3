@@ -1149,12 +1149,12 @@ export default function AboutPage() {
                     to the ink to the printer itself to bring the magic of the
                     ocean into people's homes. Navigate to the{' '}
                     <a
-                      href="/products"
+                      href="/prints"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary underline"
                     >
-                      Products
+                      Prints
                     </a>{' '}
                     page to browse my prints.
                     <br />
