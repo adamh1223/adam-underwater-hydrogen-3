@@ -1268,42 +1268,32 @@ export default function Product() {
   const productSizeMetafields = collections?.edges?.[2]?.node?.metafield;
 
   const {references} = productSizeMetafields || {};
-  // THREE COLUMN SIZES
-  const threeColumnSizes = images?.nodes?.filter((item: any) => {
-    if (item.altText?.includes('horizontal-3')) {
-      return {
-        url: item.url,
-        altText: item.altText,
-      };
-    }
-  });
-  // TWO COLUMN SIZES
-  const twoColumnSizes = images?.nodes?.filter((item: any) => {
-    if (item.altText?.includes('horizontal-2')) {
-      return {
-        url: item.url,
-        altText: item.altText,
-      };
-    }
-  });
-  // STANDARD HORIZONTAL SIZES
-  const standardHorizontalSizes = images?.nodes?.filter((item: any) => {
-    if (item.altText?.includes('horizontal-1')) {
-      return {
-        url: item.url,
-        altText: item.altText,
-      };
-    }
-  });
-  // VERTICAL SIZES
-  const verticalSizes = images?.nodes?.filter((item: any) => {
-    if (item.altText?.includes('vertical-1')) {
-      return {
-        url: item.url,
-        altText: item.altText,
-      };
-    }
-  });
+
+  const CF_SIZES_BASE =
+    'https://downloads.adamunderwater.com/shared/prints/sizes';
+
+  const standardHorizontalSizes = [
+    {url: `${CF_SIZES_BASE}/small-horizontal-1.jpg`, altText: 'small'},
+    {url: `${CF_SIZES_BASE}/medium-horizontal-1.jpg`, altText: 'medium'},
+    {url: `${CF_SIZES_BASE}/large-horizontal-1.jpg`, altText: 'large'},
+    {url: `${CF_SIZES_BASE}/xl-horizontal-1.jpg`, altText: 'xl'},
+  ];
+
+  const twoColumnSizes = [
+    {url: `${CF_SIZES_BASE}/small-2.jpg`, altText: 'small'},
+    {url: `${CF_SIZES_BASE}/medium-2.jpg`, altText: 'medium'},
+    {url: `${CF_SIZES_BASE}/large-2.jpg`, altText: 'large'},
+    {url: `${CF_SIZES_BASE}/xl-2.jpg`, altText: 'xl'},
+  ];
+
+  const threeColumnSizes = twoColumnSizes;
+
+  const verticalSizes = [
+    {url: `${CF_SIZES_BASE}/small-vertical-1.jpg`, altText: 'small'},
+    {url: `${CF_SIZES_BASE}/medium-vertical-1.png`, altText: 'medium'},
+    {url: `${CF_SIZES_BASE}/large-vertical-1.jpg`, altText: 'large'},
+    {url: `${CF_SIZES_BASE}/xl-vertical-1.jpg`, altText: 'xl'},
+  ];
 
   const determineLayoutImages = (variant: any) => {
     const orientation = variant.title.split(' / ')[0];
